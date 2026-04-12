@@ -77,12 +77,6 @@ class BuildSpecViewModel {
             specTier = first.specTier
         }
         isLoading = false
-        // Subscribe to realtime changes for this build's spec selections
-        // so both client and admin views auto-refresh when the other party acts
-        SupabaseService.shared.subscribeToBuildSpecChanges(buildId: buildId) { [weak self] in
-            guard let self else { return }
-            Task { await self.load(buildId: buildId) }
-        }
     }
 
     var hasSelections: Bool { !selections.isEmpty }
