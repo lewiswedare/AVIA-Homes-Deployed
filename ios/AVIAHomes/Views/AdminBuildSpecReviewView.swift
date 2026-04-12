@@ -5,10 +5,21 @@ struct AdminBuildSpecReviewView: View {
     @State private var viewModel = BuildSpecViewModel()
     @State private var showApproveAllAlert = false
     @State private var showReopenAlert = false
-    @State private var upgradeCostInputs: [String: (cost: String, note: String)] = [:]
+    @State private var selectedItem: BuildSpecSelection?
+    @State private var isExportingPDF = false
+    @State private var exportedPDFURL: URL?
+    @State private var showShareSheet = false
+    @State private var activeTab: SelectionsTab = .specRange
     let buildId: String
     let clientName: String
     var clientId: String = ""
+
+    private var catalog: CatalogDataManager { CatalogDataManager.shared }
+
+    enum SelectionsTab: String, CaseIterable {
+        case specRange = "Spec Range"
+        case colours = "Colours"
+    }
 
     var body: some View {
         Group {
@@ -25,6 +36,21 @@ struct AdminBuildSpecReviewView: View {
         .background(AVIATheme.background)
         .navigationTitle("Spec Review")
         .navigationBarTitleDisplayMode(.large)
+        .toolbar {
+            ToolbarItem(placement: .topBarTrailing) {
+                Button {
+                    exportCombinedPDF()
+                } label: {
+                    if isExportingPDF {
+                        ProgressView().tint(AVIATheme.teal)
+                    } else {
+                        Image(systemName: "square.and.arrow.up")
+                            .foregroundStyle(AVIATheme.teal)
+                    }
+                }
+                .disabled(isExportingPDF || !viewModel.hasSelections)
+            }
+        }
         .task {
             viewModel.notificationService = appViewModel.notificationService
             viewModel.clientId = clientId
@@ -47,6 +73,27 @@ struct AdminBuildSpecReviewView: View {
         } message: {
             Text("This will unlock the specifications so \(clientName) can make changes and resubmit.")
         }
+        .sheet(item: $selectedItem) { item in
+            AdminSelectionDetailSheet(
+                selection: item,
+                colourSelection: viewModel.colourSelection(for: item.id),
+                specTier: viewModel.specTier,
+                onApprove: { id in
+                    viewModel.adminApproveItem(selectionId: id)
+                },
+                onAddNotes: { id, notes in
+                    viewModel.adminAddNotes(selectionId: id, notes: notes)
+                },
+                onSetUpgradeCost: { id, cost, note in
+                    viewModel.adminSetUpgradeCost(selectionId: id, cost: cost, note: note)
+                }
+            )
+        }
+        .sheet(isPresented: $showShareSheet) {
+            if let url = exportedPDFURL {
+                ShareSheet(activityItems: [url])
+            }
+        }
         .overlay(alignment: .bottom) { toastOverlay }
     }
 
@@ -56,26 +103,22 @@ struct AdminBuildSpecReviewView: View {
                 adminStatusBanner
                 clientInfoCard
 
-                if viewModel.upgradeRequestedItems.count > 0 {
-                    upgradeRequestsSummary
+                Picker("", selection: $activeTab) {
+                    ForEach(SelectionsTab.allCases, id: \.self) { tab in
+                        Text(tab.rawValue).tag(tab)
+                    }
                 }
+                .pickerStyle(.segmented)
 
-                ForEach(viewModel.groupedSelections, id: \.categoryId) { group in
-                    BuildSpecCategorySection(
-                        categoryName: group.category,
-                        items: group.items,
-                        isEditable: false,
-                        isAdmin: true,
-                        onAdminApprove: { id in
-                            viewModel.adminApproveItem(selectionId: id)
-                        },
-                        onAdminNotes: { id, notes in
-                            viewModel.adminAddNotes(selectionId: id, notes: notes)
-                        }
-                    )
+                if activeTab == .specRange {
+                    specRangeTable
+                } else {
+                    colourSelectionsTable
                 }
 
                 adminActionButtons
+
+                exportPDFButton
 
                 if !viewModel.documents.isEmpty {
                     documentSection
@@ -85,6 +128,383 @@ struct AdminBuildSpecReviewView: View {
             .padding(.bottom, 40)
         }
     }
+
+    // MARK: - Spec Range Table
+
+    private var specRangeTable: some View {
+        VStack(spacing: 12) {
+            ForEach(viewModel.groupedSelections, id: \.categoryId) { group in
+                VStack(alignment: .leading, spacing: 6) {
+                    Text(group.category.uppercased())
+                        .font(.neueCaption2Medium)
+                        .kerning(1.0)
+                        .foregroundStyle(AVIATheme.textTertiary)
+                        .padding(.horizontal, 4)
+
+                    BentoCard(cornerRadius: 14) {
+                        VStack(spacing: 0) {
+                            tableHeader
+
+                            ForEach(Array(group.items.enumerated()), id: \.element.id) { index, item in
+                                Button {
+                                    selectedItem = item
+                                } label: {
+                                    specTableRow(item)
+                                }
+
+                                if index < group.items.count - 1 {
+                                    Rectangle()
+                                        .fill(AVIATheme.surfaceBorder)
+                                        .frame(height: 1)
+                                        .padding(.leading, 14)
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    private var tableHeader: some View {
+        HStack(spacing: 0) {
+            Text("Item")
+                .frame(maxWidth: .infinity, alignment: .leading)
+            Text("Type")
+                .frame(width: 70, alignment: .center)
+            Text("Status")
+                .frame(width: 60, alignment: .center)
+            Image(systemName: "chevron.right")
+                .font(.neueCorp(8))
+                .foregroundStyle(.clear)
+                .frame(width: 20)
+        }
+        .font(.neueCaption2Medium)
+        .foregroundStyle(AVIATheme.textTertiary)
+        .padding(.horizontal, 14)
+        .padding(.vertical, 8)
+        .background(AVIATheme.surfaceElevated.opacity(0.5))
+    }
+
+    private func specTableRow(_ item: BuildSpecSelection) -> some View {
+        HStack(spacing: 0) {
+            HStack(spacing: 10) {
+                if let url = item.snapshotImageURL, !url.isEmpty, let imgURL = URL(string: url) {
+                    Color(.secondarySystemBackground)
+                        .frame(width: 36, height: 36)
+                        .overlay {
+                            AsyncImage(url: imgURL) { phase in
+                                if let image = phase.image {
+                                    image.resizable().aspectRatio(contentMode: .fill)
+                                } else {
+                                    Image(systemName: "photo")
+                                        .font(.neueCorp(10))
+                                        .foregroundStyle(AVIATheme.textTertiary)
+                                }
+                            }
+                            .allowsHitTesting(false)
+                        }
+                        .clipShape(.rect(cornerRadius: 6))
+                } else {
+                    RoundedRectangle(cornerRadius: 6)
+                        .fill(AVIATheme.surfaceElevated)
+                        .frame(width: 36, height: 36)
+                        .overlay {
+                            Image(systemName: "cube.box")
+                                .font(.neueCorp(10))
+                                .foregroundStyle(AVIATheme.textTertiary)
+                        }
+                }
+
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(item.snapshotName)
+                        .font(.neueCaptionMedium)
+                        .foregroundStyle(AVIATheme.textPrimary)
+                        .lineLimit(1)
+                    if item.clientNotes != nil || item.adminNotes != nil {
+                        Image(systemName: "text.bubble.fill")
+                            .font(.neueCorp(8))
+                            .foregroundStyle(AVIATheme.teal.opacity(0.6))
+                    }
+                }
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
+
+            selectionTypePill(item.selectionType)
+                .frame(width: 70, alignment: .center)
+
+            statusDot(item)
+                .frame(width: 60, alignment: .center)
+
+            Image(systemName: "chevron.right")
+                .font(.neueCorp(8))
+                .foregroundStyle(AVIATheme.textTertiary)
+                .frame(width: 20)
+        }
+        .padding(.horizontal, 14)
+        .padding(.vertical, 10)
+        .contentShape(Rectangle())
+    }
+
+    @ViewBuilder
+    private func selectionTypePill(_ type: SelectionType) -> some View {
+        let (label, color): (String, Color) = switch type {
+        case .included: ("STD", AVIATheme.textTertiary)
+        case .upgradeRequested: ("UPG", AVIATheme.warning)
+        case .upgradeApproved: ("UPG ✓", AVIATheme.success)
+        case .substituted: ("SUB", Color(hex: "8B5CF6"))
+        case .removed: ("REM", AVIATheme.destructive)
+        }
+        Text(label)
+            .font(.neueCorpMedium(7))
+            .foregroundStyle(color)
+            .padding(.horizontal, 6)
+            .padding(.vertical, 2)
+            .background(color.opacity(0.12))
+            .clipShape(Capsule())
+    }
+
+    private func statusDot(_ item: BuildSpecSelection) -> some View {
+        HStack(spacing: 3) {
+            Circle()
+                .fill(item.clientConfirmed ? AVIATheme.success : AVIATheme.textTertiary.opacity(0.4))
+                .frame(width: 7, height: 7)
+            Circle()
+                .fill(item.adminConfirmed ? AVIATheme.success : AVIATheme.textTertiary.opacity(0.4))
+                .frame(width: 7, height: 7)
+        }
+    }
+
+    // MARK: - Colour Selections Table
+
+    private var colourSelectionsTable: some View {
+        VStack(spacing: 12) {
+            if viewModel.colourSelections.isEmpty {
+                VStack(spacing: 12) {
+                    Image(systemName: "paintpalette")
+                        .font(.system(size: 32))
+                        .foregroundStyle(AVIATheme.textTertiary)
+                    Text("No colour selections submitted yet")
+                        .font(.neueCaption)
+                        .foregroundStyle(AVIATheme.textSecondary)
+                }
+                .frame(maxWidth: .infinity)
+                .padding(.vertical, 40)
+            } else {
+                colourStatusBanner
+
+                BentoCard(cornerRadius: 14) {
+                    VStack(spacing: 0) {
+                        colourTableHeader
+
+                        ForEach(Array(viewModel.colourSelections.enumerated()), id: \.element.id) { index, cs in
+                            let resolved = resolveColourSelection(cs)
+                            Button {
+                                if let specSel = viewModel.selections.first(where: { $0.id == cs.buildSpecSelectionId }) {
+                                    selectedItem = specSel
+                                }
+                            } label: {
+                                colourTableRow(cs, resolved: resolved)
+                            }
+
+                            if index < viewModel.colourSelections.count - 1 {
+                                Rectangle()
+                                    .fill(AVIATheme.surfaceBorder)
+                                    .frame(height: 1)
+                                    .padding(.leading, 14)
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    private var colourStatusBanner: some View {
+        HStack(spacing: 10) {
+            Image(systemName: "paintpalette.fill")
+                .foregroundStyle(colourStatusColor)
+            VStack(alignment: .leading, spacing: 2) {
+                Text("\(viewModel.colourSelections.count) colour selections")
+                    .font(.neueCaptionMedium)
+                    .foregroundStyle(AVIATheme.textPrimary)
+                Text("Status: \(viewModel.colourSelectionOverallStatus.rawValue.capitalized)")
+                    .font(.neueCaption2)
+                    .foregroundStyle(AVIATheme.textSecondary)
+            }
+            Spacer()
+            Text(viewModel.colourSelectionOverallStatus.rawValue.capitalized)
+                .font(.neueCorpMedium(9))
+                .foregroundStyle(.white)
+                .padding(.horizontal, 10)
+                .padding(.vertical, 4)
+                .background(colourStatusColor)
+                .clipShape(Capsule())
+        }
+        .padding(14)
+        .background(colourStatusColor.opacity(0.06))
+        .clipShape(.rect(cornerRadius: 14))
+        .overlay {
+            RoundedRectangle(cornerRadius: 14)
+                .stroke(colourStatusColor.opacity(0.2), lineWidth: 1)
+        }
+    }
+
+    private var colourStatusColor: Color {
+        switch viewModel.colourSelectionOverallStatus {
+        case .draft: AVIATheme.textTertiary
+        case .submitted: AVIATheme.warning
+        case .approved: AVIATheme.success
+        case .reopened: Color(hex: "8B5CF6")
+        }
+    }
+
+    private var colourTableHeader: some View {
+        HStack(spacing: 0) {
+            Text("Colour")
+                .frame(maxWidth: .infinity, alignment: .leading)
+            Text("Category")
+                .frame(width: 80, alignment: .center)
+            Text("Status")
+                .frame(width: 56, alignment: .center)
+            Image(systemName: "chevron.right")
+                .font(.neueCorp(8))
+                .foregroundStyle(.clear)
+                .frame(width: 20)
+        }
+        .font(.neueCaption2Medium)
+        .foregroundStyle(AVIATheme.textTertiary)
+        .padding(.horizontal, 14)
+        .padding(.vertical, 8)
+        .background(AVIATheme.surfaceElevated.opacity(0.5))
+    }
+
+    private func colourTableRow(_ cs: BuildColourSelection, resolved: (catName: String, optName: String, hex: String, imageURL: String?)?) -> some View {
+        HStack(spacing: 0) {
+            HStack(spacing: 10) {
+                if let r = resolved {
+                    if let imgURL = r.imageURL, !imgURL.isEmpty {
+                        Color(.secondarySystemBackground)
+                            .frame(width: 32, height: 32)
+                            .overlay {
+                                AsyncImage(url: URL(string: imgURL)) { phase in
+                                    if let image = phase.image {
+                                        image.resizable().aspectRatio(contentMode: .fill)
+                                    }
+                                }
+                                .allowsHitTesting(false)
+                            }
+                            .clipShape(.rect(cornerRadius: 6))
+                    } else {
+                        Circle()
+                            .fill(Color(hex: r.hex))
+                            .frame(width: 28, height: 28)
+                            .overlay { Circle().stroke(AVIATheme.surfaceBorder, lineWidth: 1) }
+                    }
+
+                    Text(r.optName)
+                        .font(.neueCaptionMedium)
+                        .foregroundStyle(AVIATheme.textPrimary)
+                        .lineLimit(1)
+                } else {
+                    Circle()
+                        .fill(AVIATheme.surfaceElevated)
+                        .frame(width: 28, height: 28)
+                    Text(cs.colourOptionId)
+                        .font(.neueCaption2)
+                        .foregroundStyle(AVIATheme.textSecondary)
+                        .lineLimit(1)
+                }
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
+
+            Text(resolved?.catName ?? cs.colourCategoryId)
+                .font(.neueCaption2)
+                .foregroundStyle(AVIATheme.textSecondary)
+                .lineLimit(1)
+                .frame(width: 80, alignment: .center)
+
+            colourStatusPill(cs.selectionStatus)
+                .frame(width: 56, alignment: .center)
+
+            Image(systemName: "chevron.right")
+                .font(.neueCorp(8))
+                .foregroundStyle(AVIATheme.textTertiary)
+                .frame(width: 20)
+        }
+        .padding(.horizontal, 14)
+        .padding(.vertical, 10)
+        .contentShape(Rectangle())
+    }
+
+    @ViewBuilder
+    private func colourStatusPill(_ status: ColourSelectionStatus) -> some View {
+        let (icon, color): (String, Color) = switch status {
+        case .draft: ("circle", AVIATheme.textTertiary)
+        case .submitted: ("clock.fill", AVIATheme.warning)
+        case .approved: ("checkmark.circle.fill", AVIATheme.success)
+        case .reopened: ("arrow.counterclockwise", Color(hex: "8B5CF6"))
+        }
+        Image(systemName: icon)
+            .font(.neueCorp(12))
+            .foregroundStyle(color)
+    }
+
+    private func resolveColourSelection(_ cs: BuildColourSelection) -> (catName: String, optName: String, hex: String, imageURL: String?)? {
+        guard let cat = catalog.allColourCategories.first(where: { $0.id == cs.colourCategoryId }) else { return nil }
+        guard let opt = cat.options.first(where: { $0.id == cs.colourOptionId }) else { return nil }
+        return (catName: cat.name, optName: opt.name, hex: opt.hexColor, imageURL: opt.imageURL)
+    }
+
+    // MARK: - PDF Export
+
+    private var exportPDFButton: some View {
+        Button {
+            exportCombinedPDF()
+        } label: {
+            HStack(spacing: 8) {
+                if isExportingPDF {
+                    ProgressView().tint(AVIATheme.teal)
+                } else {
+                    Image(systemName: "doc.richtext")
+                    Text("Export All Selections to PDF")
+                }
+            }
+            .font(.neueSubheadlineMedium)
+            .frame(maxWidth: .infinity)
+            .frame(height: 48)
+            .foregroundStyle(AVIATheme.teal)
+            .background(AVIATheme.teal.opacity(0.1))
+            .clipShape(.rect(cornerRadius: 14))
+        }
+        .disabled(isExportingPDF)
+    }
+
+    private func exportCombinedPDF() {
+        isExportingPDF = true
+        let selections = viewModel.selections
+        let colourSelections = viewModel.colourSelections
+        let tier = viewModel.specTier
+        let grouped = viewModel.groupedSelections
+        let name = clientName
+
+        Task.detached {
+            let url = AdminPDFExporter.generateCombinedPDF(
+                clientName: name,
+                specTier: tier,
+                groupedSelections: grouped,
+                colourSelections: colourSelections,
+                catalog: await CatalogDataManager.shared
+            )
+            await MainActor.run {
+                isExportingPDF = false
+                exportedPDFURL = url
+                showShareSheet = true
+            }
+        }
+    }
+
+    // MARK: - Existing Components
 
     private var adminStatusBanner: some View {
         HStack(spacing: 10) {
@@ -188,77 +608,6 @@ struct AdminBuildSpecReviewView: View {
         .padding(14)
         .background(AVIATheme.cardBackground)
         .clipShape(.rect(cornerRadius: 14))
-    }
-
-    private var upgradeRequestsSummary: some View {
-        BentoCard(cornerRadius: 14) {
-            VStack(alignment: .leading, spacing: 8) {
-                HStack(spacing: 6) {
-                    Image(systemName: "arrow.up.circle.fill")
-                        .foregroundStyle(AVIATheme.warning)
-                    Text("Upgrade Requests (\(viewModel.upgradeRequestedItems.count))")
-                        .font(.neueCaptionMedium)
-                        .foregroundStyle(AVIATheme.textPrimary)
-                }
-
-                ForEach(viewModel.upgradeRequestedItems) { item in
-                    VStack(alignment: .leading, spacing: 6) {
-                        HStack(spacing: 8) {
-                            Circle()
-                                .fill(AVIATheme.warning)
-                                .frame(width: 6, height: 6)
-                            Text(item.snapshotName)
-                                .font(.neueCaption)
-                                .foregroundStyle(AVIATheme.textSecondary)
-                            if let notes = item.clientNotes, !notes.isEmpty {
-                                Text("— \(notes)")
-                                    .font(.neueCaption2)
-                                    .foregroundStyle(AVIATheme.textTertiary)
-                                    .lineLimit(1)
-                            }
-                        }
-
-                        HStack(spacing: 8) {
-                            TextField("Cost ($)", text: Binding(
-                                get: { upgradeCostInputs[item.id]?.cost ?? "" },
-                                set: { upgradeCostInputs[item.id] = (cost: $0, note: upgradeCostInputs[item.id]?.note ?? "") }
-                            ))
-                            .keyboardType(.decimalPad)
-                            .font(.neueCaption)
-                            .padding(8)
-                            .background(AVIATheme.surfaceElevated)
-                            .clipShape(RoundedRectangle(cornerRadius: 8))
-                            .frame(width: 100)
-
-                            TextField("Cost note...", text: Binding(
-                                get: { upgradeCostInputs[item.id]?.note ?? "" },
-                                set: { upgradeCostInputs[item.id] = (cost: upgradeCostInputs[item.id]?.cost ?? "", note: $0) }
-                            ))
-                            .font(.neueCaption)
-                            .padding(8)
-                            .background(AVIATheme.surfaceElevated)
-                            .clipShape(RoundedRectangle(cornerRadius: 8))
-
-                            Button("Set") {
-                                let costStr = upgradeCostInputs[item.id]?.cost ?? ""
-                                let noteStr = upgradeCostInputs[item.id]?.note ?? ""
-                                let cost = Double(costStr)
-                                viewModel.adminSetUpgradeCost(selectionId: item.id, cost: cost, note: noteStr.isEmpty ? nil : noteStr)
-                            }
-                            .font(.neueCaptionMedium)
-                            .foregroundStyle(AVIATheme.teal)
-                        }
-
-                        if let existingCost = item.upgradeCost {
-                            Text("Current: $\(existingCost, specifier: "%.2f")\(item.upgradeCostNote.map { " — \($0)" } ?? "")")
-                                .font(.neueCaption2)
-                                .foregroundStyle(AVIATheme.success)
-                        }
-                    }
-                }
-            }
-            .padding(14)
-        }
     }
 
     private var adminActionButtons: some View {
@@ -396,4 +745,14 @@ struct AdminBuildSpecReviewView: View {
                 }
         }
     }
+}
+
+struct ShareSheet: UIViewControllerRepresentable {
+    let activityItems: [Any]
+
+    func makeUIViewController(context: Context) -> UIActivityViewController {
+        UIActivityViewController(activityItems: activityItems, applicationActivities: nil)
+    }
+
+    func updateUIViewController(_ uiViewController: UIActivityViewController, context: Context) {}
 }
