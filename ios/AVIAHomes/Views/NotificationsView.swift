@@ -1,0 +1,160 @@
+import SwiftUI
+
+struct NotificationsView: View {
+    @Environment(AppViewModel.self) private var viewModel
+    @State private var selectedNotification: AppNotification?
+
+    private var groupedNotifications: [(String, [AppNotification])] {
+        let calendar = Calendar.current
+        let grouped = Dictionary(grouping: viewModel.notificationService.notifications) { notification -> String in
+            if calendar.isDateInToday(notification.createdAt) {
+                return "Today"
+            } else if calendar.isDateInYesterday(notification.createdAt) {
+                return "Yesterday"
+            } else {
+                return "Earlier"
+            }
+        }
+        let order = ["Today", "Yesterday", "Earlier"]
+        return order.compactMap { key in
+            guard let items = grouped[key], !items.isEmpty else { return nil }
+            return (key, items)
+        }
+    }
+
+    var body: some View {
+        NavigationStack {
+            ScrollView {
+                if viewModel.notificationService.notifications.isEmpty {
+                    emptyState
+                } else {
+                    LazyVStack(spacing: 0) {
+                        ForEach(groupedNotifications, id: \.0) { section, items in
+                            sectionHeader(section)
+                            ForEach(items) { notification in
+                                notificationRow(notification)
+                            }
+                        }
+                    }
+                    .padding(.bottom, 40)
+                }
+            }
+            .background(AVIATheme.background)
+            .navigationTitle("Notifications")
+            .navigationBarTitleDisplayMode(.large)
+            .toolbar {
+                ToolbarItem(placement: .topBarTrailing) {
+                    if viewModel.notificationService.unreadCount > 0 {
+                        Button("Read All") {
+                            Task {
+                                await viewModel.notificationService.markAllAsRead(for: viewModel.currentUser.id)
+                                viewModel.pushManager.updateBadgeCount(0)
+                            }
+                        }
+                        .font(.neueCaptionMedium)
+                        .foregroundStyle(AVIATheme.teal)
+                    }
+                }
+            }
+            .refreshable {
+                await viewModel.notificationService.loadNotifications(for: viewModel.currentUser.id)
+            }
+        }
+    }
+
+    private func sectionHeader(_ title: String) -> some View {
+        HStack {
+            Text(title)
+                .font(.neueCaption2Medium)
+                .kerning(1.0)
+                .foregroundStyle(AVIATheme.textTertiary)
+                .textCase(.uppercase)
+            Spacer()
+        }
+        .padding(.horizontal, 20)
+        .padding(.top, 18)
+        .padding(.bottom, 8)
+    }
+
+    private func notificationRow(_ notification: AppNotification) -> some View {
+        Button {
+            Task {
+                await viewModel.notificationService.markAsRead(notification.id)
+                viewModel.pushManager.updateBadgeCount(viewModel.notificationService.unreadCount)
+            }
+        } label: {
+            HStack(spacing: 14) {
+                ZStack {
+                    Circle()
+                        .fill(notificationColor(notification.type).opacity(0.12))
+                        .frame(width: 42, height: 42)
+                    Image(systemName: notification.type.icon)
+                        .font(.system(size: 16, weight: .semibold))
+                        .foregroundStyle(notificationColor(notification.type))
+                }
+
+                VStack(alignment: .leading, spacing: 4) {
+                    HStack(spacing: 6) {
+                        Text(notification.title)
+                            .font(.neueSubheadlineMedium)
+                            .foregroundStyle(AVIATheme.textPrimary)
+                        Spacer()
+                        Text(timeAgo(notification.createdAt))
+                            .font(.neueCaption2)
+                            .foregroundStyle(AVIATheme.textTertiary)
+                    }
+
+                    Text(notification.message)
+                        .font(.neueCaption)
+                        .foregroundStyle(AVIATheme.textSecondary)
+                        .lineLimit(2)
+                        .multilineTextAlignment(.leading)
+                }
+
+                if !notification.isRead {
+                    Circle()
+                        .fill(AVIATheme.teal)
+                        .frame(width: 8, height: 8)
+                }
+            }
+            .padding(.horizontal, 20)
+            .padding(.vertical, 12)
+            .background(notification.isRead ? Color.clear : AVIATheme.teal.opacity(0.03))
+        }
+        .buttonStyle(.plain)
+    }
+
+    private var emptyState: some View {
+        VStack(spacing: 16) {
+            Image(systemName: "bell.slash")
+                .font(.system(size: 44))
+                .foregroundStyle(AVIATheme.textTertiary)
+            Text("No Notifications")
+                .font(.neueCorpMedium(20))
+                .foregroundStyle(AVIATheme.textPrimary)
+            Text("You'll see updates about your build,\npackages, and messages here.")
+                .font(.neueSubheadline)
+                .foregroundStyle(AVIATheme.textSecondary)
+                .multilineTextAlignment(.center)
+        }
+        .frame(maxWidth: .infinity)
+        .padding(.top, 80)
+    }
+
+    private func notificationColor(_ type: NotificationType) -> Color {
+        switch type.color {
+        case "success": AVIATheme.success
+        case "destructive": AVIATheme.destructive
+        case "warning": AVIATheme.warning
+        default: AVIATheme.teal
+        }
+    }
+
+    private func timeAgo(_ date: Date) -> String {
+        let interval = Date.now.timeIntervalSince(date)
+        if interval < 60 { return "Just now" }
+        if interval < 3600 { return "\(Int(interval / 60))m ago" }
+        if interval < 86400 { return "\(Int(interval / 3600))h ago" }
+        return date.formatted(date: .abbreviated, time: .omitted)
+    }
+}

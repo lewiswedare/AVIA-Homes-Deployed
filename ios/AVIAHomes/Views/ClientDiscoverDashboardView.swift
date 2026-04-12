@@ -1,0 +1,900 @@
+import SwiftUI
+
+struct ClientDiscoverDashboardView: View {
+    @Environment(AppViewModel.self) private var viewModel
+    @State private var showDesignDirectory: Bool = false
+    @State private var showAllNews: Bool = false
+    @State private var showAllFacades: Bool = false
+    @State private var showSpecComparison: Bool = false
+
+    var body: some View {
+        NavigationStack {
+            ScrollView {
+                VStack(spacing: 0) {
+                    heroImage
+
+                    VStack(spacing: 32) {
+                        headerRow
+                        sharedPackagesBanner
+                        latestNewsSection
+                        ourDesignsSection
+                        specRangesSlider
+                        facadesSlider
+                        companyHighlightsSection
+                    }
+                    .padding(.horizontal, 16)
+                    .padding(.bottom, 40)
+                }
+            }
+            .ignoresSafeArea(edges: .top)
+            .background(AVIATheme.background)
+            .navigationDestination(for: HomeDesign.self) { design in
+                HomeDesignDetailView(design: design)
+            }
+            .navigationDestination(for: HouseLandPackage.self) { pkg in
+                PackageDetailView(package: pkg)
+            }
+            .navigationDestination(for: LandEstate.self) { estate in
+                EstateDetailView(estate: estate)
+            }
+            .fullScreenCover(isPresented: $showDesignDirectory) {
+                HomeDesignDirectoryView()
+            }
+            .navigationDestination(isPresented: $showAllNews) {
+                AllNewsView()
+            }
+            .navigationDestination(for: BlogPost.self) { post in
+                NewsArticleDetailView(post: post)
+            }
+            .navigationDestination(for: SpecTier.self) { tier in
+                SpecRangeDetailView(tier: tier)
+            }
+            .navigationDestination(isPresented: $showAllFacades) {
+                AllFacadesView()
+            }
+            .navigationDestination(for: Facade.self) { facade in
+                FacadeDetailView(facade: facade)
+            }
+            .navigationDestination(isPresented: $showSpecComparison) {
+                SpecRangeComparisonOverviewView()
+            }
+        }
+    }
+
+    private var heroImage: some View {
+        Color(AVIATheme.surfaceElevated)
+            .frame(height: 360)
+            .overlay {
+                Image("hero_facade")
+                    .resizable()
+                    .aspectRatio(contentMode: .fill)
+                    .allowsHitTesting(false)
+            }
+            .overlay(alignment: .bottom) {
+                LinearGradient(
+                    stops: [
+                        .init(color: Color.clear, location: 0.0),
+                        .init(color: AVIATheme.background.opacity(0.15), location: 0.25),
+                        .init(color: AVIATheme.background.opacity(0.4), location: 0.45),
+                        .init(color: AVIATheme.background.opacity(0.7), location: 0.65),
+                        .init(color: AVIATheme.background.opacity(0.9), location: 0.8),
+                        .init(color: AVIATheme.background, location: 1.0)
+                    ],
+                    startPoint: .top,
+                    endPoint: .bottom
+                )
+                .frame(height: 220)
+            }
+            .clipped()
+    }
+
+    private var headerRow: some View {
+        VStack(alignment: .leading, spacing: 4) {
+            HStack {
+                Image("AVIALogo")
+                    .renderingMode(.template)
+                    .resizable()
+                    .aspectRatio(contentMode: .fit)
+                    .frame(height: 24)
+                    .foregroundStyle(AVIATheme.teal)
+                Spacer()
+                Text(String(viewModel.currentUser.firstName.prefix(1)) + String(viewModel.currentUser.lastName.prefix(1)))
+                    .font(.neueCaptionMedium)
+                    .foregroundStyle(.white)
+                    .frame(width: 36, height: 36)
+                    .background(AVIATheme.tealGradient)
+                    .clipShape(Circle())
+            }
+
+            Text("Welcome, \(viewModel.currentUser.firstName)")
+                .font(.neueCorpMedium(28))
+                .foregroundStyle(AVIATheme.textPrimary)
+        }
+    }
+
+    private var welcomeBanner: some View {
+        BentoCard(cornerRadius: 16) {
+            VStack(spacing: 12) {
+                HStack(spacing: 12) {
+                    Image(systemName: "sparkles")
+                        .font(.neueCorpMedium(20))
+                        .foregroundStyle(AVIATheme.teal)
+                        .frame(width: 44, height: 44)
+                        .background(AVIATheme.teal.opacity(0.1))
+                        .clipShape(Circle())
+
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text("Explore AVIA Homes")
+                            .font(.neueSubheadlineMedium)
+                            .foregroundStyle(AVIATheme.textPrimary)
+                        Text("Browse our designs, packages, and find your perfect home.")
+                            .font(.neueCaption)
+                            .foregroundStyle(AVIATheme.textSecondary)
+                    }
+                    Spacer(minLength: 0)
+                }
+
+                HStack(spacing: 10) {
+                    if let phoneURL = URL(string: "tel:0756545123") {
+                        Link(destination: phoneURL) {
+                            HStack(spacing: 6) {
+                                Image(systemName: "phone.fill")
+                                    .font(.neueCorp(12))
+                                Text("Contact Us")
+                                    .font(.neueCaptionMedium)
+                            }
+                            .foregroundStyle(.white)
+                            .frame(maxWidth: .infinity)
+                            .frame(height: 38)
+                            .background(AVIATheme.tealGradient)
+                            .clipShape(.rect(cornerRadius: 10))
+                        }
+                    }
+
+                    if let webURL = URL(string: "https://www.aviahomes.com.au") {
+                        Link(destination: webURL) {
+                            HStack(spacing: 6) {
+                                Image(systemName: "safari.fill")
+                                    .font(.neueCorp(12))
+                                Text("Website")
+                                    .font(.neueCaptionMedium)
+                            }
+                            .foregroundStyle(AVIATheme.textPrimary)
+                            .frame(maxWidth: .infinity)
+                            .frame(height: 38)
+                            .background(AVIATheme.surfaceElevated)
+                            .clipShape(.rect(cornerRadius: 10))
+                        }
+                    }
+                }
+            }
+            .padding(16)
+        }
+    }
+
+    private var latestNewsSection: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            HStack(spacing: 8) {
+                Text("Latest News")
+                    .font(.neueCorpMedium(24))
+                    .foregroundStyle(AVIATheme.textPrimary)
+                Spacer()
+                Button {
+                    showAllNews = true
+                } label: {
+                    Text("See All")
+                        .font(.neueCaptionMedium)
+                        .foregroundStyle(AVIATheme.teal)
+                }
+            }
+
+            if let featuredPost = viewModel.allBlogPosts.first {
+                NavigationLink(value: featuredPost) {
+                    featuredBlogCard(post: featuredPost)
+                }
+                .buttonStyle(.plain)
+            }
+
+            ForEach(viewModel.allBlogPosts.dropFirst().prefix(2)) { post in
+                NavigationLink(value: post) {
+                    compactBlogRow(post: post)
+                }
+                .buttonStyle(.plain)
+            }
+        }
+    }
+
+    private func featuredBlogCard(post: BlogPost) -> some View {
+        VStack(alignment: .leading, spacing: 0) {
+            Color(AVIATheme.surfaceElevated)
+                .frame(height: 180)
+                .overlay {
+                    AsyncImage(url: URL(string: post.imageURL)) { phase in
+                        if let image = phase.image {
+                            image.resizable().aspectRatio(contentMode: .fill)
+                        }
+                    }
+                    .allowsHitTesting(false)
+                }
+                .clipShape(.rect(cornerRadii: .init(topLeading: 16, topTrailing: 16)))
+                .overlay(alignment: .topLeading) {
+                    Text(post.category.uppercased())
+                        .font(.neueCaption2Medium)
+                        .kerning(0.8)
+                        .foregroundStyle(.white)
+                        .padding(.horizontal, 10)
+                        .padding(.vertical, 5)
+                        .background(AVIATheme.aviaBlack.opacity(0.7))
+                        .clipShape(Capsule())
+                        .padding(12)
+                }
+
+            VStack(alignment: .leading, spacing: 6) {
+                Text(post.title)
+                    .font(.neueHeadline)
+                    .foregroundStyle(AVIATheme.textPrimary)
+                    .lineLimit(2)
+
+                Text(post.subtitle)
+                    .font(.neueCaption)
+                    .foregroundStyle(AVIATheme.textSecondary)
+                    .lineLimit(2)
+
+                HStack(spacing: 12) {
+                    Label(post.readTime, systemImage: "clock")
+                    Label(post.date.formatted(.dateTime.month(.abbreviated).day()), systemImage: "calendar")
+                }
+                .font(.neueCaption2)
+                .foregroundStyle(AVIATheme.textTertiary)
+            }
+            .padding(14)
+            .frame(maxWidth: .infinity, alignment: .leading)
+        }
+        .background(AVIATheme.cardBackground)
+        .clipShape(.rect(cornerRadius: 16))
+    }
+
+    private func compactBlogRow(post: BlogPost) -> some View {
+        BentoCard(cornerRadius: 16) {
+            HStack(spacing: 12) {
+                Color(AVIATheme.surfaceElevated)
+                    .frame(width: 72, height: 72)
+                    .overlay {
+                        AsyncImage(url: URL(string: post.imageURL)) { phase in
+                            if let image = phase.image {
+                                image.resizable().aspectRatio(contentMode: .fill)
+                            }
+                        }
+                        .allowsHitTesting(false)
+                    }
+                    .clipShape(.rect(cornerRadius: 10))
+
+                VStack(alignment: .leading, spacing: 4) {
+                    Text(post.category.uppercased())
+                        .font(.neueCorpMedium(9))
+                        .kerning(0.6)
+                        .foregroundStyle(AVIATheme.teal)
+
+                    Text(post.title)
+                        .font(.neueSubheadlineMedium)
+                        .foregroundStyle(AVIATheme.textPrimary)
+                        .lineLimit(2)
+
+                    HStack(spacing: 8) {
+                        Text(post.readTime)
+                        Text("·")
+                        Text(post.date.formatted(.dateTime.month(.abbreviated).day()))
+                    }
+                    .font(.neueCaption2)
+                    .foregroundStyle(AVIATheme.textTertiary)
+                }
+
+                Spacer(minLength: 0)
+
+                Image(systemName: "chevron.right")
+                    .font(.neueCaption2Medium)
+                    .foregroundStyle(AVIATheme.textTertiary)
+            }
+            .padding(12)
+        }
+    }
+
+    private var ourDesignsSection: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            HStack(spacing: 8) {
+                Text("Our Designs")
+                    .font(.neueCorpMedium(24))
+                    .foregroundStyle(AVIATheme.textPrimary)
+                Spacer()
+                Button {
+                    showDesignDirectory = true
+                } label: {
+                    Text("See All")
+                        .font(.neueCaptionMedium)
+                        .foregroundStyle(AVIATheme.teal)
+                }
+            }
+
+            ScrollView(.horizontal) {
+                HStack(spacing: 12) {
+                    ForEach(viewModel.allHomeDesigns.prefix(6)) { design in
+                        NavigationLink(value: design) {
+                            designCard(design: design)
+                        }
+                    }
+
+                    Button {
+                        showDesignDirectory = true
+                    } label: {
+                        VStack(spacing: 10) {
+                            Image(systemName: "arrow.right.circle.fill")
+                                .font(.neueCorpMedium(28))
+                                .foregroundStyle(AVIATheme.teal)
+                            Text("View All\n\(viewModel.allHomeDesigns.count) Designs")
+                                .font(.neueCaptionMedium)
+                                .foregroundStyle(AVIATheme.textSecondary)
+                                .multilineTextAlignment(.center)
+                        }
+                        .frame(width: 260, height: 325)
+                        .background(AVIATheme.cardBackground)
+                        .clipShape(.rect(cornerRadius: 16))
+                    }
+                }
+            }
+            .contentMargins(.horizontal, 0)
+            .scrollIndicators(.hidden)
+        }
+    }
+
+    private func designCard(design: HomeDesign) -> some View {
+        VStack(alignment: .leading, spacing: 0) {
+            Color(AVIATheme.surfaceElevated)
+                .frame(width: 260, height: 325)
+                .overlay {
+                    AsyncImage(url: URL(string: design.imageURL)) { phase in
+                        if let image = phase.image {
+                            image.resizable().aspectRatio(contentMode: .fill)
+                        } else if phase.error != nil {
+                            Image(systemName: "house.fill")
+                                .font(.neueCorpMedium(24))
+                                .foregroundStyle(AVIATheme.teal.opacity(0.25))
+                        } else {
+                            ProgressView()
+                        }
+                    }
+                    .allowsHitTesting(false)
+                }
+                .overlay(alignment: .topTrailing) {
+                    if design.storeys == 2 {
+                        Text("2 STOREY")
+                            .font(.neueCorpMedium(7))
+                            .kerning(0.4)
+                            .foregroundStyle(.white)
+                            .padding(.horizontal, 6)
+                            .padding(.vertical, 3)
+                            .background(AVIATheme.teal)
+                            .clipShape(Capsule())
+                            .padding(8)
+                    }
+                }
+                .clipShape(.rect(cornerRadii: .init(topLeading: 16, topTrailing: 16)))
+
+            VStack(alignment: .leading, spacing: 6) {
+                Text(design.name)
+                    .font(.neueSubheadlineMedium)
+                    .foregroundStyle(AVIATheme.textPrimary)
+
+                HStack(spacing: 8) {
+                    Label("\(design.bedrooms)", systemImage: "bed.double.fill")
+                    Label("\(design.bathrooms)", systemImage: "shower.fill")
+                    Label("\(design.garages)", systemImage: "car.fill")
+                }
+                .font(.neueCaption2Medium)
+                .foregroundStyle(AVIATheme.textSecondary)
+
+                Text(String(format: "%.0fm²", design.squareMeters))
+                    .font(.neueCaption2Medium)
+                    .foregroundStyle(AVIATheme.teal)
+            }
+            .padding(10)
+        }
+        .frame(width: 260)
+        .background(AVIATheme.cardBackground)
+        .clipShape(.rect(cornerRadius: 16))
+    }
+
+    private var houseLandSection: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            sectionHeader(title: "House & Land", icon: "map.fill")
+
+            ForEach(viewModel.allPackages.prefix(5)) { pkg in
+                NavigationLink(value: pkg) {
+                    houseLandCard(package: pkg)
+                }
+            }
+        }
+    }
+
+    private func houseLandCard(package: HouseLandPackage) -> some View {
+        BentoCard(cornerRadius: 16) {
+            HStack(spacing: 12) {
+                Color(AVIATheme.surfaceElevated)
+                    .frame(width: 90, height: 90)
+                    .overlay {
+                        AsyncImage(url: URL(string: package.imageURL)) { phase in
+                            if let image = phase.image {
+                                image.resizable().aspectRatio(contentMode: .fill)
+                            }
+                        }
+                        .allowsHitTesting(false)
+                    }
+                    .clipShape(.rect(cornerRadius: 12))
+                    .overlay(alignment: .topLeading) {
+                        if package.isNew {
+                            Text("NEW")
+                                .font(.neueCorpMedium(8))
+                                .foregroundStyle(.white)
+                                .padding(.horizontal, 6)
+                                .padding(.vertical, 3)
+                                .background(AVIATheme.teal)
+                                .clipShape(Capsule())
+                                .padding(4)
+                        }
+                    }
+
+                VStack(alignment: .leading, spacing: 5) {
+                    Text(package.title)
+                        .font(.neueSubheadlineMedium)
+                        .foregroundStyle(AVIATheme.textPrimary)
+                        .lineLimit(1)
+
+                    HStack(spacing: 6) {
+                        Image(systemName: "mappin.circle.fill")
+                            .font(.neueCorp(10))
+                            .foregroundStyle(AVIATheme.teal)
+                        Text(package.location)
+                            .font(.neueCaption)
+                            .foregroundStyle(AVIATheme.textSecondary)
+                            .lineLimit(1)
+                    }
+
+                    HStack(spacing: 12) {
+                        Label(package.lotSize, systemImage: "ruler")
+                        Label(package.homeDesign, systemImage: "house")
+                    }
+                    .font(.neueCaption2)
+                    .foregroundStyle(AVIATheme.textTertiary)
+                    .lineLimit(1)
+
+                    Text(package.price)
+                        .font(.neueSubheadlineMedium)
+                        .foregroundStyle(AVIATheme.teal)
+                }
+
+                Spacer(minLength: 0)
+            }
+            .padding(12)
+        }
+    }
+
+    private var specRangesSlider: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            HStack(spacing: 8) {
+                Text("Our Spec Ranges")
+                    .font(.neueCorpMedium(24))
+                    .foregroundStyle(AVIATheme.textPrimary)
+                Spacer()
+                Button {
+                    showSpecComparison = true
+                } label: {
+                    Text("Compare")
+                        .font(.neueCaptionMedium)
+                        .foregroundStyle(AVIATheme.teal)
+                }
+            }
+
+            ScrollView(.horizontal) {
+                HStack(spacing: 12) {
+                    ForEach(SpecTier.allCases) { tier in
+                        NavigationLink(value: tier) {
+                            specRangeCard(tier: tier)
+                        }
+                        .buttonStyle(.plain)
+                    }
+                }
+            }
+            .contentMargins(.horizontal, 0)
+            .scrollIndicators(.hidden)
+        }
+    }
+
+    private func specRangeCard(tier: SpecTier) -> some View {
+        VStack(alignment: .leading, spacing: 0) {
+            Color(AVIATheme.surfaceElevated)
+                .frame(width: 240, height: 300)
+                .overlay {
+                    AsyncImage(url: URL(string: specRangeImageURL(for: tier))) { phase in
+                        if let image = phase.image {
+                            image.resizable().aspectRatio(contentMode: .fill)
+                        } else if phase.error != nil {
+                            Text(tier.rawValue)
+                                .font(.neueCorpMedium(16))
+                                .foregroundStyle(AVIATheme.teal.opacity(0.25))
+                        } else {
+                            ProgressView()
+                        }
+                    }
+                    .allowsHitTesting(false)
+                }
+                .overlay(alignment: .bottomLeading) {
+                    LinearGradient(
+                        colors: [.clear, AVIATheme.aviaBlack.opacity(0.6)],
+                        startPoint: .top,
+                        endPoint: .bottom
+                    )
+                    .frame(height: 60)
+                }
+                .overlay(alignment: .bottomLeading) {
+                    Text(tier.rawValue)
+                        .font(.neueSubheadlineMedium)
+                        .foregroundStyle(.white)
+                        .padding(10)
+                }
+                .clipShape(.rect(cornerRadii: .init(topLeading: 16, topTrailing: 16)))
+
+            VStack(alignment: .leading, spacing: 4) {
+                Text(tier.tagline)
+                    .font(.neueCaptionMedium)
+                    .foregroundStyle(AVIATheme.textPrimary)
+                Text(specRangeDescription(for: tier))
+                    .font(.neueCaption2)
+                    .foregroundStyle(AVIATheme.textTertiary)
+                    .lineLimit(2)
+            }
+            .padding(10)
+        }
+        .frame(width: 240)
+        .background(AVIATheme.cardBackground)
+        .clipShape(.rect(cornerRadius: 16))
+    }
+
+    private func specRangeImageURL(for tier: SpecTier) -> String {
+        switch tier {
+        case .volos: "https://pub-e001eb4506b145aa938b5d3badbff6a5.r2.dev/attachments/2m8uxjn7nelckolf349xo.jpg"
+        case .messina: "https://pub-e001eb4506b145aa938b5d3badbff6a5.r2.dev/attachments/sxfdai5efw1uz7s7qqgmo.jpeg"
+        case .portobello: "https://pub-e001eb4506b145aa938b5d3badbff6a5.r2.dev/attachments/j4n8xaj2jlxo0wjxvkhr8.jpeg"
+        }
+    }
+
+    private func specRangeDescription(for tier: SpecTier) -> String {
+        switch tier {
+        case .volos: "Quality foundations for smart living"
+        case .messina: "Step up to elevated comfort & style"
+        case .portobello: "The ultimate in premium finishes"
+        }
+    }
+
+    private var facadesSlider: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            HStack(spacing: 8) {
+                Text("Our Facades")
+                    .font(.neueCorpMedium(24))
+                    .foregroundStyle(AVIATheme.textPrimary)
+                Spacer()
+                Button {
+                    showAllFacades = true
+                } label: {
+                    Text("See All")
+                        .font(.neueCaptionMedium)
+                        .foregroundStyle(AVIATheme.teal)
+                }
+            }
+
+            ScrollView(.horizontal) {
+                HStack(spacing: 12) {
+                    ForEach(viewModel.allFacades) { facade in
+                        NavigationLink(value: facade) {
+                            facadeShowcaseCard(facade: facade)
+                        }
+                        .buttonStyle(.plain)
+                    }
+                }
+            }
+            .contentMargins(.horizontal, 0)
+            .scrollIndicators(.hidden)
+        }
+    }
+
+    private func facadeShowcaseCard(facade: Facade) -> some View {
+        VStack(alignment: .leading, spacing: 0) {
+            Color(AVIATheme.surfaceElevated)
+                .frame(width: 260, height: 325)
+                .overlay {
+                    AsyncImage(url: URL(string: facade.heroImageURL)) { phase in
+                        if let image = phase.image {
+                            image.resizable().aspectRatio(contentMode: .fill)
+                        } else if phase.error != nil {
+                            Image(systemName: "photo")
+                                .font(.neueCorpMedium(24))
+                                .foregroundStyle(AVIATheme.teal.opacity(0.25))
+                        } else {
+                            ProgressView()
+                        }
+                    }
+                    .allowsHitTesting(false)
+                }
+                .overlay(alignment: .topLeading) {
+                    Text(facade.name.uppercased())
+                        .font(.neueCorpMedium(9))
+                        .kerning(0.8)
+                        .foregroundStyle(.white)
+                        .padding(.horizontal, 10)
+                        .padding(.vertical, 5)
+                        .background(AVIATheme.aviaBlack.opacity(0.7))
+                        .clipShape(Capsule())
+                        .padding(10)
+                }
+                .overlay(alignment: .topTrailing) {
+                    Text(facade.pricing.displayText)
+                        .font(.neueCorpMedium(9))
+                        .kerning(0.6)
+                        .foregroundStyle(.white)
+                        .padding(.horizontal, 10)
+                        .padding(.vertical, 5)
+                        .background(facade.pricing.isIncluded ? AVIATheme.success.opacity(0.85) : AVIATheme.warning.opacity(0.85))
+                        .clipShape(Capsule())
+                        .padding(10)
+                }
+                .clipShape(.rect(cornerRadii: .init(topLeading: 16, topTrailing: 16)))
+
+            VStack(alignment: .leading, spacing: 4) {
+                Text(facade.name)
+                    .font(.neueSubheadlineMedium)
+                    .foregroundStyle(AVIATheme.textPrimary)
+                Text(facade.style)
+                    .font(.neueCaption2)
+                    .foregroundStyle(AVIATheme.textTertiary)
+            }
+            .padding(12)
+        }
+        .frame(width: 260)
+        .background(AVIATheme.cardBackground)
+        .clipShape(.rect(cornerRadius: 16))
+    }
+
+    private var companyHighlightsSection: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            sectionHeader(title: "Why AVIA", icon: "sparkles")
+
+            HStack(spacing: 12) {
+                highlightCard(icon: "shield.checkerboard", title: "Quality\nAssured", description: "HIA member with full structural warranty")
+                highlightCard(icon: "person.2.fill", title: "Personal\nService", description: "Dedicated build coordinator for your project")
+            }
+            .fixedSize(horizontal: false, vertical: true)
+
+            HStack(spacing: 12) {
+                highlightCard(icon: "leaf.fill", title: "Sustainable\nDesign", description: "Energy efficient homes as standard")
+                highlightCard(icon: "star.fill", title: "Award\nWinning", description: "Multi-award winning Queensland builder")
+            }
+            .fixedSize(horizontal: false, vertical: true)
+
+            contactBanner
+        }
+    }
+
+    private func highlightCard(icon: String, title: String, description: String) -> some View {
+        BentoCard(cornerRadius: 16) {
+            VStack(alignment: .leading, spacing: 8) {
+                BentoIconCircle(icon: icon, color: AVIATheme.teal)
+                Text(title)
+                    .font(.neueSubheadlineMedium)
+                    .foregroundStyle(AVIATheme.textPrimary)
+                    .lineLimit(2)
+                Text(description)
+                    .font(.neueCaption2)
+                    .foregroundStyle(AVIATheme.textTertiary)
+                    .lineLimit(2)
+            }
+            .padding(14)
+            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
+        }
+    }
+
+    private var contactBanner: some View {
+        VStack(spacing: 0) {
+            Color(AVIATheme.aviaBlack)
+                .frame(height: 140)
+                .overlay {
+                    AsyncImage(url: URL(string: "https://pub-e001eb4506b145aa938b5d3badbff6a5.r2.dev/attachments/t8j7r8vibjqzvubxzcnbg.jpeg")) { phase in
+                        if let image = phase.image {
+                            image.resizable().aspectRatio(contentMode: .fill).opacity(0.3)
+                        }
+                    }
+                    .allowsHitTesting(false)
+                }
+                .clipShape(.rect(cornerRadii: .init(topLeading: 16, topTrailing: 16)))
+                .overlay {
+                    VStack(spacing: 8) {
+                        Image("AVIALogo")
+                            .renderingMode(.template)
+                            .resizable()
+                            .aspectRatio(contentMode: .fit)
+                            .frame(height: 22)
+                            .foregroundStyle(AVIATheme.aviaWhite)
+
+                        Text("We Build Homes Worth Living In")
+                            .font(.neueCaption)
+                            .foregroundStyle(AVIATheme.aviaWhite.opacity(0.7))
+                    }
+                }
+
+            VStack(spacing: 10) {
+                HStack(spacing: 12) {
+                    if let phoneURL = URL(string: "tel:0756545123") {
+                        Link(destination: phoneURL) {
+                            HStack(spacing: 6) {
+                                Image(systemName: "phone.fill").font(.neueCaption2)
+                                Text("Call Us").font(.neueCaptionMedium)
+                            }
+                            .foregroundStyle(.white)
+                            .frame(maxWidth: .infinity)
+                            .frame(height: 38)
+                            .background(AVIATheme.tealGradient)
+                            .clipShape(.rect(cornerRadius: 10))
+                        }
+                    }
+
+                    if let webURL = URL(string: "https://www.aviahomes.com.au") {
+                        Link(destination: webURL) {
+                            HStack(spacing: 6) {
+                                Image(systemName: "safari.fill").font(.neueCaption2)
+                                Text("Website").font(.neueCaptionMedium)
+                            }
+                            .foregroundStyle(AVIATheme.textPrimary)
+                            .frame(maxWidth: .infinity)
+                            .frame(height: 38)
+                            .background(AVIATheme.surfaceElevated)
+                            .clipShape(.rect(cornerRadius: 10))
+                        }
+                    }
+                }
+
+                HStack(spacing: 16) {
+                    Label("Queensland", systemImage: "mappin.and.ellipse")
+                    Spacer()
+                    Label("Mon–Fri 8am–4pm", systemImage: "clock")
+                }
+                .font(.neueCaption2)
+                .foregroundStyle(AVIATheme.textTertiary)
+            }
+            .padding(14)
+        }
+        .background(AVIATheme.cardBackground)
+        .clipShape(.rect(cornerRadius: 16))
+    }
+
+    private var sharedPackagesBanner: some View {
+        Group {
+            let sharedPackages = viewModel.clientSharedPackages
+            if !sharedPackages.isEmpty {
+                let pendingCount = sharedPackages.filter { pkg in
+                    let response = viewModel.clientResponseForPackage(pkg.id, clientId: viewModel.currentUser.id)
+                    return response == nil || response?.status == .pending
+                }.count
+
+                VStack(alignment: .leading, spacing: 12) {
+                    HStack(spacing: 8) {
+                        Text("Shared With You")
+                            .font(.neueCorpMedium(24))
+                            .foregroundStyle(AVIATheme.textPrimary)
+                        Spacer()
+                        if pendingCount > 0 {
+                            Text("\(pendingCount) new")
+                                .font(.neueCaption2Medium)
+                                .foregroundStyle(.white)
+                                .padding(.horizontal, 10)
+                                .padding(.vertical, 4)
+                                .background(AVIATheme.teal)
+                                .clipShape(Capsule())
+                        }
+                    }
+
+                    ForEach(sharedPackages.prefix(3)) { pkg in
+                        NavigationLink(value: pkg) {
+                            sharedPackageMiniCard(package: pkg)
+                        }
+                        .buttonStyle(.plain)
+                    }
+
+                    if sharedPackages.count > 3 {
+                        HStack {
+                            Spacer()
+                            Text("View all \(sharedPackages.count) packages")
+                                .font(.neueCaptionMedium)
+                                .foregroundStyle(AVIATheme.teal)
+                            Image(systemName: "arrow.right")
+                                .font(.system(size: 10, weight: .semibold))
+                                .foregroundStyle(AVIATheme.teal)
+                            Spacer()
+                        }
+                        .padding(.top, 4)
+                    }
+                }
+            }
+        }
+    }
+
+    private func sharedPackageMiniCard(package: HouseLandPackage) -> some View {
+        let response = viewModel.clientResponseForPackage(package.id, clientId: viewModel.currentUser.id)
+        let isPending = response == nil || response?.status == .pending
+
+        return BentoCard(cornerRadius: 16) {
+            HStack(spacing: 12) {
+                Color(AVIATheme.surfaceElevated)
+                    .frame(width: 72, height: 72)
+                    .overlay {
+                        AsyncImage(url: URL(string: package.imageURL)) { phase in
+                            if let image = phase.image {
+                                image.resizable().aspectRatio(contentMode: .fill)
+                            }
+                        }
+                        .allowsHitTesting(false)
+                    }
+                    .clipShape(.rect(cornerRadius: 10))
+
+                VStack(alignment: .leading, spacing: 4) {
+                    Text(package.title)
+                        .font(.neueSubheadlineMedium)
+                        .foregroundStyle(AVIATheme.textPrimary)
+                        .lineLimit(1)
+
+                    HStack(spacing: 6) {
+                        Image(systemName: "mappin.circle.fill")
+                            .font(.neueCorp(10))
+                            .foregroundStyle(AVIATheme.teal)
+                        Text(package.location)
+                            .font(.neueCaption2)
+                            .foregroundStyle(AVIATheme.textSecondary)
+                            .lineLimit(1)
+                    }
+
+                    Text(package.price)
+                        .font(.neueCaptionMedium)
+                        .foregroundStyle(AVIATheme.teal)
+                }
+
+                Spacer(minLength: 0)
+
+                VStack(spacing: 6) {
+                    if isPending {
+                        Text("NEW")
+                            .font(.neueCorpMedium(8))
+                            .kerning(0.5)
+                            .foregroundStyle(.white)
+                            .padding(.horizontal, 8)
+                            .padding(.vertical, 4)
+                            .background(AVIATheme.teal)
+                            .clipShape(Capsule())
+                    } else {
+                        Image(systemName: response?.status.icon ?? "checkmark.circle.fill")
+                            .font(.system(size: 16))
+                            .foregroundStyle(response?.status == .accepted ? AVIATheme.success : AVIATheme.destructive)
+                    }
+                    Image(systemName: "chevron.right")
+                        .font(.neueCaption2)
+                        .foregroundStyle(AVIATheme.textTertiary)
+                }
+            }
+            .padding(12)
+        }
+    }
+
+    private func sectionHeader(title: String, icon: String) -> some View {
+        HStack(spacing: 8) {
+            Text(title)
+                .font(.neueCorpMedium(24))
+                .foregroundStyle(AVIATheme.textPrimary)
+            Spacer()
+        }
+    }
+}

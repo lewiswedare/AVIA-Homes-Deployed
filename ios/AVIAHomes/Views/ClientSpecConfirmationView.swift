@@ -1,0 +1,324 @@
+import SwiftUI
+
+struct ClientSpecConfirmationView: View {
+    @State private var viewModel = BuildSpecViewModel()
+    @State private var showConfirmAlert = false
+    @State private var upgradeSelectionId: String?
+    @State private var upgradeNotes = ""
+    let buildId: String
+
+    var body: some View {
+        Group {
+            if viewModel.isLoading {
+                ProgressView()
+                    .tint(AVIATheme.teal)
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+            } else if !viewModel.hasSelections {
+                emptyState
+            } else {
+                specContent
+            }
+        }
+        .background(AVIATheme.background)
+        .navigationTitle("My Specifications")
+        .navigationBarTitleDisplayMode(.large)
+        .task { await viewModel.load(buildId: buildId) }
+        .alert("Confirm Specifications", isPresented: $showConfirmAlert) {
+            Button("Cancel", role: .cancel) {}
+            Button("Submit") {
+                Task { await viewModel.submitClientConfirmation() }
+            }
+        } message: {
+            Text("Once submitted, your specifications will be locked for admin review. You won't be able to make changes until an admin reopens them.")
+        }
+        .sheet(item: $upgradeSelectionId) { selId in
+            UpgradeRequestSheet(notes: $upgradeNotes) {
+                viewModel.requestUpgrade(selectionId: selId, notes: upgradeNotes.isEmpty ? nil : upgradeNotes)
+                upgradeNotes = ""
+                upgradeSelectionId = nil
+            }
+        }
+        .overlay(alignment: .bottom) { toastOverlay }
+    }
+
+    private var specContent: some View {
+        ScrollView {
+            VStack(spacing: 16) {
+                statusBanner
+                tierInfoBanner
+
+                ForEach(viewModel.groupedSelections, id: \.categoryId) { group in
+                    BuildSpecCategorySection(
+                        categoryName: group.category,
+                        items: group.items,
+                        isEditable: !viewModel.isLockedForClient,
+                        isAdmin: false,
+                        onUpgradeRequest: { id in
+                            upgradeSelectionId = id
+                        }
+                    )
+                }
+
+                if !viewModel.isLockedForClient && viewModel.hasSelections {
+                    confirmButton
+                }
+
+                if viewModel.isFullyApproved && !viewModel.documents.isEmpty {
+                    pdfSection
+                }
+            }
+            .padding(.horizontal, 16)
+            .padding(.bottom, 40)
+        }
+    }
+
+    private var statusBanner: some View {
+        HStack(spacing: 10) {
+            Image(systemName: viewModel.overallStatus.icon)
+                .font(.neueSubheadlineMedium)
+                .foregroundStyle(statusColor)
+
+            VStack(alignment: .leading, spacing: 2) {
+                Text(statusTitle)
+                    .font(.neueCaptionMedium)
+                    .foregroundStyle(AVIATheme.textPrimary)
+                Text(statusSubtitle)
+                    .font(.neueCaption2)
+                    .foregroundStyle(AVIATheme.textSecondary)
+            }
+
+            Spacer()
+
+            Text(viewModel.overallStatus.displayLabel)
+                .font(.neueCorpMedium(9))
+                .foregroundStyle(.white)
+                .padding(.horizontal, 10)
+                .padding(.vertical, 4)
+                .background(statusColor)
+                .clipShape(Capsule())
+        }
+        .padding(14)
+        .background(statusColor.opacity(0.06))
+        .clipShape(.rect(cornerRadius: 14))
+        .overlay {
+            RoundedRectangle(cornerRadius: 14)
+                .stroke(statusColor.opacity(0.2), lineWidth: 1)
+        }
+    }
+
+    private var statusColor: Color {
+        switch viewModel.overallStatus {
+        case .draft, .clientReviewing: AVIATheme.teal
+        case .awaitingAdmin: AVIATheme.warning
+        case .reopenedByAdmin: Color(hex: "8B5CF6")
+        case .approved: AVIATheme.success
+        case .amendedByAdmin: Color(hex: "8B5CF6")
+        }
+    }
+
+    private var statusTitle: String {
+        switch viewModel.overallStatus {
+        case .draft, .clientReviewing: "Review Your Specifications"
+        case .awaitingAdmin: "Submitted — Awaiting Review"
+        case .reopenedByAdmin: "Reopened for Changes"
+        case .approved: "Specifications Approved"
+        case .amendedByAdmin: "Amended by Admin"
+        }
+    }
+
+    private var statusSubtitle: String {
+        switch viewModel.overallStatus {
+        case .draft, .clientReviewing:
+            "Review each item below and confirm when ready."
+        case .awaitingAdmin:
+            "Your selections have been submitted and are awaiting admin review."
+        case .reopenedByAdmin:
+            "An admin has reopened your specifications for changes. Review and resubmit."
+        case .approved:
+            "Both you and admin have confirmed. Your spec range is finalised."
+        case .amendedByAdmin:
+            "An admin has made changes to your specifications."
+        }
+    }
+
+    private var tierInfoBanner: some View {
+        HStack(spacing: 8) {
+            Image(systemName: "sparkles")
+                .foregroundStyle(AVIATheme.teal)
+            Text("**\(viewModel.specTier.capitalized)** specification range")
+                .font(.neueCaption)
+                .foregroundStyle(AVIATheme.textSecondary)
+        }
+        .padding(12)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(AVIATheme.teal.opacity(0.06))
+        .clipShape(.rect(cornerRadius: 12))
+    }
+
+    private var confirmButton: some View {
+        Button {
+            showConfirmAlert = true
+        } label: {
+            HStack(spacing: 8) {
+                Image(systemName: "checkmark.seal.fill")
+                Text("Confirm Specifications")
+            }
+            .font(.neueSubheadlineMedium)
+            .frame(maxWidth: .infinity)
+            .frame(height: 52)
+            .foregroundStyle(.white)
+            .background(AVIATheme.tealGradient)
+            .clipShape(.rect(cornerRadius: 14))
+        }
+        .disabled(viewModel.isSaving)
+    }
+
+    @ViewBuilder
+    private var pdfSection: some View {
+        if let latestDoc = viewModel.documents.first {
+            BentoCard(cornerRadius: 14) {
+                VStack(alignment: .leading, spacing: 10) {
+                    HStack(spacing: 8) {
+                        Image(systemName: "doc.text.fill")
+                            .foregroundStyle(AVIATheme.teal)
+                        Text("Specification Document")
+                            .font(.neueCaptionMedium)
+                            .foregroundStyle(AVIATheme.textPrimary)
+                        Spacer()
+                        Text("v\(latestDoc.version)")
+                            .font(.neueCaption2)
+                            .foregroundStyle(AVIATheme.textTertiary)
+                    }
+
+                    if let urlString = latestDoc.publicURL, let url = URL(string: urlString) {
+                        Link(destination: url) {
+                            HStack(spacing: 6) {
+                                Image(systemName: "arrow.down.doc.fill")
+                                Text("View PDF")
+                            }
+                            .font(.neueCaption2Medium)
+                            .foregroundStyle(.white)
+                            .padding(.horizontal, 16)
+                            .padding(.vertical, 10)
+                            .background(AVIATheme.tealGradient)
+                            .clipShape(Capsule())
+                        }
+                    }
+
+                    if let date = latestDoc.generatedAt {
+                        Text("Generated \(date.formatted(date: .abbreviated, time: .shortened))")
+                            .font(.neueCaption2)
+                            .foregroundStyle(AVIATheme.textTertiary)
+                    }
+                }
+                .padding(14)
+            }
+        }
+    }
+
+    private var emptyState: some View {
+        VStack(spacing: 16) {
+            Image(systemName: "doc.text.magnifyingglass")
+                .font(.system(size: 44))
+                .foregroundStyle(AVIATheme.textTertiary)
+            Text("No Specifications Yet")
+                .font(.neueSubheadlineMedium)
+                .foregroundStyle(AVIATheme.textPrimary)
+            Text("Your build specifications will appear here once your build has been set up.")
+                .font(.neueCaption)
+                .foregroundStyle(AVIATheme.textSecondary)
+                .multilineTextAlignment(.center)
+                .padding(.horizontal, 40)
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+    }
+
+    @ViewBuilder
+    private var toastOverlay: some View {
+        if let msg = viewModel.successMessage {
+            Text(msg)
+                .font(.neueCaptionMedium)
+                .foregroundStyle(.white)
+                .padding(.horizontal, 20)
+                .padding(.vertical, 12)
+                .background(AVIATheme.success, in: Capsule())
+                .padding(.bottom, 20)
+                .transition(.move(edge: .bottom).combined(with: .opacity))
+                .onAppear {
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 2.5) {
+                        withAnimation { viewModel.successMessage = nil }
+                    }
+                }
+        }
+        if let msg = viewModel.errorMessage {
+            Text(msg)
+                .font(.neueCaptionMedium)
+                .foregroundStyle(.white)
+                .padding(.horizontal, 20)
+                .padding(.vertical, 12)
+                .background(AVIATheme.destructive, in: Capsule())
+                .padding(.bottom, 20)
+                .transition(.move(edge: .bottom).combined(with: .opacity))
+                .onAppear {
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 3) {
+                        withAnimation { viewModel.errorMessage = nil }
+                    }
+                }
+        }
+    }
+}
+
+extension String: @retroactive Identifiable {
+    public var id: String { self }
+}
+
+struct UpgradeRequestSheet: View {
+    @Environment(\.dismiss) private var dismiss
+    @Binding var notes: String
+    let onSubmit: () -> Void
+
+    var body: some View {
+        NavigationStack {
+            VStack(spacing: 20) {
+                VStack(alignment: .leading, spacing: 8) {
+                    Text("Request Upgrade")
+                        .font(.neueCorpMedium(20))
+                        .foregroundStyle(AVIATheme.textPrimary)
+                    Text("Add any notes about this upgrade request. Our team will review and provide a quote.")
+                        .font(.neueCaption)
+                        .foregroundStyle(AVIATheme.textSecondary)
+                }
+
+                TextField("Optional notes...", text: $notes, axis: .vertical)
+                    .font(.neueCaption)
+                    .lineLimit(4...8)
+                    .padding(12)
+                    .background(AVIATheme.surfaceElevated)
+                    .clipShape(.rect(cornerRadius: 10))
+
+                Button {
+                    onSubmit()
+                    dismiss()
+                } label: {
+                    Text("Submit Request")
+                        .font(.neueSubheadlineMedium)
+                        .frame(maxWidth: .infinity)
+                        .frame(height: 48)
+                        .foregroundStyle(.white)
+                        .background(AVIATheme.tealGradient)
+                        .clipShape(.rect(cornerRadius: 12))
+                }
+
+                Spacer()
+            }
+            .padding(20)
+            .background(AVIATheme.background)
+            .toolbar {
+                ToolbarItem(placement: .cancellationAction) {
+                    Button("Cancel") { dismiss() }
+                }
+            }
+        }
+        .presentationDetents([.medium])
+    }
+}
