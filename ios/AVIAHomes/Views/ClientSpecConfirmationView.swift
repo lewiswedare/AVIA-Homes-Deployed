@@ -1,6 +1,7 @@
 import SwiftUI
 
 struct ClientSpecConfirmationView: View {
+    @Environment(AppViewModel.self) private var appViewModel
     @State private var viewModel = BuildSpecViewModel()
     @State private var showConfirmAlert = false
     @State private var upgradeSelectionId: String?
@@ -22,7 +23,12 @@ struct ClientSpecConfirmationView: View {
         .background(AVIATheme.background)
         .navigationTitle("My Specifications")
         .navigationBarTitleDisplayMode(.large)
-        .task { await viewModel.load(buildId: buildId) }
+        .task {
+            viewModel.notificationService = appViewModel.notificationService
+            viewModel.clientId = appViewModel.currentUser.id
+            viewModel.adminRecipientIds = appViewModel.allRegisteredUsers.filter { $0.role.isAnyStaffRole }.map(\.id)
+            await viewModel.load(buildId: buildId)
+        }
         .alert("Confirm Specifications", isPresented: $showConfirmAlert) {
             Button("Cancel", role: .cancel) {}
             Button("Submit") {

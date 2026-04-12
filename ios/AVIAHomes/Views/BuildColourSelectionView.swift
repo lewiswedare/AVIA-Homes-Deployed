@@ -1,6 +1,7 @@
 import SwiftUI
 
 struct BuildColourSelectionView: View {
+    @Environment(AppViewModel.self) private var appViewModel
     @State private var viewModel = BuildSpecViewModel()
     @State private var selectedSpecItem: BuildSpecSelection?
     let buildId: String
@@ -49,7 +50,12 @@ struct BuildColourSelectionView: View {
         .background(AVIATheme.background)
         .navigationTitle("Colour Selections")
         .navigationBarTitleDisplayMode(.large)
-        .task { await viewModel.load(buildId: buildId) }
+        .task {
+            viewModel.notificationService = appViewModel.notificationService
+            viewModel.clientId = appViewModel.currentUser.id
+            viewModel.adminRecipientIds = appViewModel.allRegisteredUsers.filter { $0.role.isAnyStaffRole }.map(\.id)
+            await viewModel.load(buildId: buildId)
+        }
         .sheet(item: $selectedSpecItem) { specItem in
             BuildColourPickerSheet(
                 specItem: specItem,

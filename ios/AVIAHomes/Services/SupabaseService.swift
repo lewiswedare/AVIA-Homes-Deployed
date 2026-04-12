@@ -963,6 +963,36 @@ class SupabaseService {
         }
     }
 
+    func submitClientColourSelections(buildId: String) async -> Bool {
+        guard isConfigured else { return false }
+        var selections = await fetchBuildColourSelections(buildId: buildId)
+        guard !selections.isEmpty else { return false }
+        for i in selections.indices {
+            selections[i].selectionStatus = .submitted
+        }
+        var success = true
+        for s in selections {
+            let ok = await upsertBuildColourSelection(s)
+            if !ok { success = false }
+        }
+        return success
+    }
+
+    func approveClientColourSelections(buildId: String) async -> Bool {
+        guard isConfigured else { return false }
+        var selections = await fetchBuildColourSelections(buildId: buildId)
+        guard !selections.isEmpty else { return false }
+        for i in selections.indices {
+            selections[i].selectionStatus = .approved
+        }
+        var success = true
+        for s in selections {
+            let ok = await upsertBuildColourSelection(s)
+            if !ok { success = false }
+        }
+        return success
+    }
+
     func upsertBuildColourSelection(_ selection: BuildColourSelection) async -> Bool {
         guard isConfigured else { return false }
         do {
@@ -998,7 +1028,7 @@ class SupabaseService {
         let row = BuildSpecDocumentRow(
             id: doc.id,
             build_id: doc.buildId,
-            storage_path: doc.storagePath,
+            storage_path: doc.storagePath ?? "",
             public_url: doc.publicURL,
             version: doc.version,
             generated_at: doc.generatedAt.map { ISO8601DateFormatter().string(from: $0) },

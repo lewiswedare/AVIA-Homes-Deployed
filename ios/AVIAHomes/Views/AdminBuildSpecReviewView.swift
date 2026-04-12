@@ -1,11 +1,13 @@
 import SwiftUI
 
 struct AdminBuildSpecReviewView: View {
+    @Environment(AppViewModel.self) private var appViewModel
     @State private var viewModel = BuildSpecViewModel()
     @State private var showApproveAllAlert = false
     @State private var showReopenAlert = false
     let buildId: String
     let clientName: String
+    var clientId: String = ""
 
     var body: some View {
         Group {
@@ -22,7 +24,12 @@ struct AdminBuildSpecReviewView: View {
         .background(AVIATheme.background)
         .navigationTitle("Spec Review")
         .navigationBarTitleDisplayMode(.large)
-        .task { await viewModel.load(buildId: buildId) }
+        .task {
+            viewModel.notificationService = appViewModel.notificationService
+            viewModel.clientId = clientId
+            viewModel.adminRecipientIds = appViewModel.allRegisteredUsers.filter { $0.role.isAnyStaffRole }.map(\.id)
+            await viewModel.load(buildId: buildId)
+        }
         .alert("Approve All Specifications", isPresented: $showApproveAllAlert) {
             Button("Cancel", role: .cancel) {}
             Button("Approve All") {

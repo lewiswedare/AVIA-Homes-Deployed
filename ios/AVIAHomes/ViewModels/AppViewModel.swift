@@ -559,6 +559,17 @@ class AppViewModel {
             let success = await SupabaseService.shared.upsertBuild(updated)
             if success {
                 await refreshBuildsAndAssignments()
+                if !clientId.isEmpty {
+                    await notificationService.createNotification(
+                        recipientId: clientId,
+                        senderId: currentUser.id,
+                        senderName: currentUser.fullName,
+                        type: .buildUpdate,
+                        title: "Build Assigned",
+                        message: "You have been assigned to a new build",
+                        referenceId: buildId
+                    )
+                }
             }
         }
     }
@@ -832,6 +843,17 @@ class AppViewModel {
             let success = await SupabaseService.shared.upsertBuild(build)
             if success {
                 await refreshBuildsAndAssignments()
+                if !clientId.isEmpty {
+                    await notificationService.createNotification(
+                        recipientId: clientId,
+                        senderId: currentUser.id,
+                        senderName: currentUser.fullName,
+                        type: .buildUpdate,
+                        title: "Build Created",
+                        message: "\(currentUser.fullName) has created a new build for you",
+                        referenceId: build.id
+                    )
+                }
             }
         }
     }

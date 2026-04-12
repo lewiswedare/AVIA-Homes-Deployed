@@ -188,7 +188,7 @@ struct ClientBuildDetailView: View {
             progressSection
         case .specs:
             if isAdmin {
-                AdminBuildSpecReviewView(buildId: build.id, clientName: build.clientDisplayName)
+                AdminBuildSpecReviewView(buildId: build.id, clientName: build.clientDisplayName, clientId: build.client.id)
             } else {
                 ClientSpecConfirmationView(buildId: build.id)
             }

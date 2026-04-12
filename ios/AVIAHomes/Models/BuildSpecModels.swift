@@ -255,7 +255,7 @@ extension BuildColourSelection {
 nonisolated struct BuildSpecDocumentRow: Codable, Sendable, Identifiable {
     let id: String
     let build_id: String
-    let storage_path: String?
+    let storage_path: String
     let public_url: String?
     let version: Int
     let generated_at: String?
@@ -280,7 +280,7 @@ extension BuildSpecDocumentRow {
         return BuildSpecDocument(
             id: id,
             buildId: build_id,
-            storagePath: storage_path,
+            storagePath: storage_path.isEmpty ? nil : storage_path,
             publicURL: public_url,
             version: version,
             generatedAt: generated_at.flatMap { fmt.date(from: $0) ?? fallback.date(from: $0) },

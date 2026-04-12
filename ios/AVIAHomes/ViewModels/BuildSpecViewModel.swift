@@ -14,6 +14,10 @@ class BuildSpecViewModel {
     var buildId: String = ""
     var specTier: String = "messina"
 
+    var notificationService: NotificationService?
+    var adminRecipientIds: [String] = []
+    var clientId: String = ""
+
     var groupedSelections: [(category: String, categoryId: String, items: [BuildSpecSelection])] {
         let grouped = Dictionary(grouping: selections) { $0.snapshotCategoryName }
         let categoryOrder = [
@@ -103,6 +107,19 @@ class BuildSpecViewModel {
         if success {
             successMessage = "Specifications submitted for review"
             await load(buildId: buildId)
+            if let ns = notificationService {
+                for recipientId in adminRecipientIds {
+                    await ns.createNotification(
+                        recipientId: recipientId,
+                        senderId: clientId,
+                        senderName: "Client",
+                        type: .buildUpdate,
+                        title: "Spec Review Required",
+                        message: "Client has submitted their spec range for review",
+                        referenceId: buildId
+                    )
+                }
+            }
         } else {
             errorMessage = "Failed to submit confirmation"
         }
@@ -118,6 +135,26 @@ class BuildSpecViewModel {
             await load(buildId: buildId)
             if isFullyApproved {
                 await generatePDF()
+            }
+            if let ns = notificationService, !clientId.isEmpty {
+                await ns.createNotification(
+                    recipientId: clientId,
+                    senderId: nil,
+                    senderName: "AVIA Homes",
+                    type: .buildUpdate,
+                    title: "Spec Range Approved",
+                    message: "Your specification range has been approved by the admin",
+                    referenceId: buildId
+                )
+                await ns.createNotification(
+                    recipientId: clientId,
+                    senderId: nil,
+                    senderName: "AVIA Homes",
+                    type: .buildUpdate,
+                    title: "Spec Summary PDF Ready",
+                    message: "Your approved spec range PDF has been generated",
+                    referenceId: buildId
+                )
             }
         } else {
             errorMessage = "Failed to approve specifications"
@@ -166,6 +203,17 @@ class BuildSpecViewModel {
         if success {
             successMessage = "Reopened for client review"
             await load(buildId: buildId)
+            if let ns = notificationService, !clientId.isEmpty {
+                await ns.createNotification(
+                    recipientId: clientId,
+                    senderId: nil,
+                    senderName: "AVIA Homes",
+                    type: .buildUpdate,
+                    title: "Spec Range Reopened",
+                    message: "Admin has reopened your spec range for further changes",
+                    referenceId: buildId
+                )
+            }
         } else {
             errorMessage = "Failed to reopen"
         }
@@ -317,6 +365,110 @@ class BuildSpecViewModel {
 
     func colourSelection(for specSelectionId: String) -> BuildColourSelection? {
         colourSelections.first { $0.buildSpecSelectionId == specSelectionId }
+    }
+
+    var colourSelectionOverallStatus: ColourSelectionStatus {
+        guard !colourSelections.isEmpty else { return .draft }
+        if colourSelections.allSatisfy({ $0.selectionStatus == .approved }) { return .approved }
+        if colourSelections.allSatisfy({ $0.selectionStatus == .submitted || $0.selectionStatus == .approved }) { return .submitted }
+        return .draft
+    }
+
+    func submitColourSelectionsForApproval() async {
+        isSaving = true
+        errorMessage = nil
+        let success = await SupabaseService.shared.submitClientColourSelections(buildId: buildId)
+        if success {
+            successMessage = "Colour selections submitted for approval"
+            await load(buildId: buildId)
+            if let ns = notificationService {
+                for recipientId in adminRecipientIds {
+                    await ns.createNotification(
+                        recipientId: recipientId,
+                        senderId: clientId,
+                        senderName: "Client",
+                        type: .buildUpdate,
+                        title: "Colour Selections Submitted",
+                        message: "Client has submitted their colour selections for approval",
+                        referenceId: buildId
+                    )
+                }
+            }
+        } else {
+            errorMessage = "Failed to submit colour selections"
+        }
+        isSaving = false
+    }
+
+    func adminApproveColourSelections() async {
+        isSaving = true
+        errorMessage = nil
+        let success = await SupabaseService.shared.approveClientColourSelections(buildId: buildId)
+        if success {
+            successMessage = "Colour selections approved"
+            await load(buildId: buildId)
+            await generateColourPDF()
+            if let ns = notificationService, !clientId.isEmpty {
+                await ns.createNotification(
+                    recipientId: clientId,
+                    senderId: nil,
+                    senderName: "AVIA Homes",
+                    type: .buildUpdate,
+                    title: "Colour Selections Approved",
+                    message: "Your colour selections have been approved! Your colour summary PDF is ready.",
+                    referenceId: buildId
+                )
+            }
+        } else {
+            errorMessage = "Failed to approve colour selections"
+        }
+        isSaving = false
+    }
+
+    func generateColourPDF() async {
+        guard !colourSelections.isEmpty else { return }
+        let renderer = UIGraphicsPDFRenderer(bounds: CGRect(x: 0, y: 0, width: 612, height: 792))
+        let data = renderer.pdfData { context in
+            context.beginPage()
+            var y: CGFloat = 50
+            let margin: CGFloat = 50
+            let titleAttr: [NSAttributedString.Key: Any] = [
+                .font: UIFont.boldSystemFont(ofSize: 22),
+                .foregroundColor: UIColor.black
+            ]
+            "AVIA Homes — Colour Selection Summary".draw(at: CGPoint(x: margin, y: y), withAttributes: titleAttr)
+            y += 35
+            "Generated: \(Date.now.formatted(date: .long, time: .shortened))".draw(at: CGPoint(x: margin, y: y), withAttributes: [
+                .font: UIFont.systemFont(ofSize: 10), .foregroundColor: UIColor.gray
+            ])
+            y += 30
+            for selection in colourSelections {
+                if y > 720 { context.beginPage(); y = 50 }
+                let line = "Category: \(selection.colourCategoryId)  |  Option: \(selection.colourOptionId)  |  Status: \(selection.selectionStatus.rawValue)"
+                line.draw(at: CGPoint(x: margin, y: y), withAttributes: [
+                    .font: UIFont.systemFont(ofSize: 10), .foregroundColor: UIColor.darkGray
+                ])
+                y += 18
+            }
+        }
+        let existingDocs = await SupabaseService.shared.fetchBuildSpecDocuments(buildId: buildId)
+        let nextVersion = (existingDocs.map(\.version).max() ?? 0) + 1
+        let fileName = "colour_summary_v\(nextVersion).pdf"
+        let storagePath = "builds/\(buildId)/\(fileName)"
+        let doc = BuildSpecDocument(
+            id: UUID().uuidString,
+            buildId: buildId,
+            storagePath: storagePath,
+            publicURL: nil,
+            version: nextVersion,
+            generatedAt: .now,
+            generatedBy: "system"
+        )
+        let success = await SupabaseService.shared.upsertBuildSpecDocument(doc)
+        if success {
+            documents.insert(doc, at: 0)
+            successMessage = "Colour PDF generated (v\(nextVersion))"
+        }
     }
 
     func saveColourSelection(buildSpecSelectionId: String, specItemId: String, colourCategoryId: String, colourOptionId: String) async {
