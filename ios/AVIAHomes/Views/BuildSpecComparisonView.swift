@@ -89,6 +89,20 @@ struct BuildSpecItemRow: View {
                 .clipShape(.rect(cornerRadius: 8))
             }
 
+            if let cost = selection.upgradeCost, (selection.selectionType == .upgradeRequested || selection.selectionType == .upgradeApproved) {
+                HStack(spacing: 6) {
+                    Image(systemName: "dollarsign.circle.fill")
+                        .font(.neueCorp(9))
+                        .foregroundStyle(AVIATheme.warning)
+                    Text("Upgrade cost: $\(cost, specifier: "%.2f")\(selection.upgradeCostNote.map { " — \($0)" } ?? "")")
+                        .font(.neueCaption2)
+                        .foregroundStyle(AVIATheme.textSecondary)
+                }
+                .padding(8)
+                .background(AVIATheme.warning.opacity(0.06))
+                .clipShape(.rect(cornerRadius: 8))
+            }
+
             if isEditable || isAdmin {
                 actionButtons
             }

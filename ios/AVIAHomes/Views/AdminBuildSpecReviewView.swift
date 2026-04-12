@@ -5,6 +5,7 @@ struct AdminBuildSpecReviewView: View {
     @State private var viewModel = BuildSpecViewModel()
     @State private var showApproveAllAlert = false
     @State private var showReopenAlert = false
+    @State private var upgradeCostInputs: [String: (cost: String, note: String)] = [:]
     let buildId: String
     let clientName: String
     var clientId: String = ""
@@ -201,18 +202,57 @@ struct AdminBuildSpecReviewView: View {
                 }
 
                 ForEach(viewModel.upgradeRequestedItems) { item in
-                    HStack(spacing: 8) {
-                        Circle()
-                            .fill(AVIATheme.warning)
-                            .frame(width: 6, height: 6)
-                        Text(item.snapshotName)
+                    VStack(alignment: .leading, spacing: 6) {
+                        HStack(spacing: 8) {
+                            Circle()
+                                .fill(AVIATheme.warning)
+                                .frame(width: 6, height: 6)
+                            Text(item.snapshotName)
+                                .font(.neueCaption)
+                                .foregroundStyle(AVIATheme.textSecondary)
+                            if let notes = item.clientNotes, !notes.isEmpty {
+                                Text("— \(notes)")
+                                    .font(.neueCaption2)
+                                    .foregroundStyle(AVIATheme.textTertiary)
+                                    .lineLimit(1)
+                            }
+                        }
+
+                        HStack(spacing: 8) {
+                            TextField("Cost ($)", text: Binding(
+                                get: { upgradeCostInputs[item.id]?.cost ?? "" },
+                                set: { upgradeCostInputs[item.id] = (cost: $0, note: upgradeCostInputs[item.id]?.note ?? "") }
+                            ))
+                            .keyboardType(.decimalPad)
                             .font(.neueCaption)
-                            .foregroundStyle(AVIATheme.textSecondary)
-                        if let notes = item.clientNotes, !notes.isEmpty {
-                            Text("— \(notes)")
+                            .padding(8)
+                            .background(AVIATheme.surfaceElevated)
+                            .clipShape(RoundedRectangle(cornerRadius: 8))
+                            .frame(width: 100)
+
+                            TextField("Cost note...", text: Binding(
+                                get: { upgradeCostInputs[item.id]?.note ?? "" },
+                                set: { upgradeCostInputs[item.id] = (cost: upgradeCostInputs[item.id]?.cost ?? "", note: $0) }
+                            ))
+                            .font(.neueCaption)
+                            .padding(8)
+                            .background(AVIATheme.surfaceElevated)
+                            .clipShape(RoundedRectangle(cornerRadius: 8))
+
+                            Button("Set") {
+                                let costStr = upgradeCostInputs[item.id]?.cost ?? ""
+                                let noteStr = upgradeCostInputs[item.id]?.note ?? ""
+                                let cost = Double(costStr)
+                                viewModel.adminSetUpgradeCost(selectionId: item.id, cost: cost, note: noteStr.isEmpty ? nil : noteStr)
+                            }
+                            .font(.neueCaptionMedium)
+                            .foregroundStyle(AVIATheme.teal)
+                        }
+
+                        if let existingCost = item.upgradeCost {
+                            Text("Current: $\(existingCost, specifier: "%.2f")\(item.upgradeCostNote.map { " — \($0)" } ?? "")")
                                 .font(.neueCaption2)
-                                .foregroundStyle(AVIATheme.textTertiary)
-                                .lineLimit(1)
+                                .foregroundStyle(AVIATheme.success)
                         }
                     }
                 }

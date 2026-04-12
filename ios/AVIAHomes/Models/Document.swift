@@ -25,6 +25,17 @@ nonisolated struct ClientDocument: Identifiable, Sendable {
     let dateAdded: Date
     let fileSize: String
     let isNew: Bool
+    let fileURL: String?
+
+    init(id: String, name: String, category: DocumentCategory, dateAdded: Date, fileSize: String, isNew: Bool, fileURL: String? = nil) {
+        self.id = id
+        self.name = name
+        self.category = category
+        self.dateAdded = dateAdded
+        self.fileSize = fileSize
+        self.isNew = isNew
+        self.fileURL = fileURL
+    }
 
     static let samples: [ClientDocument] = []
 }

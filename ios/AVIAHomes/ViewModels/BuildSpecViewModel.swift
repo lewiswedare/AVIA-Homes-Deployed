@@ -162,6 +162,16 @@ class BuildSpecViewModel {
         isSaving = false
     }
 
+    func adminSetUpgradeCost(selectionId: String, cost: Double?, note: String?) {
+        guard let idx = selections.firstIndex(where: { $0.id == selectionId }) else { return }
+        selections[idx].upgradeCost = cost
+        selections[idx].upgradeCostNote = note
+        Task {
+            let success = await SupabaseService.shared.upsertBuildSpecSelection(selections[idx])
+            if !success { errorMessage = "Failed to save upgrade cost" }
+        }
+    }
+
     func adminApproveItem(selectionId: String) {
         guard let idx = selections.firstIndex(where: { $0.id == selectionId }) else { return }
         selections[idx].adminConfirmed = true

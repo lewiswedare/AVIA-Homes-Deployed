@@ -360,6 +360,7 @@ nonisolated struct ClientDocumentRow: Codable, Sendable {
     let date_added: String
     let file_size: String
     let is_new: Bool
+    let file_url: String?
 
     init(from doc: ClientDocument, clientId: String) {
         let iso = ISO8601DateFormatter()
@@ -370,6 +371,7 @@ nonisolated struct ClientDocumentRow: Codable, Sendable {
         date_added = iso.string(from: doc.dateAdded)
         file_size = doc.fileSize
         is_new = doc.isNew
+        file_url = doc.fileURL
     }
 
     func toClientDocument() -> ClientDocument {
@@ -382,7 +384,8 @@ nonisolated struct ClientDocumentRow: Codable, Sendable {
             category: DocumentCategory(rawValue: category) ?? .contracts,
             dateAdded: formatter.date(from: date_added) ?? fallback.date(from: date_added) ?? .now,
             fileSize: file_size,
-            isNew: is_new
+            isNew: is_new,
+            fileURL: file_url
         )
     }
 }

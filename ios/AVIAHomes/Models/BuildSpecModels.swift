@@ -105,6 +105,76 @@ nonisolated struct BuildSpecSelectionRow: Codable, Sendable, Identifiable {
     let sort_order: Int
     let created_at: String?
     let updated_at: String?
+    let upgrade_cost: Double?
+    let upgrade_cost_note: String?
+
+    enum CodingKeys: String, CodingKey {
+        case id, build_id, category_id, spec_item_id, spec_tier, selection_type
+        case client_notes, admin_notes, client_confirmed, admin_confirmed
+        case client_confirmed_at, admin_confirmed_at, locked_for_client, status
+        case snapshot_name, snapshot_description, snapshot_image_url, snapshot_category_name
+        case sort_order, created_at, updated_at, upgrade_cost, upgrade_cost_note
+    }
+
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        id = try container.decode(String.self, forKey: .id)
+        build_id = try container.decode(String.self, forKey: .build_id)
+        category_id = try container.decode(String.self, forKey: .category_id)
+        spec_item_id = try container.decode(String.self, forKey: .spec_item_id)
+        spec_tier = try container.decode(String.self, forKey: .spec_tier)
+        selection_type = try container.decode(String.self, forKey: .selection_type)
+        client_notes = try container.decodeIfPresent(String.self, forKey: .client_notes)
+        admin_notes = try container.decodeIfPresent(String.self, forKey: .admin_notes)
+        client_confirmed = try container.decode(Bool.self, forKey: .client_confirmed)
+        admin_confirmed = try container.decode(Bool.self, forKey: .admin_confirmed)
+        client_confirmed_at = try container.decodeIfPresent(String.self, forKey: .client_confirmed_at)
+        admin_confirmed_at = try container.decodeIfPresent(String.self, forKey: .admin_confirmed_at)
+        locked_for_client = try container.decode(Bool.self, forKey: .locked_for_client)
+        status = try container.decode(String.self, forKey: .status)
+        snapshot_name = try container.decode(String.self, forKey: .snapshot_name)
+        snapshot_description = try container.decode(String.self, forKey: .snapshot_description)
+        snapshot_image_url = try container.decodeIfPresent(String.self, forKey: .snapshot_image_url)
+        snapshot_category_name = try container.decode(String.self, forKey: .snapshot_category_name)
+        sort_order = try container.decode(Int.self, forKey: .sort_order)
+        created_at = try container.decodeIfPresent(String.self, forKey: .created_at)
+        updated_at = try container.decodeIfPresent(String.self, forKey: .updated_at)
+        upgrade_cost_note = try container.decodeIfPresent(String.self, forKey: .upgrade_cost_note)
+        // PostgREST returns numeric columns as JSON strings (e.g. "12.50")
+        if let d = try? container.decodeIfPresent(Double.self, forKey: .upgrade_cost) {
+            upgrade_cost = d
+        } else if let s = try? container.decodeIfPresent(String.self, forKey: .upgrade_cost), let d = Double(s) {
+            upgrade_cost = d
+        } else {
+            upgrade_cost = nil
+        }
+    }
+
+    init(id: String, build_id: String, category_id: String, spec_item_id: String, spec_tier: String, selection_type: String, client_notes: String?, admin_notes: String?, client_confirmed: Bool, admin_confirmed: Bool, client_confirmed_at: String?, admin_confirmed_at: String?, locked_for_client: Bool, status: String, snapshot_name: String, snapshot_description: String, snapshot_image_url: String?, snapshot_category_name: String, sort_order: Int, created_at: String?, updated_at: String?, upgrade_cost: Double? = nil, upgrade_cost_note: String? = nil) {
+        self.id = id
+        self.build_id = build_id
+        self.category_id = category_id
+        self.spec_item_id = spec_item_id
+        self.spec_tier = spec_tier
+        self.selection_type = selection_type
+        self.client_notes = client_notes
+        self.admin_notes = admin_notes
+        self.client_confirmed = client_confirmed
+        self.admin_confirmed = admin_confirmed
+        self.client_confirmed_at = client_confirmed_at
+        self.admin_confirmed_at = admin_confirmed_at
+        self.locked_for_client = locked_for_client
+        self.status = status
+        self.snapshot_name = snapshot_name
+        self.snapshot_description = snapshot_description
+        self.snapshot_image_url = snapshot_image_url
+        self.snapshot_category_name = snapshot_category_name
+        self.sort_order = sort_order
+        self.created_at = created_at
+        self.updated_at = updated_at
+        self.upgrade_cost = upgrade_cost
+        self.upgrade_cost_note = upgrade_cost_note
+    }
 }
 
 struct BuildSpecSelection: Identifiable, Sendable {
@@ -127,6 +197,8 @@ struct BuildSpecSelection: Identifiable, Sendable {
     let snapshotImageURL: String?
     let snapshotCategoryName: String
     let sortOrder: Int
+    var upgradeCost: Double?
+    var upgradeCostNote: String?
 
     var isFullyApproved: Bool {
         clientConfirmed && adminConfirmed && status == .approved
@@ -157,7 +229,9 @@ extension BuildSpecSelectionRow {
             snapshotDescription: snapshot_description,
             snapshotImageURL: snapshot_image_url,
             snapshotCategoryName: snapshot_category_name,
-            sortOrder: sort_order
+            sortOrder: sort_order,
+            upgradeCost: upgrade_cost,
+            upgradeCostNote: upgrade_cost_note
         )
     }
 }
@@ -186,7 +260,9 @@ extension BuildSpecSelection {
             snapshot_category_name: snapshotCategoryName,
             sort_order: sortOrder,
             created_at: nil,
-            updated_at: iso.string(from: .now)
+            updated_at: iso.string(from: .now),
+            upgrade_cost: upgradeCost,
+            upgrade_cost_note: upgradeCostNote
         )
     }
 }

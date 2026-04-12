@@ -176,7 +176,7 @@ struct ClientBuildDetailView: View {
     }
 
     private var isAdmin: Bool {
-        appViewModel.currentRole == .admin
+        appViewModel.currentRole.isAnyStaffRole
     }
 
     @ViewBuilder
@@ -195,9 +195,9 @@ struct ClientBuildDetailView: View {
         case .colours:
             BuildColourSelectionView(buildId: build.id)
         case .documents:
-            documentsPlaceholder
+            DocumentsView()
         case .requests:
-            requestsPlaceholder
+            RequestsView()
         }
     }
 
@@ -290,45 +290,6 @@ struct ClientBuildDetailView: View {
         }
     }
 
-    private var documentsPlaceholder: some View {
-        BentoCard(cornerRadius: 16) {
-            VStack(spacing: 14) {
-                Image(systemName: "doc.text.fill")
-                    .font(.system(size: 36))
-                    .foregroundStyle(AVIATheme.textTertiary)
-                Text("Client Documents")
-                    .font(.neueSubheadlineMedium)
-                    .foregroundStyle(AVIATheme.textPrimary)
-                Text("Documents for this build will appear here.")
-                    .font(.neueCaption)
-                    .foregroundStyle(AVIATheme.textSecondary)
-                    .multilineTextAlignment(.center)
-            }
-            .frame(maxWidth: .infinity)
-            .padding(.vertical, 40)
-            .padding(.horizontal, 16)
-        }
-    }
-
-    private var requestsPlaceholder: some View {
-        BentoCard(cornerRadius: 16) {
-            VStack(spacing: 14) {
-                Image(systemName: "bubble.left.and.bubble.right.fill")
-                    .font(.system(size: 36))
-                    .foregroundStyle(AVIATheme.textTertiary)
-                Text("Client Requests")
-                    .font(.neueSubheadlineMedium)
-                    .foregroundStyle(AVIATheme.textPrimary)
-                Text("Client requests and correspondence will appear here.")
-                    .font(.neueCaption)
-                    .foregroundStyle(AVIATheme.textSecondary)
-                    .multilineTextAlignment(.center)
-            }
-            .frame(maxWidth: .infinity)
-            .padding(.vertical, 40)
-            .padding(.horizontal, 16)
-        }
-    }
 }
 
 extension ClientBuild: Hashable {

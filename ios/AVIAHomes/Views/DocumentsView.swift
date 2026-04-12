@@ -122,6 +122,19 @@ struct DocumentRow: View {
     let document: ClientDocument
 
     var body: some View {
+        Group {
+            if let urlStr = document.fileURL, let url = URL(string: urlStr) {
+                Link(destination: url) {
+                    rowContent
+                }
+            } else {
+                rowContent
+                    .opacity(0.7)
+            }
+        }
+    }
+
+    private var rowContent: some View {
         HStack(spacing: 14) {
             BentoIconCircle(icon: document.category.icon, color: AVIATheme.teal)
 
@@ -139,6 +152,9 @@ struct DocumentRow: View {
                     Text(document.dateAdded.formatted(date: .abbreviated, time: .omitted))
                     Text("·")
                     Text(document.fileSize)
+                    if document.fileURL == nil {
+                        Text("· No file attached")
+                    }
                 }
                 .font(.neueCaption)
                 .foregroundStyle(AVIATheme.textTertiary)
@@ -146,8 +162,8 @@ struct DocumentRow: View {
 
             Spacer()
 
-            Image(systemName: "arrow.down.circle")
-                .foregroundStyle(AVIATheme.textTertiary)
+            Image(systemName: document.fileURL != nil ? "arrow.down.circle.fill" : "arrow.down.circle")
+                .foregroundStyle(document.fileURL != nil ? AVIATheme.teal : AVIATheme.textTertiary)
         }
         .padding(.horizontal, 16)
         .padding(.vertical, 12)
