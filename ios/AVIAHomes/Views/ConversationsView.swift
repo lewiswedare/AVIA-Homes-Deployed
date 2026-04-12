@@ -166,12 +166,12 @@ struct NewConversationSheet: View {
         case .staff:
             let clientIds = viewModel.currentUser.assignedClientIds
             users = viewModel.allRegisteredUsers.filter { clientIds.contains($0.id) || $0.role == .admin }
-        case .partner:
+        case .partner, .salesPartner:
             let sharedClientIds = viewModel.packageAssignments
                 .filter { $0.assignedPartnerIds.contains(currentId) }
                 .flatMap(\.sharedWithClientIds)
             users = viewModel.allRegisteredUsers.filter { sharedClientIds.contains($0.id) }
-        case .admin:
+        case .admin, .salesAdmin:
             users = viewModel.allRegisteredUsers
         default:
             users = []

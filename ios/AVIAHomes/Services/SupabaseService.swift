@@ -79,7 +79,7 @@ class SupabaseService {
     }
 
     @discardableResult
-    func updateProfileFields(userId: String, firstName: String, lastName: String, phone: String, address: String, email: String) async -> Bool {
+    func updateProfileFields(userId: String, firstName: String, lastName: String, phone: String, address: String, email: String, role: String = "Client") async -> Bool {
         guard isConfigured else {
             print("[SupabaseService] updateProfileFields: not configured")
             return false
@@ -91,7 +91,7 @@ class SupabaseService {
             phone: phone,
             address: address,
             email: email,
-            role: "client",
+            role: role,
             profile_completed: true
         )
         print("[SupabaseService] updateProfileFields attempting for id=\(normalizedId), name=\(firstName) \(lastName), phone=\(phone), address=\(address), email=\(email)")

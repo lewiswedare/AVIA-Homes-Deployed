@@ -106,7 +106,7 @@ class MessagingService {
         conversations.insert(newConv, at: 0)
 
         guard supabase.isConfigured else { return newConv.id }
-        let row = ConversationRow(from: newConv)
+        let row = ConversationInsertRow(from: newConv)
         _ = try? await supabase.client
             .from("conversations")
             .insert(row)
@@ -172,11 +172,34 @@ class MessagingService {
 nonisolated struct ConversationRow: Codable, Sendable {
     let id: String
     let participant_ids: [String]
+    let last_message: String?
+    let last_message_date: String
+    let last_sender_id: String?
+    let unread_count: Int?
+    let created_at: String
+
+    func toConversation() -> Conversation {
+        let formatter = ISO8601DateFormatter()
+        formatter.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
+        return Conversation(
+            id: id,
+            participantIds: participant_ids,
+            lastMessage: last_message ?? "",
+            lastMessageDate: formatter.date(from: last_message_date) ?? .now,
+            lastSenderId: last_sender_id ?? "",
+            unreadCount: unread_count ?? 0,
+            createdAt: formatter.date(from: created_at) ?? .now
+        )
+    }
+}
+
+nonisolated struct ConversationInsertRow: Encodable, Sendable {
+    let id: String
+    let participant_ids: [String]
     let last_message: String
     let last_message_date: String
     let last_sender_id: String
     let unread_count: Int
-    let created_at: String
 
     init(from c: Conversation) {
         id = c.id
@@ -185,21 +208,6 @@ nonisolated struct ConversationRow: Codable, Sendable {
         last_message_date = ISO8601DateFormatter().string(from: c.lastMessageDate)
         last_sender_id = c.lastSenderId
         unread_count = c.unreadCount
-        created_at = ISO8601DateFormatter().string(from: c.createdAt)
-    }
-
-    func toConversation() -> Conversation {
-        let formatter = ISO8601DateFormatter()
-        formatter.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
-        return Conversation(
-            id: id,
-            participantIds: participant_ids,
-            lastMessage: last_message,
-            lastMessageDate: formatter.date(from: last_message_date) ?? .now,
-            lastSenderId: last_sender_id,
-            unreadCount: unread_count,
-            createdAt: formatter.date(from: created_at) ?? .now
-        )
     }
 }
 

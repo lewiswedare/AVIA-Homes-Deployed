@@ -110,9 +110,9 @@ class AppViewModel {
             return allClientBuilds.filter { $0.hasClient(id: currentUser.id) }
         case .staff:
             return allClientBuilds.filter { $0.assignedStaffId == currentUser.id }
-        case .admin:
+        case .admin, .salesAdmin:
             return allClientBuilds
-        case .partner:
+        case .partner, .salesPartner:
             return allClientBuilds.filter { $0.salesPartnerId == currentUser.id }
         }
     }
@@ -197,7 +197,12 @@ class AppViewModel {
     }
 
     private func loadRequestsFromSupabase() async {
-        let reqs = await SupabaseService.shared.fetchServiceRequests()
+        let reqs: [ServiceRequest]
+        if currentRole == .client {
+            reqs = await SupabaseService.shared.fetchServiceRequests(clientId: currentUser.id)
+        } else {
+            reqs = await SupabaseService.shared.fetchServiceRequests()
+        }
         requests = reqs
     }
 
@@ -222,7 +227,7 @@ class AppViewModel {
 
     private func loadDocumentsFromSupabase() async {
         guard !currentUser.id.isEmpty else { return }
-        if currentRole == .admin || currentRole == .staff {
+        if currentRole == .admin || currentRole == .staff || currentRole == .salesAdmin {
             let docs = await SupabaseService.shared.fetchAllDocuments()
             documents = docs
         } else {
@@ -232,7 +237,7 @@ class AppViewModel {
     }
 
     private func loadPendingSpecReviews() async {
-        guard currentRole == .admin || currentRole == .staff else { return }
+        guard currentRole == .admin || currentRole == .staff || currentRole == .salesAdmin else { return }
         let reviews = await SupabaseService.shared.fetchAllPendingSpecReviews()
         pendingSpecReviews = reviews
     }
@@ -416,7 +421,8 @@ class AppViewModel {
             lastName: updatedUser.lastName,
             phone: updatedUser.phone,
             address: updatedUser.address,
-            email: updatedUser.email
+            email: updatedUser.email,
+            role: updatedUser.role.rawValue
         )
         if directSuccess {
             print("[AppViewModel] completeProfileSetup: direct update SUCCESS")
@@ -848,14 +854,14 @@ class AppViewModel {
     }
 
     var partnerUsers: [ClientUser] {
-        allRegisteredUsers.filter { $0.role == .partner }
+        allRegisteredUsers.filter { $0.role == .partner || $0.role == .salesPartner }
     }
 
     func packagesForCurrentUser() -> [HouseLandPackage] {
         switch currentRole {
-        case .staff, .admin:
+        case .staff, .admin, .salesAdmin:
             return allPackages
-        case .partner:
+        case .partner, .salesPartner:
             let assignedPackageIds = packageAssignments
                 .filter { $0.assignedPartnerIds.contains(currentUser.id) }
                 .map(\.packageId)

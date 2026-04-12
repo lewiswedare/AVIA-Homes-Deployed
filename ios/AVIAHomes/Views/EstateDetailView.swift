@@ -14,7 +14,7 @@ struct EstateDetailView: View {
         case .client:
             let sharedPackageIds = viewModel.clientSharedPackages.map(\.id)
             return allEstatePackages.filter { sharedPackageIds.contains($0.id) }
-        case .partner:
+        case .partner, .salesPartner:
             let assignedPackageIds = viewModel.packagesForCurrentUser().map(\.id)
             return allEstatePackages.filter { assignedPackageIds.contains($0.id) }
         default:

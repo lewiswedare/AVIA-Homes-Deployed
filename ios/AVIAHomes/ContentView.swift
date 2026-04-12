@@ -17,9 +17,9 @@ struct ContentView: View {
                     }
                 case .staff:
                     StaffTabView()
-                case .admin:
+                case .admin, .salesAdmin:
                     AdminTabView()
-                case .partner:
+                case .partner, .salesPartner:
                     PartnerTabView()
                 }
             } else {

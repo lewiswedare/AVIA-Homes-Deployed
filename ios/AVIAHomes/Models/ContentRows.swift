@@ -93,6 +93,51 @@ nonisolated struct HouseLandPackageRow: Codable, Sendable {
     let custom_storeys: Int?
     let selected_facade_id: String?
 
+    enum CodingKeys: String, CodingKey {
+        case id, title, location, lot_size, home_design, price, image_url, is_new
+        case lot_number, lot_frontage, lot_depth, land_price, house_price
+        case spec_tier, title_date, council, zoning, build_time_estimate, inclusions
+        case is_custom, custom_bedrooms, custom_bathrooms, custom_garages
+        case custom_square_meters, custom_storeys, selected_facade_id
+    }
+
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        id = try container.decode(String.self, forKey: .id)
+        title = try container.decode(String.self, forKey: .title)
+        location = try container.decode(String.self, forKey: .location)
+        lot_size = try container.decode(String.self, forKey: .lot_size)
+        home_design = try container.decode(String.self, forKey: .home_design)
+        price = try container.decode(String.self, forKey: .price)
+        image_url = try container.decode(String.self, forKey: .image_url)
+        is_new = try container.decode(Bool.self, forKey: .is_new)
+        lot_number = try container.decode(String.self, forKey: .lot_number)
+        lot_frontage = try container.decode(String.self, forKey: .lot_frontage)
+        lot_depth = try container.decode(String.self, forKey: .lot_depth)
+        land_price = try container.decode(String.self, forKey: .land_price)
+        house_price = try container.decode(String.self, forKey: .house_price)
+        spec_tier = try container.decode(String.self, forKey: .spec_tier)
+        title_date = try container.decode(String.self, forKey: .title_date)
+        council = try container.decode(String.self, forKey: .council)
+        zoning = try container.decode(String.self, forKey: .zoning)
+        build_time_estimate = try container.decode(String.self, forKey: .build_time_estimate)
+        inclusions = try container.decode([String].self, forKey: .inclusions)
+        is_custom = try container.decodeIfPresent(Bool.self, forKey: .is_custom)
+        custom_bedrooms = try container.decodeIfPresent(Int.self, forKey: .custom_bedrooms)
+        custom_bathrooms = try container.decodeIfPresent(Int.self, forKey: .custom_bathrooms)
+        custom_garages = try container.decodeIfPresent(Int.self, forKey: .custom_garages)
+        custom_storeys = try container.decodeIfPresent(Int.self, forKey: .custom_storeys)
+        selected_facade_id = try container.decodeIfPresent(String.self, forKey: .selected_facade_id)
+        // PostgREST returns numeric columns as JSON strings (e.g. "12.50")
+        if let d = try? container.decodeIfPresent(Double.self, forKey: .custom_square_meters) {
+            custom_square_meters = d
+        } else if let s = try? container.decodeIfPresent(String.self, forKey: .custom_square_meters), let d = Double(s) {
+            custom_square_meters = d
+        } else {
+            custom_square_meters = nil
+        }
+    }
+
     init(from pkg: HouseLandPackage) {
         id = pkg.id
         title = pkg.title
