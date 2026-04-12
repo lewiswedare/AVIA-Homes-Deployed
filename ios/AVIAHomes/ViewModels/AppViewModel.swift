@@ -862,6 +862,10 @@ class AppViewModel {
         addNewBuild(homeDesign: homeDesign, lotNumber: lotNumber, estate: estate, contractDate: contractDate, clientId: clientId, staffId: staffId, isCustom: isCustom, selectedFacadeId: selectedFacadeId, customBedrooms: customBedrooms, customBathrooms: customBathrooms, customGarages: customGarages, customSquareMeters: customSquareMeters, customStoreys: customStoreys)
         if let build = allClientBuilds.last {
             Task {
+                // Ensure catalog data is loaded before creating spec snapshot
+                if CatalogDataManager.shared.allSpecCategories.isEmpty {
+                    await CatalogDataManager.shared.loadAll()
+                }
                 await SupabaseService.shared.createBuildSpecSnapshot(buildId: build.id, specTier: specTier)
             }
         }
@@ -1030,6 +1034,7 @@ class AppViewModel {
             print("[AppViewModel] respondToPackage: no assignment found for pkg=\(packageId)")
             return
         }
+        let savedResponses = packageAssignments[index].clientResponses
         packageAssignments[index].clientResponses.removeAll { $0.clientId == currentUser.id }
         let response = ClientPackageResponse(clientId: currentUser.id, status: status, respondedDate: .now, notes: notes)
         packageAssignments[index].clientResponses.append(response)
@@ -1037,7 +1042,7 @@ class AppViewModel {
         let success = await syncAssignmentAsync(packageAssignments[index])
         guard success else {
             print("[AppViewModel] respondToPackage: DB write failed, reverting local state")
-            packageAssignments[index].clientResponses.removeAll { $0.clientId == currentUser.id }
+            packageAssignments[index].clientResponses = savedResponses
             return
         }
 

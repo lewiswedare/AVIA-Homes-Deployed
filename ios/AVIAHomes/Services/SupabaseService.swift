@@ -1173,4 +1173,22 @@ class SupabaseService {
             }
         }
     }
+
+    func subscribeToBuildSpecChanges(buildId: String, onUpdate: @escaping @Sendable () -> Void) {
+        guard isConfigured else { return }
+        let channelName = "build_spec_\(buildId)"
+        let channel = client.realtimeV2.channel(channelName)
+        let changes = channel.postgresChange(
+            AnyAction.self,
+            schema: "public",
+            table: "build_spec_selections",
+            filter: .eq("build_id", value: buildId)
+        )
+        Task {
+            try? await channel.subscribeWithError()
+            for await _ in changes {
+                await MainActor.run { onUpdate() }
+            }
+        }
+    }
 }

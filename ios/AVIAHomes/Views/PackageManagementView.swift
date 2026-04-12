@@ -587,7 +587,7 @@ struct PackageAssignmentSheet: View {
                 .sensoryFeedback(.impact(weight: .light), trigger: assignment?.isExclusive)
             }
 
-            let partners = viewModel.partnerUsers + [ClientUser.samplePartner]
+            let partners = viewModel.partnerUsers
             let uniquePartners = Dictionary(grouping: partners, by: \.id).compactMap(\.value.first)
 
             ForEach(uniquePartners, id: \.id) { partner in
@@ -654,7 +654,7 @@ struct PackageAssignmentSheet: View {
                 .kerning(1.0)
                 .foregroundStyle(AVIATheme.textTertiary)
 
-            let clients = viewModel.clientUsers + [ClientUser.sample]
+            let clients = viewModel.clientUsers
             let uniqueClients = Dictionary(grouping: clients, by: \.id).compactMap(\.value.first)
 
             ForEach(uniqueClients, id: \.id) { client in
@@ -751,7 +751,7 @@ struct PackageAssignmentSheet: View {
                 .padding(.vertical, 40)
             } else {
                 ForEach(responses) { response in
-                    let allClients = viewModel.clientUsers + [ClientUser.sample]
+                    let allClients = viewModel.clientUsers
                     let client = allClients.first { $0.id == response.clientId }
                     BentoCard(cornerRadius: 14) {
                         HStack(spacing: 12) {
