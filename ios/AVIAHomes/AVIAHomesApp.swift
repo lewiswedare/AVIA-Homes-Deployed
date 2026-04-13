@@ -23,6 +23,9 @@ struct AVIAHomesApp: App {
                     UNUserNotificationCenter.current().delegate = appDelegate
                     Task {
                         await appViewModel.restoreSession()
+                        if let firstBuild = appViewModel.clientBuildsForCurrentUser.first {
+                            await specViewModel.load(buildId: firstBuild.id)
+                        }
                         await appViewModel.pushManager.requestPermission()
                     }
                 }
@@ -31,6 +34,11 @@ struct AVIAHomesApp: App {
                 }
                 .onChange(of: appViewModel.totalBadgeCount) { _, newCount in
                     appViewModel.pushManager.updateBadgeCount(newCount)
+                }
+                .onChange(of: appViewModel.activeClientCount) { _, _ in
+                    if let first = appViewModel.clientBuildsForCurrentUser.first {
+                        Task { await specViewModel.load(buildId: first.id) }
+                    }
                 }
         }
     }
