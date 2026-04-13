@@ -123,6 +123,8 @@ struct NotificationsView: View {
             return true
         case .roleAssigned:
             return false
+        default:
+            return false
         }
     }
 
@@ -151,6 +153,8 @@ struct NotificationsView: View {
         case .documentAdded:
             DocumentsView()
         case .roleAssigned:
+            EmptyView()
+        default:
             EmptyView()
         }
     }

@@ -82,7 +82,7 @@ nonisolated struct HomeDesign: Identifiable, Sendable, Hashable {
     }
 }
 
-struct HouseLandPackage: Identifiable, Sendable, Hashable {
+nonisolated struct HouseLandPackage: Identifiable, Sendable, Hashable {
     let id: String
     let title: String
     let location: String

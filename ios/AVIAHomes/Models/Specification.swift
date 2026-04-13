@@ -91,7 +91,7 @@ nonisolated struct SpecItem: Identifiable, Sendable {
         }
     }
 
-    var imageURL: URL? {
+    @MainActor var imageURL: URL? {
         if let custom = customImageURL, !custom.isEmpty {
             return URL(string: custom)
         }
@@ -99,7 +99,7 @@ nonisolated struct SpecItem: Identifiable, Sendable {
         return catalog.baseImageURL(for: id)
     }
 
-    var hasTierSpecificImages: Bool {
+    @MainActor var hasTierSpecificImages: Bool {
         let catalog = CatalogDataManager.shared
         return catalog.specItemTierImages.keys.contains(where: { $0.hasPrefix(id + "_") })
     }
@@ -108,7 +108,7 @@ nonisolated struct SpecItem: Identifiable, Sendable {
         nil
     }
 
-    func tierImageURL(for tier: SpecTier) -> URL? {
+    @MainActor func tierImageURL(for tier: SpecTier) -> URL? {
         let catalog = CatalogDataManager.shared
         return catalog.tierImageURL(for: id, tier: tier)
     }
