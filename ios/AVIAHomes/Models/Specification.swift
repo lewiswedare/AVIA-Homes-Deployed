@@ -117,6 +117,8 @@ nonisolated struct UpgradeRequest: Identifiable, Sendable {
     let toTier: SpecTier
     let dateRequested: Date
     var status: UpgradeStatus
+    var upgradeCost: Double?
+    var adminNotes: String?
 }
 
 nonisolated enum UpgradeStatus: String, Sendable {

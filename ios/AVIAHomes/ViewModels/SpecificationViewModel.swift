@@ -89,7 +89,9 @@ class SpecificationViewModel {
                 fromTier: SpecTier(rawValue: row.specTier.capitalized) ?? .messina,
                 toTier: .portobello,
                 dateRequested: row.clientConfirmedAt ?? .now,
-                status: status
+                status: status,
+                upgradeCost: row.upgradeCost,
+                adminNotes: row.adminNotes
             )
         }
     }
@@ -113,7 +115,9 @@ class SpecificationViewModel {
             fromTier: currentTier,
             toTier: toTier,
             dateRequested: .now,
-            status: .pending
+            status: .pending,
+            upgradeCost: nil,
+            adminNotes: nil
         )
         upgradeRequests.insert(request, at: 0)
 

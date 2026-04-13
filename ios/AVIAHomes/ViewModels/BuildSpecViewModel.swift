@@ -512,5 +512,19 @@ class BuildSpecViewModel {
             colourSelections.append(new)
             _ = await SupabaseService.shared.upsertBuildColourSelection(new)
         }
+
+        if let ns = notificationService, !adminRecipientIds.isEmpty {
+            for adminId in adminRecipientIds {
+                await ns.createNotification(
+                    recipientId: adminId,
+                    senderId: clientId,
+                    senderName: "Client",
+                    type: .colourSelectionSubmitted,
+                    title: "Colour Selection Saved",
+                    message: "Client has updated a colour selection.",
+                    referenceId: buildId
+                )
+            }
+        }
     }
 }

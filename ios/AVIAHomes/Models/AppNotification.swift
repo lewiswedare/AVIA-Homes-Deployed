@@ -9,6 +9,9 @@ nonisolated enum NotificationType: String, Codable, Sendable {
     case requestResponse = "request_response"
     case buildUpdate = "build_update"
     case newMessage = "new_message"
+    case upgradeQuoted = "upgrade_quoted"
+    case colourSelectionSubmitted = "colour_selection_submitted"
+    case specTierChanged = "spec_tier_changed"
 
     var icon: String {
         switch self {
@@ -20,6 +23,9 @@ nonisolated enum NotificationType: String, Codable, Sendable {
         case .requestResponse: "arrowshape.turn.up.left.fill"
         case .buildUpdate: "hammer.fill"
         case .newMessage: "message.fill"
+        case .upgradeQuoted: "dollarsign.circle.fill"
+        case .colourSelectionSubmitted: "paintpalette.fill"
+        case .specTierChanged: "arrow.up.circle.fill"
         }
     }
 
@@ -33,6 +39,9 @@ nonisolated enum NotificationType: String, Codable, Sendable {
         case .requestResponse: "teal"
         case .buildUpdate: "teal"
         case .newMessage: "teal"
+        case .upgradeQuoted: "teal"
+        case .colourSelectionSubmitted: "teal"
+        case .specTierChanged: "warning"
         }
     }
 }

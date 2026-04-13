@@ -61,6 +61,7 @@ struct NotificationBadgeModifier: ViewModifier {
 struct ClientTabView: View {
     @State private var selectedTab = 0
     @Environment(AppViewModel.self) private var viewModel
+    @Environment(SpecificationViewModel.self) private var specVM
 
     init() {
         let appearance = UITabBarAppearance()
@@ -79,8 +80,9 @@ struct ClientTabView: View {
             Tab("Specs", systemImage: "list.clipboard.fill", value: 1) {
                 SpecificationsOverviewView()
             }
+            .badge(specVM.upgradeRequests.filter { $0.status == .pending }.count)
             Tab("Colours", systemImage: "paintpalette.fill", value: 2) {
-                ColourOverviewView()
+                ClientColourTabView()
             }
             Tab("Progress", systemImage: "chart.bar.fill", value: 3) {
                 BuildProgressView()
@@ -88,6 +90,7 @@ struct ClientTabView: View {
             Tab("More", systemImage: "ellipsis.circle.fill", value: 4) {
                 MoreView()
             }
+            .badge(viewModel.notificationService.unreadCount)
         }
         .tint(AVIATheme.teal)
         .task { await viewModel.loadUserData() }
@@ -361,6 +364,19 @@ struct StaffScheduleView: View {
     }
 }
 
+struct ClientColourTabView: View {
+    @Environment(AppViewModel.self) private var appViewModel
+    @Environment(SpecificationViewModel.self) private var specVM
+
+    var body: some View {
+        if specVM.buildId.isEmpty {
+            ColourOverviewView()
+        } else {
+            BuildColourSelectionView(buildId: specVM.buildId)
+        }
+    }
+}
+
 struct MoreView: View {
     var body: some View {
         NavigationStack {
@@ -369,6 +385,44 @@ struct MoreView: View {
                     VStack(spacing: 12) {
                         BentoCard(cornerRadius: 16) {
                             VStack(spacing: 0) {
+                                NavigationLink {
+                                    ConversationsView()
+                                } label: {
+                                    HStack(spacing: 14) {
+                                        BentoIconCircle(icon: "message.fill", color: AVIATheme.teal)
+                                        Text("Messages")
+                                            .font(.neueSubheadlineMedium)
+                                            .foregroundStyle(AVIATheme.textPrimary)
+                                        Spacer()
+                                        Image(systemName: "chevron.right")
+                                            .font(.neueCaption2Medium)
+                                            .foregroundStyle(AVIATheme.textTertiary)
+                                    }
+                                    .padding(.horizontal, 16)
+                                    .padding(.vertical, 14)
+                                }
+
+                                Rectangle().fill(AVIATheme.surfaceBorder).frame(height: 1).padding(.leading, 66)
+
+                                NavigationLink {
+                                    ClientPackageReviewView()
+                                } label: {
+                                    HStack(spacing: 14) {
+                                        BentoIconCircle(icon: "house.and.flag.fill", color: AVIATheme.teal)
+                                        Text("My Package")
+                                            .font(.neueSubheadlineMedium)
+                                            .foregroundStyle(AVIATheme.textPrimary)
+                                        Spacer()
+                                        Image(systemName: "chevron.right")
+                                            .font(.neueCaption2Medium)
+                                            .foregroundStyle(AVIATheme.textTertiary)
+                                    }
+                                    .padding(.horizontal, 16)
+                                    .padding(.vertical, 14)
+                                }
+
+                                Rectangle().fill(AVIATheme.surfaceBorder).frame(height: 1).padding(.leading, 66)
+
                                 NavigationLink {
                                     DocumentsView()
                                 } label: {

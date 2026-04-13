@@ -592,10 +592,26 @@ class AppViewModel {
         }
         allClientBuilds[index] = updated
         syncBuildStagesForCurrentUser()
+        let newPrimaryId = updated.client.id.isEmpty ? nil : updated.client.id
+        let newAdditionalIds = updated.additionalClients.map { $0.id }.filter { !$0.isEmpty }
         Task {
-            let success = await SupabaseService.shared.upsertBuild(updated)
+            let success = await SupabaseService.shared.removeClientFromBuild(
+                buildId: buildId,
+                clientId: clientId,
+                newPrimaryId: newPrimaryId,
+                newAdditionalIds: newAdditionalIds
+            )
             if success {
                 await refreshBuildsAndAssignments()
+                await notificationService.createNotification(
+                    recipientId: clientId,
+                    senderId: currentUser.id,
+                    senderName: currentUser.fullName,
+                    type: .buildUpdate,
+                    title: "Build Access Removed",
+                    message: "Your access to this build has been removed. Please contact AVIA Homes if you believe this is an error.",
+                    referenceId: buildId
+                )
             }
         }
     }

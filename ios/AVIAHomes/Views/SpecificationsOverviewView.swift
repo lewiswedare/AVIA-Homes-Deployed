@@ -407,17 +407,64 @@ struct SpecificationsOverviewView: View {
     }
 
     private func upgradeRequestRow(_ request: UpgradeRequest) -> some View {
-        HStack(spacing: 12) {
-            VStack(alignment: .leading, spacing: 3) {
-                Text(request.itemName)
-                    .font(.neueSubheadlineMedium)
-                    .foregroundStyle(AVIATheme.textPrimary)
-                Text("\(request.categoryName) · \(request.fromTier.rawValue) → \(request.toTier.rawValue)")
-                    .font(.neueCaption2)
-                    .foregroundStyle(AVIATheme.textTertiary)
+        VStack(alignment: .leading, spacing: 8) {
+            HStack(spacing: 12) {
+                VStack(alignment: .leading, spacing: 3) {
+                    Text(request.itemName)
+                        .font(.neueSubheadlineMedium)
+                        .foregroundStyle(AVIATheme.textPrimary)
+                    Text("\(request.categoryName) · \(request.fromTier.rawValue) → \(request.toTier.rawValue)")
+                        .font(.neueCaption2)
+                        .foregroundStyle(AVIATheme.textTertiary)
+                }
+                Spacer()
+                StatusBadge(title: request.status.rawValue, color: upgradeStatusColor(request.status))
             }
-            Spacer()
-            StatusBadge(title: request.status.rawValue, color: upgradeStatusColor(request.status))
+
+            if let cost = request.upgradeCost {
+                HStack(spacing: 4) {
+                    Image(systemName: "dollarsign.circle.fill")
+                        .foregroundStyle(AVIATheme.teal)
+                        .font(.neueCaption)
+                    Text(String(format: "$%.0f", cost))
+                        .font(.neueCaptionMedium)
+                        .foregroundStyle(AVIATheme.teal)
+                    Text("upgrade cost")
+                        .font(.neueCaption2)
+                        .foregroundStyle(AVIATheme.textSecondary)
+                }
+                .padding(.horizontal, 10)
+                .padding(.vertical, 5)
+                .background(AVIATheme.teal.opacity(0.08))
+                .clipShape(Capsule())
+            }
+
+            if let notes = request.adminNotes, !notes.isEmpty {
+                HStack(alignment: .top, spacing: 8) {
+                    Image(systemName: "note.text")
+                        .font(.neueCaption2)
+                        .foregroundStyle(AVIATheme.textTertiary)
+                    Text(notes)
+                        .font(.neueCaption2)
+                        .foregroundStyle(AVIATheme.textSecondary)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
+                .padding(10)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .background(AVIATheme.surfaceElevated)
+                .clipShape(.rect(cornerRadius: 10))
+            }
+
+            if request.status == .pending {
+                HStack(spacing: 6) {
+                    Circle()
+                        .fill(AVIATheme.warning)
+                        .frame(width: 6, height: 6)
+                    Text("Under Review")
+                        .font(.neueCaption2)
+                        .foregroundStyle(AVIATheme.textTertiary)
+                }
+            }
         }
         .padding(14)
         .background(AVIATheme.cardBackground)

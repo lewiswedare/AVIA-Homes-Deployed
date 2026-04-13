@@ -39,7 +39,7 @@ struct BuildColourSelectionView: View {
             if viewModel.isLoading {
                 ProgressView().tint(AVIATheme.teal)
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
-            } else if !viewModel.isFullyApproved {
+            } else if viewModel.overallStatus != .approved {
                 specNotApprovedState
             } else if approvedItemsNeedingColour.isEmpty {
                 emptyState
@@ -228,7 +228,7 @@ struct BuildColourSelectionView: View {
             Text("Specifications Not Yet Approved")
                 .font(.neueSubheadlineMedium)
                 .foregroundStyle(AVIATheme.textPrimary)
-            Text("Colour selections will be available once your specification range has been confirmed by both you and your admin.")
+            Text("Colour selections will be available once your Admin has approved your specification range.")
                 .font(.neueCaption)
                 .foregroundStyle(AVIATheme.textSecondary)
                 .multilineTextAlignment(.center)

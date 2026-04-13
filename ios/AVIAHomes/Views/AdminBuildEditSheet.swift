@@ -95,7 +95,11 @@ struct AdminBuildEditSheet: View {
                 }
             } message: {
                 if let client = showingRemoveClientConfirmation {
-                    Text("Remove \(client.fullName) from this build? They will no longer have access.")
+                    let isPrimary = build.client.id == client.id
+                    let extra = isPrimary && build.additionalClients.isEmpty
+                        ? " This build will become unassigned."
+                        : ""
+                    Text("Remove \(client.fullName) from this build? They will immediately lose access.\(extra)")
                 }
             }
             .alert("Delete Build", isPresented: $showingDeleteConfirmation) {

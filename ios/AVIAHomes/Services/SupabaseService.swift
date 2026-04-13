@@ -237,6 +237,31 @@ class SupabaseService {
             .execute()
     }
 
+    func removeClientFromBuild(buildId: String, clientId: String, newPrimaryId: String?, newAdditionalIds: [String]) async -> Bool {
+        guard isConfigured else { return false }
+        do {
+            if newPrimaryId == nil || newPrimaryId!.isEmpty {
+                try await client
+                    .from("builds")
+                    .update(["client_id": "", "additional_client_ids": "[]"])
+                    .eq("id", value: buildId)
+                    .execute()
+            } else {
+                let additionalJSON = "[" + newAdditionalIds.map { "\"\($0)\"" }.joined(separator: ",") + "]"
+                try await client
+                    .from("builds")
+                    .update(["client_id": newPrimaryId!, "additional_client_ids": additionalJSON])
+                    .eq("id", value: buildId)
+                    .execute()
+            }
+            print("[SupabaseService] removeClientFromBuild SUCCESS for buildId=\(buildId), removed=\(clientId)")
+            return true
+        } catch {
+            print("[SupabaseService] removeClientFromBuild FAILED: \(error)")
+            return false
+        }
+    }
+
     func updateBuildStage(_ stage: BuildStage, buildId: String, sortOrder: Int) async {
         guard isConfigured else { return }
         let row = BuildStageRow(from: stage, buildId: buildId, sortOrder: sortOrder)

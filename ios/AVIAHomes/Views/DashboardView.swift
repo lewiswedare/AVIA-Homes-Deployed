@@ -144,8 +144,28 @@ struct DashboardView: View {
                     }
                 }
                 Spacer()
-                Button {} label: {
-                    Image(systemName: "bell.badge")
+                NavigationLink {
+                    NotificationsView()
+                } label: {
+                    ZStack(alignment: .topTrailing) {
+                        Image(systemName: "bell.fill")
+                            .font(.neueSubheadlineMedium)
+                            .foregroundStyle(AVIATheme.textSecondary)
+                            .frame(width: 36, height: 36)
+                            .background(AVIATheme.cardBackground)
+                            .clipShape(Circle())
+                        if viewModel.notificationService.unreadCount > 0 {
+                            Circle()
+                                .fill(AVIATheme.destructive)
+                                .frame(width: 8, height: 8)
+                                .offset(x: 2, y: -2)
+                        }
+                    }
+                }
+                NavigationLink {
+                    ConversationsView()
+                } label: {
+                    Image(systemName: "message.fill")
                         .font(.neueSubheadlineMedium)
                         .foregroundStyle(AVIATheme.textSecondary)
                         .frame(width: 36, height: 36)
@@ -200,9 +220,35 @@ struct DashboardView: View {
         )
     }
 
+    private var packageCard: some View {
+        NavigationLink {
+            ClientPackageReviewView()
+        } label: {
+            BentoCard(cornerRadius: 16) {
+                HStack(spacing: 12) {
+                    BentoIconCircle(icon: "house.and.flag.fill", color: AVIATheme.teal)
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text("My Package")
+                            .font(.neueSubheadlineMedium)
+                            .foregroundStyle(AVIATheme.textPrimary)
+                        Text("View your accepted home & land package")
+                            .font(.neueCaption)
+                            .foregroundStyle(AVIATheme.textSecondary)
+                    }
+                    Spacer()
+                    Image(systemName: "chevron.right")
+                        .font(.neueCaption2Medium)
+                        .foregroundStyle(AVIATheme.textTertiary)
+                }
+                .padding(16)
+            }
+        }
+    }
+
     private var overviewContent: some View {
         VStack(spacing: 12) {
             journeyCard
+            packageCard
             nextUpCountdownCard
             scheduleAndTasksRow
             dateAndBuildInfo
