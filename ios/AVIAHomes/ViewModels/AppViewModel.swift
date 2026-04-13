@@ -167,17 +167,13 @@ class AppViewModel {
 
     private func loadBuildsFromSupabase() async {
         let builds = await SupabaseService.shared.fetchBuilds()
-        if !builds.isEmpty || allClientBuilds.isEmpty {
-            allClientBuilds = builds
-        }
+        allClientBuilds = builds
         syncBuildStagesForCurrentUser()
     }
 
     private func loadAssignmentsFromSupabase() async {
         let assignments = await SupabaseService.shared.fetchPackageAssignments()
-        if !assignments.isEmpty || packageAssignments.isEmpty {
-            packageAssignments = assignments
-        }
+        packageAssignments = assignments
     }
 
     func refreshBuildsAndAssignments() async {
@@ -245,9 +241,7 @@ class AppViewModel {
     private func loadScheduleItemsFromSupabase() async {
         guard !currentUser.id.isEmpty else { return }
         let items = await SupabaseService.shared.fetchScheduleItems(clientId: currentUser.id)
-        if !items.isEmpty {
-            scheduleItems = items
-        }
+        scheduleItems = items
     }
 
     private func setupRealtimeSubscriptions() {
@@ -294,14 +288,7 @@ class AppViewModel {
     func signIn(email: String, password: String) async -> Bool {
         let success = await authService.signIn(email: email, password: password)
         if success {
-            if let demo = authService.demoAccount(for: email, password: password) {
-                let demoUser = demoUserProfile(for: demo)
-                currentUser = demoUser
-                authService.saveUserProfile(demoUser)
-                authService.completeProfile()
-                saveUserToDirectory(demoUser)
-                seedDemoUsersIfNeeded()
-            } else if let userId = authService.supabaseUserId {
+            if let userId = authService.supabaseUserId {
                 if let profile = await SupabaseService.shared.fetchProfile(userId: userId) {
                     currentUser = profile
                     authService.updateRole(profile.role)
@@ -329,47 +316,6 @@ class AppViewModel {
             await loadUserData()
         }
         return success
-    }
-
-    private func demoUserProfile(for demo: (email: String, password: String, role: UserRole, firstName: String, lastName: String)) -> ClientUser {
-        let isNewUser = demo.email.lowercased() == "user@demo.com"
-        let demoIds: [String: String] = [
-            "user@demo.com": "demo_user",
-            "client@demo.com": "demo_client",
-            "staff@demo.com": "demo_staff",
-
-            "admin@demo.com": "demo_admin",
-            "partner@demo.com": "demo_partner",
-        ]
-        let id = demoIds[demo.email.lowercased()] ?? UUID().uuidString
-        let isClientWithBuild = demo.role == .client && !isNewUser
-
-        return ClientUser(
-            id: id,
-            firstName: demo.firstName,
-            lastName: demo.lastName,
-            email: demo.email,
-            phone: isClientWithBuild ? "0412 345 678" : (isNewUser ? "0400 111 222" : "0400 000 000"),
-            address: isClientWithBuild ? "14 Coastal Drive, Palmview QLD 4553" : (isNewUser ? "" : "AVIA Homes HQ, Gold Coast QLD"),
-            homeDesign: isClientWithBuild ? "Corfu 210" : "",
-            lotNumber: isClientWithBuild ? "Lot 42" : "",
-            contractDate: isClientWithBuild ? Calendar.current.date(byAdding: .month, value: -4, to: .now) ?? .now : .now,
-            profileCompleted: true,
-            role: demo.role,
-            assignedClientIds: demo.role == .staff ? ["demo_client", "1", "2"] : (demo.role == .partner ? ["demo_client", "2"] : []),
-            assignedStaffId: isClientWithBuild ? "demo_staff" : nil,
-            salesPartnerId: isClientWithBuild ? "demo_partner" : nil
-        )
-    }
-
-    private func seedDemoUsersIfNeeded() {
-        let existing = allRegisteredUsers
-        for account in AuthService.demoAccounts {
-            let profile = demoUserProfile(for: account)
-            if !existing.contains(where: { $0.id == profile.id }) {
-                saveUserToDirectory(profile)
-            }
-        }
     }
 
     func handleSignUp(email: String) async {
@@ -406,7 +352,6 @@ class AppViewModel {
         authService.updateRole(.client)
         authService.completeProfile()
         authService.saveUserProfile(updatedUser)
-        saveUserToDirectory(updatedUser)
         print("[AppViewModel] completeProfileSetup: id=\(updatedUser.id), name=\(updatedUser.firstName) \(updatedUser.lastName), phone=\(updatedUser.phone), address=\(updatedUser.address), email=\(updatedUser.email)")
 
         await authService.updateUserMetadata(
@@ -460,40 +405,10 @@ class AppViewModel {
     }
 
     var allRegisteredUsers: [ClientUser] {
-        if !cachedUsers.isEmpty {
-            return cachedUsers
-        }
-        let userListKey = "avia_all_users"
-        guard let data = UserDefaults.standard.data(forKey: userListKey),
-              let list = try? JSONDecoder().decode([UserData].self, from: data) else {
-            return []
-        }
-        return list.map { $0.toClientUser() }
-    }
-
-    func saveUserToDirectory(_ user: ClientUser) {
-        let userListKey = "avia_all_users"
-        var users = allRegisteredUsers
-        if let index = users.firstIndex(where: { $0.id == user.id }) {
-            users[index] = user
-        } else {
-            users.append(user)
-        }
-        let dataList = users.map { UserData(from: $0) }
-        if let encoded = try? JSONEncoder().encode(dataList) {
-            UserDefaults.standard.set(encoded, forKey: userListKey)
-        }
+        cachedUsers
     }
 
     func assignRole(_ role: UserRole, to userId: String) {
-        let userListKey = "avia_all_users"
-        var users = allRegisteredUsers
-        guard let index = users.firstIndex(where: { $0.id == userId }) else { return }
-        users[index].role = role
-        let dataList = users.map { UserData(from: $0) }
-        if let encoded = try? JSONEncoder().encode(dataList) {
-            UserDefaults.standard.set(encoded, forKey: userListKey)
-        }
         if let cacheIdx = cachedUsers.firstIndex(where: { $0.id == userId }) {
             cachedUsers[cacheIdx].role = role
         }
@@ -504,6 +419,7 @@ class AppViewModel {
         }
         Task {
             await SupabaseService.shared.updateProfileField(userId: userId, fields: ["role": role.rawValue])
+            await fetchAllUsersFromSupabase()
             await notificationService.createNotification(
                 recipientId: userId,
                 senderId: currentUser.id,
@@ -522,6 +438,19 @@ class AppViewModel {
         authService.signOut()
         currentUser = .empty
         cachedUsers = []
+        allClientBuilds = []
+        packageAssignments = []
+        requests = []
+        documents = []
+        scheduleItems = []
+        buildStages = []
+        pendingSpecReviews = []
+        allHomeDesigns = []
+        allPackages = []
+        allBlogPosts = []
+        allLandEstates = []
+        allFacades = []
+        contentLoaded = false
         notificationService.notifications = []
         messagingService.conversations = []
         messagingService.currentMessages = []

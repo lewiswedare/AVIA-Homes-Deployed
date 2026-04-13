@@ -18,9 +18,7 @@ class AuthService {
     private let roleKey = "avia_user_role"
     private let userIdKey = "avia_user_id"
 
-    static let demoAccounts: [(email: String, password: String, role: UserRole, firstName: String, lastName: String)] = []
 
-    private let demoIds: [String: String] = [:]
 
     init() {
         if let roleString = UserDefaults.standard.string(forKey: roleKey),
@@ -28,18 +26,6 @@ class AuthService {
             currentRole = role
         }
         supabaseUserId = UserDefaults.standard.string(forKey: userIdKey)
-    }
-
-    var isDemoMode: Bool {
-        !supabase.isConfigured
-    }
-
-    func demoAccount(for email: String, password: String) -> (email: String, password: String, role: UserRole, firstName: String, lastName: String)? {
-        Self.demoAccounts.first { $0.email.lowercased() == email.lowercased() && $0.password == password }
-    }
-
-    func demoId(for email: String) -> String {
-        demoIds[email.lowercased()] ?? UUID().uuidString
     }
 
     func restoreSession() async -> String? {
@@ -50,14 +36,8 @@ class AuthService {
         }
 
         guard supabase.isConfigured else {
-            if let savedRole = UserDefaults.standard.string(forKey: roleKey),
-               let role = UserRole(rawValue: savedRole) {
-                currentRole = role
-            }
-            hasCompletedProfile = UserDefaults.standard.bool(forKey: profileKey)
-            isAuthenticated = true
             isRestoringSession = false
-            return supabaseUserId
+            return nil
         }
 
         do {
@@ -97,48 +77,32 @@ class AuthService {
             return false
         }
 
-        if supabase.isConfigured {
-            do {
-                let session = try await supabase.client.auth.signIn(email: email, password: password)
-                supabaseUserId = session.user.id.uuidString.lowercased()
-                UserDefaults.standard.set(supabaseUserId, forKey: userIdKey)
-                if let profile = await supabase.fetchProfile(userId: session.user.id.uuidString.lowercased()) {
-                    currentRole = profile.role
-                    hasCompletedProfile = profile.profileCompleted
-                } else {
-                    currentRole = .client
-                    hasCompletedProfile = false
-                }
-                isAuthenticated = true
-                persistLocalState()
-                isLoading = false
-                return true
-            } catch {
-                if demoAccount(for: email, password: password) == nil {
-                    errorMessage = parseAuthError(error)
-                    isLoading = false
-                    return false
-                }
-            }
-        }
-
-        guard let demo = demoAccount(for: email, password: password) else {
-            if !supabase.isConfigured {
-                errorMessage = "Please check your email and password."
-            } else {
-                errorMessage = "Invalid email or password."
-            }
+        guard supabase.isConfigured else {
+            errorMessage = "Supabase is not configured. Please check your settings."
             isLoading = false
             return false
         }
 
-        currentRole = demo.role
-        supabaseUserId = nil
-        hasCompletedProfile = true
-        isAuthenticated = true
-        persistLocalState()
-        isLoading = false
-        return true
+        do {
+            let session = try await supabase.client.auth.signIn(email: email, password: password)
+            supabaseUserId = session.user.id.uuidString.lowercased()
+            UserDefaults.standard.set(supabaseUserId, forKey: userIdKey)
+            if let profile = await supabase.fetchProfile(userId: session.user.id.uuidString.lowercased()) {
+                currentRole = profile.role
+                hasCompletedProfile = profile.profileCompleted
+            } else {
+                currentRole = .client
+                hasCompletedProfile = false
+            }
+            isAuthenticated = true
+            persistLocalState()
+            isLoading = false
+            return true
+        } catch {
+            errorMessage = parseAuthError(error)
+            isLoading = false
+            return false
+        }
     }
 
     func signUp(email: String, password: String, confirmPassword: String, firstName: String = "", lastName: String = "", phone: String = "") async -> Bool {
@@ -170,52 +134,49 @@ class AuthService {
             return false
         }
 
-        if supabase.isConfigured {
-            do {
-                var metadata: [String: AnyJSON] = [:]
-                if !firstName.isEmpty { metadata["first_name"] = .string(firstName) }
-                if !lastName.isEmpty { metadata["last_name"] = .string(lastName) }
-                if !phone.isEmpty { metadata["phone"] = .string(phone) }
-
-                let authResponse: AuthResponse
-                if metadata.isEmpty {
-                    authResponse = try await supabase.client.auth.signUp(email: email, password: password)
-                } else {
-                    authResponse = try await supabase.client.auth.signUp(email: email, password: password, data: metadata)
-                }
-                let userId = authResponse.user.id.uuidString.lowercased()
-                supabaseUserId = userId
-                UserDefaults.standard.set(userId, forKey: userIdKey)
-                print("[AuthService] signUp success: userId=\(userId), email=\(email), metadata=\(metadata)")
-                if authResponse.session != nil {
-                    isAuthenticated = true
-                } else {
-                    if let session = try? await supabase.client.auth.session {
-                        supabaseUserId = session.user.id.uuidString.lowercased()
-                        UserDefaults.standard.set(supabaseUserId, forKey: userIdKey)
-                        isAuthenticated = true
-                    } else {
-                        isAuthenticated = true
-                    }
-                }
-                currentRole = .client
-                hasCompletedProfile = false
-                persistLocalState()
-                isLoading = false
-                return true
-            } catch {
-                errorMessage = parseAuthError(error)
-                isLoading = false
-                return false
-            }
+        guard supabase.isConfigured else {
+            errorMessage = "Supabase is not configured. Please check your settings."
+            isLoading = false
+            return false
         }
 
-        currentRole = .client
-        isAuthenticated = true
-        hasCompletedProfile = false
-        persistLocalState()
-        isLoading = false
-        return true
+        do {
+            var metadata: [String: AnyJSON] = [:]
+            if !firstName.isEmpty { metadata["first_name"] = .string(firstName) }
+            if !lastName.isEmpty { metadata["last_name"] = .string(lastName) }
+            if !phone.isEmpty { metadata["phone"] = .string(phone) }
+
+            let authResponse: AuthResponse
+            if metadata.isEmpty {
+                authResponse = try await supabase.client.auth.signUp(email: email, password: password)
+            } else {
+                authResponse = try await supabase.client.auth.signUp(email: email, password: password, data: metadata)
+            }
+            let userId = authResponse.user.id.uuidString.lowercased()
+            supabaseUserId = userId
+            UserDefaults.standard.set(userId, forKey: userIdKey)
+            print("[AuthService] signUp success: userId=\(userId), email=\(email), metadata=\(metadata)")
+            if authResponse.session != nil {
+                isAuthenticated = true
+            } else {
+                if let session = try? await supabase.client.auth.session {
+                    supabaseUserId = session.user.id.uuidString.lowercased()
+                    UserDefaults.standard.set(supabaseUserId, forKey: userIdKey)
+                    isAuthenticated = true
+                } else {
+                    isAuthenticated = true
+                }
+            }
+            currentRole = .client
+            hasCompletedProfile = false
+            persistLocalState()
+            isLoading = false
+            return true
+        } catch {
+            errorMessage = parseAuthError(error)
+            isLoading = false
+            return false
+        }
     }
 
     func updateUserMetadata(firstName: String, lastName: String, phone: String) async {
@@ -243,21 +204,21 @@ class AuthService {
             return false
         }
 
-        if supabase.isConfigured {
-            do {
-                try await supabase.client.auth.resetPasswordForEmail(email)
-                isLoading = false
-                return true
-            } catch {
-                errorMessage = parseAuthError(error)
-                isLoading = false
-                return false
-            }
+        guard supabase.isConfigured else {
+            errorMessage = "Supabase is not configured."
+            isLoading = false
+            return false
         }
 
-        try? await Task.sleep(for: .seconds(1))
-        isLoading = false
-        return true
+        do {
+            try await supabase.client.auth.resetPasswordForEmail(email)
+            isLoading = false
+            return true
+        } catch {
+            errorMessage = parseAuthError(error)
+            isLoading = false
+            return false
+        }
     }
 
     func completeProfile() {
@@ -280,6 +241,7 @@ class AuthService {
         UserDefaults.standard.removeObject(forKey: userKey)
         UserDefaults.standard.removeObject(forKey: roleKey)
         UserDefaults.standard.removeObject(forKey: userIdKey)
+        UserDefaults.standard.removeObject(forKey: "avia_all_users")
 
         if supabase.isConfigured {
             Task {
