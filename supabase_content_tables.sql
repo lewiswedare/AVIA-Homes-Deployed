@@ -131,6 +131,11 @@ CREATE TABLE IF NOT EXISTS documents (
 ALTER TABLE documents ENABLE ROW LEVEL SECURITY;
 CREATE POLICY "documents_read" ON documents FOR SELECT USING (true);
 
+-- Document table migration (run once)
+ALTER TABLE documents ADD COLUMN IF NOT EXISTS file_url TEXT;
+ALTER TABLE documents ADD COLUMN IF NOT EXISTS build_id TEXT;
+ALTER TABLE documents ADD COLUMN IF NOT EXISTS build_stage_id TEXT;
+
 -- 7. SCHEDULE ITEMS (per-client)
 CREATE TABLE IF NOT EXISTS schedule_items (
     id TEXT PRIMARY KEY,

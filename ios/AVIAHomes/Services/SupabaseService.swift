@@ -488,6 +488,75 @@ class SupabaseService {
             .execute()
     }
 
+    func uploadDocument(
+        buildId: String,
+        clientIds: [String],
+        name: String,
+        category: DocumentCategory,
+        fileData: Data,
+        fileName: String,
+        buildStageId: String? = nil,
+        buildStageName: String? = nil
+    ) async -> ClientDocument? {
+        guard isConfigured else { return nil }
+
+        guard let fileURL = await PDFUploadService.shared.uploadPDF(fileData, fileName: fileName, buildId: buildId) else {
+            return nil
+        }
+
+        let fileSizeBytes = fileData.count
+        let fileSizeStr: String
+        if fileSizeBytes < 1024 {
+            fileSizeStr = "\(fileSizeBytes) B"
+        } else if fileSizeBytes < 1024 * 1024 {
+            fileSizeStr = String(format: "%.1f KB", Double(fileSizeBytes) / 1024)
+        } else {
+            fileSizeStr = String(format: "%.1f MB", Double(fileSizeBytes) / (1024 * 1024))
+        }
+
+        let docId = UUID().uuidString
+        let doc = ClientDocument(
+            id: docId,
+            name: name,
+            category: category,
+            dateAdded: .now,
+            fileSize: fileSizeStr,
+            isNew: true,
+            fileURL: fileURL,
+            buildId: buildId,
+            buildStageName: buildStageName
+        )
+
+        for clientId in clientIds where !clientId.isEmpty {
+            let row = ClientDocumentRow(from: doc, clientId: clientId, buildId: buildId, buildStageId: buildStageId)
+            _ = try? await client.from("documents").insert(row).execute()
+        }
+
+        return doc
+    }
+
+    func deleteDocumentFromBuild(documentId: String) async -> Bool {
+        guard isConfigured else { return false }
+        do {
+            _ = try await client.from("documents").delete().eq("id", value: documentId).execute()
+            return true
+        } catch {
+            print("[SupabaseService] deleteDocument FAILED: \(error)")
+            return false
+        }
+    }
+
+    func deleteAllDocuments() async -> Bool {
+        guard isConfigured else { return false }
+        do {
+            _ = try await client.from("documents").delete().neq("id", value: "").execute()
+            return true
+        } catch {
+            print("[SupabaseService] deleteAllDocuments FAILED: \(error)")
+            return false
+        }
+    }
+
     func fetchRequestClientId(requestId: String) async -> String? {
         guard isConfigured else { return nil }
         do {

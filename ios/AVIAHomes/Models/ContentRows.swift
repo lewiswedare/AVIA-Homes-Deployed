@@ -361,8 +361,11 @@ nonisolated struct ClientDocumentRow: Codable, Sendable {
     let file_size: String
     let is_new: Bool
     let file_url: String?
+    let build_id: String?
+    let build_stage_id: String?
+    let created_at: String?
 
-    init(from doc: ClientDocument, clientId: String) {
+    init(from doc: ClientDocument, clientId: String, buildId: String? = nil, buildStageId: String? = nil) {
         let iso = ISO8601DateFormatter()
         id = doc.id
         client_id = clientId
@@ -372,6 +375,9 @@ nonisolated struct ClientDocumentRow: Codable, Sendable {
         file_size = doc.fileSize
         is_new = doc.isNew
         file_url = doc.fileURL
+        self.build_id = buildId ?? doc.buildId
+        self.build_stage_id = buildStageId
+        created_at = nil
     }
 
     func toClientDocument() -> ClientDocument {
@@ -385,7 +391,9 @@ nonisolated struct ClientDocumentRow: Codable, Sendable {
             dateAdded: formatter.date(from: date_added) ?? fallback.date(from: date_added) ?? .now,
             fileSize: file_size,
             isNew: is_new,
-            fileURL: file_url
+            fileURL: file_url,
+            buildId: build_id,
+            buildStageName: nil
         )
     }
 }

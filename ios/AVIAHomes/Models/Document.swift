@@ -26,8 +26,10 @@ nonisolated struct ClientDocument: Identifiable, Sendable {
     let fileSize: String
     let isNew: Bool
     let fileURL: String?
+    let buildId: String?
+    let buildStageName: String?
 
-    init(id: String, name: String, category: DocumentCategory, dateAdded: Date, fileSize: String, isNew: Bool, fileURL: String? = nil) {
+    init(id: String, name: String, category: DocumentCategory, dateAdded: Date, fileSize: String, isNew: Bool, fileURL: String? = nil, buildId: String? = nil, buildStageName: String? = nil) {
         self.id = id
         self.name = name
         self.category = category
@@ -35,6 +37,8 @@ nonisolated struct ClientDocument: Identifiable, Sendable {
         self.fileSize = fileSize
         self.isNew = isNew
         self.fileURL = fileURL
+        self.buildId = buildId
+        self.buildStageName = buildStageName
     }
 
     static let samples: [ClientDocument] = []

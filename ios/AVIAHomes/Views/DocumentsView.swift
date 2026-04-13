@@ -147,12 +147,18 @@ struct DocumentRow: View {
                     if document.isNew {
                         StatusBadge(title: "NEW", color: AVIATheme.teal)
                     }
+                    if let stage = document.buildStageName {
+                        StatusBadge(title: stage, color: AVIATheme.warning)
+                    }
                 }
                 HStack(spacing: 8) {
                     Text(document.dateAdded.formatted(date: .abbreviated, time: .omitted))
                     Text("·")
                     Text(document.fileSize)
-                    if document.fileURL == nil {
+                    if document.fileURL != nil {
+                        Text("· Download")
+                            .foregroundStyle(AVIATheme.teal)
+                    } else {
                         Text("· No file attached")
                     }
                 }

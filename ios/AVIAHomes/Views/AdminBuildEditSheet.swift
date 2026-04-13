@@ -1,4 +1,5 @@
 import SwiftUI
+import UniformTypeIdentifiers
 
 struct AdminBuildEditSheet: View {
     @Environment(AppViewModel.self) private var viewModel
@@ -16,6 +17,16 @@ struct AdminBuildEditSheet: View {
     @State private var showingDeleteConfirmation = false
     @State private var showingAddClient = false
     @State private var showingRemoveClientConfirmation: ClientUser?
+    @State private var buildDocuments: [ClientDocument] = []
+    @State private var isLoadingDocs = false
+    @State private var showingDocumentPicker = false
+    @State private var showingUploadForm = false
+    @State private var pendingDocName = ""
+    @State private var pendingDocCategory: DocumentCategory = .contracts
+    @State private var pendingDocStageId: String? = nil
+    @State private var pendingDocData: Data? = nil
+    @State private var pendingDocFileName = ""
+    @State private var isUploadingDoc = false
 
     enum AdminEditTab: String, CaseIterable {
         case details = "Details"
@@ -549,104 +560,269 @@ struct AdminBuildEditSheet: View {
 
     private var documentsSection: some View {
         VStack(spacing: 12) {
-            BentoCard(cornerRadius: 16) {
-                VStack(alignment: .leading, spacing: 14) {
-                    HStack {
-                        Label("Documents", systemImage: "doc.text.fill")
+            // Upload button
+            Button {
+                showingDocumentPicker = true
+            } label: {
+                HStack(spacing: 8) {
+                    Image(systemName: "arrow.up.doc.fill")
+                    Text("Upload Document")
+                }
+                .font(.neueSubheadlineMedium)
+                .frame(maxWidth: .infinity)
+                .frame(height: 48)
+                .foregroundStyle(.white)
+                .background(AVIATheme.tealGradient)
+                .clipShape(.rect(cornerRadius: 14))
+            }
+
+            if isLoadingDocs {
+                ProgressView()
+                    .frame(maxWidth: .infinity, minHeight: 100)
+            } else if buildDocuments.isEmpty {
+                BentoCard(cornerRadius: 16) {
+                    VStack(spacing: 14) {
+                        Image(systemName: "doc.text.fill")
+                            .font(.system(size: 36))
+                            .foregroundStyle(AVIATheme.textTertiary)
+                        Text("No Documents Yet")
                             .font(.neueSubheadlineMedium)
                             .foregroundStyle(AVIATheme.textPrimary)
-                        Spacer()
-                        StatusBadge(title: "\(viewModel.documents.count) files", color: AVIATheme.teal)
+                        Text("Upload PDFs to attach them to this build.")
+                            .font(.neueCaption)
+                            .foregroundStyle(AVIATheme.textSecondary)
+                            .multilineTextAlignment(.center)
                     }
-
-                    ForEach(DocumentCategory.allCases, id: \.self) { category in
-                        let docs = viewModel.documents.filter { $0.category == category }
-                        if !docs.isEmpty {
-                            documentCategoryRow(category: category, count: docs.count)
+                    .frame(maxWidth: .infinity)
+                    .padding(24)
+                }
+            } else {
+                BentoCard(cornerRadius: 16) {
+                    VStack(spacing: 0) {
+                        ForEach(Array(buildDocuments.enumerated()), id: \.element.id) { index, doc in
+                            buildDocumentRow(doc)
+                                .contextMenu {
+                                    Button(role: .destructive) {
+                                        Task {
+                                            let deleted = await SupabaseService.shared.deleteDocumentFromBuild(documentId: doc.id)
+                                            if deleted {
+                                                withAnimation {
+                                                    buildDocuments.removeAll { $0.id == doc.id }
+                                                }
+                                            }
+                                        }
+                                    } label: {
+                                        Label("Delete", systemImage: "trash")
+                                    }
+                                }
+                            if index < buildDocuments.count - 1 {
+                                Rectangle().fill(AVIATheme.surfaceBorder).frame(height: 1).padding(.leading, 56)
+                            }
                         }
                     }
                 }
-                .padding(16)
             }
 
-            BentoCard(cornerRadius: 16) {
-                VStack(spacing: 14) {
-                    Image(systemName: "checkmark.seal.fill")
-                        .font(.system(size: 32))
-                        .foregroundStyle(AVIATheme.success)
-                    Text("Document Status")
-                        .font(.neueSubheadlineMedium)
-                        .foregroundStyle(AVIATheme.textPrimary)
+            // Document status summary
+            if !buildDocuments.isEmpty {
+                BentoCard(cornerRadius: 16) {
+                    VStack(spacing: 14) {
+                        Image(systemName: "checkmark.seal.fill")
+                            .font(.system(size: 32))
+                            .foregroundStyle(AVIATheme.success)
+                        Text("Document Status")
+                            .font(.neueSubheadlineMedium)
+                            .foregroundStyle(AVIATheme.textPrimary)
 
-                    let totalDocs = viewModel.documents.count
-                    let newDocs = viewModel.documents.filter { $0.isNew }.count
+                        let totalDocs = buildDocuments.count
+                        let newDocs = buildDocuments.filter { $0.isNew }.count
 
-                    HStack(spacing: 20) {
-                        docStatusItem(label: "Total", value: "\(totalDocs)", color: AVIATheme.teal)
-                        docStatusItem(label: "New", value: "\(newDocs)", color: AVIATheme.warning)
-                        docStatusItem(label: "Reviewed", value: "\(totalDocs - newDocs)", color: AVIATheme.success)
-                    }
-                }
-                .frame(maxWidth: .infinity)
-                .padding(20)
-            }
-
-            BentoCard(cornerRadius: 16) {
-                VStack(alignment: .leading, spacing: 12) {
-                    Label("Required Documents Checklist", systemImage: "checklist")
-                        .font(.neueSubheadlineMedium)
-                        .foregroundStyle(AVIATheme.textPrimary)
-
-                    ForEach(requiredDocuments, id: \.self) { doc in
-                        let exists = viewModel.documents.contains { $0.name.localizedStandardContains(doc) }
-                        HStack(spacing: 12) {
-                            Image(systemName: exists ? "checkmark.circle.fill" : "circle")
-                                .font(.system(size: 18))
-                                .foregroundStyle(exists ? AVIATheme.success : AVIATheme.textTertiary)
-                            Text(doc)
-                                .font(.neueCaption)
-                                .foregroundStyle(exists ? AVIATheme.textPrimary : AVIATheme.textSecondary)
-                            Spacer()
+                        HStack(spacing: 20) {
+                            docStatusItem(label: "Total", value: "\(totalDocs)", color: AVIATheme.teal)
+                            docStatusItem(label: "New", value: "\(newDocs)", color: AVIATheme.warning)
+                            docStatusItem(label: "Reviewed", value: "\(totalDocs - newDocs)", color: AVIATheme.success)
                         }
                     }
+                    .frame(maxWidth: .infinity)
+                    .padding(20)
                 }
-                .padding(16)
+            }
+        }
+        .task(id: build.id) {
+            isLoadingDocs = true
+            let docs = await SupabaseService.shared.fetchDocuments(clientId: latestBuild.client.id)
+            buildDocuments = docs.filter { $0.buildId == build.id || $0.buildId == nil }
+            isLoadingDocs = false
+        }
+        .sheet(isPresented: $showingDocumentPicker) {
+            DocumentPicker { data, fileName in
+                pendingDocData = data
+                pendingDocFileName = fileName
+                pendingDocName = fileName.replacingOccurrences(of: ".pdf", with: "")
+                showingDocumentPicker = false
+                showingUploadForm = true
+            }
+        }
+        .sheet(isPresented: $showingUploadForm) {
+            uploadFormSheet
+        }
+        .overlay {
+            if isUploadingDoc {
+                ZStack {
+                    Color.black.opacity(0.4).ignoresSafeArea()
+                    VStack(spacing: 16) {
+                        ProgressView()
+                            .scaleEffect(1.3)
+                        Text("Uploading...")
+                            .font(.neueSubheadlineMedium)
+                            .foregroundStyle(.white)
+                    }
+                    .padding(32)
+                    .background(.ultraThinMaterial)
+                    .clipShape(.rect(cornerRadius: 16))
+                }
             }
         }
     }
 
-    private let requiredDocuments = [
-        "Building Contract",
-        "Floor Plan",
-        "Site Plan",
-        "Building Permit",
-        "Engineering Certificate",
-        "Insurance Certificate"
-    ]
+    private func buildDocumentRow(_ doc: ClientDocument) -> some View {
+        Group {
+            if let urlStr = doc.fileURL, let url = URL(string: urlStr) {
+                Link(destination: url) {
+                    buildDocumentRowContent(doc)
+                }
+            } else {
+                buildDocumentRowContent(doc)
+                    .opacity(0.7)
+            }
+        }
+    }
 
-    private func documentCategoryRow(category: DocumentCategory, count: Int) -> some View {
-        HStack(spacing: 12) {
-            Image(systemName: category.icon)
-                .font(.neueCorp(12))
-                .foregroundStyle(AVIATheme.teal)
-                .frame(width: 28, height: 28)
-                .background(AVIATheme.teal.opacity(0.1))
-                .clipShape(Circle())
+    private func buildDocumentRowContent(_ doc: ClientDocument) -> some View {
+        HStack(spacing: 14) {
+            BentoIconCircle(icon: doc.category.icon, color: AVIATheme.teal)
 
-            Text(category.rawValue)
-                .font(.neueCaptionMedium)
-                .foregroundStyle(AVIATheme.textPrimary)
+            VStack(alignment: .leading, spacing: 3) {
+                HStack(spacing: 6) {
+                    Text(doc.name)
+                        .font(.neueSubheadlineMedium)
+                        .foregroundStyle(AVIATheme.textPrimary)
+                        .lineLimit(1)
+                    if doc.isNew {
+                        StatusBadge(title: "NEW", color: AVIATheme.teal)
+                    }
+                    if let stage = doc.buildStageName {
+                        StatusBadge(title: stage, color: AVIATheme.warning)
+                    }
+                }
+                HStack(spacing: 8) {
+                    Text(doc.dateAdded.formatted(date: .abbreviated, time: .omitted))
+                    Text("·")
+                    Text(doc.fileSize)
+                }
+                .font(.neueCaption)
+                .foregroundStyle(AVIATheme.textTertiary)
+            }
 
             Spacer()
 
-            Text("\(count)")
-                .font(.neueCaptionMedium)
-                .foregroundStyle(AVIATheme.textSecondary)
-                .padding(.horizontal, 10)
-                .padding(.vertical, 3)
-                .background(AVIATheme.surfaceElevated)
-                .clipShape(Capsule())
+            Image(systemName: doc.fileURL != nil ? "arrow.down.circle.fill" : "arrow.down.circle")
+                .foregroundStyle(doc.fileURL != nil ? AVIATheme.teal : AVIATheme.textTertiary)
         }
+        .padding(.horizontal, 16)
+        .padding(.vertical, 12)
+    }
+
+    private var uploadFormSheet: some View {
+        NavigationStack {
+            Form {
+                Section("Document Details") {
+                    TextField("Document Name", text: $pendingDocName)
+
+                    Picker("Category", selection: $pendingDocCategory) {
+                        ForEach(DocumentCategory.allCases, id: \.self) { category in
+                            Text(category.rawValue).tag(category)
+                        }
+                    }
+
+                    Picker("Build Stage", selection: $pendingDocStageId) {
+                        Text("No specific stage").tag(nil as String?)
+                        ForEach(latestBuild.buildStages) { stage in
+                            Text(stage.name).tag(stage.id as String?)
+                        }
+                    }
+                }
+
+                Section {
+                    HStack {
+                        Text("File")
+                            .foregroundStyle(AVIATheme.textSecondary)
+                        Spacer()
+                        Text(pendingDocFileName)
+                            .foregroundStyle(AVIATheme.textPrimary)
+                            .lineLimit(1)
+                    }
+                }
+
+                Section {
+                    Button {
+                        Task { await performUpload() }
+                    } label: {
+                        HStack {
+                            Spacer()
+                            if isUploadingDoc {
+                                ProgressView()
+                            } else {
+                                Text("Upload")
+                                    .font(.neueSubheadlineMedium)
+                            }
+                            Spacer()
+                        }
+                    }
+                    .disabled(pendingDocName.isEmpty || pendingDocData == nil || isUploadingDoc)
+                }
+            }
+            .navigationTitle("Upload Document")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .cancellationAction) {
+                    Button("Cancel") {
+                        showingUploadForm = false
+                        pendingDocData = nil
+                    }
+                }
+            }
+        }
+        .presentationDetents([.medium])
+    }
+
+    private func performUpload() async {
+        guard let data = pendingDocData else { return }
+        isUploadingDoc = true
+        defer { isUploadingDoc = false }
+
+        let stageName = pendingDocStageId.flatMap { stageId in
+            latestBuild.buildStages.first { $0.id == stageId }?.name
+        }
+
+        if let doc = await SupabaseService.shared.uploadDocument(
+            buildId: build.id,
+            clientIds: latestBuild.allClientIds,
+            name: pendingDocName,
+            category: pendingDocCategory,
+            fileData: data,
+            fileName: pendingDocFileName,
+            buildStageId: pendingDocStageId,
+            buildStageName: stageName
+        ) {
+            buildDocuments.insert(doc, at: 0)
+        }
+
+        showingUploadForm = false
+        pendingDocData = nil
+        pendingDocName = ""
+        pendingDocCategory = .contracts
+        pendingDocStageId = nil
     }
 
     private func docStatusItem(label: String, value: String, color: Color) -> some View {
@@ -701,6 +877,34 @@ struct AdminBuildEditSheet: View {
             withAnimation {
                 showingSaved = false
             }
+        }
+    }
+}
+
+struct DocumentPicker: UIViewControllerRepresentable {
+    let onPick: (Data, String) -> Void
+
+    func makeUIViewController(context: Context) -> UIDocumentPickerViewController {
+        let picker = UIDocumentPickerViewController(forOpeningContentTypes: [.pdf])
+        picker.allowsMultipleSelection = false
+        picker.delegate = context.coordinator
+        return picker
+    }
+
+    func updateUIViewController(_ uiViewController: UIDocumentPickerViewController, context: Context) {}
+
+    func makeCoordinator() -> Coordinator { Coordinator(onPick: onPick) }
+
+    class Coordinator: NSObject, UIDocumentPickerDelegate {
+        let onPick: (Data, String) -> Void
+        init(onPick: @escaping (Data, String) -> Void) { self.onPick = onPick }
+
+        func documentPicker(_ controller: UIDocumentPickerViewController, didPickDocumentsAt urls: [URL]) {
+            guard let url = urls.first else { return }
+            guard url.startAccessingSecurityScopedResource() else { return }
+            defer { url.stopAccessingSecurityScopedResource() }
+            guard let data = try? Data(contentsOf: url) else { return }
+            onPick(data, url.lastPathComponent)
         }
     }
 }

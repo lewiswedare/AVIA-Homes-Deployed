@@ -71,6 +71,16 @@ class AppViewModel {
             authService.finishRestoring()
             await fetchAllUsersFromSupabase()
             await loadUserData()
+
+            // One-time demo data cleanup — runs only once
+            let demoCleanedKey = "avia_demo_docs_cleared_v1"
+            if !UserDefaults.standard.bool(forKey: demoCleanedKey) && currentRole.isAnyStaffRole {
+                let cleared = await SupabaseService.shared.deleteAllDocuments()
+                if cleared {
+                    UserDefaults.standard.set(true, forKey: demoCleanedKey)
+                    print("[AppViewModel] Demo documents cleared")
+                }
+            }
         } else {
             authService.finishRestoring()
         }
