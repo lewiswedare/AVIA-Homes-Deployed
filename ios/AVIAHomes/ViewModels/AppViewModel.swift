@@ -7,7 +7,7 @@ class AppViewModel {
     var messagingService = MessagingService()
     var pushManager = PushNotificationManager()
     var isLoading = false
-    var currentUser: ClientUser = .sample
+    var currentUser: ClientUser = .empty
     var buildStages: [BuildStage] = []
     var documents: [ClientDocument] = []
     var requests: [ServiceRequest] = []

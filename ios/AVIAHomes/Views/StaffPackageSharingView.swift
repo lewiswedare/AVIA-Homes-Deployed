@@ -14,7 +14,7 @@ struct StaffPackageSharingView: View {
     }
 
     private var allClients: [ClientUser] {
-        let clients = viewModel.clientUsers + [ClientUser.sample]
+        let clients = viewModel.clientUsers
         return Dictionary(grouping: clients, by: \.id).compactMap(\.value.first)
     }
 

@@ -5,7 +5,7 @@ struct AdminClientsSection: View {
     let searchText: String
 
     private var clientsList: [ClientUser] {
-        var clients = viewModel.allRegisteredUsers.filter { $0.role == .client } + [ClientUser.sample]
+        var clients = viewModel.allRegisteredUsers.filter { $0.role == .client }
         clients = Array(Dictionary(grouping: clients, by: \.id).compactMap(\.value.first))
         if !searchText.isEmpty {
             clients = clients.filter {

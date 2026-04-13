@@ -70,8 +70,7 @@ struct PartnerPackageSharingView: View {
             }
         } message: {
             if let clientId = pendingClientId {
-                let allClients = viewModel.clientUsers + [ClientUser.sample]
-                let client = allClients.first { $0.id == clientId }
+                let client = viewModel.clientUsers.first { $0.id == clientId }
                 Text("Send \(package.title) to \(client?.fullName ?? "this client") for review?")
             }
         }
@@ -143,7 +142,7 @@ struct PartnerPackageSharingView: View {
                     .foregroundStyle(AVIATheme.teal)
             }
 
-            let clients = viewModel.clientUsers + [ClientUser.sample]
+            let clients = viewModel.clientUsers
             let uniqueClients = Dictionary(grouping: clients, by: \.id).compactMap(\.value.first)
 
             ForEach(uniqueClients, id: \.id) { client in
@@ -252,8 +251,7 @@ struct PartnerPackageSharingView: View {
                 .padding(.vertical, 40)
             } else {
                 ForEach(responses) { response in
-                    let allClients = viewModel.clientUsers + [ClientUser.sample]
-                    let client = allClients.first { $0.id == response.clientId }
+                    let client = viewModel.clientUsers.first { $0.id == response.clientId }
                     BentoCard(cornerRadius: 14) {
                         HStack(spacing: 12) {
                             Image(systemName: response.status.icon)
