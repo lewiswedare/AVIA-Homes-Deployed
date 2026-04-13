@@ -1059,6 +1059,9 @@ class SupabaseService {
             for item in category.items {
                 let description = item.description(for: specTier)
                 let imageURL = item.customImageURL ?? catalog.specItemBaseImages[item.id]
+                // Standard tier items are pre-confirmed by default.
+                // Only manually upgraded items will deviate from this state.
+                let now = Date.now
                 let selection = BuildSpecSelection(
                     id: UUID().uuidString,
                     buildId: buildId,
@@ -1068,12 +1071,12 @@ class SupabaseService {
                     selectionType: .included,
                     clientNotes: nil,
                     adminNotes: nil,
-                    clientConfirmed: false,
-                    adminConfirmed: false,
-                    clientConfirmedAt: nil,
-                    adminConfirmedAt: nil,
+                    clientConfirmed: true,
+                    adminConfirmed: true,
+                    clientConfirmedAt: now,
+                    adminConfirmedAt: now,
                     lockedForClient: false,
-                    status: .draft,
+                    status: .approved,
                     snapshotName: item.name,
                     snapshotDescription: description,
                     snapshotImageURL: imageURL,
@@ -1094,10 +1097,14 @@ class SupabaseService {
         guard !selections.isEmpty else { return false }
         let now = Date.now
         for i in selections.indices {
+            // Only update items that are standard included — upgrades stay in their own flow
+            guard selections[i].selectionType == .included else { continue }
             selections[i].clientConfirmed = true
             selections[i].clientConfirmedAt = now
             selections[i].lockedForClient = true
-            selections[i].status = .awaitingAdmin
+            if !selections[i].adminConfirmed {
+                selections[i].status = .awaitingAdmin
+            }
         }
         return await upsertBuildSpecSelections(selections)
     }
@@ -1120,6 +1127,8 @@ class SupabaseService {
         var selections = await fetchBuildSpecSelections(buildId: buildId)
         guard !selections.isEmpty else { return false }
         for i in selections.indices {
+            // Only reopen upgrade-requested items — standard included items stay confirmed
+            guard selections[i].selectionType == .upgradeRequested else { continue }
             selections[i].lockedForClient = false
             selections[i].clientConfirmed = false
             selections[i].clientConfirmedAt = nil
