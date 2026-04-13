@@ -68,7 +68,8 @@ class MessagingService {
                 lastMessageDate: .now,
                 lastSenderId: senderId,
                 unreadCount: old.unreadCount,
-                createdAt: old.createdAt
+                createdAt: old.createdAt,
+                conversationType: old.conversationType
             )
             conversations.sort { $0.lastMessageDate > $1.lastMessageDate }
         }
@@ -101,7 +102,37 @@ class MessagingService {
             lastMessageDate: .now,
             lastSenderId: "",
             unreadCount: 0,
-            createdAt: .now
+            createdAt: .now,
+            conversationType: "direct"
+        )
+        conversations.insert(newConv, at: 0)
+
+        guard supabase.isConfigured else { return newConv.id }
+        let row = ConversationInsertRow(from: newConv)
+        _ = try? await supabase.client
+            .from("conversations")
+            .insert(row)
+            .execute()
+
+        return newConv.id
+    }
+
+    func getOrCreateGeneralConversation(currentUserId: String) async -> String {
+        if let existing = conversations.first(where: {
+            $0.conversationType == "general" && $0.participantIds.contains(currentUserId)
+        }) {
+            return existing.id
+        }
+
+        let newConv = Conversation(
+            id: UUID().uuidString,
+            participantIds: [currentUserId],
+            lastMessage: "",
+            lastMessageDate: .now,
+            lastSenderId: "",
+            unreadCount: 0,
+            createdAt: .now,
+            conversationType: "general"
         )
         conversations.insert(newConv, at: 0)
 
@@ -125,7 +156,8 @@ class MessagingService {
                 lastMessageDate: old.lastMessageDate,
                 lastSenderId: old.lastSenderId,
                 unreadCount: 0,
-                createdAt: old.createdAt
+                createdAt: old.createdAt,
+                conversationType: old.conversationType
             )
         }
 
@@ -178,6 +210,24 @@ nonisolated struct ConversationRow: Codable, Sendable {
     let last_sender_id: String?
     let unread_count: Int?
     let created_at: String
+    let conversation_type: String?
+
+    nonisolated enum CodingKeys: String, CodingKey {
+        case id, participant_ids, last_message, last_message_date
+        case last_sender_id, unread_count, created_at, conversation_type
+    }
+
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        id = try container.decode(String.self, forKey: .id)
+        participant_ids = (try? container.decode([String].self, forKey: .participant_ids)) ?? []
+        last_message = try? container.decode(String.self, forKey: .last_message)
+        last_message_date = (try? container.decode(String.self, forKey: .last_message_date)) ?? ""
+        last_sender_id = try? container.decode(String.self, forKey: .last_sender_id)
+        unread_count = try? container.decode(Int.self, forKey: .unread_count)
+        created_at = (try? container.decode(String.self, forKey: .created_at)) ?? ""
+        conversation_type = try? container.decode(String.self, forKey: .conversation_type)
+    }
 
     func toConversation() -> Conversation {
         let formatter = ISO8601DateFormatter()
@@ -189,7 +239,8 @@ nonisolated struct ConversationRow: Codable, Sendable {
             lastMessageDate: formatter.date(from: last_message_date) ?? .now,
             lastSenderId: last_sender_id ?? "",
             unreadCount: unread_count ?? 0,
-            createdAt: formatter.date(from: created_at) ?? .now
+            createdAt: formatter.date(from: created_at) ?? .now,
+            conversationType: conversation_type ?? "direct"
         )
     }
 }
@@ -201,6 +252,7 @@ nonisolated struct ConversationInsertRow: Encodable, Sendable {
     let last_message_date: String
     let last_sender_id: String
     let unread_count: Int
+    let conversation_type: String
 
     init(from c: Conversation) {
         id = c.id
@@ -209,6 +261,7 @@ nonisolated struct ConversationInsertRow: Encodable, Sendable {
         last_message_date = ISO8601DateFormatter().string(from: c.lastMessageDate)
         last_sender_id = c.lastSenderId
         unread_count = c.unreadCount
+        conversation_type = c.conversationType
     }
 }
 

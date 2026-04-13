@@ -120,7 +120,11 @@ class AppViewModel {
             return allClientBuilds.filter { $0.hasClient(id: currentUser.id) }
         case .staff:
             return allClientBuilds.filter { $0.assignedStaffId == currentUser.id }
-        case .admin, .salesAdmin:
+        case .preConstruction:
+            return allClientBuilds.filter { $0.preConstructionStaffId == currentUser.id }
+        case .buildingSupport:
+            return allClientBuilds.filter { $0.buildingSupportStaffId == currentUser.id }
+        case .admin, .salesAdmin, .superAdmin:
             return allClientBuilds
         case .partner, .salesPartner:
             return allClientBuilds.filter { $0.salesPartnerId == currentUser.id }
@@ -233,7 +237,7 @@ class AppViewModel {
 
     private func loadDocumentsFromSupabase() async {
         guard !currentUser.id.isEmpty else { return }
-        if currentRole == .admin || currentRole == .staff || currentRole == .salesAdmin {
+        if currentRole.isAnyStaffRole {
             let docs = await SupabaseService.shared.fetchAllDocuments()
             documents = docs
         } else {
@@ -243,7 +247,7 @@ class AppViewModel {
     }
 
     private func loadPendingSpecReviews() async {
-        guard currentRole == .admin || currentRole == .staff || currentRole == .salesAdmin else { return }
+        guard currentRole.isAnyStaffRole else { return }
         let reviews = await SupabaseService.shared.fetchAllPendingSpecReviews()
         pendingSpecReviews = reviews
     }
@@ -507,7 +511,11 @@ class AppViewModel {
             customGarages: oldBuild.customGarages,
             customSquareMeters: oldBuild.customSquareMeters,
             customStoreys: oldBuild.customStoreys,
-            additionalClients: oldBuild.additionalClients
+            additionalClients: oldBuild.additionalClients,
+            preConstructionStaffId: oldBuild.preConstructionStaffId,
+            buildingSupportStaffId: oldBuild.buildingSupportStaffId,
+            handoverTriggeredAt: oldBuild.handoverTriggeredAt,
+            buildStatus: oldBuild.buildStatus
         )
         allClientBuilds[index] = updated
         syncBuildStagesForCurrentUser()
@@ -557,7 +565,11 @@ class AppViewModel {
             customGarages: oldBuild.customGarages,
             customSquareMeters: oldBuild.customSquareMeters,
             customStoreys: oldBuild.customStoreys,
-            additionalClients: additional
+            additionalClients: additional,
+            preConstructionStaffId: oldBuild.preConstructionStaffId,
+            buildingSupportStaffId: oldBuild.buildingSupportStaffId,
+            handoverTriggeredAt: oldBuild.handoverTriggeredAt,
+            buildStatus: oldBuild.buildStatus
         )
         allClientBuilds[index] = updated
         syncBuildStagesForCurrentUser()
@@ -594,7 +606,11 @@ class AppViewModel {
                 customGarages: oldBuild.customGarages,
                 customSquareMeters: oldBuild.customSquareMeters,
                 customStoreys: oldBuild.customStoreys,
-                additionalClients: newAdditional
+                additionalClients: newAdditional,
+                preConstructionStaffId: oldBuild.preConstructionStaffId,
+                buildingSupportStaffId: oldBuild.buildingSupportStaffId,
+                handoverTriggeredAt: oldBuild.handoverTriggeredAt,
+                buildStatus: oldBuild.buildStatus
             )
         } else {
             let newAdditional = oldBuild.additionalClients.filter { $0.id != clientId }
@@ -615,7 +631,11 @@ class AppViewModel {
                 customGarages: oldBuild.customGarages,
                 customSquareMeters: oldBuild.customSquareMeters,
                 customStoreys: oldBuild.customStoreys,
-                additionalClients: newAdditional
+                additionalClients: newAdditional,
+                preConstructionStaffId: oldBuild.preConstructionStaffId,
+                buildingSupportStaffId: oldBuild.buildingSupportStaffId,
+                handoverTriggeredAt: oldBuild.handoverTriggeredAt,
+                buildStatus: oldBuild.buildStatus
             )
         }
         allClientBuilds[index] = updated
@@ -677,7 +697,11 @@ class AppViewModel {
             customGarages: oldBuild.customGarages,
             customSquareMeters: oldBuild.customSquareMeters,
             customStoreys: oldBuild.customStoreys,
-            additionalClients: oldBuild.additionalClients
+            additionalClients: oldBuild.additionalClients,
+            preConstructionStaffId: oldBuild.preConstructionStaffId,
+            buildingSupportStaffId: oldBuild.buildingSupportStaffId,
+            handoverTriggeredAt: oldBuild.handoverTriggeredAt,
+            buildStatus: oldBuild.buildStatus
         )
         allClientBuilds[index] = updated
         Task {
@@ -708,7 +732,11 @@ class AppViewModel {
             customGarages: oldBuild.customGarages,
             customSquareMeters: oldBuild.customSquareMeters,
             customStoreys: oldBuild.customStoreys,
-            additionalClients: oldBuild.additionalClients
+            additionalClients: oldBuild.additionalClients,
+            preConstructionStaffId: oldBuild.preConstructionStaffId,
+            buildingSupportStaffId: oldBuild.buildingSupportStaffId,
+            handoverTriggeredAt: oldBuild.handoverTriggeredAt,
+            buildStatus: oldBuild.buildStatus
         )
         allClientBuilds[index] = updated
         Task {
@@ -755,7 +783,11 @@ class AppViewModel {
             customGarages: oldBuild.customGarages,
             customSquareMeters: oldBuild.customSquareMeters,
             customStoreys: oldBuild.customStoreys,
-            additionalClients: oldBuild.additionalClients
+            additionalClients: oldBuild.additionalClients,
+            preConstructionStaffId: oldBuild.preConstructionStaffId,
+            buildingSupportStaffId: oldBuild.buildingSupportStaffId,
+            handoverTriggeredAt: oldBuild.handoverTriggeredAt,
+            buildStatus: oldBuild.buildStatus
         )
         syncBuildStagesForCurrentUser()
         Task { await SupabaseService.shared.updateBuildStage(updatedStage, buildId: buildId, sortOrder: stageIndex) }

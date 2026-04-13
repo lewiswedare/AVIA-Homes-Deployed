@@ -10,6 +10,10 @@ nonisolated struct BuildRow: Codable, Sendable {
     let contract_date: String
     let assigned_staff_id: String
     let sales_partner_id: String?
+    let preconstruction_staff_id: String?
+    let building_support_staff_id: String?
+    let handover_triggered_at: String?
+    let status: String
     let created_at: String?
     let updated_at: String?
     let is_custom: Bool?
@@ -23,10 +27,38 @@ nonisolated struct BuildRow: Codable, Sendable {
     nonisolated enum CodingKeys: String, CodingKey {
         case id, client_id, additional_client_ids, home_design, lot_number, estate
         case contract_date, assigned_staff_id, sales_partner_id
+        case preconstruction_staff_id, building_support_staff_id
+        case handover_triggered_at, status
         case created_at, updated_at
         case is_custom, selected_facade_id
         case custom_bedrooms, custom_bathrooms, custom_garages
         case custom_square_meters, custom_storeys
+    }
+
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        id = try container.decode(String.self, forKey: .id)
+        client_id = try container.decode(String.self, forKey: .client_id)
+        additional_client_ids = try? container.decode([String].self, forKey: .additional_client_ids)
+        home_design = try container.decode(String.self, forKey: .home_design)
+        lot_number = try container.decode(String.self, forKey: .lot_number)
+        estate = try container.decode(String.self, forKey: .estate)
+        contract_date = try container.decode(String.self, forKey: .contract_date)
+        assigned_staff_id = try container.decode(String.self, forKey: .assigned_staff_id)
+        sales_partner_id = try? container.decode(String.self, forKey: .sales_partner_id)
+        preconstruction_staff_id = try? container.decode(String.self, forKey: .preconstruction_staff_id)
+        building_support_staff_id = try? container.decode(String.self, forKey: .building_support_staff_id)
+        handover_triggered_at = try? container.decode(String.self, forKey: .handover_triggered_at)
+        status = (try? container.decode(String.self, forKey: .status)) ?? "active"
+        created_at = try? container.decode(String.self, forKey: .created_at)
+        updated_at = try? container.decode(String.self, forKey: .updated_at)
+        is_custom = try? container.decode(Bool.self, forKey: .is_custom)
+        selected_facade_id = try? container.decode(String.self, forKey: .selected_facade_id)
+        custom_bedrooms = try? container.decode(Int.self, forKey: .custom_bedrooms)
+        custom_bathrooms = try? container.decode(Int.self, forKey: .custom_bathrooms)
+        custom_garages = try? container.decode(Int.self, forKey: .custom_garages)
+        custom_square_meters = try? container.decode(Double.self, forKey: .custom_square_meters)
+        custom_storeys = try? container.decode(Int.self, forKey: .custom_storeys)
     }
 
     func encode(to encoder: Encoder) throws {
@@ -40,6 +72,10 @@ nonisolated struct BuildRow: Codable, Sendable {
         try container.encode(contract_date, forKey: .contract_date)
         try container.encode(assigned_staff_id, forKey: .assigned_staff_id)
         try container.encodeIfPresent(sales_partner_id, forKey: .sales_partner_id)
+        try container.encodeIfPresent(preconstruction_staff_id, forKey: .preconstruction_staff_id)
+        try container.encodeIfPresent(building_support_staff_id, forKey: .building_support_staff_id)
+        try container.encodeIfPresent(handover_triggered_at, forKey: .handover_triggered_at)
+        try container.encode(status, forKey: .status)
         try container.encodeIfPresent(updated_at, forKey: .updated_at)
         try container.encodeIfPresent(is_custom, forKey: .is_custom)
         try container.encodeIfPresent(selected_facade_id, forKey: .selected_facade_id)
@@ -61,6 +97,10 @@ nonisolated struct BuildRow: Codable, Sendable {
         contract_date = iso.string(from: build.contractDate)
         assigned_staff_id = build.assignedStaffId
         sales_partner_id = build.salesPartnerId
+        preconstruction_staff_id = build.preConstructionStaffId
+        building_support_staff_id = build.buildingSupportStaffId
+        handover_triggered_at = build.handoverTriggeredAt
+        status = build.buildStatus
         created_at = nil
         updated_at = iso.string(from: .now)
         is_custom = build.isCustom
@@ -94,7 +134,11 @@ nonisolated struct BuildRow: Codable, Sendable {
             customGarages: custom_garages,
             customSquareMeters: custom_square_meters,
             customStoreys: custom_storeys,
-            additionalClients: additionalClients
+            additionalClients: additionalClients,
+            preConstructionStaffId: preconstruction_staff_id,
+            buildingSupportStaffId: building_support_staff_id,
+            handoverTriggeredAt: handover_triggered_at,
+            buildStatus: status
         )
     }
 }
@@ -157,12 +201,39 @@ nonisolated struct PackageAssignmentRow: Codable, Sendable {
     let shared_with_client_ids: [String]
     let client_responses: [ClientResponseRow]
     let is_exclusive: Bool
+    let assigned_by: String?
+    let deposit_status: String
+    let deposit_amount: Double?
+    let deposit_due_date: String?
+    let admin_confirmed_by: String?
+    let admin_confirmed_at: String?
     let created_at: String?
     let updated_at: String?
 
     nonisolated enum CodingKeys: String, CodingKey {
         case id, package_id, assigned_partner_ids, shared_with_client_ids
-        case client_responses, is_exclusive, created_at, updated_at
+        case client_responses, is_exclusive
+        case assigned_by, deposit_status, deposit_amount, deposit_due_date
+        case admin_confirmed_by, admin_confirmed_at
+        case created_at, updated_at
+    }
+
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        id = try container.decode(String.self, forKey: .id)
+        package_id = try container.decode(String.self, forKey: .package_id)
+        assigned_partner_ids = (try? container.decode([String].self, forKey: .assigned_partner_ids)) ?? []
+        shared_with_client_ids = (try? container.decode([String].self, forKey: .shared_with_client_ids)) ?? []
+        client_responses = (try? container.decode([ClientResponseRow].self, forKey: .client_responses)) ?? []
+        is_exclusive = (try? container.decode(Bool.self, forKey: .is_exclusive)) ?? false
+        assigned_by = try? container.decode(String.self, forKey: .assigned_by)
+        deposit_status = (try? container.decode(String.self, forKey: .deposit_status)) ?? "pending"
+        deposit_amount = try? container.decode(Double.self, forKey: .deposit_amount)
+        deposit_due_date = try? container.decode(String.self, forKey: .deposit_due_date)
+        admin_confirmed_by = try? container.decode(String.self, forKey: .admin_confirmed_by)
+        admin_confirmed_at = try? container.decode(String.self, forKey: .admin_confirmed_at)
+        created_at = try? container.decode(String.self, forKey: .created_at)
+        updated_at = try? container.decode(String.self, forKey: .updated_at)
     }
 
     func encode(to encoder: Encoder) throws {
@@ -173,6 +244,12 @@ nonisolated struct PackageAssignmentRow: Codable, Sendable {
         try container.encode(shared_with_client_ids, forKey: .shared_with_client_ids)
         try container.encode(client_responses, forKey: .client_responses)
         try container.encode(is_exclusive, forKey: .is_exclusive)
+        try container.encodeIfPresent(assigned_by, forKey: .assigned_by)
+        try container.encode(deposit_status, forKey: .deposit_status)
+        try container.encodeIfPresent(deposit_amount, forKey: .deposit_amount)
+        try container.encodeIfPresent(deposit_due_date, forKey: .deposit_due_date)
+        try container.encodeIfPresent(admin_confirmed_by, forKey: .admin_confirmed_by)
+        try container.encodeIfPresent(admin_confirmed_at, forKey: .admin_confirmed_at)
         try container.encodeIfPresent(updated_at, forKey: .updated_at)
     }
 
@@ -184,6 +261,12 @@ nonisolated struct PackageAssignmentRow: Codable, Sendable {
         shared_with_client_ids = assignment.sharedWithClientIds
         client_responses = assignment.clientResponses.map { ClientResponseRow(from: $0) }
         is_exclusive = assignment.isExclusive
+        assigned_by = assignment.assignedBy
+        deposit_status = assignment.depositStatus
+        deposit_amount = assignment.depositAmount
+        deposit_due_date = assignment.depositDueDate
+        admin_confirmed_by = assignment.adminConfirmedBy
+        admin_confirmed_at = assignment.adminConfirmedAt
         created_at = nil
         updated_at = iso.string(from: .now)
     }
@@ -195,7 +278,13 @@ nonisolated struct PackageAssignmentRow: Codable, Sendable {
             assignedPartnerIds: assigned_partner_ids,
             sharedWithClientIds: shared_with_client_ids,
             clientResponses: client_responses.map { $0.toClientPackageResponse() },
-            isExclusive: is_exclusive
+            isExclusive: is_exclusive,
+            assignedBy: assigned_by,
+            depositStatus: deposit_status,
+            depositAmount: deposit_amount,
+            depositDueDate: deposit_due_date,
+            adminConfirmedBy: admin_confirmed_by,
+            adminConfirmedAt: admin_confirmed_at
         )
     }
 }

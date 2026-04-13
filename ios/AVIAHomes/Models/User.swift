@@ -15,6 +15,8 @@ nonisolated struct ClientUser: Identifiable, Sendable {
     var assignedClientIds: [String]
     var assignedStaffId: String?
     var salesPartnerId: String?
+    var displayTitle: String?
+    var avatarUrl: String?
 
     var fullName: String { "\(firstName) \(lastName)" }
 
@@ -26,7 +28,7 @@ nonisolated struct ClientUser: Identifiable, Sendable {
 
     var isClient: Bool { role == .client }
     var isStaff: Bool { role == .staff }
-    var isAdmin: Bool { role == .admin }
+    var isAdmin: Bool { role.isAdmin }
     var isPartner: Bool { role == .partner }
 
     static let empty = ClientUser(
@@ -43,8 +45,8 @@ nonisolated struct ClientUser: Identifiable, Sendable {
         role: .client,
         assignedClientIds: [],
         assignedStaffId: nil,
-        salesPartnerId: nil
+        salesPartnerId: nil,
+        displayTitle: nil,
+        avatarUrl: nil
     )
-
-
 }

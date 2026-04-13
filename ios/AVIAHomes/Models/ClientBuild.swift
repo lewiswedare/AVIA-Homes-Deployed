@@ -18,6 +18,10 @@ nonisolated struct ClientBuild: Identifiable, Sendable {
     let customGarages: Int?
     let customSquareMeters: Double?
     let customStoreys: Int?
+    let preConstructionStaffId: String?
+    let buildingSupportStaffId: String?
+    let handoverTriggeredAt: String?
+    let buildStatus: String
 
     var allClients: [ClientUser] {
         var result = [client]
@@ -43,7 +47,7 @@ nonisolated struct ClientBuild: Identifiable, Sendable {
         client.id == userId || additionalClients.contains { $0.id == userId }
     }
 
-    init(id: String, client: ClientUser, homeDesign: String, lotNumber: String, estate: String, contractDate: Date, buildStages: [BuildStage], assignedStaffId: String, salesPartnerId: String?, isCustom: Bool = false, selectedFacadeId: String? = nil, customBedrooms: Int? = nil, customBathrooms: Int? = nil, customGarages: Int? = nil, customSquareMeters: Double? = nil, customStoreys: Int? = nil, additionalClients: [ClientUser] = []) {
+    init(id: String, client: ClientUser, homeDesign: String, lotNumber: String, estate: String, contractDate: Date, buildStages: [BuildStage], assignedStaffId: String, salesPartnerId: String?, isCustom: Bool = false, selectedFacadeId: String? = nil, customBedrooms: Int? = nil, customBathrooms: Int? = nil, customGarages: Int? = nil, customSquareMeters: Double? = nil, customStoreys: Int? = nil, additionalClients: [ClientUser] = [], preConstructionStaffId: String? = nil, buildingSupportStaffId: String? = nil, handoverTriggeredAt: String? = nil, buildStatus: String = "active") {
         self.id = id
         self.client = client
         self.additionalClients = additionalClients
@@ -61,6 +65,10 @@ nonisolated struct ClientBuild: Identifiable, Sendable {
         self.customGarages = customGarages
         self.customSquareMeters = customSquareMeters
         self.customStoreys = customStoreys
+        self.preConstructionStaffId = preConstructionStaffId
+        self.buildingSupportStaffId = buildingSupportStaffId
+        self.handoverTriggeredAt = handoverTriggeredAt
+        self.buildStatus = buildStatus
     }
 
     var currentStage: BuildStage? {

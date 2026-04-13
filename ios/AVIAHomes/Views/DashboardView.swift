@@ -16,6 +16,8 @@ struct DashboardView: View {
     @State private var showDesignDirectory: Bool = false
     @State private var showJourneyDetail: Bool = false
     @State private var showMyDesignPlan: Bool = false
+    @State private var assignedStaffProfile: ClientUser?
+    @State private var showGeneralMessage = false
 
     private let segments = ["My Home", "Discover"]
 
@@ -249,6 +251,8 @@ struct DashboardView: View {
         VStack(spacing: 12) {
             journeyCard
             packageCard
+            staffContactSection
+            generalMessageButton
             nextUpCountdownCard
             scheduleAndTasksRow
             dateAndBuildInfo
@@ -256,6 +260,38 @@ struct DashboardView: View {
             buildProgressGauge
             resourceUsageCard
             upcomingScheduleList
+        }
+        .task { await loadStaffContact() }
+    }
+
+    @ViewBuilder
+    private var staffContactSection: some View {
+        if let staff = assignedStaffProfile {
+            StaffContactCard(staffUser: staff)
+        }
+    }
+
+    private var generalMessageButton: some View {
+        Group {
+            if assignedStaffProfile == nil {
+                PremiumButton("Contact Us", icon: "message.fill", style: .secondary) {
+                    showGeneralMessage = true
+                }
+                .sheet(isPresented: $showGeneralMessage) {
+                    NavigationStack {
+                        GeneralMessageSheet()
+                    }
+                }
+            }
+        }
+    }
+
+    private func loadStaffContact() async {
+        guard let build = viewModel.clientBuildsForCurrentUser.first else { return }
+        if build.handoverTriggeredAt != nil, let bsId = build.buildingSupportStaffId, !bsId.isEmpty {
+            assignedStaffProfile = await SupabaseService.shared.fetchProfile(userId: bsId)
+        } else if let pcId = build.preConstructionStaffId, !pcId.isEmpty {
+            assignedStaffProfile = await SupabaseService.shared.fetchProfile(userId: pcId)
         }
     }
 

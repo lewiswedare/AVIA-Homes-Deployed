@@ -64,9 +64,12 @@ struct ConversationsView: View {
 
             VStack(alignment: .leading, spacing: 4) {
                 HStack {
-                    Text(otherUser?.fullName ?? "Unknown User")
+                    Text(conversation.isGeneral ? "General Message" : (otherUser?.fullName ?? "Unknown User"))
                         .font(.neueSubheadlineMedium)
                         .foregroundStyle(AVIATheme.textPrimary)
+                    if conversation.isGeneral {
+                        StatusBadge(title: "General", color: AVIATheme.warning)
+                    }
                     Spacer()
                     Text(formatDate(conversation.lastMessageDate))
                         .font(.neueCaption2)

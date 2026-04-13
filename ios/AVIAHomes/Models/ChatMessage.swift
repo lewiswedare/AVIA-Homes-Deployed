@@ -8,6 +8,7 @@ nonisolated struct Conversation: Identifiable, Sendable, Hashable {
     let lastSenderId: String
     var unreadCount: Int
     let createdAt: Date
+    let conversationType: String
 
     nonisolated func hash(into hasher: inout Hasher) {
         hasher.combine(id)
@@ -15,6 +16,10 @@ nonisolated struct Conversation: Identifiable, Sendable, Hashable {
 
     nonisolated static func == (lhs: Conversation, rhs: Conversation) -> Bool {
         lhs.id == rhs.id
+    }
+
+    var isGeneral: Bool {
+        conversationType == "general"
     }
 
     func otherParticipantId(currentUserId: String) -> String {

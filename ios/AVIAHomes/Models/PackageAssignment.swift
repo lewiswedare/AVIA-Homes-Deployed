@@ -7,14 +7,26 @@ nonisolated struct PackageAssignment: Identifiable, Codable, Sendable, Hashable 
     var sharedWithClientIds: [String]
     var clientResponses: [ClientPackageResponse]
     var isExclusive: Bool
+    var assignedBy: String?
+    var depositStatus: String
+    var depositAmount: Double?
+    var depositDueDate: String?
+    var adminConfirmedBy: String?
+    var adminConfirmedAt: String?
 
-    init(id: String = UUID().uuidString, packageId: String, assignedPartnerIds: [String] = [], sharedWithClientIds: [String] = [], clientResponses: [ClientPackageResponse] = [], isExclusive: Bool = false) {
+    init(id: String = UUID().uuidString, packageId: String, assignedPartnerIds: [String] = [], sharedWithClientIds: [String] = [], clientResponses: [ClientPackageResponse] = [], isExclusive: Bool = false, assignedBy: String? = nil, depositStatus: String = "pending", depositAmount: Double? = nil, depositDueDate: String? = nil, adminConfirmedBy: String? = nil, adminConfirmedAt: String? = nil) {
         self.id = id
         self.packageId = packageId
         self.assignedPartnerIds = assignedPartnerIds
         self.sharedWithClientIds = sharedWithClientIds
         self.clientResponses = clientResponses
         self.isExclusive = isExclusive
+        self.assignedBy = assignedBy
+        self.depositStatus = depositStatus
+        self.depositAmount = depositAmount
+        self.depositDueDate = depositDueDate
+        self.adminConfirmedBy = adminConfirmedBy
+        self.adminConfirmedAt = adminConfirmedAt
     }
 }
 

@@ -15,8 +15,10 @@ struct ContentView: View {
                     } else {
                         ClientDiscoverTabView()
                     }
-                case .staff:
+                case .staff, .preConstruction, .buildingSupport:
                     StaffTabView()
+                case .superAdmin:
+                    SuperAdminTabView()
                 case .admin, .salesAdmin:
                     AdminTabView()
                 case .partner, .salesPartner:
@@ -316,6 +318,79 @@ struct ClientDiscoverTabView: View {
                 }
             }
             .badge(viewModel.notificationService.unreadCount)
+            Tab("More", systemImage: "ellipsis.circle.fill", value: 4) {
+                MoreView()
+            }
+        }
+        .tint(AVIATheme.teal)
+        .task { await viewModel.loadUserData() }
+    }
+}
+
+struct SuperAdminTabView: View {
+    @State private var selectedTab = 0
+    @Environment(AppViewModel.self) private var viewModel
+
+    init() {
+        let appearance = UITabBarAppearance()
+        appearance.configureWithDefaultBackground()
+        appearance.backgroundColor = UIColor(AVIATheme.cardBackground)
+        appearance.shadowColor = UIColor(AVIATheme.surfaceBorder)
+        UITabBar.appearance().standardAppearance = appearance
+        UITabBar.appearance().scrollEdgeAppearance = appearance
+    }
+
+    var body: some View {
+        TabView(selection: $selectedTab) {
+            Tab("Overview", systemImage: "chart.bar.doc.horizontal.fill", value: 0) {
+                SuperAdminDashboard()
+            }
+            Tab("Dashboard", systemImage: "square.grid.2x2.fill", value: 1) {
+                AdminDashboardView()
+            }
+            Tab("Packages", systemImage: "house.and.flag.fill", value: 2) {
+                NavigationStack {
+                    ScrollView {
+                        PackagesContentView()
+                            .padding(.horizontal, 16)
+                            .padding(.vertical, 8)
+                    }
+                    .background(AVIATheme.background)
+                    .navigationTitle("Packages")
+                    .navigationBarTitleDisplayMode(.large)
+                    .navigationDestination(for: HouseLandPackage.self) { pkg in
+                        PackageDetailView(package: pkg)
+                    }
+                    .navigationDestination(for: HomeDesign.self) { design in
+                        HomeDesignDetailView(design: design)
+                    }
+                    .navigationDestination(for: LandEstate.self) { estate in
+                        EstateDetailView(estate: estate)
+                    }
+                    .navigationDestination(for: SpecTier.self) { tier in
+                        SpecRangeDetailView(tier: tier)
+                    }
+                    .navigationDestination(for: Facade.self) { facade in
+                        FacadeDetailView(facade: facade)
+                    }
+                    .toolbar {
+                        ToolbarItem(placement: .topBarTrailing) {
+                            NavigationLink {
+                                PackageManagementView()
+                            } label: {
+                                Image(systemName: "slider.horizontal.3")
+                                    .font(.neueSubheadline)
+                            }
+                        }
+                    }
+                }
+            }
+            Tab("Messages", systemImage: "message.fill", value: 3) {
+                NavigationStack {
+                    ConversationsView()
+                }
+            }
+            .badge(viewModel.messagingService.totalUnreadCount)
             Tab("More", systemImage: "ellipsis.circle.fill", value: 4) {
                 MoreView()
             }

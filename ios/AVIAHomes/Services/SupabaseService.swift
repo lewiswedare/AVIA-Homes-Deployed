@@ -614,6 +614,84 @@ class SupabaseService {
         }
     }
 
+    // MARK: - Build Field Updates
+
+    func updateBuildFields(buildId: String, fields: [String: String]) async -> Bool {
+        guard isConfigured else { return false }
+        do {
+            try await client
+                .from("builds")
+                .update(fields)
+                .eq("id", value: buildId)
+                .execute()
+            return true
+        } catch {
+            print("[SupabaseService] updateBuildFields FAILED for buildId=\(buildId) — \(error)")
+            return false
+        }
+    }
+
+    func updatePackageAssignmentFields(assignmentId: String, fields: [String: AnyJSON]) async -> Bool {
+        guard isConfigured else { return false }
+        do {
+            try await client
+                .from("package_assignments")
+                .update(fields)
+                .eq("id", value: assignmentId)
+                .execute()
+            return true
+        } catch {
+            print("[SupabaseService] updatePackageAssignmentFields FAILED — \(error)")
+            return false
+        }
+    }
+
+    func fetchProfilesByRole(role: String) async -> [ClientUser] {
+        guard isConfigured else { return [] }
+        do {
+            let rows: [ProfileRow] = try await client
+                .from("profiles")
+                .select()
+                .eq("role", value: role)
+                .execute()
+                .value
+            return rows.map { $0.toClientUser() }
+        } catch {
+            print("[SupabaseService] fetchProfilesByRole FAILED: \(error)")
+            return []
+        }
+    }
+
+    func upsertScheduleItem(_ item: ScheduleItem, clientId: String) async -> Bool {
+        guard isConfigured else { return false }
+        let row = ScheduleItemRow(from: item, clientId: clientId)
+        do {
+            try await client
+                .from("schedule_items")
+                .upsert(row)
+                .execute()
+            return true
+        } catch {
+            print("[SupabaseService] upsertScheduleItem FAILED: \(error)")
+            return false
+        }
+    }
+
+    func deleteScheduleItem(id: String) async -> Bool {
+        guard isConfigured else { return false }
+        do {
+            try await client
+                .from("schedule_items")
+                .delete()
+                .eq("id", value: id)
+                .execute()
+            return true
+        } catch {
+            print("[SupabaseService] deleteScheduleItem FAILED: \(error)")
+            return false
+        }
+    }
+
     // MARK: - Catalogue Data (Colours, Specs, Schemes, Ranges)
 
     func fetchColourCategories() async -> [ColourCategory] {
