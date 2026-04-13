@@ -12,6 +12,7 @@ nonisolated enum NotificationType: String, Codable, Sendable {
     case upgradeQuoted = "upgrade_quoted"
     case colourSelectionSubmitted = "colour_selection_submitted"
     case specTierChanged = "spec_tier_changed"
+    case documentAdded = "document_added"
 
     var icon: String {
         switch self {
@@ -26,6 +27,7 @@ nonisolated enum NotificationType: String, Codable, Sendable {
         case .upgradeQuoted: "dollarsign.circle.fill"
         case .colourSelectionSubmitted: "paintpalette.fill"
         case .specTierChanged: "arrow.up.circle.fill"
+        case .documentAdded: "doc.text.fill"
         }
     }
 
@@ -42,6 +44,7 @@ nonisolated enum NotificationType: String, Codable, Sendable {
         case .upgradeQuoted: "teal"
         case .colourSelectionSubmitted: "teal"
         case .specTierChanged: "warning"
+        case .documentAdded: "teal"
         }
     }
 }

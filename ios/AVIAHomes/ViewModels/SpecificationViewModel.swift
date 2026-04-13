@@ -52,7 +52,13 @@ class SpecificationViewModel {
 
     func load(buildId: String) async {
         self.buildId = buildId
-        let rows = await SupabaseService.shared.fetchBuildSpecSelections(buildId: buildId)
+        var rows = await SupabaseService.shared.fetchBuildSpecSelections(buildId: buildId)
+
+        if rows.isEmpty {
+            let _ = await SupabaseService.shared.createBuildSpecSnapshot(buildId: buildId, specTier: currentTier)
+            rows = await SupabaseService.shared.fetchBuildSpecSelections(buildId: buildId)
+        }
+
         cachedSelections = rows
 
         if let firstTier = rows.first?.specTier {

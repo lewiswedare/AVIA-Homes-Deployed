@@ -213,8 +213,9 @@ class SupabaseService {
         return true
     }
 
-    func deleteBuild(buildId: String) async {
-        guard isConfigured else { return }
+    @discardableResult
+    func deleteBuild(buildId: String) async -> Bool {
+        guard isConfigured else { return false }
         _ = try? await client
             .from("build_stages")
             .delete()
@@ -231,10 +232,27 @@ class SupabaseService {
             .eq("build_id", value: buildId)
             .execute()
         _ = try? await client
-            .from("builds")
+            .from("service_requests")
             .delete()
-            .eq("id", value: buildId)
+            .eq("build_id", value: buildId)
             .execute()
+        _ = try? await client
+            .from("documents")
+            .delete()
+            .eq("build_id", value: buildId)
+            .execute()
+        do {
+            try await client
+                .from("builds")
+                .delete()
+                .eq("id", value: buildId)
+                .execute()
+            print("[SupabaseService] deleteBuild SUCCESS for id=\(buildId)")
+            return true
+        } catch {
+            print("[SupabaseService] deleteBuild FAILED for id=\(buildId) — error: \(error)")
+            return false
+        }
     }
 
     func removeClientFromBuild(buildId: String, clientId: String, newPrimaryId: String?, newAdditionalIds: [String]) async -> Bool {
@@ -333,12 +351,12 @@ class SupabaseService {
     }
 
     @discardableResult
-    func upsertServiceRequest(_ request: ServiceRequest, clientId: String) async -> Bool {
+    func upsertServiceRequest(_ request: ServiceRequest, clientId: String, buildId: String? = nil) async -> Bool {
         guard isConfigured else {
             print("[SupabaseService] upsertServiceRequest: not configured")
             return false
         }
-        let row = ServiceRequestRow(from: request, clientId: clientId)
+        let row = ServiceRequestRow(from: request, clientId: clientId, buildId: buildId)
         do {
             try await client
                 .from("service_requests")

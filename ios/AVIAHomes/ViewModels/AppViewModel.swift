@@ -630,7 +630,10 @@ class AppViewModel {
         allClientBuilds.removeAll { $0.id == buildId }
         syncBuildStagesForCurrentUser()
         Task {
-            await SupabaseService.shared.deleteBuild(buildId: buildId)
+            let success = await SupabaseService.shared.deleteBuild(buildId: buildId)
+            if !success {
+                print("[AppViewModel] deleteBuild: server delete failed for buildId=\(buildId), re-fetching to restore state")
+            }
             await refreshBuildsAndAssignments()
         }
     }
@@ -1088,8 +1091,9 @@ class AppViewModel {
         requests.insert(request, at: 0)
 
         let staffRecipients = allRegisteredUsers.filter { $0.role.isAnyStaffRole }
+        let buildId = clientBuildsForCurrentUser.first?.id
         Task {
-            await SupabaseService.shared.upsertServiceRequest(request, clientId: currentUser.id)
+            await SupabaseService.shared.upsertServiceRequest(request, clientId: currentUser.id, buildId: buildId)
             for staff in staffRecipients {
                 await notificationService.createNotification(
                     recipientId: staff.id,

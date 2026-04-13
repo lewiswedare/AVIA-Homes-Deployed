@@ -10,44 +10,42 @@ struct ConversationsView: View {
     }
 
     var body: some View {
-        NavigationStack {
-            ScrollView {
-                if sortedConversations.isEmpty {
-                    emptyState
-                } else {
-                    LazyVStack(spacing: 0) {
-                        ForEach(sortedConversations) { conversation in
-                            NavigationLink(value: conversation) {
-                                conversationRow(conversation)
-                            }
-                            .buttonStyle(.plain)
+        ScrollView {
+            if sortedConversations.isEmpty {
+                emptyState
+            } else {
+                LazyVStack(spacing: 0) {
+                    ForEach(sortedConversations) { conversation in
+                        NavigationLink(value: conversation) {
+                            conversationRow(conversation)
                         }
+                        .buttonStyle(.plain)
                     }
                 }
             }
-            .background(AVIATheme.background)
-            .navigationTitle("Messages")
-            .navigationBarTitleDisplayMode(.large)
-            .toolbar {
-                ToolbarItem(placement: .topBarTrailing) {
-                    Button {
-                        showNewMessage = true
-                    } label: {
-                        Image(systemName: "square.and.pencil")
-                            .font(.neueSubheadline)
-                    }
-                    .tint(AVIATheme.teal)
+        }
+        .background(AVIATheme.background)
+        .navigationTitle("Messages")
+        .navigationBarTitleDisplayMode(.large)
+        .toolbar {
+            ToolbarItem(placement: .topBarTrailing) {
+                Button {
+                    showNewMessage = true
+                } label: {
+                    Image(systemName: "square.and.pencil")
+                        .font(.neueSubheadline)
                 }
+                .tint(AVIATheme.teal)
             }
-            .navigationDestination(for: Conversation.self) { conversation in
-                ChatView(conversation: conversation)
-            }
-            .sheet(isPresented: $showNewMessage) {
-                NewConversationSheet()
-            }
-            .refreshable {
-                await viewModel.messagingService.loadConversations(for: viewModel.currentUser.id)
-            }
+        }
+        .navigationDestination(for: Conversation.self) { conversation in
+            ChatView(conversation: conversation)
+        }
+        .sheet(isPresented: $showNewMessage) {
+            NewConversationSheet()
+        }
+        .refreshable {
+            await viewModel.messagingService.loadConversations(for: viewModel.currentUser.id)
         }
     }
 

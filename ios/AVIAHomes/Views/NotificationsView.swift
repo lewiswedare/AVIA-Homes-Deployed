@@ -2,7 +2,6 @@ import SwiftUI
 
 struct NotificationsView: View {
     @Environment(AppViewModel.self) private var viewModel
-    @State private var selectedNotification: AppNotification?
 
     private var groupedNotifications: [(String, [AppNotification])] {
         let calendar = Calendar.current
@@ -23,42 +22,40 @@ struct NotificationsView: View {
     }
 
     var body: some View {
-        NavigationStack {
-            ScrollView {
-                if viewModel.notificationService.notifications.isEmpty {
-                    emptyState
-                } else {
-                    LazyVStack(spacing: 0) {
-                        ForEach(groupedNotifications, id: \.0) { section, items in
-                            sectionHeader(section)
-                            ForEach(items) { notification in
-                                notificationRow(notification)
-                            }
+        ScrollView {
+            if viewModel.notificationService.notifications.isEmpty {
+                emptyState
+            } else {
+                LazyVStack(spacing: 0) {
+                    ForEach(groupedNotifications, id: \.0) { section, items in
+                        sectionHeader(section)
+                        ForEach(items) { notification in
+                            notificationRow(notification)
                         }
                     }
-                    .padding(.bottom, 40)
                 }
+                .padding(.bottom, 40)
             }
-            .background(AVIATheme.background)
-            .navigationTitle("Notifications")
-            .navigationBarTitleDisplayMode(.large)
-            .toolbar {
-                ToolbarItem(placement: .topBarTrailing) {
-                    if viewModel.notificationService.unreadCount > 0 {
-                        Button("Read All") {
-                            Task {
-                                await viewModel.notificationService.markAllAsRead(for: viewModel.currentUser.id)
-                                viewModel.pushManager.updateBadgeCount(0)
-                            }
+        }
+        .background(AVIATheme.background)
+        .navigationTitle("Notifications")
+        .navigationBarTitleDisplayMode(.large)
+        .toolbar {
+            ToolbarItem(placement: .topBarTrailing) {
+                if viewModel.notificationService.unreadCount > 0 {
+                    Button("Read All") {
+                        Task {
+                            await viewModel.notificationService.markAllAsRead(for: viewModel.currentUser.id)
+                            viewModel.pushManager.updateBadgeCount(0)
                         }
-                        .font(.neueCaptionMedium)
-                        .foregroundStyle(AVIATheme.teal)
                     }
+                    .font(.neueCaptionMedium)
+                    .foregroundStyle(AVIATheme.teal)
                 }
             }
-            .refreshable {
-                await viewModel.notificationService.loadNotifications(for: viewModel.currentUser.id)
-            }
+        }
+        .refreshable {
+            await viewModel.notificationService.loadNotifications(for: viewModel.currentUser.id)
         }
     }
 
@@ -76,52 +73,129 @@ struct NotificationsView: View {
         .padding(.bottom, 8)
     }
 
+    @ViewBuilder
     private func notificationRow(_ notification: AppNotification) -> some View {
-        Button {
-            Task {
-                await viewModel.notificationService.markAsRead(notification.id)
-                viewModel.pushManager.updateBadgeCount(viewModel.notificationService.unreadCount)
+        if hasDestination(notification) {
+            NavigationLink {
+                notificationDestination(notification)
+            } label: {
+                notificationRowContent(notification)
             }
-        } label: {
-            HStack(spacing: 14) {
-                ZStack {
-                    Circle()
-                        .fill(notificationColor(notification.type).opacity(0.12))
-                        .frame(width: 42, height: 42)
-                    Image(systemName: notification.type.icon)
-                        .font(.system(size: 16, weight: .semibold))
-                        .foregroundStyle(notificationColor(notification.type))
-                }
-
-                VStack(alignment: .leading, spacing: 4) {
-                    HStack(spacing: 6) {
-                        Text(notification.title)
-                            .font(.neueSubheadlineMedium)
-                            .foregroundStyle(AVIATheme.textPrimary)
-                        Spacer()
-                        Text(timeAgo(notification.createdAt))
-                            .font(.neueCaption2)
-                            .foregroundStyle(AVIATheme.textTertiary)
-                    }
-
-                    Text(notification.message)
-                        .font(.neueCaption)
-                        .foregroundStyle(AVIATheme.textSecondary)
-                        .lineLimit(2)
-                        .multilineTextAlignment(.leading)
-                }
-
-                if !notification.isRead {
-                    Circle()
-                        .fill(AVIATheme.teal)
-                        .frame(width: 8, height: 8)
-                }
+            .buttonStyle(.plain)
+            .simultaneousGesture(TapGesture().onEnded {
+                markAsRead(notification)
+            })
+        } else {
+            Button {
+                markAsRead(notification)
+            } label: {
+                notificationRowContent(notification)
             }
-            .padding(.horizontal, 20)
-            .padding(.vertical, 12)
-            .background(notification.isRead ? Color.clear : AVIATheme.teal.opacity(0.03))
+            .buttonStyle(.plain)
         }
-        .buttonStyle(.plain)
+    }
+
+    private func markAsRead(_ notification: AppNotification) {
+        Task {
+            await viewModel.notificationService.markAsRead(notification.id)
+            viewModel.pushManager.updateBadgeCount(viewModel.notificationService.unreadCount)
+        }
+    }
+
+    private func hasDestination(_ notification: AppNotification) -> Bool {
+        switch notification.type {
+        case .newMessage:
+            guard let refId = notification.referenceId else { return false }
+            return viewModel.messagingService.conversations.contains { $0.id == refId }
+        case .specTierChanged, .upgradeQuoted:
+            return true
+        case .colourSelectionSubmitted:
+            return resolveBuildId(for: notification) != nil
+        case .requestSubmitted, .requestResponse:
+            return true
+        case .packageShared, .packageApproved, .packageDeclined:
+            return true
+        case .buildUpdate:
+            return true
+        case .documentAdded:
+            return true
+        case .roleAssigned:
+            return false
+        }
+    }
+
+    @ViewBuilder
+    private func notificationDestination(_ notification: AppNotification) -> some View {
+        switch notification.type {
+        case .newMessage:
+            if let refId = notification.referenceId,
+               let conversation = viewModel.messagingService.conversations.first(where: { $0.id == refId }) {
+                ChatView(conversation: conversation)
+            }
+        case .specTierChanged, .upgradeQuoted:
+            SpecificationsOverviewView()
+        case .colourSelectionSubmitted:
+            if let buildId = resolveBuildId(for: notification) {
+                BuildColourSelectionView(buildId: buildId)
+            }
+        case .requestSubmitted, .requestResponse:
+            RequestsView()
+        case .packageShared, .packageApproved, .packageDeclined:
+            ClientPackageReviewView()
+        case .buildUpdate:
+            BuildProgressView()
+        case .documentAdded:
+            DocumentsView()
+        case .roleAssigned:
+            EmptyView()
+        }
+    }
+
+    private func resolveBuildId(for notification: AppNotification) -> String? {
+        if let refId = notification.referenceId, !refId.isEmpty {
+            return refId
+        }
+        return viewModel.clientBuildsForCurrentUser.first?.id
+    }
+
+    private func notificationRowContent(_ notification: AppNotification) -> some View {
+        HStack(spacing: 14) {
+            ZStack {
+                Circle()
+                    .fill(notificationColor(notification.type).opacity(0.12))
+                    .frame(width: 42, height: 42)
+                Image(systemName: notification.type.icon)
+                    .font(.system(size: 16, weight: .semibold))
+                    .foregroundStyle(notificationColor(notification.type))
+            }
+
+            VStack(alignment: .leading, spacing: 4) {
+                HStack(spacing: 6) {
+                    Text(notification.title)
+                        .font(.neueSubheadlineMedium)
+                        .foregroundStyle(AVIATheme.textPrimary)
+                    Spacer()
+                    Text(timeAgo(notification.createdAt))
+                        .font(.neueCaption2)
+                        .foregroundStyle(AVIATheme.textTertiary)
+                }
+
+                Text(notification.message)
+                    .font(.neueCaption)
+                    .foregroundStyle(AVIATheme.textSecondary)
+                    .lineLimit(2)
+                    .multilineTextAlignment(.leading)
+            }
+
+            if !notification.isRead {
+                Circle()
+                    .fill(AVIATheme.teal)
+                    .frame(width: 8, height: 8)
+            }
+        }
+        .padding(.horizontal, 20)
+        .padding(.vertical, 12)
+        .background(notification.isRead ? Color.clear : AVIATheme.teal.opacity(0.03))
     }
 
     private var emptyState: some View {

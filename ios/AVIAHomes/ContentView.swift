@@ -143,11 +143,15 @@ struct StaffTabView: View {
                 }
             }
             Tab("Messages", systemImage: "message.fill", value: 2) {
-                ConversationsView()
+                NavigationStack {
+                    ConversationsView()
+                }
             }
             .badge(viewModel.messagingService.totalUnreadCount)
             Tab("Alerts", systemImage: "bell.fill", value: 3) {
-                NotificationsView()
+                NavigationStack {
+                    NotificationsView()
+                }
             }
             .badge(viewModel.notificationService.unreadCount)
             Tab("More", systemImage: "ellipsis.circle.fill", value: 4) {
@@ -215,11 +219,15 @@ struct AdminTabView: View {
                 }
             }
             Tab("Messages", systemImage: "message.fill", value: 2) {
-                ConversationsView()
+                NavigationStack {
+                    ConversationsView()
+                }
             }
             .badge(viewModel.messagingService.totalUnreadCount)
             Tab("Alerts", systemImage: "bell.fill", value: 3) {
-                NotificationsView()
+                NavigationStack {
+                    NotificationsView()
+                }
             }
             .badge(viewModel.notificationService.unreadCount)
             Tab("More", systemImage: "ellipsis.circle.fill", value: 4) {
@@ -253,11 +261,15 @@ struct PartnerTabView: View {
                 PartnerPackagesTab()
             }
             Tab("Messages", systemImage: "message.fill", value: 2) {
-                ConversationsView()
+                NavigationStack {
+                    ConversationsView()
+                }
             }
             .badge(viewModel.messagingService.totalUnreadCount)
             Tab("Alerts", systemImage: "bell.fill", value: 3) {
-                NotificationsView()
+                NavigationStack {
+                    NotificationsView()
+                }
             }
             .badge(viewModel.notificationService.unreadCount)
             Tab("More", systemImage: "ellipsis.circle.fill", value: 4) {
@@ -288,14 +300,20 @@ struct ClientDiscoverTabView: View {
                 ClientDiscoverDashboardView()
             }
             Tab("Packages", systemImage: "square.grid.2x2.fill", value: 1) {
-                ClientPackageReviewView()
+                NavigationStack {
+                    ClientPackageReviewView()
+                }
             }
             Tab("Messages", systemImage: "message.fill", value: 2) {
-                ConversationsView()
+                NavigationStack {
+                    ConversationsView()
+                }
             }
             .badge(viewModel.messagingService.totalUnreadCount)
             Tab("Alerts", systemImage: "bell.fill", value: 3) {
-                NotificationsView()
+                NavigationStack {
+                    NotificationsView()
+                }
             }
             .badge(viewModel.notificationService.unreadCount)
             Tab("More", systemImage: "ellipsis.circle.fill", value: 4) {

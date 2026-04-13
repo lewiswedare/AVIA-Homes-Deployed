@@ -2,6 +2,7 @@ import SwiftUI
 
 struct AdminActivitySection: View {
     @Environment(AppViewModel.self) private var viewModel
+    @State private var selectedBuild: ClientBuild?
 
     private var activityItems: [ActivityItem] {
         var items: [ActivityItem] = []
@@ -66,37 +67,67 @@ struct AdminActivitySection: View {
                         AdminEmptyState(icon: "clock", title: "No activity yet", subtitle: "Recent actions will appear here")
                     } else {
                         ForEach(activityItems.prefix(20)) { item in
-                            HStack(spacing: 12) {
-                                Image(systemName: item.icon)
-                                    .font(.neueCorp(11))
-                                    .foregroundStyle(item.color)
-                                    .frame(width: 28, height: 28)
-                                    .background(item.color.opacity(0.12))
-                                    .clipShape(Circle())
-
-                                VStack(alignment: .leading, spacing: 2) {
-                                    Text(item.title)
-                                        .font(.neueCaptionMedium)
-                                        .foregroundStyle(AVIATheme.textPrimary)
-                                        .lineLimit(1)
-                                    Text(item.subtitle)
-                                        .font(.neueCaption2)
-                                        .foregroundStyle(AVIATheme.textTertiary)
-                                        .lineLimit(1)
-                                }
-
-                                Spacer()
-
-                                Text(item.date.formatted(date: .abbreviated, time: .omitted))
-                                    .font(.neueCaption2)
-                                    .foregroundStyle(AVIATheme.textTertiary)
+                            Button {
+                                handleActivityTap(item)
+                            } label: {
+                                activityRow(item)
                             }
-                            .padding(.vertical, 4)
+                            .buttonStyle(.plain)
                         }
                     }
                 }
                 .padding(16)
             }
+        }
+        .sheet(item: $selectedBuild) { build in
+            AdminBuildEditSheet(build: build)
+        }
+    }
+
+    private func activityRow(_ item: ActivityItem) -> some View {
+        HStack(spacing: 12) {
+            Image(systemName: item.icon)
+                .font(.neueCorp(11))
+                .foregroundStyle(item.color)
+                .frame(width: 28, height: 28)
+                .background(item.color.opacity(0.12))
+                .clipShape(Circle())
+
+            VStack(alignment: .leading, spacing: 2) {
+                Text(item.title)
+                    .font(.neueCaptionMedium)
+                    .foregroundStyle(AVIATheme.textPrimary)
+                    .lineLimit(1)
+                Text(item.subtitle)
+                    .font(.neueCaption2)
+                    .foregroundStyle(AVIATheme.textTertiary)
+                    .lineLimit(1)
+            }
+
+            Spacer()
+
+            Text(item.date.formatted(date: .abbreviated, time: .omitted))
+                .font(.neueCaption2)
+                .foregroundStyle(AVIATheme.textTertiary)
+        }
+        .padding(.vertical, 4)
+    }
+
+    private func handleActivityTap(_ item: ActivityItem) {
+        let id = item.id
+        if id.hasPrefix("build_") {
+            let buildId = String(id.dropFirst("build_".count))
+            if let build = viewModel.allClientBuilds.first(where: { $0.id == buildId }) {
+                selectedBuild = build
+            }
+        } else if id.hasPrefix("stage_") {
+            let parts = id.dropFirst("stage_".count).split(separator: "_", maxSplits: 1)
+            if let buildId = parts.first,
+               let build = viewModel.allClientBuilds.first(where: { $0.id == String(buildId) }) {
+                selectedBuild = build
+            }
+        } else if id.hasPrefix("req_") {
+            // Request taps - no specific navigation needed since admin requests section handles this
         }
     }
 }

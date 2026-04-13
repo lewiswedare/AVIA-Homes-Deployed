@@ -230,6 +230,7 @@ nonisolated struct ClientResponseRow: Codable, Sendable {
 nonisolated struct ServiceRequestRow: Codable, Sendable {
     let id: String
     let client_id: String
+    let build_id: String?
     let title: String
     let description: String
     let category: String
@@ -240,14 +241,30 @@ nonisolated struct ServiceRequestRow: Codable, Sendable {
     let created_at: String?
 
     nonisolated enum CodingKeys: String, CodingKey {
-        case id, client_id, title, description, category, status
+        case id, client_id, build_id, title, description, category, status
         case date_created, last_updated, responses, created_at
+    }
+
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        id = try container.decode(String.self, forKey: .id)
+        client_id = try container.decode(String.self, forKey: .client_id)
+        build_id = try container.decodeIfPresent(String.self, forKey: .build_id)
+        title = try container.decode(String.self, forKey: .title)
+        description = try container.decode(String.self, forKey: .description)
+        category = try container.decode(String.self, forKey: .category)
+        status = try container.decode(String.self, forKey: .status)
+        date_created = try container.decode(String.self, forKey: .date_created)
+        last_updated = try container.decode(String.self, forKey: .last_updated)
+        responses = (try? container.decodeIfPresent([RequestResponseRow].self, forKey: .responses)) ?? []
+        created_at = try container.decodeIfPresent(String.self, forKey: .created_at)
     }
 
     func encode(to encoder: Encoder) throws {
         var container = encoder.container(keyedBy: CodingKeys.self)
         try container.encode(id, forKey: .id)
         try container.encode(client_id, forKey: .client_id)
+        try container.encodeIfPresent(build_id, forKey: .build_id)
         try container.encode(title, forKey: .title)
         try container.encode(description, forKey: .description)
         try container.encode(category, forKey: .category)
@@ -257,10 +274,11 @@ nonisolated struct ServiceRequestRow: Codable, Sendable {
         try container.encode(responses, forKey: .responses)
     }
 
-    init(from request: ServiceRequest, clientId: String) {
+    init(from request: ServiceRequest, clientId: String, buildId: String? = nil) {
         let iso = ISO8601DateFormatter()
         id = request.id
         client_id = clientId
+        build_id = buildId
         title = request.title
         description = request.description
         category = request.category.rawValue

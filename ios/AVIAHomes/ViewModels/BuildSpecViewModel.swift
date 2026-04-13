@@ -69,7 +69,14 @@ class BuildSpecViewModel {
         async let specsTask = SupabaseService.shared.fetchBuildSpecSelections(buildId: buildId)
         async let coloursTask = SupabaseService.shared.fetchBuildColourSelections(buildId: buildId)
         async let docsTask = SupabaseService.shared.fetchBuildSpecDocuments(buildId: buildId)
-        let (specs, colours, docs) = await (specsTask, coloursTask, docsTask)
+        var (specs, colours, docs) = await (specsTask, coloursTask, docsTask)
+
+        if specs.isEmpty {
+            let tier = SpecTier(rawValue: specTier.capitalized) ?? .messina
+            let _ = await SupabaseService.shared.createBuildSpecSnapshot(buildId: buildId, specTier: tier)
+            specs = await SupabaseService.shared.fetchBuildSpecSelections(buildId: buildId)
+        }
+
         selections = specs
         colourSelections = colours
         documents = docs
