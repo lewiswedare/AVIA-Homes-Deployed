@@ -1021,7 +1021,7 @@ struct PackageDetailView: View {
     // MARK: - Helpers
 
     private func statusBadge(_ status: PackageStatus) -> some View {
-        Text(status.displayName.uppercased())
+        Text(status.rawValue.uppercased())
             .font(.neueCorpMedium(9))
             .kerning(0.5)
             .foregroundStyle(.white)
