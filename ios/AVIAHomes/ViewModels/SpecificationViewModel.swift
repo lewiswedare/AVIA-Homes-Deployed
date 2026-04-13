@@ -70,16 +70,23 @@ class SpecificationViewModel {
 
         upgradeRequests = rows.compactMap { row -> UpgradeRequest? in
             guard row.selectionType == .upgradeRequested
+               || row.selectionType == .upgradeCosted
+               || row.selectionType == .upgradeAccepted
+               || row.selectionType == .upgradeDeclined
                || row.selectionType == .upgradeApproved
                || row.selectionType == .substituted else { return nil }
 
             let status: UpgradeStatus = {
                 switch row.selectionType {
+                case .upgradeCosted: return .quoted
+                case .upgradeAccepted: return .pending
+                case .upgradeDeclined: return .declined
                 case .upgradeApproved: return .approved
                 case .substituted: return .approved
                 default:
                     switch row.status {
                     case .awaitingAdmin: return .pending
+                    case .awaitingClient: return .quoted
                     case .approved: return .approved
                     case .amendedByAdmin: return .quoted
                     default: return .pending

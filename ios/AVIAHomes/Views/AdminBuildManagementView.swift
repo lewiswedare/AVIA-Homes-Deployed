@@ -152,7 +152,7 @@ struct AdminBuildManagementView: View {
                 .padding(.vertical, 60)
             } else {
                 let pendingBuildIds = Set(viewModel.pendingSpecReviews.map(\.buildId))
-                let upgradeBuildIds = Set(viewModel.pendingSpecReviews.filter { $0.selectionType == .upgradeRequested }.map(\.buildId))
+                let upgradeBuildIds = Set(viewModel.pendingSpecReviews.filter { $0.selectionType == .upgradeRequested || $0.selectionType == .upgradeAccepted }.map(\.buildId))
                 ForEach(filteredBuilds) { build in
                     let badge: BuildSpecReviewBadge = upgradeBuildIds.contains(build.id) ? .upgradeRequested : (pendingBuildIds.contains(build.id) ? .awaitingReview : .none)
                     Button {

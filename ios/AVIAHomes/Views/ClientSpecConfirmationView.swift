@@ -61,6 +61,12 @@ struct ClientSpecConfirmationView: View {
                         isAdmin: false,
                         onUpgradeRequest: { id in
                             upgradeSelectionId = id
+                        },
+                        onAcceptUpgrade: { id in
+                            viewModel.clientAcceptUpgrade(selectionId: id)
+                        },
+                        onDeclineUpgrade: { id in
+                            viewModel.clientDeclineUpgrade(selectionId: id)
                         }
                     )
                 }
@@ -116,6 +122,7 @@ struct ClientSpecConfirmationView: View {
         switch viewModel.overallStatus {
         case .draft, .clientReviewing: AVIATheme.teal
         case .awaitingAdmin: AVIATheme.warning
+        case .awaitingClient: AVIATheme.accent
         case .reopenedByAdmin: Color(hex: "8B5CF6")
         case .approved: AVIATheme.success
         case .amendedByAdmin: Color(hex: "8B5CF6")
@@ -126,6 +133,7 @@ struct ClientSpecConfirmationView: View {
         switch viewModel.overallStatus {
         case .draft, .clientReviewing: "Review Your Specifications"
         case .awaitingAdmin: "Submitted — Awaiting Review"
+        case .awaitingClient: "Upgrade Cost Available"
         case .reopenedByAdmin: "Reopened for Changes"
         case .approved: "Specifications Approved"
         case .amendedByAdmin: "Amended by Admin"
@@ -138,6 +146,8 @@ struct ClientSpecConfirmationView: View {
             "Review each item below and confirm when ready."
         case .awaitingAdmin:
             "Your selections have been submitted and are awaiting admin review."
+        case .awaitingClient:
+            "An upgrade cost has been provided. Review and accept or decline below."
         case .reopenedByAdmin:
             "An admin has reopened your specifications for changes. Review and resubmit."
         case .approved:

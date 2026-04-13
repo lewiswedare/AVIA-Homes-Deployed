@@ -155,7 +155,7 @@ enum AdminPDFExporter {
                         ])
                         y += 10
                     }
-                    if let cost = item.upgradeCost, (item.selectionType == .upgradeRequested || item.selectionType == .upgradeApproved) {
+                    if let cost = item.upgradeCost, (item.selectionType == .upgradeRequested || item.selectionType == .upgradeCosted || item.selectionType == .upgradeAccepted || item.selectionType == .upgradeApproved) {
                         let costStr = "Upgrade cost: $\(String(format: "%.2f", cost))\(item.upgradeCostNote.map { " — \($0)" } ?? "")"
                         costStr.draw(at: CGPoint(x: colItem + 4, y: y), withAttributes: [
                             .font: smallItalicFont, .foregroundColor: UIColor.systemOrange

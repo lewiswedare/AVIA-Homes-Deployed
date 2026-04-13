@@ -56,7 +56,15 @@ class BuildSpecViewModel {
     }
 
     var upgradeRequestedItems: [BuildSpecSelection] {
-        selections.filter { $0.selectionType == .upgradeRequested }
+        selections.filter {
+            $0.selectionType == .upgradeRequested ||
+            $0.selectionType == .upgradeCosted ||
+            $0.selectionType == .upgradeAccepted
+        }
+    }
+
+    var upgradePendingClientResponseItems: [BuildSpecSelection] {
+        selections.filter { $0.selectionType == .upgradeCosted }
     }
 
     var approvedItems: [BuildSpecSelection] {
@@ -176,9 +184,86 @@ class BuildSpecViewModel {
         guard let idx = selections.firstIndex(where: { $0.id == selectionId }) else { return }
         selections[idx].upgradeCost = cost
         selections[idx].upgradeCostNote = note
+        selections[idx].selectionType = .upgradeCosted
+        selections[idx].status = .awaitingClient
+        selections[idx].lockedForClient = false
+        let item = selections[idx]
         Task {
-            let success = await SupabaseService.shared.upsertBuildSpecSelection(selections[idx])
-            if !success { errorMessage = "Failed to save upgrade cost" }
+            let success = await SupabaseService.shared.upsertBuildSpecSelection(item)
+            if !success {
+                errorMessage = "Failed to save upgrade cost"
+            } else if let ns = notificationService, !clientId.isEmpty {
+                await ns.createNotification(
+                    recipientId: clientId,
+                    senderId: nil,
+                    senderName: "AVIA Homes",
+                    type: .upgradeQuoted,
+                    title: "Upgrade Cost Available",
+                    message: "A cost has been provided for your upgrade request for \(item.snapshotName). Please review and accept or decline.",
+                    referenceId: buildId,
+                    referenceType: "build"
+                )
+            }
+        }
+    }
+
+    func clientAcceptUpgrade(selectionId: String) {
+        guard let idx = selections.firstIndex(where: { $0.id == selectionId }) else { return }
+        selections[idx].selectionType = .upgradeAccepted
+        selections[idx].status = .awaitingAdmin
+        selections[idx].clientConfirmed = true
+        selections[idx].clientConfirmedAt = .now
+        selections[idx].lockedForClient = true
+        let item = selections[idx]
+        Task {
+            let success = await SupabaseService.shared.upsertBuildSpecSelection(item)
+            if !success {
+                errorMessage = "Failed to accept upgrade"
+            } else if let ns = notificationService {
+                for recipientId in adminRecipientIds {
+                    await ns.createNotification(
+                        recipientId: recipientId,
+                        senderId: clientId,
+                        senderName: "Client",
+                        type: .buildUpdate,
+                        title: "Upgrade Accepted",
+                        message: "Client has accepted the upgrade cost for \(item.snapshotName)",
+                        referenceId: buildId,
+                        referenceType: "build"
+                    )
+                }
+            }
+        }
+    }
+
+    func clientDeclineUpgrade(selectionId: String) {
+        guard let idx = selections.firstIndex(where: { $0.id == selectionId }) else { return }
+        selections[idx].selectionType = .upgradeDeclined
+        selections[idx].status = .approved
+        selections[idx].clientConfirmed = true
+        selections[idx].clientConfirmedAt = .now
+        selections[idx].lockedForClient = false
+        selections[idx].upgradeCost = nil
+        selections[idx].upgradeCostNote = nil
+        let item = selections[idx]
+        Task {
+            let success = await SupabaseService.shared.upsertBuildSpecSelection(item)
+            if !success {
+                errorMessage = "Failed to decline upgrade"
+            } else if let ns = notificationService {
+                for recipientId in adminRecipientIds {
+                    await ns.createNotification(
+                        recipientId: recipientId,
+                        senderId: clientId,
+                        senderName: "Client",
+                        type: .buildUpdate,
+                        title: "Upgrade Declined",
+                        message: "Client has declined the upgrade cost for \(item.snapshotName)",
+                        referenceId: buildId,
+                        referenceType: "build"
+                    )
+                }
+            }
         }
     }
 
@@ -186,7 +271,7 @@ class BuildSpecViewModel {
         guard let idx = selections.firstIndex(where: { $0.id == selectionId }) else { return }
         selections[idx].adminConfirmed = true
         selections[idx].adminConfirmedAt = .now
-        if selections[idx].selectionType == .upgradeRequested {
+        if selections[idx].selectionType == .upgradeAccepted {
             selections[idx].selectionType = .upgradeApproved
         }
         selections[idx].status = .approved

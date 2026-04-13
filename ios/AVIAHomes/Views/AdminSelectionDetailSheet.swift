@@ -122,6 +122,9 @@ struct AdminSelectionDetailSheet: View {
         let (label, color): (String, Color) = switch selection.selectionType {
         case .included: ("Included", AVIATheme.success)
         case .upgradeRequested: ("Upgrade Requested", AVIATheme.warning)
+        case .upgradeCosted: ("Upgrade Costed", AVIATheme.accent)
+        case .upgradeAccepted: ("Upgrade Accepted", Color.green)
+        case .upgradeDeclined: ("Upgrade Declined", Color.gray)
         case .upgradeApproved: ("Upgrade Approved", AVIATheme.success)
         case .substituted: ("Substituted", Color(hex: "8B5CF6"))
         case .removed: ("Removed", AVIATheme.destructive)
@@ -352,11 +355,11 @@ struct AdminSelectionDetailSheet: View {
 
     @ViewBuilder
     private var upgradeSection: some View {
-        if selection.selectionType == .upgradeRequested || selection.selectionType == .upgradeApproved {
+        if selection.selectionType == .upgradeRequested {
             BentoCard(cornerRadius: 14) {
                 VStack(alignment: .leading, spacing: 10) {
                     HStack {
-                        Text("UPGRADE COST")
+                        Text("SET UPGRADE COST")
                             .font(.neueCaption2Medium)
                             .kerning(1.0)
                             .foregroundStyle(AVIATheme.textTertiary)
@@ -386,9 +389,10 @@ struct AdminSelectionDetailSheet: View {
 
                     HStack {
                         Spacer()
-                        Button("Set Cost") {
+                        Button("Set Upgrade Cost") {
                             let cost = Double(upgradeCostText)
                             onSetUpgradeCost(selection.id, cost, upgradeCostNote.isEmpty ? nil : upgradeCostNote)
+                            dismiss()
                         }
                         .font(.neueCaption2Medium)
                         .foregroundStyle(.white)
@@ -400,12 +404,155 @@ struct AdminSelectionDetailSheet: View {
                 }
                 .padding(16)
             }
+        } else if selection.selectionType == .upgradeCosted {
+            BentoCard(cornerRadius: 14) {
+                VStack(alignment: .leading, spacing: 10) {
+                    HStack {
+                        Text("UPGRADE COST")
+                            .font(.neueCaption2Medium)
+                            .kerning(1.0)
+                            .foregroundStyle(AVIATheme.textTertiary)
+                        Spacer()
+                    }
+                    if let cost = selection.upgradeCost {
+                        Text(String(format: "$%.2f", cost))
+                            .font(.neueCorpMedium(20))
+                            .foregroundStyle(AVIATheme.textPrimary)
+                    }
+                    if let note = selection.upgradeCostNote, !note.isEmpty {
+                        Text(note)
+                            .font(.neueCaption)
+                            .foregroundStyle(AVIATheme.textSecondary)
+                    }
+                    HStack(spacing: 6) {
+                        Image(systemName: "hourglass")
+                            .font(.neueCorp(10))
+                        Text("Awaiting client response")
+                            .font(.neueCaptionMedium)
+                    }
+                    .foregroundStyle(AVIATheme.accent)
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, 10)
+                    .background(AVIATheme.accent.opacity(0.1))
+                    .clipShape(.rect(cornerRadius: 10))
+                }
+                .padding(16)
+            }
+        } else if selection.selectionType == .upgradeAccepted || selection.selectionType == .upgradeApproved {
+            BentoCard(cornerRadius: 14) {
+                VStack(alignment: .leading, spacing: 10) {
+                    HStack {
+                        Text("UPGRADE COST")
+                            .font(.neueCaption2Medium)
+                            .kerning(1.0)
+                            .foregroundStyle(AVIATheme.textTertiary)
+                        Spacer()
+                    }
+                    if let cost = selection.upgradeCost {
+                        Text(String(format: "$%.2f", cost))
+                            .font(.neueCorpMedium(20))
+                            .foregroundStyle(AVIATheme.textPrimary)
+                    }
+                    if let note = selection.upgradeCostNote, !note.isEmpty {
+                        Text(note)
+                            .font(.neueCaption)
+                            .foregroundStyle(AVIATheme.textSecondary)
+                    }
+                    HStack(spacing: 6) {
+                        Image(systemName: selection.selectionType == .upgradeApproved ? "checkmark.circle.fill" : "hand.thumbsup.fill")
+                            .font(.neueCorp(10))
+                        Text(selection.selectionType == .upgradeApproved ? "Upgrade approved" : "Client accepted — awaiting your final confirmation")
+                            .font(.neueCaptionMedium)
+                    }
+                    .foregroundStyle(selection.selectionType == .upgradeApproved ? AVIATheme.success : Color.green)
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, 10)
+                    .background((selection.selectionType == .upgradeApproved ? AVIATheme.success : Color.green).opacity(0.1))
+                    .clipShape(.rect(cornerRadius: 10))
+                }
+                .padding(16)
+            }
+        } else if selection.selectionType == .upgradeDeclined {
+            BentoCard(cornerRadius: 14) {
+                VStack(alignment: .leading, spacing: 10) {
+                    HStack {
+                        Text("UPGRADE")
+                            .font(.neueCaption2Medium)
+                            .kerning(1.0)
+                            .foregroundStyle(AVIATheme.textTertiary)
+                        Spacer()
+                    }
+                    HStack(spacing: 6) {
+                        Image(systemName: "xmark.circle.fill")
+                            .font(.neueCorp(10))
+                        Text("Declined by client")
+                            .font(.neueCaptionMedium)
+                    }
+                    .foregroundStyle(Color.gray)
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, 10)
+                    .background(Color.gray.opacity(0.1))
+                    .clipShape(.rect(cornerRadius: 10))
+                }
+                .padding(16)
+            }
         }
     }
 
     private var actionsSection: some View {
         VStack(spacing: 10) {
-            if !selection.adminConfirmed {
+            if selection.selectionType == .upgradeRequested {
+                HStack(spacing: 8) {
+                    Image(systemName: "clock.fill")
+                        .foregroundStyle(AVIATheme.warning)
+                    Text("Set an upgrade cost above to proceed")
+                        .font(.neueCaptionMedium)
+                        .foregroundStyle(AVIATheme.warning)
+                }
+                .frame(maxWidth: .infinity)
+                .frame(height: 48)
+                .background(AVIATheme.warning.opacity(0.08))
+                .clipShape(.rect(cornerRadius: 14))
+            } else if selection.selectionType == .upgradeCosted {
+                HStack(spacing: 8) {
+                    Image(systemName: "hourglass")
+                        .foregroundStyle(AVIATheme.accent)
+                    Text("Awaiting client response")
+                        .font(.neueCaptionMedium)
+                        .foregroundStyle(AVIATheme.accent)
+                }
+                .frame(maxWidth: .infinity)
+                .frame(height: 48)
+                .background(AVIATheme.accent.opacity(0.08))
+                .clipShape(.rect(cornerRadius: 14))
+            } else if selection.selectionType == .upgradeAccepted {
+                Button {
+                    showApproveConfirm = true
+                } label: {
+                    HStack(spacing: 8) {
+                        Image(systemName: "checkmark.seal.fill")
+                        Text("Final Confirm Upgrade")
+                    }
+                    .font(.neueSubheadlineMedium)
+                    .frame(maxWidth: .infinity)
+                    .frame(height: 48)
+                    .foregroundStyle(.white)
+                    .background(AVIATheme.success)
+                    .clipShape(.rect(cornerRadius: 14))
+                }
+            } else if selection.selectionType == .upgradeDeclined {
+                HStack(spacing: 8) {
+                    Image(systemName: "xmark.circle.fill")
+                        .foregroundStyle(Color.gray)
+                    Text("Declined by client — no action needed")
+                        .font(.neueCaptionMedium)
+                        .foregroundStyle(Color.gray)
+                }
+                .frame(maxWidth: .infinity)
+                .frame(height: 48)
+                .background(Color.gray.opacity(0.08))
+                .clipShape(.rect(cornerRadius: 14))
+            } else if !selection.adminConfirmed {
                 Button {
                     showApproveConfirm = true
                 } label: {

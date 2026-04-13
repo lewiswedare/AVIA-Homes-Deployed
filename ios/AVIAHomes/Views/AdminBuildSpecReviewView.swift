@@ -250,7 +250,10 @@ struct AdminBuildSpecReviewView: View {
     private func selectionTypePill(_ type: SelectionType) -> some View {
         let (label, color): (String, Color) = switch type {
         case .included: ("STD", AVIATheme.textTertiary)
-        case .upgradeRequested: ("UPG", AVIATheme.warning)
+        case .upgradeRequested: ("UPG REQ", AVIATheme.warning)
+        case .upgradeCosted: ("COSTED", AVIATheme.accent)
+        case .upgradeAccepted: ("ACCEPTED", Color.green)
+        case .upgradeDeclined: ("DECLINED", Color.gray)
         case .upgradeApproved: ("UPG ✓", AVIATheme.success)
         case .substituted: ("SUB", Color(hex: "8B5CF6"))
         case .removed: ("REM", AVIATheme.destructive)
@@ -544,6 +547,7 @@ struct AdminBuildSpecReviewView: View {
         switch viewModel.overallStatus {
         case .draft, .clientReviewing: AVIATheme.textTertiary
         case .awaitingAdmin: AVIATheme.warning
+        case .awaitingClient: AVIATheme.accent
         case .reopenedByAdmin: Color(hex: "8B5CF6")
         case .approved: AVIATheme.success
         case .amendedByAdmin: Color(hex: "8B5CF6")
@@ -554,6 +558,7 @@ struct AdminBuildSpecReviewView: View {
         switch viewModel.overallStatus {
         case .draft, .clientReviewing: "Client Has Not Submitted"
         case .awaitingAdmin: "Awaiting Your Review"
+        case .awaitingClient: "Awaiting Client Response"
         case .reopenedByAdmin: "Reopened for Client"
         case .approved: "Fully Approved"
         case .amendedByAdmin: "You Made Amendments"
@@ -566,6 +571,8 @@ struct AdminBuildSpecReviewView: View {
             "\(clientName) is still reviewing their specifications."
         case .awaitingAdmin:
             "\(clientName) has confirmed. Review and approve or make changes."
+        case .awaitingClient:
+            "Upgrade cost has been sent. Waiting for \(clientName) to accept or decline."
         case .reopenedByAdmin:
             "Waiting for \(clientName) to review changes and resubmit."
         case .approved:

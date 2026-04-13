@@ -4,6 +4,7 @@ nonisolated enum BuildSpecStatus: String, Codable, Sendable, CaseIterable {
     case draft
     case clientReviewing = "client_reviewing"
     case awaitingAdmin = "awaiting_admin"
+    case awaitingClient = "awaiting_client"
     case reopenedByAdmin = "reopened_by_admin"
     case approved
     case amendedByAdmin = "amended_by_admin"
@@ -19,6 +20,7 @@ nonisolated enum BuildSpecStatus: String, Codable, Sendable, CaseIterable {
         case .draft: "Draft"
         case .clientReviewing: "Reviewing"
         case .awaitingAdmin: "Awaiting Admin"
+        case .awaitingClient: "Awaiting Client"
         case .reopenedByAdmin: "Reopened"
         case .approved: "Approved"
         case .amendedByAdmin: "Amended"
@@ -30,6 +32,7 @@ nonisolated enum BuildSpecStatus: String, Codable, Sendable, CaseIterable {
         case .draft: "doc.text"
         case .clientReviewing: "eye"
         case .awaitingAdmin: "clock.fill"
+        case .awaitingClient: "hourglass"
         case .reopenedByAdmin: "arrow.counterclockwise"
         case .approved: "checkmark.seal.fill"
         case .amendedByAdmin: "pencil.circle.fill"
@@ -38,7 +41,7 @@ nonisolated enum BuildSpecStatus: String, Codable, Sendable, CaseIterable {
 
     var isLockedForClient: Bool {
         switch self {
-        case .awaitingAdmin, .approved, .amendedByAdmin: true
+        case .awaitingAdmin, .awaitingClient, .approved, .amendedByAdmin: true
         default: false
         }
     }
@@ -49,6 +52,9 @@ nonisolated enum BuildSpecStatus: String, Codable, Sendable, CaseIterable {
 nonisolated enum SelectionType: String, Codable, Sendable {
     case included
     case upgradeRequested = "upgrade_requested"
+    case upgradeCosted = "upgrade_costed"
+    case upgradeAccepted = "upgrade_accepted"
+    case upgradeDeclined = "upgrade_declined"
     case upgradeApproved = "upgrade_approved"
     case substituted
     case removed
@@ -63,6 +69,9 @@ nonisolated enum SelectionType: String, Codable, Sendable {
         switch self {
         case .included: "Included"
         case .upgradeRequested: "Upgrade Requested"
+        case .upgradeCosted: "Upgrade Costed"
+        case .upgradeAccepted: "Upgrade Accepted"
+        case .upgradeDeclined: "Upgrade Declined"
         case .upgradeApproved: "Upgrade Approved"
         case .substituted: "Substituted"
         case .removed: "Removed"

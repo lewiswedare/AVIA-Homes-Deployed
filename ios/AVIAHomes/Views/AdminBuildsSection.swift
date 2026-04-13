@@ -27,7 +27,7 @@ struct AdminBuildsSection: View {
             .fixedSize(horizontal: false, vertical: true)
 
             let pendingBuildIds = Set(viewModel.pendingSpecReviews.map(\.buildId))
-            let upgradeBuildIds = Set(viewModel.pendingSpecReviews.filter { $0.selectionType == .upgradeRequested }.map(\.buildId))
+            let upgradeBuildIds = Set(viewModel.pendingSpecReviews.filter { $0.selectionType == .upgradeRequested || $0.selectionType == .upgradeAccepted }.map(\.buildId))
 
             if filteredBuilds.isEmpty {
                 AdminEmptyState(icon: "building.2", title: "No builds found", subtitle: "Try adjusting your search")

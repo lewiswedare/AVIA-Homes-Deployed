@@ -5,6 +5,8 @@ struct BuildSpecItemRow: View {
     let isEditable: Bool
     let isAdmin: Bool
     var onUpgradeRequest: ((String) -> Void)?
+    var onAcceptUpgrade: ((String) -> Void)?
+    var onDeclineUpgrade: ((String) -> Void)?
     var onAdminApprove: ((String) -> Void)?
     var onAdminNotes: ((String, String) -> Void)?
 
@@ -89,7 +91,7 @@ struct BuildSpecItemRow: View {
                 .clipShape(.rect(cornerRadius: 8))
             }
 
-            if let cost = selection.upgradeCost, (selection.selectionType == .upgradeRequested || selection.selectionType == .upgradeApproved) {
+            if let cost = selection.upgradeCost, (selection.selectionType == .upgradeRequested || selection.selectionType == .upgradeCosted || selection.selectionType == .upgradeAccepted || selection.selectionType == .upgradeApproved) {
                 HStack(spacing: 6) {
                     Image(systemName: "dollarsign.circle.fill")
                         .font(.neueCorp(9))
@@ -129,6 +131,24 @@ struct BuildSpecItemRow: View {
                 .padding(.vertical, 2)
                 .background(AVIATheme.warning.opacity(0.12))
                 .clipShape(Capsule())
+        case .upgradeCosted:
+            Text("COST READY")
+                .font(.neueCorpMedium(7))
+                .foregroundStyle(AVIATheme.accent)
+                .padding(.horizontal, 6)
+                .padding(.vertical, 2)
+                .background(AVIATheme.accent.opacity(0.12))
+                .clipShape(Capsule())
+        case .upgradeAccepted:
+            Text("ACCEPTED")
+                .font(.neueCorpMedium(7))
+                .foregroundStyle(Color.green)
+                .padding(.horizontal, 6)
+                .padding(.vertical, 2)
+                .background(Color.green.opacity(0.12))
+                .clipShape(Capsule())
+        case .upgradeDeclined:
+            EmptyView()
         case .upgradeApproved:
             Text("UPGRADE OK")
                 .font(.neueCorpMedium(7))
@@ -174,76 +194,126 @@ struct BuildSpecItemRow: View {
 
     @ViewBuilder
     private var actionButtons: some View {
-        HStack(spacing: 8) {
-            if isEditable && !selection.lockedForClient && selection.selectionType == .included {
-                Button {
-                    onUpgradeRequest?(selection.id)
-                } label: {
-                    HStack(spacing: 4) {
-                        Image(systemName: "arrow.up.circle")
-                            .font(.neueCorp(10))
-                        Text("Request Upgrade")
-                            .font(.neueCaption2Medium)
+        VStack(spacing: 8) {
+            if !isAdmin && selection.selectionType == .upgradeCosted {
+                HStack(spacing: 8) {
+                    Button {
+                        onAcceptUpgrade?(selection.id)
+                    } label: {
+                        HStack(spacing: 4) {
+                            Image(systemName: "checkmark.circle.fill")
+                                .font(.neueCorp(10))
+                            Text("Accept Upgrade")
+                                .font(.neueCaption2Medium)
+                        }
+                        .foregroundStyle(.white)
+                        .padding(.horizontal, 12)
+                        .padding(.vertical, 8)
+                        .background(AVIATheme.success)
+                        .clipShape(Capsule())
                     }
-                    .foregroundStyle(AVIATheme.teal)
-                    .padding(.horizontal, 10)
-                    .padding(.vertical, 6)
-                    .background(AVIATheme.teal.opacity(0.1))
-                    .clipShape(Capsule())
-                }
-            }
 
-            if isEditable && !selection.lockedForClient {
-                Button {
-                    notesText = selection.clientNotes ?? ""
-                    showNotes.toggle()
-                } label: {
-                    HStack(spacing: 4) {
-                        Image(systemName: "text.bubble")
-                            .font(.neueCorp(10))
-                        Text("Notes")
-                            .font(.neueCaption2Medium)
+                    Button {
+                        onDeclineUpgrade?(selection.id)
+                    } label: {
+                        HStack(spacing: 4) {
+                            Image(systemName: "xmark.circle")
+                                .font(.neueCorp(10))
+                            Text("Decline")
+                                .font(.neueCaption2Medium)
+                        }
+                        .foregroundStyle(AVIATheme.destructive)
+                        .padding(.horizontal, 12)
+                        .padding(.vertical, 8)
+                        .background(AVIATheme.destructive.opacity(0.1))
+                        .clipShape(Capsule())
                     }
-                    .foregroundStyle(AVIATheme.textSecondary)
-                    .padding(.horizontal, 10)
-                    .padding(.vertical, 6)
-                    .background(AVIATheme.surfaceElevated)
-                    .clipShape(Capsule())
                 }
-            }
-
-            if isAdmin {
-                Button {
-                    onAdminApprove?(selection.id)
-                } label: {
-                    HStack(spacing: 4) {
-                        Image(systemName: "checkmark.circle")
-                            .font(.neueCorp(10))
-                        Text("Approve")
-                            .font(.neueCaption2Medium)
-                    }
-                    .foregroundStyle(AVIATheme.success)
-                    .padding(.horizontal, 10)
-                    .padding(.vertical, 6)
-                    .background(AVIATheme.success.opacity(0.1))
-                    .clipShape(Capsule())
+            } else if !isAdmin && selection.selectionType == .upgradeAccepted {
+                HStack(spacing: 6) {
+                    Image(systemName: "clock.fill")
+                        .font(.neueCorp(10))
+                    Text("Awaiting admin confirmation")
+                        .font(.neueCaption2Medium)
                 }
-
-                Button {
-                    notesText = selection.adminNotes ?? ""
-                    showNotes.toggle()
-                } label: {
-                    HStack(spacing: 4) {
-                        Image(systemName: "note.text")
-                            .font(.neueCorp(10))
-                        Text("Note")
-                            .font(.neueCaption2Medium)
+                .foregroundStyle(AVIATheme.warning)
+                .padding(.horizontal, 10)
+                .padding(.vertical, 6)
+                .background(AVIATheme.warning.opacity(0.1))
+                .clipShape(Capsule())
+            } else {
+                HStack(spacing: 8) {
+                    if isEditable && !selection.lockedForClient && selection.selectionType == .included {
+                        Button {
+                            onUpgradeRequest?(selection.id)
+                        } label: {
+                            HStack(spacing: 4) {
+                                Image(systemName: "arrow.up.circle")
+                                    .font(.neueCorp(10))
+                                Text("Request Upgrade")
+                                    .font(.neueCaption2Medium)
+                            }
+                            .foregroundStyle(AVIATheme.teal)
+                            .padding(.horizontal, 10)
+                            .padding(.vertical, 6)
+                            .background(AVIATheme.teal.opacity(0.1))
+                            .clipShape(Capsule())
+                        }
                     }
-                    .foregroundStyle(Color(hex: "8B5CF6"))
-                    .padding(.horizontal, 10)
-                    .padding(.vertical, 6)
-                    .background(Color(hex: "8B5CF6").opacity(0.1))
-                    .clipShape(Capsule())
+
+                    if isEditable && !selection.lockedForClient {
+                        Button {
+                            notesText = selection.clientNotes ?? ""
+                            showNotes.toggle()
+                        } label: {
+                            HStack(spacing: 4) {
+                                Image(systemName: "text.bubble")
+                                    .font(.neueCorp(10))
+                                Text("Notes")
+                                    .font(.neueCaption2Medium)
+                            }
+                            .foregroundStyle(AVIATheme.textSecondary)
+                            .padding(.horizontal, 10)
+                            .padding(.vertical, 6)
+                            .background(AVIATheme.surfaceElevated)
+                            .clipShape(Capsule())
+                        }
+                    }
+
+                    if isAdmin {
+                        Button {
+                            onAdminApprove?(selection.id)
+                        } label: {
+                            HStack(spacing: 4) {
+                                Image(systemName: "checkmark.circle")
+                                    .font(.neueCorp(10))
+                                Text("Approve")
+                                    .font(.neueCaption2Medium)
+                            }
+                            .foregroundStyle(AVIATheme.success)
+                            .padding(.horizontal, 10)
+                            .padding(.vertical, 6)
+                            .background(AVIATheme.success.opacity(0.1))
+                            .clipShape(Capsule())
+                        }
+
+                        Button {
+                            notesText = selection.adminNotes ?? ""
+                            showNotes.toggle()
+                        } label: {
+                            HStack(spacing: 4) {
+                                Image(systemName: "note.text")
+                                    .font(.neueCorp(10))
+                                Text("Note")
+                                    .font(.neueCaption2Medium)
+                            }
+                            .foregroundStyle(Color(hex: "8B5CF6"))
+                            .padding(.horizontal, 10)
+                            .padding(.vertical, 6)
+                            .background(Color(hex: "8B5CF6").opacity(0.1))
+                            .clipShape(Capsule())
+                        }
+                    }
                 }
             }
         }
@@ -283,6 +353,8 @@ struct BuildSpecCategorySection: View {
     let isEditable: Bool
     let isAdmin: Bool
     var onUpgradeRequest: ((String) -> Void)?
+    var onAcceptUpgrade: ((String) -> Void)?
+    var onDeclineUpgrade: ((String) -> Void)?
     var onAdminApprove: ((String) -> Void)?
     var onAdminNotes: ((String, String) -> Void)?
 
@@ -300,6 +372,8 @@ struct BuildSpecCategorySection: View {
                     isEditable: isEditable,
                     isAdmin: isAdmin,
                     onUpgradeRequest: onUpgradeRequest,
+                    onAcceptUpgrade: onAcceptUpgrade,
+                    onDeclineUpgrade: onDeclineUpgrade,
                     onAdminApprove: onAdminApprove,
                     onAdminNotes: onAdminNotes
                 )

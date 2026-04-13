@@ -24,7 +24,7 @@ struct AdminOverviewSection: View {
         let openRequests = viewModel.requests.filter { $0.status == .open }.count
         let pendingSpecBuildIds = Set(viewModel.pendingSpecReviews.map(\.buildId))
         let pendingSpecCount = pendingSpecBuildIds.count
-        let upgradeRequestCount = viewModel.pendingSpecReviews.filter { $0.selectionType == .upgradeRequested }.count
+        let upgradeRequestCount = viewModel.pendingSpecReviews.filter { $0.selectionType == .upgradeRequested || $0.selectionType == .upgradeAccepted }.count
         let recentAccepted = viewModel.packageAssignments.flatMap(\.clientResponses).filter { $0.status == .accepted }.count
         let recentDeclined = viewModel.packageAssignments.flatMap(\.clientResponses).filter { $0.status == .declined }.count
         let pendingPkgResponses = viewModel.packageAssignments.flatMap(\.clientResponses).filter { $0.status == .pending }.count
@@ -189,7 +189,7 @@ struct AdminOverviewSection: View {
                 }
             }
             let pendingBuildIds = Set(viewModel.pendingSpecReviews.map(\.buildId))
-            let upgradeBuildIds = Set(viewModel.pendingSpecReviews.filter { $0.selectionType == .upgradeRequested }.map(\.buildId))
+            let upgradeBuildIds = Set(viewModel.pendingSpecReviews.filter { $0.selectionType == .upgradeRequested || $0.selectionType == .upgradeAccepted }.map(\.buildId))
             ForEach(Array(viewModel.allClientBuilds.prefix(3))) { build in
                 let badge: BuildSpecReviewBadge = upgradeBuildIds.contains(build.id) ? .upgradeRequested : (pendingBuildIds.contains(build.id) ? .awaitingReview : .none)
                 Button { selectedBuildForEdit = build } label: {
@@ -290,9 +290,9 @@ struct AdminOverviewSection: View {
                     AdminPendingRow(icon: "square.grid.2x2.fill", label: "Pending Pkg Responses", count: viewModel.packageAssignments.flatMap(\.clientResponses).filter { $0.status == .pending }.count, color: AVIATheme.success)
                     Rectangle().fill(AVIATheme.surfaceBorder).frame(height: 1).padding(.leading, 52)
                     AdminPendingRow(icon: "checklist.checked", label: "Spec Reviews Pending", count: Set(viewModel.pendingSpecReviews.map(\.buildId)).count, color: Color(hex: "E8A317"))
-                    if !viewModel.pendingSpecReviews.filter({ $0.selectionType == .upgradeRequested }).isEmpty {
+                    if !viewModel.pendingSpecReviews.filter({ $0.selectionType == .upgradeRequested || $0.selectionType == .upgradeAccepted }).isEmpty {
                         Rectangle().fill(AVIATheme.surfaceBorder).frame(height: 1).padding(.leading, 52)
-                        AdminPendingRow(icon: "arrow.up.circle.fill", label: "Upgrade Requests", count: viewModel.pendingSpecReviews.filter { $0.selectionType == .upgradeRequested }.count, color: AVIATheme.warning)
+                        AdminPendingRow(icon: "arrow.up.circle.fill", label: "Upgrade Requests", count: viewModel.pendingSpecReviews.filter { $0.selectionType == .upgradeRequested || $0.selectionType == .upgradeAccepted }.count, color: AVIATheme.warning)
                     }
                 }
             }
