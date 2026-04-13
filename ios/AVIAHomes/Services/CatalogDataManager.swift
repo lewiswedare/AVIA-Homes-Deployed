@@ -80,14 +80,6 @@ class CatalogDataManager {
                 }
             }
         }
-        if tier == .volos {
-            ids.remove("benchtops")
-            ids.remove("aggregate")
-        }
-        if tier == .volos || tier == .messina {
-            ids.remove("aggregate")
-        }
-        ids.insert("wardrobes")
         return ids
     }
 
