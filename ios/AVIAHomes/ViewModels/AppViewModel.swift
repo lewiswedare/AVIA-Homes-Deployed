@@ -641,7 +641,14 @@ class AppViewModel {
         allClientBuilds[index] = updated
         syncBuildStagesForCurrentUser()
         Task {
-            let success = await SupabaseService.shared.upsertBuild(updated)
+            let newPrimaryId: String? = updated.client.id.isEmpty ? nil : updated.client.id
+            let newAdditionalIds = updated.additionalClients.map(\.id).filter { !$0.isEmpty }
+            let success = await SupabaseService.shared.removeClientFromBuild(
+                buildId: buildId,
+                clientId: clientId,
+                newPrimaryId: newPrimaryId,
+                newAdditionalIds: newAdditionalIds
+            )
             if success {
                 await refreshBuildsAndAssignments()
                 await notificationService.createNotification(
@@ -666,11 +673,7 @@ class AppViewModel {
         Task {
             let success = await SupabaseService.shared.deleteBuild(buildId: buildId)
             if !success {
-                print("[AppViewModel] deleteBuild: server delete failed for buildId=\(buildId), retrying with force")
-                let retrySuccess = await SupabaseService.shared.deleteBuildForce(buildId: buildId)
-                if !retrySuccess {
-                    print("[AppViewModel] deleteBuild: force delete also failed for buildId=\(buildId)")
-                }
+                print("[AppViewModel] deleteBuild: server delete failed for buildId=\(buildId)")
             }
             await refreshBuildsAndAssignments()
         }

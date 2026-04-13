@@ -233,6 +233,7 @@ class SupabaseService {
             ("build_spec_documents",   "build_id"),
             ("service_requests",       "build_id"),
             ("documents",              "build_id"),
+            ("schedule_items",         "build_id"),
         ]
         for (table, column) in childTables {
             _ = try? await client
@@ -241,6 +242,7 @@ class SupabaseService {
                 .eq(column, value: buildId)
                 .execute()
         }
+        _ = try? await client.from("notifications").delete().eq("reference_id", value: buildId).execute()
         do {
             try await client
                 .from("builds")
