@@ -968,7 +968,7 @@ class SupabaseService {
     func upsertHouseLandPackage(_ row: HouseLandPackageRow) async -> Bool {
         guard isConfigured else { return false }
         do {
-            try await client.from("house_land_packages").upsert(row).execute()
+            try await client.from("house_land_packages").upsert(row, onConflict: "id").execute()
             return true
         } catch {
             print("[SupabaseService] upsertHouseLandPackage FAILED: \(error)")
