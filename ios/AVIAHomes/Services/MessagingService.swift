@@ -147,6 +147,7 @@ class MessagingService {
     func subscribeToMessages(conversationId: String) {
         guard supabase.isConfigured else { return }
         let channel = supabase.client.realtimeV2.channel("messages:\(conversationId)")
+        supabase.realtimeChannels.append(channel)
         let changes = channel.postgresChange(
             InsertAction.self,
             schema: "public",

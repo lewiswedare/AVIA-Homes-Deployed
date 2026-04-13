@@ -154,7 +154,7 @@ class AppViewModel {
         await messagingService.loadConversations(for: currentUser.id)
         notificationService.onNotificationReceived = { [weak self] notif in
             guard let self else { return }
-            self.pushManager.scheduleLocalNotification(title: notif.title, body: notif.message, identifier: notif.id)
+            self.pushManager.scheduleLocalNotification(title: notif.pushTitle, body: notif.pushBody, identifier: notif.id)
             self.pushManager.updateBadgeCount(self.totalBadgeCount)
         }
         notificationService.subscribeToNotifications(for: currentUser.id)
@@ -292,6 +292,10 @@ class AppViewModel {
         SupabaseService.shared.subscribeToSpecSelectionChanges { [weak self] in
             guard let self else { return }
             Task { await self.loadPendingSpecReviews() }
+        }
+        SupabaseService.shared.subscribeToColourSelectionChanges { [weak self] in
+            guard let self else { return }
+            Task { await self.loadBuildsFromSupabase() }
         }
     }
 
@@ -444,6 +448,7 @@ class AppViewModel {
     func signOut() {
         Task {
             await pushManager.removeToken(userId: currentUser.id)
+            await SupabaseService.shared.removeAllChannels()
         }
         authService.signOut()
         currentUser = .empty

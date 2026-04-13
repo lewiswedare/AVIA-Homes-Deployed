@@ -69,5 +69,41 @@ nonisolated struct AppNotification: Identifiable, Sendable, Hashable {
         lhs.id == rhs.id && lhs.isRead == rhs.isRead
     }
 
+    var pushTitle: String {
+        if !title.isEmpty { return title }
+        switch type {
+        case .newMessage: return "New Message"
+        case .upgradeQuoted: return "Upgrade Quoted"
+        case .specTierChanged: return "Spec Tier Updated"
+        case .colourSelectionSubmitted: return "Colour Selection Submitted"
+        case .documentAdded: return "New Document"
+        case .buildUpdate: return "Build Assigned"
+        case .packageShared: return "Package Shared"
+        case .packageApproved: return "Package Approved"
+        case .packageDeclined: return "Package Declined"
+        case .roleAssigned: return "Role Updated"
+        case .requestSubmitted: return "New Request"
+        case .requestResponse: return "Request Response"
+        }
+    }
+
+    var pushBody: String {
+        if !message.isEmpty { return message }
+        switch type {
+        case .newMessage: return "You have a new message"
+        case .upgradeQuoted: return "Your upgrade request has been quoted"
+        case .specTierChanged: return "Your spec tier has been updated"
+        case .colourSelectionSubmitted: return "Your colour selection has been submitted"
+        case .documentAdded: return "A document has been added to your build"
+        case .buildUpdate: return "You have been assigned to a new build"
+        case .packageShared: return "A package has been shared with you"
+        case .packageApproved: return "Your package response has been approved"
+        case .packageDeclined: return "Your package response has been declined"
+        case .roleAssigned: return "Your role has been updated"
+        case .requestSubmitted: return "A new request has been submitted"
+        case .requestResponse: return "You have a new response to your request"
+        }
+    }
+
     static let samples: [AppNotification] = []
 }

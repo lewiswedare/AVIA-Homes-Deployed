@@ -26,10 +26,6 @@ struct AVIAHomesApp: App {
                         if let firstBuild = appViewModel.clientBuildsForCurrentUser.first {
                             await specViewModel.load(buildId: firstBuild.id)
                         }
-                        let userId = appViewModel.currentUser.id
-                        if !userId.isEmpty {
-                            appViewModel.notificationService.subscribeToNotifications(for: userId)
-                        }
                         await appViewModel.pushManager.requestPermission()
                     }
                 }

@@ -25,8 +25,17 @@ class SupabaseService {
         )
     }
 
+    var realtimeChannels: [RealtimeChannelV2] = []
+
     var isConfigured: Bool {
         !Self.supabaseURL.isEmpty && !Self.supabaseKey.isEmpty
+    }
+
+    func removeAllChannels() async {
+        for channel in realtimeChannels {
+            await client.realtimeV2.removeChannel(channel)
+        }
+        realtimeChannels.removeAll()
     }
 
     func fetchProfile(userId: String) async -> ClientUser? {
@@ -1157,6 +1166,7 @@ class SupabaseService {
     func subscribeToBuildChanges(onUpdate: @escaping @Sendable () -> Void) {
         guard isConfigured else { return }
         let channel = client.realtimeV2.channel("builds_sync")
+        realtimeChannels.append(channel)
         let changes = channel.postgresChange(
             AnyAction.self,
             schema: "public",
@@ -1173,6 +1183,7 @@ class SupabaseService {
     func subscribeToAssignmentChanges(onUpdate: @escaping @Sendable () -> Void) {
         guard isConfigured else { return }
         let channel = client.realtimeV2.channel("assignments_sync")
+        realtimeChannels.append(channel)
         let changes = channel.postgresChange(
             AnyAction.self,
             schema: "public",
@@ -1189,6 +1200,7 @@ class SupabaseService {
     func subscribeToRequestChanges(onUpdate: @escaping @Sendable () -> Void) {
         guard isConfigured else { return }
         let channel = client.realtimeV2.channel("requests_sync")
+        realtimeChannels.append(channel)
         let changes = channel.postgresChange(
             AnyAction.self,
             schema: "public",
@@ -1205,6 +1217,7 @@ class SupabaseService {
     func subscribeToProfileChanges(userId: String, onUpdate: @escaping @Sendable () -> Void) {
         guard isConfigured else { return }
         let channel = client.realtimeV2.channel("profile_sync:\(userId)")
+        realtimeChannels.append(channel)
         let changes = channel.postgresChange(
             UpdateAction.self,
             schema: "public",
@@ -1222,6 +1235,7 @@ class SupabaseService {
     func subscribeToDocumentChanges(onUpdate: @escaping @Sendable () -> Void) {
         guard isConfigured else { return }
         let channel = client.realtimeV2.channel("documents_sync")
+        realtimeChannels.append(channel)
         let changes = channel.postgresChange(
             AnyAction.self,
             schema: "public",
@@ -1238,6 +1252,7 @@ class SupabaseService {
     func subscribeToBuildTableChanges(onUpdate: @escaping @Sendable () -> Void) {
         guard isConfigured else { return }
         let channel = client.realtimeV2.channel("builds_table_sync")
+        realtimeChannels.append(channel)
         let changes = channel.postgresChange(
             AnyAction.self,
             schema: "public",
@@ -1254,6 +1269,7 @@ class SupabaseService {
     func subscribeToMessageChanges(onUpdate: @escaping @Sendable () -> Void) {
         guard isConfigured else { return }
         let channel = client.realtimeV2.channel("conversations_sync")
+        realtimeChannels.append(channel)
         let changes = channel.postgresChange(
             AnyAction.self,
             schema: "public",
@@ -1270,10 +1286,28 @@ class SupabaseService {
     func subscribeToSpecSelectionChanges(onUpdate: @escaping @Sendable () -> Void) {
         guard isConfigured else { return }
         let channel = client.realtimeV2.channel("spec_selections_sync")
+        realtimeChannels.append(channel)
         let changes = channel.postgresChange(
             AnyAction.self,
             schema: "public",
             table: "build_spec_selections"
+        )
+        Task {
+            try? await channel.subscribeWithError()
+            for await _ in changes {
+                await MainActor.run { onUpdate() }
+            }
+        }
+    }
+
+    func subscribeToColourSelectionChanges(onUpdate: @escaping @Sendable () -> Void) {
+        guard isConfigured else { return }
+        let channel = client.realtimeV2.channel("colour_selections_sync")
+        realtimeChannels.append(channel)
+        let changes = channel.postgresChange(
+            AnyAction.self,
+            schema: "public",
+            table: "build_colour_selections"
         )
         Task {
             try? await channel.subscribeWithError()

@@ -94,6 +94,7 @@ class NotificationService {
     func subscribeToNotifications(for userId: String) {
         guard supabase.isConfigured else { return }
         let channel = supabase.client.realtimeV2.channel("notifications:\(userId)")
+        supabase.realtimeChannels.append(channel)
         let changes = channel.postgresChange(
             InsertAction.self,
             schema: "public",
