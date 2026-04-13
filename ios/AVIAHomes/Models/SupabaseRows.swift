@@ -99,6 +99,11 @@ nonisolated struct BuildRow: Codable, Sendable {
     }
 }
 
+nonisolated struct BuildClientPatch: Encodable, Sendable {
+    let client_id: String
+    let additional_client_ids: [String]
+}
+
 nonisolated struct BuildStageRow: Codable, Sendable {
     let id: String
     let build_id: String
