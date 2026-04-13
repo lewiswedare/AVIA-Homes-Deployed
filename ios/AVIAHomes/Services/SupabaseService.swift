@@ -225,31 +225,22 @@ class SupabaseService {
     @discardableResult
     func deleteBuild(buildId: String) async -> Bool {
         guard isConfigured else { return false }
-        _ = try? await client
-            .from("build_stages")
-            .delete()
-            .eq("build_id", value: buildId)
-            .execute()
-        _ = try? await client
-            .from("build_spec_selections")
-            .delete()
-            .eq("build_id", value: buildId)
-            .execute()
-        _ = try? await client
-            .from("build_colour_selections")
-            .delete()
-            .eq("build_id", value: buildId)
-            .execute()
-        _ = try? await client
-            .from("service_requests")
-            .delete()
-            .eq("build_id", value: buildId)
-            .execute()
-        _ = try? await client
-            .from("documents")
-            .delete()
-            .eq("build_id", value: buildId)
-            .execute()
+        // Delete all child rows before removing the build itself
+        let childTables = [
+            ("build_stages",           "build_id"),
+            ("build_spec_selections",  "build_id"),
+            ("build_colour_selections","build_id"),
+            ("build_spec_documents",   "build_id"),
+            ("service_requests",       "build_id"),
+            ("documents",              "build_id"),
+        ]
+        for (table, column) in childTables {
+            _ = try? await client
+                .from(table)
+                .delete()
+                .eq(column, value: buildId)
+                .execute()
+        }
         do {
             try await client
                 .from("builds")
@@ -267,12 +258,10 @@ class SupabaseService {
     func removeClientFromBuild(buildId: String, clientId: String, newPrimaryId: String?, newAdditionalIds: [String]) async -> Bool {
         guard isConfigured else { return false }
         do {
-            let patch: BuildClientPatch
-            if newPrimaryId == nil || newPrimaryId!.isEmpty {
-                patch = BuildClientPatch(client_id: "", additional_client_ids: [])
-            } else {
-                patch = BuildClientPatch(client_id: newPrimaryId!, additional_client_ids: newAdditionalIds)
-            }
+            let patch = BuildClientPatch(
+                client_id: (newPrimaryId?.isEmpty == false) ? newPrimaryId : nil,
+                additional_client_ids: newAdditionalIds
+            )
             try await client
                 .from("builds")
                 .update(patch)

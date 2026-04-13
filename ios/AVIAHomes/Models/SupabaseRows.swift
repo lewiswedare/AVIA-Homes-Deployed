@@ -144,7 +144,7 @@ nonisolated struct BuildRow: Codable, Sendable {
 }
 
 nonisolated struct BuildClientPatch: Encodable, Sendable {
-    let client_id: String
+    let client_id: String?
     let additional_client_ids: [String]
 }
 
