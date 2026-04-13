@@ -1,11 +1,20 @@
 import Foundation
 
 nonisolated enum SpecTier: String, CaseIterable, Sendable, Identifiable, Hashable {
-    case volos = "Volos"
-    case messina = "Messina"
-    case portobello = "Portobello"
+    case volos = "volos"
+    case messina = "messina"
+    case portobello = "portobello"
 
     var id: String { rawValue }
+
+    /// Human-readable display name — use this in UI instead of rawValue
+    var displayName: String {
+        switch self {
+        case .volos: "Volos"
+        case .messina: "Messina"
+        case .portobello: "Portobello"
+        }
+    }
 
     var tagline: String {
         switch self {

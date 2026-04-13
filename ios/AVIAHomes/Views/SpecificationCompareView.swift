@@ -31,7 +31,7 @@ struct SpecificationCompareView: View {
             }
             Button("Cancel", role: .cancel) {}
         } message: {
-            Text("Request an upgrade to the full \(targetUpgradeTier.rawValue) specification? Our team will contact you with a comprehensive quote.")
+            Text("Request an upgrade to the full \(targetUpgradeTier.displayName) specification? Our team will contact you with a comprehensive quote.")
         }
     }
 
@@ -58,7 +58,7 @@ struct SpecificationCompareView: View {
 
                     VStack(alignment: .leading, spacing: 2) {
                         HStack(spacing: 6) {
-                            Text(tier.rawValue)
+                            Text(tier.displayName)
                                 .font(.neueSubheadlineMedium)
                                 .foregroundStyle(AVIATheme.textPrimary)
                             if isCurrent {
@@ -146,7 +146,7 @@ struct SpecificationCompareView: View {
                     Text("Item")
                         .frame(maxWidth: .infinity, alignment: .leading)
                     ForEach(SpecTier.allCases) { tier in
-                        Text(tier.rawValue)
+                        Text(tier.displayName)
                             .frame(maxWidth: .infinity)
                     }
                 }

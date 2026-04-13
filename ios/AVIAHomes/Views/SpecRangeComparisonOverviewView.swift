@@ -53,7 +53,7 @@ struct SpecRangeComparisonOverviewView: View {
                             }
                             .clipShape(.rect(cornerRadius: 12))
 
-                        Text(tier.rawValue)
+                        Text(tier.displayName)
                             .font(.neueCaptionMedium)
                             .foregroundStyle(isSelected ? AVIATheme.aviaBlack : AVIATheme.textPrimary)
 
@@ -85,7 +85,7 @@ struct SpecRangeComparisonOverviewView: View {
                 HStack(spacing: 6) {
                     Image(systemName: "checkmark.circle.fill")
                         .font(.neueCorp(11))
-                    Text("Viewing \(tier.rawValue)")
+                    Text("Viewing \(tier.displayName)")
                         .font(.neueCaption2Medium)
                 }
                 .foregroundStyle(.white)
@@ -230,7 +230,7 @@ struct SpecRangeComparisonOverviewView: View {
             HStack(spacing: 8) {
                 ForEach(tiers) { tier in
                     let isHighlighted = highlightedTier == tier
-                    Text(tier.rawValue)
+                    Text(tier.displayName)
                         .font(isHighlighted ? .neueCaption2Medium : .neueCaption2Medium)
                         .foregroundStyle(isHighlighted ? AVIATheme.aviaBlack : AVIATheme.textTertiary)
                         .frame(maxWidth: .infinity)

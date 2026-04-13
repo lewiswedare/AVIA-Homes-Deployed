@@ -226,7 +226,7 @@ struct PackageDetailView: View {
                         Rectangle().fill(AVIATheme.surfaceBorder).frame(width: 1, height: 40)
 
                         VStack(spacing: 4) {
-                            Text(package.specTier.rawValue)
+                            Text(package.specTier.displayName)
                                 .font(.neueCorpMedium(14))
                                 .foregroundStyle(AVIATheme.textPrimary)
                             Text("Spec Range")
@@ -516,7 +516,7 @@ struct PackageDetailView: View {
                                     .allowsHitTesting(false)
                             } else {
                                 VStack(spacing: 8) {
-                                    Text(tier.rawValue)
+                                    Text(tier.displayName)
                                         .font(.neueCaptionMedium)
                                         .foregroundStyle(AVIATheme.textTertiary)
                                 }
@@ -524,7 +524,7 @@ struct PackageDetailView: View {
                         }
                         .overlay(alignment: .topLeading) {
                             HStack(spacing: 6) {
-                                Text(tier.rawValue.uppercased())
+                                Text(tier.displayName.uppercased())
                                     .font(.neueCorpMedium(11))
                                     .kerning(0.8)
                             }
@@ -540,7 +540,7 @@ struct PackageDetailView: View {
                     VStack(alignment: .leading, spacing: 10) {
                         HStack {
                             VStack(alignment: .leading, spacing: 2) {
-                                Text(tier.rawValue)
+                                Text(tier.displayName)
                                     .font(.neueCorpMedium(20))
                                     .foregroundStyle(AVIATheme.textPrimary)
                                 Text(tier.tagline)
@@ -1021,7 +1021,7 @@ struct PackageDetailView: View {
     // MARK: - Helpers
 
     private func statusBadge(_ status: PackageStatus) -> some View {
-        Text(status.rawValue.uppercased())
+        Text(status.displayName.uppercased())
             .font(.neueCorpMedium(9))
             .kerning(0.5)
             .foregroundStyle(.white)

@@ -12,7 +12,7 @@ struct AllUpgradeRequestsView: View {
                             Text(request.itemName)
                                 .font(.neueSubheadlineMedium)
                                 .foregroundStyle(AVIATheme.textPrimary)
-                            Text("\(request.categoryName) · \(request.fromTier.rawValue) → \(request.toTier.rawValue)")
+                            Text("\(request.categoryName) · \(request.fromTier.displayName) → \(request.toTier.displayName)")
                                 .font(.neueCaption2)
                                 .foregroundStyle(AVIATheme.textTertiary)
                             Text(request.dateRequested.formatted(.dateTime.month(.abbreviated).day()))

@@ -39,7 +39,7 @@ struct SpecificationsOverviewView: View {
                 }
                 Button("Cancel", role: .cancel) {}
             } message: {
-                Text("By confirming, you agree your \(specVM.currentTier.rawValue) specification is finalised. You'll then move on to colour selections.")
+                Text("By confirming, you agree your \(specVM.currentTier.displayName) specification is finalised. You'll then move on to colour selections.")
             }
         }
     }
@@ -93,7 +93,7 @@ struct SpecificationsOverviewView: View {
                 Text("Specifications Confirmed")
                     .font(.neueSubheadlineMedium)
                     .foregroundStyle(AVIATheme.textPrimary)
-                Text("Your \(specVM.currentTier.rawValue) inclusions are locked in. Move on to colour selections.")
+                Text("Your \(specVM.currentTier.displayName) inclusions are locked in. Move on to colour selections.")
                     .font(.neueCaption)
                     .foregroundStyle(AVIATheme.textSecondary)
             }
@@ -188,7 +188,7 @@ struct SpecificationsOverviewView: View {
                             Text("Your Specification")
                                 .font(.neueCaption)
                                 .foregroundStyle(.white.opacity(0.7))
-                            Text(specVM.currentTier.rawValue)
+                            Text(specVM.currentTier.displayName)
                                 .font(.neueCorpMedium(24))
                                 .foregroundStyle(.white)
                         }
@@ -283,7 +283,7 @@ struct SpecificationsOverviewView: View {
                         Image(systemName: "checkmark")
                             .font(.neueCorp(8))
                     }
-                    Text(tier.rawValue)
+                    Text(tier.displayName)
                         .font(.neueCaption2Medium)
                 }
                 .foregroundStyle(isActive ? .white : AVIATheme.textSecondary)
@@ -413,7 +413,7 @@ struct SpecificationsOverviewView: View {
                     Text(request.itemName)
                         .font(.neueSubheadlineMedium)
                         .foregroundStyle(AVIATheme.textPrimary)
-                    Text("\(request.categoryName) · \(request.fromTier.rawValue) → \(request.toTier.rawValue)")
+                    Text("\(request.categoryName) · \(request.fromTier.displayName) → \(request.toTier.displayName)")
                         .font(.neueCaption2)
                         .foregroundStyle(AVIATheme.textTertiary)
                 }

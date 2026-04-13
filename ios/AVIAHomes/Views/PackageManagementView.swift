@@ -172,7 +172,7 @@ struct PackageManagementView: View {
                                 .foregroundStyle(AVIATheme.teal)
                             Text("•")
                                 .foregroundStyle(AVIATheme.textTertiary)
-                            Text(package.specTier.rawValue)
+                            Text(package.specTier.displayName)
                                 .font(.neueCaption2)
                                 .foregroundStyle(AVIATheme.textSecondary)
                         }

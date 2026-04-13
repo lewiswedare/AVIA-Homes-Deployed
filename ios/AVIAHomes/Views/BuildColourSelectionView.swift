@@ -276,7 +276,7 @@ struct BuildColourPickerSheet: View {
     private var colourCategories: [ColourCategory] {
         let mapping = catalog.activeSpecToColourMapping
         let catIds = mapping[specItem.specItemId] ?? []
-        let tier = SpecTier(rawValue: specTier.capitalized) ?? .messina
+        let tier = SpecTier(rawValue: specTier.lowercased()) ?? .messina
         return catIds.compactMap { catId in
             guard let cat = catalog.allColourCategories.first(where: { $0.id == catId }) else { return nil }
             let filteredOptions = cat.options.filter { opt in
@@ -331,7 +331,7 @@ struct BuildColourPickerSheet: View {
                                     .foregroundStyle(AVIATheme.textTertiary)
                             }
 
-                            let tier = SpecTier(rawValue: specTier.capitalized) ?? .messina
+                            let tier = SpecTier(rawValue: specTier.lowercased()) ?? .messina
                             let columns = [
                                 GridItem(.flexible(), spacing: 12),
                                 GridItem(.flexible(), spacing: 12),

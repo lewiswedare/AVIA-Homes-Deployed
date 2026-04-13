@@ -540,7 +540,7 @@ struct AdminPackageEditorView: View {
                             withAnimation(.spring(response: 0.3)) { selectedSpecTier = tier }
                         } label: {
                             VStack(spacing: 4) {
-                                Text(tier.rawValue)
+                                Text(tier.displayName)
                                     .font(.neueCaptionMedium)
                                 Text(tier.tagline)
                                     .font(.neueCaption2)

@@ -17,14 +17,14 @@ struct SpecRangeInclusionsView: View {
             .padding(.vertical, 16)
         }
         .background(AVIATheme.background)
-        .navigationTitle("\(tier.rawValue) Inclusions")
+        .navigationTitle("\(tier.displayName) Inclusions")
         .navigationBarTitleDisplayMode(.inline)
     }
 
     private var headerCard: some View {
         HStack(spacing: 14) {
             VStack(alignment: .leading, spacing: 2) {
-                Text(tier.rawValue)
+                Text(tier.displayName)
                     .font(.neueHeadline)
                     .foregroundStyle(AVIATheme.textPrimary)
                 Text(tier.tagline)

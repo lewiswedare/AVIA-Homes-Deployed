@@ -25,7 +25,7 @@ class CustomerJourneyViewModel {
             let pendingUpgrades = specVM.upgradeRequests.filter { $0.status == .pending }
             let allUpgradesResolved = pendingUpgrades.isEmpty
             return [
-                JourneyTask(id: "review_specs", title: "Review your \(specVM.currentTier.rawValue) inclusions", icon: "checkmark.circle.fill", isComplete: hasReviewedSpecs),
+                JourneyTask(id: "review_specs", title: "Review your \(specVM.currentTier.displayName) inclusions", icon: "checkmark.circle.fill", isComplete: hasReviewedSpecs),
                 JourneyTask(id: "upgrades_resolved", title: "Confirm or resolve upgrade requests", icon: pendingUpgrades.isEmpty ? "checkmark.circle.fill" : "clock.fill", isComplete: allUpgradesResolved),
                 JourneyTask(id: "confirm_specs", title: "Confirm your specifications", icon: specsConfirmed ? "checkmark.circle.fill" : "circle", isComplete: specsConfirmed),
             ]

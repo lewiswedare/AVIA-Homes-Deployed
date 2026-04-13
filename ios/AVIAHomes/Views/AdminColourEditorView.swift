@@ -485,7 +485,7 @@ struct ColourCategoryEditSheet: View {
                         }
                     }
                 } label: {
-                    Text(String(tier.rawValue.prefix(1)))
+                    Text(String(tier.displayName.prefix(1)))
                         .font(.neueCorpMedium(10))
                         .frame(width: 26, height: 22)
                         .foregroundStyle(isActive ? .white : AVIATheme.textTertiary)

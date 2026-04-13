@@ -517,7 +517,7 @@ struct ClientDiscoverDashboardView: View {
                         if let image = phase.image {
                             image.resizable().aspectRatio(contentMode: .fill)
                         } else if phase.error != nil {
-                            Text(tier.rawValue)
+                            Text(tier.displayName)
                                 .font(.neueCorpMedium(16))
                                 .foregroundStyle(AVIATheme.teal.opacity(0.25))
                         } else {
@@ -535,7 +535,7 @@ struct ClientDiscoverDashboardView: View {
                     .frame(height: 60)
                 }
                 .overlay(alignment: .bottomLeading) {
-                    Text(tier.rawValue)
+                    Text(tier.displayName)
                         .font(.neueSubheadlineMedium)
                         .foregroundStyle(.white)
                         .padding(10)

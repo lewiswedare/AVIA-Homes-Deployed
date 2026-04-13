@@ -78,7 +78,7 @@ struct SpecificationCategoryDetailView: View {
                     }
 
                     HStack(spacing: 8) {
-                        Text(selectedTier.rawValue)
+                        Text(selectedTier.displayName)
                             .font(.neueCaption2Medium)
                             .foregroundStyle(.white)
                             .padding(.horizontal, 8)
@@ -107,7 +107,7 @@ struct SpecificationCategoryDetailView: View {
 
                             let nextTier = specVM.upgradeTiers.first { item.description(for: $0) != item.description(for: specVM.currentTier) }
                             if let nextTier {
-                                Text("\(nextTier.rawValue): \(item.description(for: nextTier))")
+                                Text("\(nextTier.displayName): \(item.description(for: nextTier))")
                                     .font(.neueCaption2)
                                     .foregroundStyle(AVIATheme.textTertiary)
                                     .lineLimit(1)
@@ -227,7 +227,7 @@ struct SpecificationCategoryDetailView: View {
                         previewTiers[item.id] = tier
                     }
                 } label: {
-                    Text(String(tier.rawValue.prefix(1)))
+                    Text(String(tier.displayName.prefix(1)))
                         .font(.neueCorpMedium(11))
                         .foregroundStyle(selectedTier == tier ? AVIATheme.aviaBlack : .white)
                         .frame(width: 28, height: 24)

@@ -44,7 +44,7 @@ struct SpecificationItemDetailView: View {
             }
             Button("Cancel", role: .cancel) {}
         } message: {
-            Text("Request an upgrade to the \(selectedUpgradeTier.rawValue) specification for \(item.name)? Our team will provide a quote.")
+            Text("Request an upgrade to the \(selectedUpgradeTier.displayName) specification for \(item.name)? Our team will provide a quote.")
         }
     }
 
@@ -105,7 +105,7 @@ struct SpecificationItemDetailView: View {
                         previewTier = tier
                     }
                 } label: {
-                    Text(tier.rawValue)
+                    Text(tier.displayName)
                         .font(.neueCaption2Medium)
                     .foregroundStyle(activeTier == tier ? AVIATheme.aviaBlack : .white)
                     .padding(.horizontal, activeTier == tier ? 12 : 10)
@@ -126,11 +126,11 @@ struct SpecificationItemDetailView: View {
                 Image(systemName: activeTier == specVM.currentTier ? "checkmark.circle.fill" : "eye.fill")
                     .font(.neueSubheadlineMedium)
                     .foregroundStyle(activeTier == specVM.currentTier ? AVIATheme.success : AVIATheme.teal)
-                Text(activeTier == specVM.currentTier ? "Your Current Specification" : "Viewing \(activeTier.rawValue) Specification")
+                Text(activeTier == specVM.currentTier ? "Your Current Specification" : "Viewing \(activeTier.displayName) Specification")
                     .font(.neueSubheadlineMedium)
                     .foregroundStyle(AVIATheme.textPrimary)
                 Spacer()
-                Text(activeTier.rawValue)
+                Text(activeTier.displayName)
                     .font(.neueCaption2Medium)
                     .foregroundStyle(.white)
                     .padding(.horizontal, 10)
@@ -186,7 +186,7 @@ struct SpecificationItemDetailView: View {
                     .clipShape(Circle())
 
                 VStack(alignment: .leading, spacing: 2) {
-                    Text(tier.rawValue)
+                    Text(tier.displayName)
                         .font(.neueSubheadlineMedium)
                         .foregroundStyle(AVIATheme.textPrimary)
                     Text(tier.tagline)
@@ -274,7 +274,7 @@ struct SpecificationItemDetailView: View {
 
                         VStack(alignment: .leading, spacing: 4) {
                             HStack(spacing: 6) {
-                                Text(tier.rawValue)
+                                Text(tier.displayName)
                                     .font(.neueCaptionMedium)
                                     .foregroundStyle(isViewing ? AVIATheme.teal : AVIATheme.textSecondary)
                                 if isCurrent {

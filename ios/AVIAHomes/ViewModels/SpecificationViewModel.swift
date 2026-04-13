@@ -14,7 +14,7 @@ class SpecificationViewModel {
                     buildId: updated[i].buildId,
                     categoryId: updated[i].categoryId,
                     specItemId: updated[i].specItemId,
-                    specTier: currentTier.rawValue.lowercased(),
+                    specTier: currentTier.rawValue,
                     selectionType: updated[i].selectionType,
                     clientNotes: updated[i].clientNotes,
                     adminNotes: updated[i].adminNotes,
@@ -62,7 +62,7 @@ class SpecificationViewModel {
         cachedSelections = rows
 
         if let firstTier = rows.first?.specTier {
-            let tier = SpecTier(rawValue: firstTier.capitalized) ?? .messina
+            let tier = SpecTier(rawValue: firstTier.lowercased()) ?? .messina
             suppressTierSync = true
             currentTier = tier
             suppressTierSync = false
@@ -92,7 +92,7 @@ class SpecificationViewModel {
                 itemId: row.specItemId,
                 itemName: row.snapshotName,
                 categoryName: row.snapshotCategoryName,
-                fromTier: SpecTier(rawValue: row.specTier.capitalized) ?? .messina,
+                fromTier: SpecTier(rawValue: row.specTier.lowercased()) ?? .messina,
                 toTier: .portobello,
                 dateRequested: row.clientConfirmedAt ?? .now,
                 status: status,
@@ -141,7 +141,7 @@ class SpecificationViewModel {
                     buildId: buildId,
                     categoryId: "",
                     specItemId: item.id,
-                    specTier: currentTier.rawValue.lowercased(),
+                    specTier: currentTier.rawValue,
                     selectionType: .upgradeRequested,
                     clientNotes: nil,
                     adminNotes: nil,

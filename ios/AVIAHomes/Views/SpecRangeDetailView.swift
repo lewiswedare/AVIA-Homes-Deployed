@@ -34,7 +34,7 @@ struct SpecRangeDetailView: View {
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
             ToolbarItem(placement: .principal) {
-                Text(tier.rawValue)
+                Text(tier.displayName)
                     .font(.neueSubheadlineMedium)
                     .foregroundStyle(AVIATheme.textPrimary)
             }
@@ -77,7 +77,7 @@ struct SpecRangeDetailView: View {
                         .font(.neueCorpMedium(10))
                         .kerning(1.2)
                         .foregroundStyle(AVIATheme.textSecondary)
-                    Text(tier.rawValue)
+                    Text(tier.displayName)
                         .font(.neueCorpMedium(34))
                         .foregroundStyle(AVIATheme.textPrimary)
                 }
@@ -308,7 +308,7 @@ struct SpecRangeDetailView: View {
                         .clipShape(.rect(cornerRadius: 12))
 
                     VStack(alignment: .leading, spacing: 2) {
-                        Text("\(tier.rawValue) Spec Range PDF")
+                        Text("\(tier.displayName) Spec Range PDF")
                             .font(.neueSubheadlineMedium)
                             .foregroundStyle(AVIATheme.textPrimary)
                         Text("Download the full specification document")

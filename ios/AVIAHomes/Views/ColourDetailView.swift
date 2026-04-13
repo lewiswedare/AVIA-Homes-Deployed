@@ -204,7 +204,7 @@ struct ColourDetailView: View {
         HStack(spacing: 8) {
             Image(systemName: viewModel.specTier.icon)
                 .foregroundStyle(AVIATheme.teal)
-            Text("Showing options for your **\(viewModel.specTier.rawValue)** spec range")
+            Text("Showing options for your **\(viewModel.specTier.displayName)** spec range")
                 .font(.neueCaption)
                 .foregroundStyle(AVIATheme.textSecondary)
         }

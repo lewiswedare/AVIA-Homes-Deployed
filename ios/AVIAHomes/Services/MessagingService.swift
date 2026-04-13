@@ -219,6 +219,11 @@ nonisolated struct ChatMessageRow: Codable, Sendable {
     let content: String
     let created_at: String
     let is_read: Bool
+    // Explicit CodingKeys so extra DB columns (topic, extension, payload, event,
+    // private, inserted_at, updated_at, uuid id) are silently ignored during decode.
+    nonisolated enum CodingKeys: String, CodingKey {
+        case id, conversation_id, sender_id, content, created_at, is_read
+    }
 
     init(from m: ChatMessage) {
         id = m.id
