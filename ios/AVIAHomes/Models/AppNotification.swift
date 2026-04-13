@@ -58,6 +58,7 @@ nonisolated struct AppNotification: Identifiable, Sendable, Hashable {
     let title: String
     let message: String
     let referenceId: String?
+    let referenceType: String?
     let createdAt: Date
     var isRead: Bool
 

@@ -451,7 +451,8 @@ class AppViewModel {
                 senderName: currentUser.fullName,
                 type: .roleAssigned,
                 title: "Role Updated",
-                message: "Your role has been updated to \(role.rawValue)"
+                message: "Your role has been updated to \(role.rawValue)",
+                referenceType: "profile"
             )
         }
     }
@@ -522,7 +523,8 @@ class AppViewModel {
                         type: .buildUpdate,
                         title: "Build Assigned",
                         message: "You have been assigned to a new build",
-                        referenceId: buildId
+                        referenceId: buildId,
+                        referenceType: "build"
                     )
                 }
             }
@@ -636,7 +638,8 @@ class AppViewModel {
                     type: .buildUpdate,
                     title: "Build Access Removed",
                     message: "Your access to this build has been removed. Please contact AVIA Homes if you believe this is an error.",
-                    referenceId: buildId
+                    referenceId: buildId,
+                    referenceType: "build"
                 )
             }
         }
@@ -825,7 +828,8 @@ class AppViewModel {
                         type: .buildUpdate,
                         title: "Build Created",
                         message: "\(currentUser.fullName) has created a new build for you",
-                        referenceId: build.id
+                        referenceId: build.id,
+                        referenceType: "build"
                     )
                 }
             }
@@ -954,7 +958,8 @@ class AppViewModel {
             type: .packageShared,
             title: "New Package Shared",
             message: "\(currentUser.fullName) shared \(pkg?.title ?? "a package") with you",
-            referenceId: packageId
+            referenceId: packageId,
+            referenceType: "package"
         )
         let staffRecipients = allRegisteredUsers.filter { $0.role.isAnyStaffRole && $0.id != currentUser.id }
         let partnerIds = packageAssignments.first { $0.packageId == packageId }?.assignedPartnerIds ?? []
@@ -968,7 +973,8 @@ class AppViewModel {
                 type: .packageShared,
                 title: "Package Shared with Client",
                 message: "\(currentUser.fullName) shared \(packageTitle) with \(clientName)",
-                referenceId: packageId
+                referenceId: packageId,
+                referenceType: "package"
             )
         }
         for partnerId in partnerIds where partnerId != currentUser.id {
@@ -979,7 +985,8 @@ class AppViewModel {
                 type: .packageShared,
                 title: "Package Shared with Client",
                 message: "\(currentUser.fullName) shared \(packageTitle) with \(clientName)",
-                referenceId: packageId
+                referenceId: packageId,
+                referenceType: "package"
             )
         }
     }
@@ -1036,7 +1043,8 @@ class AppViewModel {
                 type: notifType,
                 title: "Package \(verb.capitalized)",
                 message: "\(currentUser.fullName) \(verb) \(packageTitle)",
-                referenceId: packageId
+                referenceId: packageId,
+                referenceType: "package"
             )
         }
     }
@@ -1074,7 +1082,8 @@ class AppViewModel {
                 type: .packageShared,
                 title: "New Package Shared",
                 message: "\(currentUser.fullName) shared \(pkg?.title ?? "a package") with you",
-                referenceId: packageId
+                referenceId: packageId,
+                referenceType: "package"
             )
         }
     }
@@ -1118,7 +1127,8 @@ class AppViewModel {
                     type: .requestSubmitted,
                     title: "New Request",
                     message: "\(currentUser.fullName) submitted: \(title)",
-                    referenceId: request.id
+                    referenceId: request.id,
+                    referenceType: "service_request"
                 )
             }
         }
@@ -1139,7 +1149,8 @@ class AppViewModel {
                     type: .buildUpdate,
                     title: "Build Progress Update",
                     message: "\(stage.name) is now \(Int(progress * 100))% complete",
-                    referenceId: buildId
+                    referenceId: buildId,
+                    referenceType: "build"
                 )
             }
         }
@@ -1156,7 +1167,8 @@ class AppViewModel {
                 type: .packageShared,
                 title: "New Package Shared",
                 message: "\(currentUser.fullName) shared \(pkg?.title ?? "a package") with you",
-                referenceId: packageId
+                referenceId: packageId,
+                referenceType: "package"
             )
         }
     }
@@ -1251,7 +1263,8 @@ class AppViewModel {
                 type: .requestResponse,
                 title: "Request Response",
                 message: "\(currentUser.fullName) responded to: \(oldRequest.title)",
-                referenceId: requestId
+                referenceId: requestId,
+                referenceType: "service_request"
             )
         }
     }
@@ -1276,10 +1289,11 @@ class AppViewModel {
             recipientId: clientId,
             senderId: currentUser.id,
             senderName: currentUser.fullName,
-            type: .buildUpdate,
+            type: .documentAdded,
             title: "New Document",
             message: "\(currentUser.fullName) uploaded: \(name)",
-            referenceId: doc.id
+            referenceId: doc.id,
+            referenceType: "document"
         )
     }
 

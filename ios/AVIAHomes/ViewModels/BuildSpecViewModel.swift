@@ -123,7 +123,8 @@ class BuildSpecViewModel {
                         type: .buildUpdate,
                         title: "Spec Review Required",
                         message: "Client has submitted their spec range for review",
-                        referenceId: buildId
+                        referenceId: buildId,
+                        referenceType: "build"
                     )
                 }
             }
@@ -151,7 +152,8 @@ class BuildSpecViewModel {
                     type: .buildUpdate,
                     title: "Spec Range Approved",
                     message: "Your specification range has been approved by the admin",
-                    referenceId: buildId
+                    referenceId: buildId,
+                    referenceType: "build"
                 )
                 await ns.createNotification(
                     recipientId: clientId,
@@ -160,7 +162,8 @@ class BuildSpecViewModel {
                     type: .buildUpdate,
                     title: "Spec Summary PDF Ready",
                     message: "Your approved spec range PDF has been generated",
-                    referenceId: buildId
+                    referenceId: buildId,
+                    referenceType: "build"
                 )
             }
         } else {
@@ -228,7 +231,8 @@ class BuildSpecViewModel {
                     type: .buildUpdate,
                     title: "Spec Range Reopened",
                     message: "Admin has reopened your spec range for further changes",
-                    referenceId: buildId
+                    referenceId: buildId,
+                    referenceType: "build"
                 )
             }
         } else {
@@ -404,10 +408,11 @@ class BuildSpecViewModel {
                         recipientId: recipientId,
                         senderId: clientId,
                         senderName: "Client",
-                        type: .buildUpdate,
+                        type: .colourSelectionSubmitted,
                         title: "Colour Selections Submitted",
                         message: "Client has submitted their colour selections for approval",
-                        referenceId: buildId
+                        referenceId: buildId,
+                        referenceType: "build"
                     )
                 }
             }
@@ -433,7 +438,8 @@ class BuildSpecViewModel {
                     type: .buildUpdate,
                     title: "Colour Selections Approved",
                     message: "Your colour selections have been approved! Your colour summary PDF is ready.",
-                    referenceId: buildId
+                    referenceId: buildId,
+                    referenceType: "build"
                 )
             }
         } else {
@@ -529,7 +535,8 @@ class BuildSpecViewModel {
                     type: .colourSelectionSubmitted,
                     title: "Colour Selection Saved",
                     message: "Client has updated a colour selection.",
-                    referenceId: buildId
+                    referenceId: buildId,
+                    referenceType: "build"
                 )
             }
         }

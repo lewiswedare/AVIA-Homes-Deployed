@@ -235,14 +235,15 @@ nonisolated struct ServiceRequestRow: Codable, Sendable {
     let description: String
     let category: String
     let status: String
-    let date_created: String
-    let last_updated: String
+    let date_created: String?
+    let last_updated: String?
     let responses: [RequestResponseRow]
     let created_at: String?
+    let updated_at: String?
 
     nonisolated enum CodingKeys: String, CodingKey {
         case id, client_id, build_id, title, description, category, status
-        case date_created, last_updated, responses, created_at
+        case date_created, last_updated, responses, created_at, updated_at
     }
 
     init(from decoder: Decoder) throws {
@@ -254,10 +255,11 @@ nonisolated struct ServiceRequestRow: Codable, Sendable {
         description = try container.decode(String.self, forKey: .description)
         category = try container.decode(String.self, forKey: .category)
         status = try container.decode(String.self, forKey: .status)
-        date_created = try container.decode(String.self, forKey: .date_created)
-        last_updated = try container.decode(String.self, forKey: .last_updated)
+        date_created = try container.decodeIfPresent(String.self, forKey: .date_created)
+        last_updated = try container.decodeIfPresent(String.self, forKey: .last_updated)
         responses = (try? container.decodeIfPresent([RequestResponseRow].self, forKey: .responses)) ?? []
         created_at = try container.decodeIfPresent(String.self, forKey: .created_at)
+        updated_at = try container.decodeIfPresent(String.self, forKey: .updated_at)
     }
 
     func encode(to encoder: Encoder) throws {
@@ -269,8 +271,8 @@ nonisolated struct ServiceRequestRow: Codable, Sendable {
         try container.encode(description, forKey: .description)
         try container.encode(category, forKey: .category)
         try container.encode(status, forKey: .status)
-        try container.encode(date_created, forKey: .date_created)
-        try container.encode(last_updated, forKey: .last_updated)
+        try container.encodeIfPresent(date_created, forKey: .date_created)
+        try container.encodeIfPresent(last_updated, forKey: .last_updated)
         try container.encode(responses, forKey: .responses)
     }
 
@@ -287,20 +289,27 @@ nonisolated struct ServiceRequestRow: Codable, Sendable {
         last_updated = iso.string(from: request.lastUpdated)
         responses = request.responses.map { RequestResponseRow(from: $0) }
         created_at = nil
+        updated_at = nil
     }
 
     func toServiceRequest() -> ServiceRequest {
         let formatter = ISO8601DateFormatter()
         formatter.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
         let fallback = ISO8601DateFormatter()
+        let createdDate = (date_created.flatMap { formatter.date(from: $0) ?? fallback.date(from: $0) })
+            ?? (created_at.flatMap { formatter.date(from: $0) ?? fallback.date(from: $0) })
+            ?? .now
+        let updatedDate = (last_updated.flatMap { formatter.date(from: $0) ?? fallback.date(from: $0) })
+            ?? (updated_at.flatMap { formatter.date(from: $0) ?? fallback.date(from: $0) })
+            ?? .now
         return ServiceRequest(
             id: id,
             title: title,
             description: description,
             category: RequestCategory(rawValue: category) ?? .general,
             status: RequestStatus(rawValue: status) ?? .open,
-            dateCreated: formatter.date(from: date_created) ?? fallback.date(from: date_created) ?? .now,
-            lastUpdated: formatter.date(from: last_updated) ?? fallback.date(from: last_updated) ?? .now,
+            dateCreated: createdDate,
+            lastUpdated: updatedDate,
             responses: responses.map { $0.toRequestResponse() },
             attachedPhotos: []
         )

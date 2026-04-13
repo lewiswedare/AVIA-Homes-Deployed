@@ -62,7 +62,8 @@ class NotificationService {
         type: NotificationType,
         title: String,
         message: String,
-        referenceId: String? = nil
+        referenceId: String? = nil,
+        referenceType: String? = nil
     ) async {
         let notification = AppNotification(
             id: UUID().uuidString,
@@ -73,6 +74,7 @@ class NotificationService {
             title: title,
             message: message,
             referenceId: referenceId,
+            referenceType: referenceType,
             createdAt: .now,
             isRead: false
         )
@@ -127,6 +129,7 @@ nonisolated struct NotificationRow: Codable, Sendable {
     let title: String
     let message: String
     let reference_id: String?
+    let reference_type: String?
     let created_at: String
     let is_read: Bool
 
@@ -139,6 +142,7 @@ nonisolated struct NotificationRow: Codable, Sendable {
         title = n.title
         message = n.message
         reference_id = n.referenceId
+        reference_type = n.referenceType
         created_at = ISO8601DateFormatter().string(from: n.createdAt)
         is_read = n.isRead
     }
@@ -156,6 +160,7 @@ nonisolated struct NotificationRow: Codable, Sendable {
             title: title,
             message: message,
             referenceId: reference_id,
+            referenceType: reference_type,
             createdAt: date,
             isRead: is_read
         )

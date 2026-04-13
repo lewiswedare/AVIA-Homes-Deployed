@@ -15,6 +15,7 @@ nonisolated struct ProfileRow: Codable, Sendable {
     var assigned_client_ids: [String]
     var assigned_staff_id: String?
     var sales_partner_id: String?
+    var is_active: Bool?
     var created_at: String?
     var updated_at: String?
 

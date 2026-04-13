@@ -218,7 +218,8 @@ struct ChatView: View {
                 type: .newMessage,
                 title: "New Message",
                 message: "\(viewModel.currentUser.fullName): \(text.prefix(100))",
-                referenceId: conversation.id
+                referenceId: conversation.id,
+                referenceType: "conversation"
             )
 
             scrollToBottom()
