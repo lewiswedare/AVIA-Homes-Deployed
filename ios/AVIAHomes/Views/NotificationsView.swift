@@ -113,9 +113,11 @@ struct NotificationsView: View {
             return resolveBuildId(for: notification) != nil
         case .requestSubmitted, .requestResponse:
             return true
-        case .packageShared, .packageApproved, .packageDeclined:
+        case .packageShared, .packageApproved, .packageDeclined, .packageAccepted:
             return true
-        case .buildUpdate:
+        case .depositInvoice, .depositReceived:
+            return true
+        case .buildUpdate, .handoverTriggered:
             return true
         case .documentAdded:
             return true
@@ -140,9 +142,11 @@ struct NotificationsView: View {
             }
         case .requestSubmitted, .requestResponse:
             RequestsView()
-        case .packageShared, .packageApproved, .packageDeclined:
+        case .packageShared, .packageApproved, .packageDeclined, .packageAccepted:
             ClientPackageReviewView()
-        case .buildUpdate:
+        case .depositInvoice, .depositReceived:
+            ClientPackageReviewView()
+        case .buildUpdate, .handoverTriggered:
             BuildProgressView()
         case .documentAdded:
             DocumentsView()
