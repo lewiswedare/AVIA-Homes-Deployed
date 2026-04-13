@@ -297,6 +297,17 @@ class AppViewModel {
             guard let self else { return }
             Task { await self.loadBuildsFromSupabase() }
         }
+        SupabaseService.shared.subscribeToScheduleChanges(clientId: currentUser.id) { [weak self] in
+            guard let self else { return }
+            Task { await self.loadScheduleItemsFromSupabase() }
+        }
+        SupabaseService.shared.subscribeToCatalogChanges { [weak self] in
+            guard let self else { return }
+            Task {
+                await self.catalogManager.loadAll()
+                await self.loadContentFromSupabase()
+            }
+        }
     }
 
     func signIn(email: String, password: String) async -> Bool {

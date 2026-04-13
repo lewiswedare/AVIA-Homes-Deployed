@@ -116,6 +116,32 @@ nonisolated struct BuildSpecSelectionRow: Codable, Sendable, Identifiable {
         case sort_order, created_at, updated_at, upgrade_cost, upgrade_cost_note
     }
 
+    func encode(to encoder: Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        try container.encode(id, forKey: .id)
+        try container.encode(build_id, forKey: .build_id)
+        try container.encode(category_id, forKey: .category_id)
+        try container.encode(spec_item_id, forKey: .spec_item_id)
+        try container.encode(spec_tier, forKey: .spec_tier)
+        try container.encode(selection_type, forKey: .selection_type)
+        try container.encodeIfPresent(client_notes, forKey: .client_notes)
+        try container.encodeIfPresent(admin_notes, forKey: .admin_notes)
+        try container.encode(client_confirmed, forKey: .client_confirmed)
+        try container.encode(admin_confirmed, forKey: .admin_confirmed)
+        try container.encodeIfPresent(client_confirmed_at, forKey: .client_confirmed_at)
+        try container.encodeIfPresent(admin_confirmed_at, forKey: .admin_confirmed_at)
+        try container.encode(locked_for_client, forKey: .locked_for_client)
+        try container.encode(status, forKey: .status)
+        try container.encode(snapshot_name, forKey: .snapshot_name)
+        try container.encode(snapshot_description, forKey: .snapshot_description)
+        try container.encodeIfPresent(snapshot_image_url, forKey: .snapshot_image_url)
+        try container.encode(snapshot_category_name, forKey: .snapshot_category_name)
+        try container.encode(sort_order, forKey: .sort_order)
+        try container.encodeIfPresent(updated_at, forKey: .updated_at)
+        try container.encodeIfPresent(upgrade_cost, forKey: .upgrade_cost)
+        try container.encodeIfPresent(upgrade_cost_note, forKey: .upgrade_cost_note)
+    }
+
     init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
         id = try container.decode(String.self, forKey: .id)
@@ -140,7 +166,6 @@ nonisolated struct BuildSpecSelectionRow: Codable, Sendable, Identifiable {
         created_at = try container.decodeIfPresent(String.self, forKey: .created_at)
         updated_at = try container.decodeIfPresent(String.self, forKey: .updated_at)
         upgrade_cost_note = try container.decodeIfPresent(String.self, forKey: .upgrade_cost_note)
-        // PostgREST returns numeric columns as JSON strings (e.g. "12.50")
         if let d = try? container.decodeIfPresent(Double.self, forKey: .upgrade_cost) {
             upgrade_cost = d
         } else if let s = try? container.decodeIfPresent(String.self, forKey: .upgrade_cost), let d = Double(s) {
@@ -279,6 +304,26 @@ nonisolated struct BuildColourSelectionRow: Codable, Sendable, Identifiable {
     let admin_notes: String?
     let created_at: String?
     let updated_at: String?
+
+    nonisolated enum CodingKeys: String, CodingKey {
+        case id, build_id, build_spec_selection_id, spec_item_id
+        case colour_category_id, colour_option_id, selection_status
+        case client_notes, admin_notes, created_at, updated_at
+    }
+
+    func encode(to encoder: Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        try container.encode(id, forKey: .id)
+        try container.encode(build_id, forKey: .build_id)
+        try container.encodeIfPresent(build_spec_selection_id, forKey: .build_spec_selection_id)
+        try container.encodeIfPresent(spec_item_id, forKey: .spec_item_id)
+        try container.encode(colour_category_id, forKey: .colour_category_id)
+        try container.encode(colour_option_id, forKey: .colour_option_id)
+        try container.encode(selection_status, forKey: .selection_status)
+        try container.encodeIfPresent(client_notes, forKey: .client_notes)
+        try container.encodeIfPresent(admin_notes, forKey: .admin_notes)
+        try container.encodeIfPresent(updated_at, forKey: .updated_at)
+    }
 }
 
 struct BuildColourSelection: Identifiable, Sendable {

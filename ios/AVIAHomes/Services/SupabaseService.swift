@@ -1316,4 +1316,52 @@ class SupabaseService {
             }
         }
     }
+
+    func subscribeToScheduleChanges(clientId: String, onUpdate: @escaping @Sendable () -> Void) {
+        guard isConfigured else { return }
+        let channel = client.realtimeV2.channel("schedule_sync:\(clientId)")
+        realtimeChannels.append(channel)
+        let changes = channel.postgresChange(
+            AnyAction.self,
+            schema: "public",
+            table: "schedule_items"
+        )
+        Task {
+            try? await channel.subscribeWithError()
+            for await _ in changes {
+                await MainActor.run { onUpdate() }
+            }
+        }
+    }
+
+    func subscribeToCatalogChanges(onUpdate: @escaping @Sendable () -> Void) {
+        guard isConfigured else { return }
+        let colourChannel = client.realtimeV2.channel("colour_categories_sync")
+        realtimeChannels.append(colourChannel)
+        let colourChanges = colourChannel.postgresChange(
+            AnyAction.self,
+            schema: "public",
+            table: "colour_categories"
+        )
+        Task {
+            try? await colourChannel.subscribeWithError()
+            for await _ in colourChanges {
+                await MainActor.run { onUpdate() }
+            }
+        }
+
+        let specChannel = client.realtimeV2.channel("spec_items_sync")
+        realtimeChannels.append(specChannel)
+        let specChanges = specChannel.postgresChange(
+            AnyAction.self,
+            schema: "public",
+            table: "spec_items"
+        )
+        Task {
+            try? await specChannel.subscribeWithError()
+            for await _ in specChanges {
+                await MainActor.run { onUpdate() }
+            }
+        }
+    }
 }

@@ -365,6 +365,25 @@ nonisolated struct ClientDocumentRow: Codable, Sendable {
     let build_stage_id: String?
     let created_at: String?
 
+    nonisolated enum CodingKeys: String, CodingKey {
+        case id, client_id, name, category, date_added, file_size
+        case is_new, file_url, build_id, build_stage_id, created_at
+    }
+
+    func encode(to encoder: Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        try container.encode(id, forKey: .id)
+        try container.encode(client_id, forKey: .client_id)
+        try container.encode(name, forKey: .name)
+        try container.encode(category, forKey: .category)
+        try container.encode(date_added, forKey: .date_added)
+        try container.encode(file_size, forKey: .file_size)
+        try container.encode(is_new, forKey: .is_new)
+        try container.encodeIfPresent(file_url, forKey: .file_url)
+        try container.encodeIfPresent(build_id, forKey: .build_id)
+        try container.encodeIfPresent(build_stage_id, forKey: .build_stage_id)
+    }
+
     init(from doc: ClientDocument, clientId: String, buildId: String? = nil, buildStageId: String? = nil) {
         let iso = ISO8601DateFormatter()
         id = doc.id
