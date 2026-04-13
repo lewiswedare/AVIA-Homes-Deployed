@@ -435,6 +435,8 @@ struct AdminSelectionDetailSheet: View {
                     .padding(.vertical, 10)
                     .background(AVIATheme.accent.opacity(0.1))
                     .clipShape(.rect(cornerRadius: 10))
+
+                    reviseCostFields
                 }
                 .padding(16)
             }
@@ -469,6 +471,8 @@ struct AdminSelectionDetailSheet: View {
                     .padding(.vertical, 10)
                     .background((selection.selectionType == .upgradeApproved ? AVIATheme.success : Color.green).opacity(0.1))
                     .clipShape(.rect(cornerRadius: 10))
+
+                    reviseCostFields
                 }
                 .padding(16)
             }
@@ -496,6 +500,58 @@ struct AdminSelectionDetailSheet: View {
                 }
                 .padding(16)
             }
+        }
+    }
+
+    private var reviseCostFields: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Rectangle().fill(AVIATheme.surfaceBorder).frame(height: 1)
+                .padding(.vertical, 4)
+
+            Text("REVISE COST")
+                .font(.neueCaption2Medium)
+                .kerning(1.0)
+                .foregroundStyle(AVIATheme.textTertiary)
+
+            HStack(spacing: 10) {
+                HStack(spacing: 4) {
+                    Text("$")
+                        .font(.neueCaptionMedium)
+                        .foregroundStyle(AVIATheme.textSecondary)
+                    TextField("0.00", text: $upgradeCostText)
+                        .keyboardType(.decimalPad)
+                        .font(.neueCaption)
+                }
+                .padding(10)
+                .background(AVIATheme.surfaceElevated)
+                .clipShape(.rect(cornerRadius: 8))
+                .frame(width: 120)
+
+                TextField("Cost note...", text: $upgradeCostNote)
+                    .font(.neueCaption)
+                    .padding(10)
+                    .background(AVIATheme.surfaceElevated)
+                    .clipShape(.rect(cornerRadius: 8))
+            }
+
+            HStack {
+                Spacer()
+                Button("Update Cost & Re-send to Client") {
+                    let cost = Double(upgradeCostText)
+                    onSetUpgradeCost(selection.id, cost, upgradeCostNote.isEmpty ? nil : upgradeCostNote)
+                    dismiss()
+                }
+                .font(.neueCaption2Medium)
+                .foregroundStyle(.white)
+                .padding(.horizontal, 14)
+                .padding(.vertical, 7)
+                .background(AVIATheme.accent)
+                .clipShape(Capsule())
+            }
+
+            Text("Changing the cost will reset the client\u{2019}s response. They will need to accept or decline the updated amount.")
+                .font(.neueCaption2)
+                .foregroundStyle(AVIATheme.textTertiary)
         }
     }
 

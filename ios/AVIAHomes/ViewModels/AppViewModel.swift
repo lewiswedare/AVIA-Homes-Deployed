@@ -640,15 +640,8 @@ class AppViewModel {
         }
         allClientBuilds[index] = updated
         syncBuildStagesForCurrentUser()
-        let newPrimaryId = updated.client.id.isEmpty ? nil : updated.client.id
-        let newAdditionalIds = updated.additionalClients.map { $0.id }.filter { !$0.isEmpty }
         Task {
-            let success = await SupabaseService.shared.removeClientFromBuild(
-                buildId: buildId,
-                clientId: clientId,
-                newPrimaryId: newPrimaryId,
-                newAdditionalIds: newAdditionalIds
-            )
+            let success = await SupabaseService.shared.upsertBuild(updated)
             if success {
                 await refreshBuildsAndAssignments()
                 await notificationService.createNotification(
@@ -661,6 +654,8 @@ class AppViewModel {
                     referenceId: buildId,
                     referenceType: "build"
                 )
+            } else {
+                await refreshBuildsAndAssignments()
             }
         }
     }
@@ -671,7 +666,11 @@ class AppViewModel {
         Task {
             let success = await SupabaseService.shared.deleteBuild(buildId: buildId)
             if !success {
-                print("[AppViewModel] deleteBuild: server delete failed for buildId=\(buildId), re-fetching to restore state")
+                print("[AppViewModel] deleteBuild: server delete failed for buildId=\(buildId), retrying with force")
+                let retrySuccess = await SupabaseService.shared.deleteBuildForce(buildId: buildId)
+                if !retrySuccess {
+                    print("[AppViewModel] deleteBuild: force delete also failed for buildId=\(buildId)")
+                }
             }
             await refreshBuildsAndAssignments()
         }
@@ -1223,7 +1222,12 @@ class AppViewModel {
         let row = HouseLandPackageRow(from: package)
         Task {
             let success = await SupabaseService.shared.upsertHouseLandPackage(row)
-            if !success {
+            if success {
+                let refreshed = await SupabaseService.shared.fetchHouseLandPackages()
+                if !refreshed.isEmpty {
+                    allPackages = refreshed
+                }
+            } else {
                 print("[AppViewModel] updatePackage: upsert failed for id=\(package.id)")
             }
         }

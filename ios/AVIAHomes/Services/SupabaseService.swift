@@ -275,6 +275,31 @@ class SupabaseService {
         }
     }
 
+    func deleteBuildForce(buildId: String) async -> Bool {
+        guard isConfigured else { return false }
+        let allChildTables: [(String, String)] = [
+            ("build_stages",            "build_id"),
+            ("build_spec_selections",   "build_id"),
+            ("build_colour_selections", "build_id"),
+            ("build_spec_documents",    "build_id"),
+            ("service_requests",        "build_id"),
+            ("documents",               "build_id"),
+            ("schedule_items",          "build_id"),
+        ]
+        for (table, column) in allChildTables {
+            _ = try? await client.from(table).delete().eq(column, value: buildId).execute()
+        }
+        _ = try? await client.from("notifications").delete().eq("reference_id", value: buildId).execute()
+        do {
+            try await client.from("builds").delete().eq("id", value: buildId).execute()
+            print("[SupabaseService] deleteBuildForce SUCCESS for id=\(buildId)")
+            return true
+        } catch {
+            print("[SupabaseService] deleteBuildForce FAILED: \(error)")
+            return false
+        }
+    }
+
     func updateBuildStage(_ stage: BuildStage, buildId: String, sortOrder: Int) async {
         guard isConfigured else { return }
         let row = BuildStageRow(from: stage, buildId: buildId, sortOrder: sortOrder)
@@ -1049,7 +1074,14 @@ class SupabaseService {
     func createBuildSpecSnapshot(buildId: String, specTier: SpecTier) async -> Bool {
         guard isConfigured else { return false }
         let catalog = CatalogDataManager.shared
+        if !catalog.isLoaded {
+            await catalog.loadAll()
+        }
         let categories = catalog.allSpecCategories
+        guard !categories.isEmpty else {
+            print("[SupabaseService] createBuildSpecSnapshot: no spec categories loaded, aborting")
+            return false
+        }
         let tierKey = specTier.imageKeySuffix
 
         var selections: [BuildSpecSelection] = []

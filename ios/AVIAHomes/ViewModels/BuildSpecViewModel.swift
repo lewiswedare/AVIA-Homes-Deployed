@@ -187,6 +187,8 @@ class BuildSpecViewModel {
         selections[idx].selectionType = .upgradeCosted
         selections[idx].status = .awaitingClient
         selections[idx].lockedForClient = false
+        selections[idx].clientConfirmed = false
+        selections[idx].clientConfirmedAt = nil
         let item = selections[idx]
         Task {
             let success = await SupabaseService.shared.upsertBuildSpecSelection(item)
