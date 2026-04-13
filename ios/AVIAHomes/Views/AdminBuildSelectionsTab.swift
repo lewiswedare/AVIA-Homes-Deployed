@@ -155,6 +155,7 @@ struct AdminBuildSelectionsTab: View {
         switch status {
         case .draft, .clientReviewing: AVIATheme.textTertiary
         case .awaitingAdmin: AVIATheme.warning
+        case .awaitingClient: AVIATheme.teal
         case .reopenedByAdmin, .amendedByAdmin: Color(hex: "8B5CF6")
         case .approved: AVIATheme.success
         }
@@ -286,6 +287,9 @@ struct AdminBuildSelectionsTab: View {
         let (label, color): (String, Color) = switch type {
         case .included: ("STD", AVIATheme.textTertiary)
         case .upgradeRequested: ("UPG", AVIATheme.warning)
+        case .upgradeCosted: ("UPG $", AVIATheme.teal)
+        case .upgradeAccepted: ("UPG ✓", AVIATheme.success)
+        case .upgradeDeclined: ("UPG ✗", AVIATheme.destructive)
         case .upgradeApproved: ("UPG ✓", AVIATheme.success)
         case .substituted: ("SUB", Color(hex: "8B5CF6"))
         case .removed: ("REM", AVIATheme.destructive)
