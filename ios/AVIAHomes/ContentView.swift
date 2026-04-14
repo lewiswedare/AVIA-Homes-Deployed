@@ -220,19 +220,22 @@ struct AdminTabView: View {
                     }
                 }
             }
-            Tab("Messages", systemImage: "message.fill", value: 2) {
+            Tab("Stocklist", systemImage: "list.clipboard", value: 2) {
+                StocklistView()
+            }
+            Tab("Messages", systemImage: "message.fill", value: 3) {
                 NavigationStack {
                     ConversationsView()
                 }
             }
             .badge(viewModel.messagingService.totalUnreadCount)
-            Tab("Alerts", systemImage: "bell.fill", value: 3) {
+            Tab("Alerts", systemImage: "bell.fill", value: 4) {
                 NavigationStack {
                     NotificationsView()
                 }
             }
             .badge(viewModel.notificationService.unreadCount)
-            Tab("More", systemImage: "ellipsis.circle.fill", value: 4) {
+            Tab("More", systemImage: "ellipsis.circle.fill", value: 5) {
                 MoreView()
             }
         }
@@ -262,19 +265,22 @@ struct PartnerTabView: View {
             Tab("Packages", systemImage: "house.and.flag.fill", value: 1) {
                 PartnerPackagesTab()
             }
-            Tab("Messages", systemImage: "message.fill", value: 2) {
+            Tab("Stocklist", systemImage: "list.clipboard", value: 2) {
+                StocklistView()
+            }
+            Tab("Messages", systemImage: "message.fill", value: 3) {
                 NavigationStack {
                     ConversationsView()
                 }
             }
             .badge(viewModel.messagingService.totalUnreadCount)
-            Tab("Alerts", systemImage: "bell.fill", value: 3) {
+            Tab("Alerts", systemImage: "bell.fill", value: 4) {
                 NavigationStack {
                     NotificationsView()
                 }
             }
             .badge(viewModel.notificationService.unreadCount)
-            Tab("More", systemImage: "ellipsis.circle.fill", value: 4) {
+            Tab("More", systemImage: "ellipsis.circle.fill", value: 5) {
                 MoreView()
             }
         }
@@ -385,13 +391,16 @@ struct SuperAdminTabView: View {
                     }
                 }
             }
-            Tab("Messages", systemImage: "message.fill", value: 3) {
+            Tab("Stocklist", systemImage: "list.clipboard", value: 3) {
+                StocklistView()
+            }
+            Tab("Messages", systemImage: "message.fill", value: 4) {
                 NavigationStack {
                     ConversationsView()
                 }
             }
             .badge(viewModel.messagingService.totalUnreadCount)
-            Tab("More", systemImage: "ellipsis.circle.fill", value: 4) {
+            Tab("More", systemImage: "ellipsis.circle.fill", value: 5) {
                 MoreView()
             }
         }
