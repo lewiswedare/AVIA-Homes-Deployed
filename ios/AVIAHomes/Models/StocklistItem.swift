@@ -43,6 +43,49 @@ struct StocklistItemRow: Codable, Identifiable, Sendable {
     let updated_at: String?
 }
 
+extension StocklistItemRow {
+    func toHouseLandPackage(estateName: String) -> HouseLandPackage {
+        let specTier: SpecTier
+        switch (specification ?? "").lowercased() {
+        case "messina": specTier = .messina
+        case "portobello": specTier = .portobello
+        default: specTier = .volos
+        }
+
+        return HouseLandPackage(
+            id: "stocklist_\(id)",
+            title: design_facade ?? "Lot \(lot_number)",
+            location: estateName,
+            lotSize: land_size ?? "",
+            homeDesign: design_facade ?? "",
+            price: package_price ?? land_price ?? "",
+            imageURL: "",
+            isNew: false,
+            lotNumber: lot_number,
+            lotFrontage: "",
+            lotDepth: "",
+            landPrice: land_price ?? "",
+            housePrice: build_price ?? "",
+            specTier: specTier,
+            titleDate: registered ?? "",
+            council: "",
+            zoning: "",
+            buildTimeEstimate: "",
+            inclusions: [],
+            isCustom: (design_facade ?? "").lowercased().contains("custom"),
+            customBedrooms: Int(bedrooms ?? ""),
+            customBathrooms: Int(bathrooms ?? ""),
+            customGarages: Int(garages ?? ""),
+            customSquareMeters: {
+                guard let bs = build_size?.replacingOccurrences(of: "m2", with: "") else { return nil }
+                return Double(bs)
+            }(),
+            customStoreys: nil,
+            selectedFacadeId: nil
+        )
+    }
+}
+
 struct StocklistAltDesignRow: Codable, Identifiable, Sendable {
     let id: String
     var stocklist_item_id: String

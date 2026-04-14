@@ -4,8 +4,6 @@ struct StocklistView: View {
     @Environment(AppViewModel.self) private var appViewModel
     @State private var stocklistVM = StocklistViewModel()
     @State private var expandedEstateIDs: Set<String> = []
-    @State private var selectedLot: StocklistItemRow?
-    @State private var selectedLotEstate: StocklistEstateRow?
     @State private var showSortMenu = false
     @State private var showFilterMenu = false
     @State private var sortOption: SortOption = .none
@@ -100,11 +98,8 @@ struct StocklistView: View {
             } message: {
                 Text("Are you sure you want to delete Lot \(lotToDelete?.lot_number ?? "")? This cannot be undone.")
             }
-            .sheet(item: $selectedLot) { lot in
-                if let estate = selectedLotEstate {
-                    let alts = stocklistVM.altDesigns(for: lot.id)
-                    StocklistLotDetailSheet(lot: lot, estate: estate, altDesigns: alts)
-                }
+            .navigationDestination(for: HouseLandPackage.self) { pkg in
+                PackageDetailView(package: pkg)
             }
         }
     }
@@ -424,21 +419,16 @@ struct StocklistView: View {
                     let columns = [GridItem(.flexible(), spacing: 12), GridItem(.flexible(), spacing: 12)]
                     LazyVGrid(columns: columns, spacing: 12) {
                         ForEach(lots) { lot in
-                            Button {
-                                if isEditMode && canEdit {
+                            if isEditMode && canEdit {
+                                Button {
                                     lotToEdit = lot
                                     lotEditEstateId = lot.estate_id
                                     showLotEditor = true
-                                } else {
-                                    selectedLot = lot
-                                    selectedLotEstate = estate
+                                } label: {
+                                    lotCard(lot: lot, estate: estate)
                                 }
-                            } label: {
-                                lotCard(lot: lot, estate: estate)
-                            }
-                            .buttonStyle(.plain)
-                            .contextMenu {
-                                if isEditMode && canEdit {
+                                .buttonStyle(.plain)
+                                .contextMenu {
                                     Button {
                                         lotToEdit = lot
                                         lotEditEstateId = lot.estate_id
@@ -453,6 +443,11 @@ struct StocklistView: View {
                                         Label("Delete Lot", systemImage: "trash")
                                     }
                                 }
+                            } else {
+                                NavigationLink(value: lot.toHouseLandPackage(estateName: estate.name)) {
+                                    lotCard(lot: lot, estate: estate)
+                                }
+                                .buttonStyle(.plain)
                             }
                         }
                     }

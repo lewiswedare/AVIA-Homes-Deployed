@@ -165,6 +165,14 @@ struct AdminEOIDetailSheet: View {
     @State private var isProcessing = false
     @State private var showDocumentPicker = false
     @State private var contractRecord: ContractSignatureRow?
+    @State private var isEditing = false
+    @State private var editedEOI: EOISubmissionRow
+
+    init(eoi: EOISubmissionRow, onUpdate: @escaping () async -> Void) {
+        self.eoi = eoi
+        self.onUpdate = onUpdate
+        self._editedEOI = State(initialValue: eoi)
+    }
 
     var body: some View {
         NavigationStack {
@@ -172,43 +180,57 @@ struct AdminEOIDetailSheet: View {
                 VStack(spacing: 16) {
                     statusHeader
 
+                    if let pkg = viewModel.allPackages.first(where: { $0.id == eoi.package_id }) {
+                        NavigationLink(value: pkg) {
+                            HStack(spacing: 10) {
+                                Image(systemName: "house.fill")
+                                    .font(.neueCaption)
+                                    .foregroundStyle(AVIATheme.teal)
+                                Text("View Package")
+                                    .font(.neueSubheadlineMedium)
+                                    .foregroundStyle(AVIATheme.teal)
+                                Spacer()
+                                Image(systemName: "chevron.right")
+                                    .font(.neueCaption2)
+                                    .foregroundStyle(AVIATheme.textTertiary)
+                            }
+                            .padding(16)
+                            .background(AVIATheme.cardBackground)
+                            .clipShape(.rect(cornerRadius: 14))
+                        }
+                    }
+
                     eoiDetailCard("Property Details", icon: "house.fill") {
-                        detailRow("Lot Number", eoi.lot_number)
-                        detailRow("Estate", eoi.estate_name)
-                        if let street = eoi.street_suburb, !street.isEmpty {
-                            detailRow("Street & Suburb", street)
-                        }
-                        detailRow("Occupancy", occupancyLabel(eoi.occupancy_type))
-                        if let tier = eoi.specification_tier {
-                            detailRow("Spec Tier", tier)
-                        }
-                        if let facade = eoi.facade_selection {
-                            detailRow("Facade", facade)
-                        }
+                        editableRow("Lot Number", value: $editedEOI.lot_number)
+                        editableRow("Estate", value: $editedEOI.estate_name)
+                        editableRow("Street & Suburb", value: optionalBinding(\.street_suburb))
+                        editableRow("Occupancy", value: $editedEOI.occupancy_type)
+                        editableRow("Spec Tier", value: optionalBinding(\.specification_tier))
+                        editableRow("Facade", value: optionalBinding(\.facade_selection))
                     }
 
                     eoiDetailCard("Buyer One", icon: "person.fill") {
-                        detailRow("Name", eoi.buyer1_name)
-                        detailRow("Email", eoi.buyer1_email)
-                        detailRow("Address", eoi.buyer1_address)
-                        detailRow("Phone", eoi.buyer1_phone)
+                        editableRow("Name", value: $editedEOI.buyer1_name)
+                        editableRow("Email", value: $editedEOI.buyer1_email)
+                        editableRow("Address", value: $editedEOI.buyer1_address)
+                        editableRow("Phone", value: $editedEOI.buyer1_phone)
                     }
 
-                    if let b2Name = eoi.buyer2_name, !b2Name.isEmpty {
+                    if isEditing || (eoi.buyer2_name != nil && !eoi.buyer2_name!.isEmpty) {
                         eoiDetailCard("Buyer Two", icon: "person.fill") {
-                            detailRow("Name", b2Name)
-                            detailRow("Email", eoi.buyer2_email ?? "—")
-                            detailRow("Address", eoi.buyer2_address ?? "—")
-                            detailRow("Phone", eoi.buyer2_phone ?? "—")
+                            editableRow("Name", value: optionalBinding(\.buyer2_name))
+                            editableRow("Email", value: optionalBinding(\.buyer2_email))
+                            editableRow("Address", value: optionalBinding(\.buyer2_address))
+                            editableRow("Phone", value: optionalBinding(\.buyer2_phone))
                         }
                     }
 
                     eoiDetailCard("Solicitor", icon: "building.columns.fill") {
-                        detailRow("Company", eoi.solicitor_company)
-                        detailRow("Name", eoi.solicitor_name)
-                        detailRow("Email", eoi.solicitor_email)
-                        detailRow("Address", eoi.solicitor_address)
-                        detailRow("Phone", eoi.solicitor_phone)
+                        editableRow("Company", value: $editedEOI.solicitor_company)
+                        editableRow("Name", value: $editedEOI.solicitor_name)
+                        editableRow("Email", value: $editedEOI.solicitor_email)
+                        editableRow("Address", value: $editedEOI.solicitor_address)
+                        editableRow("Phone", value: $editedEOI.solicitor_phone)
                     }
 
                     if let notes = eoi.admin_notes, !notes.isEmpty {
@@ -232,6 +254,16 @@ struct AdminEOIDetailSheet: View {
                     Button("Close") { dismiss() }
                         .font(.neueSubheadline)
                 }
+                ToolbarItem(placement: .topBarTrailing) {
+                    if isEditing {
+                        Button("Save") { Task { await saveEdits() } }
+                            .font(.neueSubheadlineMedium)
+                            .disabled(isProcessing)
+                    } else {
+                        Button("Edit") { isEditing = true }
+                            .font(.neueSubheadline)
+                    }
+                }
             }
             .fileImporter(
                 isPresented: $showDocumentPicker,
@@ -239,6 +271,9 @@ struct AdminEOIDetailSheet: View {
                 allowsMultipleSelection: false
             ) { result in
                 Task { await handleFileImport(result) }
+            }
+            .navigationDestination(for: HouseLandPackage.self) { pkg in
+                PackageDetailView(package: pkg)
             }
         }
     }
@@ -474,6 +509,43 @@ struct AdminEOIDetailSheet: View {
             Text(value)
                 .font(.neueCaptionMedium)
                 .foregroundStyle(AVIATheme.textPrimary)
+        }
+    }
+
+    private func editableRow(_ label: String, value: Binding<String>) -> some View {
+        HStack {
+            Text(label)
+                .font(.neueCaption)
+                .foregroundStyle(AVIATheme.textTertiary)
+                .frame(width: 100, alignment: .leading)
+            if isEditing {
+                TextField(label, text: value)
+                    .font(.neueCaptionMedium)
+                    .foregroundStyle(AVIATheme.textPrimary)
+                    .textFieldStyle(.roundedBorder)
+            } else {
+                Spacer()
+                Text(value.wrappedValue)
+                    .font(.neueCaptionMedium)
+                    .foregroundStyle(AVIATheme.textPrimary)
+            }
+        }
+    }
+
+    private func optionalBinding(_ keyPath: WritableKeyPath<EOISubmissionRow, String?>) -> Binding<String> {
+        Binding(
+            get: { editedEOI[keyPath: keyPath] ?? "" },
+            set: { editedEOI[keyPath: keyPath] = $0.isEmpty ? nil : $0 }
+        )
+    }
+
+    private func saveEdits() async {
+        isProcessing = true
+        defer { isProcessing = false }
+        let success = await SupabaseService.shared.submitEOI(editedEOI)
+        if success {
+            isEditing = false
+            await onUpdate()
         }
     }
 
