@@ -363,7 +363,7 @@ struct StocklistView: View {
                 .padding(.horizontal, 16)
                 .padding(.vertical, 14)
                 .background(AVIATheme.tealGradient)
-                .clipShape(.rect(topLeadingRadius: 16, topTrailingRadius: 16, bottomLeadingRadius: expandedEstateIDs.contains(estate.id) ? 0 : 16, bottomTrailingRadius: expandedEstateIDs.contains(estate.id) ? 0 : 16))
+                .clipShape(.rect(topLeadingRadius: 16, bottomLeadingRadius: expandedEstateIDs.contains(estate.id) ? 0 : 16, bottomTrailingRadius: expandedEstateIDs.contains(estate.id) ? 0 : 16, topTrailingRadius: 16))
             }
             .contextMenu {
                 if isEditMode && canEdit {
