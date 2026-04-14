@@ -15,7 +15,7 @@ struct StocklistEstateRow: Codable, Identifiable, Sendable {
     let updated_at: String?
 }
 
-struct StocklistItemRow: Codable, Identifiable, Sendable {
+struct StocklistItemRow: Codable, Identifiable, Hashable, Sendable {
     let id: String
     var estate_id: String
     var lot_number: String

@@ -102,7 +102,7 @@ struct StocklistView: View {
             }
             .sheet(item: $selectedLot) { lot in
                 if let estate = selectedLotEstate {
-                    let alts = stocklistVM.altDesigns(for: lot.id)
+                    let alts = stocklistVM.altDesignsForItem(lot.id)
                     StocklistLotDetailSheet(lot: lot, estate: estate, altDesigns: alts)
                 }
             }

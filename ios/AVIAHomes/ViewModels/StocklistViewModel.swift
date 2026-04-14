@@ -1,6 +1,6 @@
 import SwiftUI
 
-@Observable
+@Observable @MainActor
 class StocklistViewModel {
     var estates: [StocklistEstateRow] = []
     var items: [StocklistItemRow] = []
@@ -55,7 +55,7 @@ class StocklistViewModel {
         return result
     }
 
-    func altDesigns(for itemId: String) -> [StocklistAltDesignRow] {
+    func altDesignsForItem(_ itemId: String) -> [StocklistAltDesignRow] {
         altDesigns.filter { $0.stocklist_item_id == itemId }
     }
 
