@@ -17,6 +17,11 @@ nonisolated enum NotificationType: String, Codable, Sendable {
     case colourSelectionSubmitted = "colour_selection_submitted"
     case specTierChanged = "spec_tier_changed"
     case documentAdded = "document_added"
+    case eoiSubmitted = "eoi_submitted"
+    case eoiApproved = "eoi_approved"
+    case eoiChangesRequested = "eoi_changes_requested"
+    case contractUploaded = "contract_uploaded"
+    case contractSigned = "contract_signed"
 
     var icon: String {
         switch self {
@@ -36,6 +41,11 @@ nonisolated enum NotificationType: String, Codable, Sendable {
         case .colourSelectionSubmitted: "paintpalette.fill"
         case .specTierChanged: "arrow.up.circle.fill"
         case .documentAdded: "doc.text.fill"
+        case .eoiSubmitted: "doc.text.fill"
+        case .eoiApproved: "checkmark.seal.fill"
+        case .eoiChangesRequested: "exclamationmark.bubble.fill"
+        case .contractUploaded: "doc.richtext.fill"
+        case .contractSigned: "signature"
         }
     }
 
@@ -57,6 +67,11 @@ nonisolated enum NotificationType: String, Codable, Sendable {
         case .colourSelectionSubmitted: "teal"
         case .specTierChanged: "warning"
         case .documentAdded: "teal"
+        case .eoiSubmitted: "warning"
+        case .eoiApproved: "success"
+        case .eoiChangesRequested: "destructive"
+        case .contractUploaded: "teal"
+        case .contractSigned: "success"
         }
     }
 }
@@ -101,6 +116,11 @@ nonisolated struct AppNotification: Identifiable, Sendable, Hashable {
         case .roleAssigned: return "Role Updated"
         case .requestSubmitted: return "New Request"
         case .requestResponse: return "Request Response"
+        case .eoiSubmitted: return "EOI Submitted"
+        case .eoiApproved: return "EOI Approved"
+        case .eoiChangesRequested: return "EOI Changes Requested"
+        case .contractUploaded: return "Contract Ready"
+        case .contractSigned: return "Contract Signed"
         }
     }
 
@@ -123,6 +143,11 @@ nonisolated struct AppNotification: Identifiable, Sendable, Hashable {
         case .roleAssigned: return "Your role has been updated"
         case .requestSubmitted: return "A new request has been submitted"
         case .requestResponse: return "You have a new response to your request"
+        case .eoiSubmitted: return "An expression of interest has been submitted"
+        case .eoiApproved: return "Your expression of interest has been approved"
+        case .eoiChangesRequested: return "Changes have been requested on your EOI"
+        case .contractUploaded: return "A contract is ready for your signature"
+        case .contractSigned: return "A contract has been signed"
         }
     }
 

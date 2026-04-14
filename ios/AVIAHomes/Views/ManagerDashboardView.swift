@@ -42,6 +42,9 @@ struct AdminDashboardView: View {
                         NavigationLink { AdminBuildManagementView() } label: {
                             Label("Build Management", systemImage: "slider.horizontal.3")
                         }
+                        NavigationLink { AdminEOIReviewView() } label: {
+                            Label("EOI Reviews", systemImage: "doc.text.magnifyingglass")
+                        }
                     } label: {
                         Image(systemName: "ellipsis.circle.fill")
                             .foregroundStyle(AVIATheme.teal)

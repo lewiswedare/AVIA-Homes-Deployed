@@ -18,6 +18,10 @@ struct DashboardView: View {
     @State private var showMyDesignPlan: Bool = false
     @State private var assignedStaffProfile: ClientUser?
     @State private var showGeneralMessage = false
+    @State private var showContractSigning = false
+    @State private var pendingContract: ContractSignatureRow?
+    @State private var pendingContractAssignment: PackageAssignment?
+    @State private var pendingContractPackage: HouseLandPackage?
 
     private let segments = ["My Home", "Discover"]
 
@@ -71,6 +75,11 @@ struct DashboardView: View {
             }
             .navigationDestination(isPresented: $showMyDesignPlan) {
                 MyDesignPlanView()
+            }
+            .sheet(isPresented: $showContractSigning) {
+                if let contract = pendingContract, let assign = pendingContractAssignment, let pkg = pendingContractPackage {
+                    ContractSigningView(contract: contract, assignment: assign, package: pkg)
+                }
             }
             .sheet(isPresented: $showJourneyDetail) {
                 BuildJourneyDetailView(
@@ -249,6 +258,7 @@ struct DashboardView: View {
 
     private var overviewContent: some View {
         VStack(spacing: 12) {
+            contractSigningBanner
             journeyCard
             packageCard
             staffContactSection
@@ -262,6 +272,7 @@ struct DashboardView: View {
             upcomingScheduleList
         }
         .task { await loadStaffContact() }
+        .task { await loadPendingContract() }
     }
 
     @ViewBuilder
@@ -292,6 +303,55 @@ struct DashboardView: View {
             assignedStaffProfile = await SupabaseService.shared.fetchProfile(userId: bsId)
         } else if let pcId = build.preConstructionStaffId, !pcId.isEmpty {
             assignedStaffProfile = await SupabaseService.shared.fetchProfile(userId: pcId)
+        }
+    }
+
+    private func loadPendingContract() async {
+        for assign in viewModel.packageAssignments where assign.contractStatus == "awaiting_signature" {
+            if assign.sharedWithClientIds.contains(viewModel.currentUser.id) {
+                if let contract = await SupabaseService.shared.fetchContractSignature(forAssignment: assign.id) {
+                    pendingContract = contract
+                    pendingContractAssignment = assign
+                    pendingContractPackage = viewModel.allPackages.first { $0.id == assign.packageId }
+                    return
+                }
+            }
+        }
+    }
+
+    @ViewBuilder
+    private var contractSigningBanner: some View {
+        if pendingContract != nil && pendingContractPackage != nil {
+            Button {
+                showContractSigning = true
+            } label: {
+                BentoCard(cornerRadius: 14) {
+                    HStack(spacing: 12) {
+                        ZStack {
+                            Circle()
+                                .fill(AVIATheme.warning.opacity(0.12))
+                                .frame(width: 42, height: 42)
+                            Image(systemName: "signature")
+                                .font(.system(size: 18, weight: .semibold))
+                                .foregroundStyle(AVIATheme.warning)
+                        }
+                        VStack(alignment: .leading, spacing: 3) {
+                            Text("Contract Ready to Sign")
+                                .font(.neueSubheadlineMedium)
+                                .foregroundStyle(AVIATheme.textPrimary)
+                            Text("Tap to review and sign your contract")
+                                .font(.neueCaption)
+                                .foregroundStyle(AVIATheme.textSecondary)
+                        }
+                        Spacer()
+                        Image(systemName: "chevron.right")
+                            .font(.neueCaption2Medium)
+                            .foregroundStyle(AVIATheme.textTertiary)
+                    }
+                    .padding(16)
+                }
+            }
+            .buttonStyle(.plain)
         }
     }
 

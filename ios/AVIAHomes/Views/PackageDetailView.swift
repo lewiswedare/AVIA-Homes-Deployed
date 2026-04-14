@@ -8,6 +8,9 @@ struct PackageDetailView: View {
     @State private var showResponseConfirmation = false
     @State private var responseNotes = ""
     @State private var pendingAction: PackageResponseStatus?
+    @State private var showEOIForm = false
+    @State private var showContractSigning = false
+    @State private var contractRecord: ContractSignatureRow?
 
     private var canSharePackages: Bool {
         viewModel.currentRole.canAllocatePackages || viewModel.currentRole == .staff
@@ -59,13 +62,28 @@ struct PackageDetailView: View {
         .alert("Confirm Response", isPresented: $showResponseConfirmation) {
             TextField("Notes (optional)", text: $responseNotes)
             Button("Cancel", role: .cancel) { }
-            Button(pendingAction == .accepted ? "Approve" : "Decline", role: pendingAction == .declined ? .destructive : nil) {
+            Button("Decline", role: .destructive) {
                 if let action = pendingAction {
                     viewModel.respondToPackage(packageId: package.id, status: action, notes: responseNotes.isEmpty ? nil : responseNotes)
                 }
             }
         } message: {
-            Text(pendingAction == .accepted ? "Approve this house & land package?" : "Decline this house & land package?")
+            Text("Decline this house & land package?")
+        }
+        .sheet(isPresented: $showEOIForm) {
+            if let assign = assignment {
+                EOIFormView(package: package, assignment: assign)
+            }
+        }
+        .sheet(isPresented: $showContractSigning) {
+            if let contract = contractRecord, let assign = assignment {
+                ContractSigningView(contract: contract, assignment: assign, package: package)
+            }
+        }
+        .task {
+            if let assign = assignment, assign.contractStatus == "awaiting_signature" {
+                contractRecord = await SupabaseService.shared.fetchContractSignature(forAssignment: assign.id)
+            }
         }
         .sheet(isPresented: $showPackageSharing) {
             if viewModel.currentRole == .partner {
@@ -937,55 +955,180 @@ struct PackageDetailView: View {
 
     private var clientResponseSection: some View {
         VStack(spacing: 10) {
-            if currentResponse?.status == .accepted {
-                BentoCard(cornerRadius: 16) {
-                    HStack(spacing: 12) {
-                        Image(systemName: "checkmark.circle.fill")
-                            .font(.system(size: 24))
-                            .foregroundStyle(AVIATheme.success)
-                        VStack(alignment: .leading, spacing: 3) {
-                            Text("Package Approved")
-                                .font(.neueSubheadlineMedium)
-                                .foregroundStyle(AVIATheme.textPrimary)
-                            if let date = currentResponse?.respondedDate {
-                                Text("Approved on \(date.formatted(date: .abbreviated, time: .omitted))")
+            if let assign = assignment {
+                // Show EOI/contract status banners
+                if assign.contractStatus == "awaiting_signature" {
+                    BentoCard(cornerRadius: 16) {
+                        HStack(spacing: 12) {
+                            Image(systemName: "signature")
+                                .font(.system(size: 24))
+                                .foregroundStyle(AVIATheme.warning)
+                            VStack(alignment: .leading, spacing: 3) {
+                                Text("Contract Ready to Sign")
+                                    .font(.neueSubheadlineMedium)
+                                    .foregroundStyle(AVIATheme.textPrimary)
+                                Text("Your contract is ready for signature")
                                     .font(.neueCaption)
                                     .foregroundStyle(AVIATheme.textSecondary)
                             }
+                            Spacer()
                         }
-                        Spacer()
+                        .padding(16)
                     }
-                    .padding(16)
-                }
-            } else if currentResponse?.status == .declined {
-                BentoCard(cornerRadius: 16) {
-                    HStack(spacing: 12) {
-                        Image(systemName: "xmark.circle.fill")
-                            .font(.system(size: 24))
-                            .foregroundStyle(AVIATheme.destructive)
-                        VStack(alignment: .leading, spacing: 3) {
-                            Text("Package Declined")
+
+                    Button {
+                        showContractSigning = true
+                    } label: {
+                        HStack(spacing: 8) {
+                            Image(systemName: "signature")
                                 .font(.neueSubheadlineMedium)
-                                .foregroundStyle(AVIATheme.textPrimary)
-                            Text("You can change your response below")
-                                .font(.neueCaption)
-                                .foregroundStyle(AVIATheme.textSecondary)
+                            Text("Sign Contract")
+                                .font(.neueSubheadlineMedium)
                         }
-                        Spacer()
+                        .frame(maxWidth: .infinity)
+                        .frame(height: 52)
+                        .foregroundStyle(.white)
+                        .background(AVIATheme.tealGradient)
+                        .clipShape(.rect(cornerRadius: 14))
                     }
-                    .padding(16)
+                } else if assign.contractStatus == "signed" {
+                    BentoCard(cornerRadius: 16) {
+                        HStack(spacing: 12) {
+                            Image(systemName: "checkmark.seal.fill")
+                                .font(.system(size: 24))
+                                .foregroundStyle(AVIATheme.success)
+                            VStack(alignment: .leading, spacing: 3) {
+                                Text("Contract Signed")
+                                    .font(.neueSubheadlineMedium)
+                                    .foregroundStyle(AVIATheme.textPrimary)
+                                Text("Your contract has been signed successfully")
+                                    .font(.neueCaption)
+                                    .foregroundStyle(AVIATheme.textSecondary)
+                            }
+                            Spacer()
+                        }
+                        .padding(16)
+                    }
+                } else if assign.eoiStatus == "submitted" || assign.eoiStatus == "resubmitted" {
+                    BentoCard(cornerRadius: 16) {
+                        HStack(spacing: 12) {
+                            Image(systemName: "doc.text.fill")
+                                .font(.system(size: 24))
+                                .foregroundStyle(AVIATheme.warning)
+                            VStack(alignment: .leading, spacing: 3) {
+                                Text("EOI Submitted")
+                                    .font(.neueSubheadlineMedium)
+                                    .foregroundStyle(AVIATheme.textPrimary)
+                                Text("Your expression of interest is under review")
+                                    .font(.neueCaption)
+                                    .foregroundStyle(AVIATheme.textSecondary)
+                            }
+                            Spacer()
+                        }
+                        .padding(16)
+                    }
+                } else if assign.eoiStatus == "approved" {
+                    BentoCard(cornerRadius: 16) {
+                        HStack(spacing: 12) {
+                            Image(systemName: "checkmark.seal.fill")
+                                .font(.system(size: 24))
+                                .foregroundStyle(AVIATheme.success)
+                            VStack(alignment: .leading, spacing: 3) {
+                                Text("EOI Approved")
+                                    .font(.neueSubheadlineMedium)
+                                    .foregroundStyle(AVIATheme.textPrimary)
+                                Text("Awaiting contract preparation")
+                                    .font(.neueCaption)
+                                    .foregroundStyle(AVIATheme.textSecondary)
+                            }
+                            Spacer()
+                        }
+                        .padding(16)
+                    }
+                } else if assign.eoiStatus == "changes_requested" {
+                    BentoCard(cornerRadius: 16) {
+                        HStack(spacing: 12) {
+                            Image(systemName: "exclamationmark.bubble.fill")
+                                .font(.system(size: 24))
+                                .foregroundStyle(AVIATheme.destructive)
+                            VStack(alignment: .leading, spacing: 3) {
+                                Text("Changes Requested")
+                                    .font(.neueSubheadlineMedium)
+                                    .foregroundStyle(AVIATheme.textPrimary)
+                                Text("Please review admin notes and resubmit")
+                                    .font(.neueCaption)
+                                    .foregroundStyle(AVIATheme.textSecondary)
+                            }
+                            Spacer()
+                        }
+                        .padding(16)
+                    }
+
+                    Button {
+                        showEOIForm = true
+                    } label: {
+                        HStack(spacing: 8) {
+                            Image(systemName: "arrow.clockwise.circle.fill")
+                                .font(.neueSubheadlineMedium)
+                            Text("Resubmit EOI")
+                                .font(.neueSubheadlineMedium)
+                        }
+                        .frame(maxWidth: .infinity)
+                        .frame(height: 52)
+                        .foregroundStyle(.white)
+                        .background(AVIATheme.tealGradient)
+                        .clipShape(.rect(cornerRadius: 14))
+                    }
+                } else if currentResponse?.status == .accepted {
+                    BentoCard(cornerRadius: 16) {
+                        HStack(spacing: 12) {
+                            Image(systemName: "checkmark.circle.fill")
+                                .font(.system(size: 24))
+                                .foregroundStyle(AVIATheme.success)
+                            VStack(alignment: .leading, spacing: 3) {
+                                Text("Package Approved")
+                                    .font(.neueSubheadlineMedium)
+                                    .foregroundStyle(AVIATheme.textPrimary)
+                                if let date = currentResponse?.respondedDate {
+                                    Text("Approved on \(date.formatted(date: .abbreviated, time: .omitted))")
+                                        .font(.neueCaption)
+                                        .foregroundStyle(AVIATheme.textSecondary)
+                                }
+                            }
+                            Spacer()
+                        }
+                        .padding(16)
+                    }
+                } else if currentResponse?.status == .declined {
+                    BentoCard(cornerRadius: 16) {
+                        HStack(spacing: 12) {
+                            Image(systemName: "xmark.circle.fill")
+                                .font(.system(size: 24))
+                                .foregroundStyle(AVIATheme.destructive)
+                            VStack(alignment: .leading, spacing: 3) {
+                                Text("Package Declined")
+                                    .font(.neueSubheadlineMedium)
+                                    .foregroundStyle(AVIATheme.textPrimary)
+                                Text("You can change your response below")
+                                    .font(.neueCaption)
+                                    .foregroundStyle(AVIATheme.textSecondary)
+                            }
+                            Spacer()
+                        }
+                        .padding(16)
+                    }
                 }
             }
 
-            if currentResponse?.status != .accepted {
+            // Show Accept/EOI button if not already accepted and no active EOI
+            if currentResponse?.status != .accepted && (assignment?.eoiStatus == "none" || assignment?.eoiStatus == nil) {
                 Button {
-                    pendingAction = .accepted
-                    showResponseConfirmation = true
+                    showEOIForm = true
                 } label: {
                     HStack(spacing: 8) {
                         Image(systemName: "checkmark.circle.fill")
                             .font(.neueSubheadlineMedium)
-                        Text("Approve Package")
+                        Text("Accept & Submit EOI")
                             .font(.neueSubheadlineMedium)
                     }
                     .frame(maxWidth: .infinity)
@@ -994,10 +1137,10 @@ struct PackageDetailView: View {
                     .background(AVIATheme.tealGradient)
                     .clipShape(.rect(cornerRadius: 14))
                 }
-                .sensoryFeedback(.impact(weight: .medium), trigger: showResponseConfirmation)
+                .sensoryFeedback(.impact(weight: .medium), trigger: showEOIForm)
             }
 
-            if currentResponse?.status != .declined {
+            if currentResponse?.status != .declined && assignment?.eoiStatus == "none" {
                 Button {
                     pendingAction = .declined
                     showResponseConfirmation = true

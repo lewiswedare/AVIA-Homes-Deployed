@@ -207,6 +207,8 @@ nonisolated struct PackageAssignmentRow: Codable, Sendable {
     let deposit_due_date: String?
     let admin_confirmed_by: String?
     let admin_confirmed_at: String?
+    var eoi_status: String
+    var contract_status: String
     let created_at: String?
     let updated_at: String?
 
@@ -215,6 +217,7 @@ nonisolated struct PackageAssignmentRow: Codable, Sendable {
         case client_responses, is_exclusive
         case assigned_by, deposit_status, deposit_amount, deposit_due_date
         case admin_confirmed_by, admin_confirmed_at
+        case eoi_status, contract_status
         case created_at, updated_at
     }
 
@@ -232,6 +235,8 @@ nonisolated struct PackageAssignmentRow: Codable, Sendable {
         deposit_due_date = try? container.decode(String.self, forKey: .deposit_due_date)
         admin_confirmed_by = try? container.decode(String.self, forKey: .admin_confirmed_by)
         admin_confirmed_at = try? container.decode(String.self, forKey: .admin_confirmed_at)
+        eoi_status = (try? container.decode(String.self, forKey: .eoi_status)) ?? "none"
+        contract_status = (try? container.decode(String.self, forKey: .contract_status)) ?? "none"
         created_at = try? container.decode(String.self, forKey: .created_at)
         updated_at = try? container.decode(String.self, forKey: .updated_at)
     }
@@ -250,6 +255,8 @@ nonisolated struct PackageAssignmentRow: Codable, Sendable {
         try container.encodeIfPresent(deposit_due_date, forKey: .deposit_due_date)
         try container.encodeIfPresent(admin_confirmed_by, forKey: .admin_confirmed_by)
         try container.encodeIfPresent(admin_confirmed_at, forKey: .admin_confirmed_at)
+        try container.encode(eoi_status, forKey: .eoi_status)
+        try container.encode(contract_status, forKey: .contract_status)
         try container.encodeIfPresent(updated_at, forKey: .updated_at)
     }
 
@@ -267,6 +274,8 @@ nonisolated struct PackageAssignmentRow: Codable, Sendable {
         deposit_due_date = assignment.depositDueDate
         admin_confirmed_by = assignment.adminConfirmedBy
         admin_confirmed_at = assignment.adminConfirmedAt
+        eoi_status = assignment.eoiStatus
+        contract_status = assignment.contractStatus
         created_at = nil
         updated_at = iso.string(from: .now)
     }
@@ -284,7 +293,9 @@ nonisolated struct PackageAssignmentRow: Codable, Sendable {
             depositAmount: deposit_amount,
             depositDueDate: deposit_due_date,
             adminConfirmedBy: admin_confirmed_by,
-            adminConfirmedAt: admin_confirmed_at
+            adminConfirmedAt: admin_confirmed_at,
+            eoiStatus: eoi_status,
+            contractStatus: contract_status
         )
     }
 }

@@ -121,9 +121,11 @@ struct NotificationsView: View {
             return true
         case .documentAdded:
             return true
+        case .eoiSubmitted, .eoiApproved, .eoiChangesRequested:
+            return true
+        case .contractUploaded, .contractSigned:
+            return true
         case .roleAssigned:
-            return false
-        default:
             return false
         }
     }
@@ -152,9 +154,23 @@ struct NotificationsView: View {
             BuildProgressView()
         case .documentAdded:
             DocumentsView()
+        case .eoiSubmitted:
+            if viewModel.currentRole == .admin || viewModel.currentRole.isAnyStaffRole {
+                AdminEOIReviewView()
+            } else {
+                ClientPackageReviewView()
+            }
+        case .eoiApproved, .eoiChangesRequested:
+            ClientPackageReviewView()
+        case .contractUploaded:
+            ClientPackageReviewView()
+        case .contractSigned:
+            if viewModel.currentRole == .admin || viewModel.currentRole.isAnyStaffRole {
+                AdminEOIReviewView()
+            } else {
+                ClientPackageReviewView()
+            }
         case .roleAssigned:
-            EmptyView()
-        default:
             EmptyView()
         }
     }

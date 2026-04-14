@@ -13,8 +13,10 @@ nonisolated struct PackageAssignment: Identifiable, Codable, Sendable, Hashable 
     var depositDueDate: String?
     var adminConfirmedBy: String?
     var adminConfirmedAt: String?
+    var eoiStatus: String
+    var contractStatus: String
 
-    init(id: String = UUID().uuidString, packageId: String, assignedPartnerIds: [String] = [], sharedWithClientIds: [String] = [], clientResponses: [ClientPackageResponse] = [], isExclusive: Bool = false, assignedBy: String? = nil, depositStatus: String = "pending", depositAmount: Double? = nil, depositDueDate: String? = nil, adminConfirmedBy: String? = nil, adminConfirmedAt: String? = nil) {
+    init(id: String = UUID().uuidString, packageId: String, assignedPartnerIds: [String] = [], sharedWithClientIds: [String] = [], clientResponses: [ClientPackageResponse] = [], isExclusive: Bool = false, assignedBy: String? = nil, depositStatus: String = "pending", depositAmount: Double? = nil, depositDueDate: String? = nil, adminConfirmedBy: String? = nil, adminConfirmedAt: String? = nil, eoiStatus: String = "none", contractStatus: String = "none") {
         self.id = id
         self.packageId = packageId
         self.assignedPartnerIds = assignedPartnerIds
@@ -27,6 +29,8 @@ nonisolated struct PackageAssignment: Identifiable, Codable, Sendable, Hashable 
         self.depositDueDate = depositDueDate
         self.adminConfirmedBy = adminConfirmedBy
         self.adminConfirmedAt = adminConfirmedAt
+        self.eoiStatus = eoiStatus
+        self.contractStatus = contractStatus
     }
 }
 

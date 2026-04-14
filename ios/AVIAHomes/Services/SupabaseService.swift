@@ -1444,6 +1444,180 @@ class SupabaseService {
         }
     }
 
+    // MARK: - EOI Submissions
+
+    func submitEOI(_ row: EOISubmissionRow) async -> Bool {
+        do {
+            try await client.from("eoi_submissions").upsert(row, onConflict: "id").execute()
+            try await client.from("package_assignments")
+                .update(["eoi_status": row.status])
+                .eq("id", value: row.package_assignment_id)
+                .execute()
+            return true
+        } catch {
+            print("[SupabaseService] submitEOI error: \(error)")
+            return false
+        }
+    }
+
+    func fetchEOI(forAssignment assignmentId: String) async -> EOISubmissionRow? {
+        do {
+            let rows: [EOISubmissionRow] = try await client.from("eoi_submissions")
+                .select()
+                .eq("package_assignment_id", value: assignmentId)
+                .order("created_at", ascending: false)
+                .limit(1)
+                .execute()
+                .value
+            return rows.first
+        } catch {
+            print("[SupabaseService] fetchEOI error: \(error)")
+            return nil
+        }
+    }
+
+    func fetchAllEOIs(status: String? = nil) async -> [EOISubmissionRow] {
+        do {
+            var query = client.from("eoi_submissions").select()
+            if let status = status {
+                query = query.eq("status", value: status)
+            }
+            let rows: [EOISubmissionRow] = try await query
+                .order("created_at", ascending: false)
+                .execute()
+                .value
+            return rows
+        } catch {
+            print("[SupabaseService] fetchAllEOIs error: \(error)")
+            return []
+        }
+    }
+
+    func reviewEOI(eoiId: String, assignmentId: String, status: String, adminNotes: String?, reviewedBy: String) async -> Bool {
+        do {
+            var updates: [String: String] = [
+                "status": status,
+                "reviewed_by": reviewedBy,
+                "reviewed_at": ISO8601DateFormatter().string(from: .now)
+            ]
+            if let notes = adminNotes {
+                updates["admin_notes"] = notes
+            }
+            try await client.from("eoi_submissions")
+                .update(updates)
+                .eq("id", value: eoiId)
+                .execute()
+            try await client.from("package_assignments")
+                .update(["eoi_status": status])
+                .eq("id", value: assignmentId)
+                .execute()
+            return true
+        } catch {
+            print("[SupabaseService] reviewEOI error: \(error)")
+            return false
+        }
+    }
+
+    // MARK: - Contract Signatures
+
+    func createContractRecord(eoiId: String, assignmentId: String, clientId: String) async -> ContractSignatureRow? {
+        do {
+            let row = ContractSignatureRow(
+                id: UUID().uuidString,
+                eoi_id: eoiId,
+                package_assignment_id: assignmentId,
+                client_id: clientId,
+                contract_document_url: nil,
+                contract_uploaded_by: nil,
+                contract_uploaded_at: nil,
+                signature_image_url: nil,
+                signed_at: nil,
+                signer_name: nil,
+                signer_ip: nil,
+                signed_document_url: nil,
+                status: "awaiting_contract",
+                created_at: nil,
+                updated_at: nil
+            )
+            try await client.from("contract_signatures").insert(row).execute()
+            try await client.from("package_assignments")
+                .update(["contract_status": "awaiting_contract"])
+                .eq("id", value: assignmentId)
+                .execute()
+            return row
+        } catch {
+            print("[SupabaseService] createContractRecord error: \(error)")
+            return nil
+        }
+    }
+
+    func uploadContractDocument(contractId: String, assignmentId: String, fileData: Data, fileName: String, uploadedBy: String) async -> String? {
+        do {
+            let path = "contracts/\(contractId)/\(fileName)"
+            try await client.storage.from("contracts").upload(path: path, file: fileData, options: .init(contentType: "application/pdf"))
+            let url = try client.storage.from("contracts").getPublicURL(path: path).absoluteString
+            try await client.from("contract_signatures")
+                .update([
+                    "contract_document_url": url,
+                    "contract_uploaded_by": uploadedBy,
+                    "contract_uploaded_at": ISO8601DateFormatter().string(from: .now),
+                    "status": "awaiting_signature"
+                ])
+                .eq("id", value: contractId)
+                .execute()
+            try await client.from("package_assignments")
+                .update(["contract_status": "awaiting_signature"])
+                .eq("id", value: assignmentId)
+                .execute()
+            return url
+        } catch {
+            print("[SupabaseService] uploadContractDocument error: \(error)")
+            return nil
+        }
+    }
+
+    func fetchContractSignature(forAssignment assignmentId: String) async -> ContractSignatureRow? {
+        do {
+            let rows: [ContractSignatureRow] = try await client.from("contract_signatures")
+                .select()
+                .eq("package_assignment_id", value: assignmentId)
+                .order("created_at", ascending: false)
+                .limit(1)
+                .execute()
+                .value
+            return rows.first
+        } catch {
+            print("[SupabaseService] fetchContractSignature error: \(error)")
+            return nil
+        }
+    }
+
+    func signContract(contractId: String, assignmentId: String, signatureImageData: Data, signerName: String) async -> Bool {
+        do {
+            let sigPath = "contracts/\(contractId)/signature.png"
+            try await client.storage.from("contracts").upload(path: sigPath, file: signatureImageData, options: .init(contentType: "image/png"))
+            let sigUrl = try client.storage.from("contracts").getPublicURL(path: sigPath).absoluteString
+
+            try await client.from("contract_signatures")
+                .update([
+                    "signature_image_url": sigUrl,
+                    "signed_at": ISO8601DateFormatter().string(from: .now),
+                    "signer_name": signerName,
+                    "status": "signed"
+                ])
+                .eq("id", value: contractId)
+                .execute()
+            try await client.from("package_assignments")
+                .update(["contract_status": "signed"])
+                .eq("id", value: assignmentId)
+                .execute()
+            return true
+        } catch {
+            print("[SupabaseService] signContract error: \(error)")
+            return false
+        }
+    }
+
     func subscribeToCatalogChanges(onUpdate: @escaping @Sendable () -> Void) {
         guard isConfigured else { return }
         let colourChannel = client.realtimeV2.channel("colour_categories_sync")
