@@ -650,7 +650,7 @@ class AppViewModel {
                 newAdditionalIds: newAdditionalIds
             )
             if success {
-                await refreshBuildsAndAssignments()
+                // Don't refresh — local state already updated above
                 await notificationService.createNotification(
                     recipientId: clientId,
                     senderId: currentUser.id,
@@ -662,20 +662,35 @@ class AppViewModel {
                     referenceType: "build"
                 )
             } else {
-                await refreshBuildsAndAssignments()
+                // Restore original build if server update failed
+                await MainActor.run {
+                    if let idx = allClientBuilds.firstIndex(where: { $0.id == buildId }) {
+                        allClientBuilds[idx] = oldBuild
+                    }
+                    syncBuildStagesForCurrentUser()
+                }
             }
         }
     }
 
     func deleteBuild(buildId: String) {
+        // Optimistically remove from local state
+        let removedBuild = allClientBuilds.first { $0.id == buildId }
         allClientBuilds.removeAll { $0.id == buildId }
         syncBuildStagesForCurrentUser()
         Task {
             let success = await SupabaseService.shared.deleteBuild(buildId: buildId)
             if !success {
+                // Restore the build if server delete failed
+                if let removedBuild = removedBuild {
+                    await MainActor.run {
+                        allClientBuilds.append(removedBuild)
+                        syncBuildStagesForCurrentUser()
+                    }
+                }
                 print("[AppViewModel] deleteBuild: server delete failed for buildId=\(buildId)")
             }
-            await refreshBuildsAndAssignments()
+            // Do NOT call refreshBuildsAndAssignments() — the local state is already correct
         }
     }
 
