@@ -1,17 +1,23 @@
 import SwiftUI
 
 struct StocklistView: View {
-    @State private var selectedRegionIndex = 0
-    @State private var selectedSubRegionIndex = 0
-    @State private var searchText = ""
-    @State private var selectedStatus: String? = nil
-    @State private var sortOption: SortOption = .none
-    @State private var expandedLotIDs: Set<UUID> = []
-    @State private var expandedEstateIDs: Set<UUID> = []
+    @Environment(AppViewModel.self) private var appViewModel
+    @State private var stocklistVM = StocklistViewModel()
+    @State private var expandedLotIDs: Set<String> = []
+    @State private var expandedEstateIDs: Set<String> = []
     @State private var showSortMenu = false
     @State private var showFilterMenu = false
-
-    private let regions = StocklistData.regions
+    @State private var sortOption: SortOption = .none
+    @State private var isEditMode = false
+    @State private var estateToEdit: StocklistEstateRow?
+    @State private var showEstateEditor = false
+    @State private var lotToEdit: StocklistItemRow?
+    @State private var lotEditEstateId: String?
+    @State private var showLotEditor = false
+    @State private var showDeleteEstateConfirm = false
+    @State private var estateToDelete: StocklistEstateRow?
+    @State private var showDeleteLotConfirm = false
+    @State private var lotToDelete: StocklistItemRow?
 
     enum SortOption: String, CaseIterable {
         case none = "Default"
@@ -21,13 +27,16 @@ struct StocklistView: View {
         case landSizeLargeSmall = "Land: Large → Small"
     }
 
-    private let statusOptions = ["Available", "Available (Exclusive)", "EOI", "ON HOLD", "COMING SOON"]
+    private var canEdit: Bool {
+        let role = appViewModel.currentRole
+        return role == .admin || role == .superAdmin || role == .salesAdmin
+    }
 
     var body: some View {
         NavigationStack {
             VStack(spacing: 0) {
                 regionSelector
-                if selectedRegion.name == "BRISBANE" {
+                if stocklistVM.selectedRegion == "Brisbane" {
                     subRegionSelector
                 }
                 searchAndFilterBar
@@ -36,6 +45,60 @@ struct StocklistView: View {
             .background(AVIATheme.background)
             .navigationTitle("Stocklist")
             .navigationBarTitleDisplayMode(.large)
+            .toolbar {
+                if canEdit {
+                    ToolbarItem(placement: .topBarTrailing) {
+                        Button {
+                            withAnimation(.easeInOut(duration: 0.2)) {
+                                isEditMode.toggle()
+                            }
+                        } label: {
+                            Text(isEditMode ? "Done" : "Edit")
+                                .font(.neueCaptionMedium)
+                                .foregroundStyle(AVIATheme.teal)
+                        }
+                    }
+                }
+            }
+            .task {
+                await stocklistVM.loadAll()
+            }
+            .refreshable {
+                await stocklistVM.loadAll()
+            }
+            .sheet(isPresented: $showEstateEditor) {
+                AdminStocklistEstateEditorSheet(
+                    estate: estateToEdit,
+                    viewModel: stocklistVM
+                )
+            }
+            .sheet(isPresented: $showLotEditor) {
+                AdminStocklistItemEditorSheet(
+                    item: lotToEdit,
+                    estateId: lotEditEstateId ?? "",
+                    viewModel: stocklistVM
+                )
+            }
+            .alert("Delete Estate", isPresented: $showDeleteEstateConfirm) {
+                Button("Delete", role: .destructive) {
+                    if let estate = estateToDelete {
+                        Task { await stocklistVM.deleteEstate(estate.id) }
+                    }
+                }
+                Button("Cancel", role: .cancel) {}
+            } message: {
+                Text("Are you sure you want to delete \"\(estateToDelete?.name ?? "")\"? This cannot be undone.")
+            }
+            .alert("Delete Lot", isPresented: $showDeleteLotConfirm) {
+                Button("Delete", role: .destructive) {
+                    if let lot = lotToDelete {
+                        Task { await stocklistVM.deleteLot(lot.id) }
+                    }
+                }
+                Button("Cancel", role: .cancel) {}
+            } message: {
+                Text("Are you sure you want to delete Lot \(lotToDelete?.lot_number ?? "")? This cannot be undone.")
+            }
         }
     }
 
@@ -44,20 +107,20 @@ struct StocklistView: View {
     private var regionSelector: some View {
         ScrollView(.horizontal, showsIndicators: false) {
             HStack(spacing: 8) {
-                ForEach(Array(regions.enumerated()), id: \.element.id) { index, region in
+                ForEach(StocklistViewModel.regions, id: \.self) { region in
                     Button {
                         withAnimation(.easeInOut(duration: 0.2)) {
-                            selectedRegionIndex = index
-                            selectedSubRegionIndex = 0
+                            stocklistVM.selectedRegion = region
+                            stocklistVM.selectedSubRegion = nil
                         }
                     } label: {
-                        Text(region.name)
+                        Text(region.uppercased())
                             .font(.neueCaptionMedium)
-                            .foregroundStyle(selectedRegionIndex == index ? .white : AVIATheme.textSecondary)
+                            .foregroundStyle(stocklistVM.selectedRegion == region ? .white : AVIATheme.textSecondary)
                             .padding(.horizontal, 16)
                             .padding(.vertical, 8)
                             .background(
-                                selectedRegionIndex == index ? AVIATheme.teal : AVIATheme.cardBackground,
+                                stocklistVM.selectedRegion == region ? AVIATheme.teal : AVIATheme.cardBackground,
                                 in: Capsule()
                             )
                     }
@@ -73,19 +136,35 @@ struct StocklistView: View {
     private var subRegionSelector: some View {
         ScrollView(.horizontal, showsIndicators: false) {
             HStack(spacing: 8) {
-                ForEach(Array(selectedRegion.subRegions.enumerated()), id: \.element.id) { index, subRegion in
+                Button {
+                    withAnimation(.easeInOut(duration: 0.2)) {
+                        stocklistVM.selectedSubRegion = nil
+                    }
+                } label: {
+                    Text("All")
+                        .font(.neueCaption)
+                        .foregroundStyle(stocklistVM.selectedSubRegion == nil ? .white : AVIATheme.textTertiary)
+                        .padding(.horizontal, 14)
+                        .padding(.vertical, 6)
+                        .background(
+                            stocklistVM.selectedSubRegion == nil ? AVIATheme.tealLight : AVIATheme.cardBackgroundAlt,
+                            in: Capsule()
+                        )
+                }
+
+                ForEach(stocklistVM.availableSubRegions, id: \.self) { subRegion in
                     Button {
                         withAnimation(.easeInOut(duration: 0.2)) {
-                            selectedSubRegionIndex = index
+                            stocklistVM.selectedSubRegion = subRegion
                         }
                     } label: {
-                        Text(subRegion.name)
+                        Text(subRegion)
                             .font(.neueCaption)
-                            .foregroundStyle(selectedSubRegionIndex == index ? .white : AVIATheme.textTertiary)
+                            .foregroundStyle(stocklistVM.selectedSubRegion == subRegion ? .white : AVIATheme.textTertiary)
                             .padding(.horizontal, 14)
                             .padding(.vertical, 6)
                             .background(
-                                selectedSubRegionIndex == index ? AVIATheme.tealLight : AVIATheme.cardBackgroundAlt,
+                                stocklistVM.selectedSubRegion == subRegion ? AVIATheme.tealLight : AVIATheme.cardBackgroundAlt,
                                 in: Capsule()
                             )
                     }
@@ -105,7 +184,7 @@ struct StocklistView: View {
                     Image(systemName: "magnifyingglass")
                         .font(.neueCaption)
                         .foregroundStyle(AVIATheme.textTertiary)
-                    TextField("Search lots, estates, designs...", text: $searchText)
+                    TextField("Search lots, estates, designs...", text: $stocklistVM.searchText)
                         .font(.neueCaption)
                         .foregroundStyle(AVIATheme.textPrimary)
                 }
@@ -116,9 +195,9 @@ struct StocklistView: View {
                 Button {
                     showFilterMenu.toggle()
                 } label: {
-                    Image(systemName: selectedStatus != nil ? "line.3.horizontal.decrease.circle.fill" : "line.3.horizontal.decrease.circle")
+                    Image(systemName: stocklistVM.statusFilter != nil ? "line.3.horizontal.decrease.circle.fill" : "line.3.horizontal.decrease.circle")
                         .font(.neueSubheadline)
-                        .foregroundStyle(selectedStatus != nil ? AVIATheme.teal : AVIATheme.textSecondary)
+                        .foregroundStyle(stocklistVM.statusFilter != nil ? AVIATheme.teal : AVIATheme.textSecondary)
                 }
 
                 Menu {
@@ -145,12 +224,12 @@ struct StocklistView: View {
             if showFilterMenu {
                 ScrollView(.horizontal, showsIndicators: false) {
                     HStack(spacing: 6) {
-                        filterChip(title: "All", isSelected: selectedStatus == nil) {
-                            selectedStatus = nil
+                        filterChip(title: "All", isSelected: stocklistVM.statusFilter == nil) {
+                            stocklistVM.statusFilter = nil
                         }
-                        ForEach(statusOptions, id: \.self) { status in
-                            filterChip(title: status, isSelected: selectedStatus == status) {
-                                selectedStatus = (selectedStatus == status) ? nil : status
+                        ForEach(StocklistViewModel.statusOptions, id: \.self) { status in
+                            filterChip(title: status, isSelected: stocklistVM.statusFilter == status) {
+                                stocklistVM.statusFilter = (stocklistVM.statusFilter == status) ? nil : status
                             }
                         }
                     }
@@ -178,24 +257,55 @@ struct StocklistView: View {
     private var lotList: some View {
         ScrollView {
             LazyVStack(spacing: 16) {
-                ForEach(filteredEstates) { estate in
-                    estateSection(estate)
+                if isEditMode && canEdit {
+                    Button {
+                        estateToEdit = nil
+                        showEstateEditor = true
+                    } label: {
+                        HStack(spacing: 8) {
+                            Image(systemName: "plus.circle.fill")
+                                .font(.neueCaptionMedium)
+                            Text("Add Estate")
+                                .font(.neueCaptionMedium)
+                        }
+                        .foregroundStyle(.white)
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 12)
+                        .background(AVIATheme.tealGradient, in: RoundedRectangle(cornerRadius: 12))
+                    }
                 }
 
-                if filteredEstates.isEmpty {
+                if stocklistVM.isLoading && stocklistVM.estates.isEmpty {
                     VStack(spacing: 12) {
-                        Image(systemName: "magnifyingglass")
-                            .font(.system(size: 36))
-                            .foregroundStyle(AVIATheme.textTertiary)
-                        Text("No lots found")
-                            .font(.neueSubheadlineMedium)
-                            .foregroundStyle(AVIATheme.textSecondary)
-                        Text("Try adjusting your search or filters")
+                        ProgressView()
+                            .tint(AVIATheme.teal)
+                        Text("Loading stocklist...")
                             .font(.neueCaption)
                             .foregroundStyle(AVIATheme.textTertiary)
                     }
                     .frame(maxWidth: .infinity)
                     .padding(.vertical, 60)
+                } else {
+                    let estates = stocklistVM.filteredEstates
+                    ForEach(estates) { estate in
+                        estateSection(estate)
+                    }
+
+                    if estates.isEmpty {
+                        VStack(spacing: 12) {
+                            Image(systemName: "magnifyingglass")
+                                .font(.system(size: 36))
+                                .foregroundStyle(AVIATheme.textTertiary)
+                            Text("No lots found")
+                                .font(.neueSubheadlineMedium)
+                                .foregroundStyle(AVIATheme.textSecondary)
+                            Text("Try adjusting your search or filters")
+                                .font(.neueCaption)
+                                .foregroundStyle(AVIATheme.textTertiary)
+                        }
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 60)
+                    }
                 }
             }
             .padding(.horizontal, 16)
@@ -205,15 +315,20 @@ struct StocklistView: View {
 
     // MARK: - Estate Section
 
-    private func estateSection(_ estate: StocklistEstate) -> some View {
+    private func estateSection(_ estate: StocklistEstateRow) -> some View {
         VStack(spacing: 0) {
             // Estate header
             Button {
-                withAnimation(.easeInOut(duration: 0.2)) {
-                    if expandedEstateIDs.contains(estate.id) {
-                        expandedEstateIDs.remove(estate.id)
-                    } else {
-                        expandedEstateIDs.insert(estate.id)
+                if isEditMode && canEdit {
+                    estateToEdit = estate
+                    showEstateEditor = true
+                } else {
+                    withAnimation(.easeInOut(duration: 0.2)) {
+                        if expandedEstateIDs.contains(estate.id) {
+                            expandedEstateIDs.remove(estate.id)
+                        } else {
+                            expandedEstateIDs.insert(estate.id)
+                        }
                     }
                 }
             } label: {
@@ -225,7 +340,12 @@ struct StocklistView: View {
                             .multilineTextAlignment(.leading)
                     }
                     Spacer()
-                    let lotCount = filteredLots(for: estate).count
+                    if isEditMode && canEdit {
+                        Image(systemName: "pencil.circle.fill")
+                            .font(.neueSubheadline)
+                            .foregroundStyle(.white.opacity(0.7))
+                    }
+                    let lotCount = sortedLots(stocklistVM.filteredItems(for: estate.id)).count
                     Text("\(lotCount) lot\(lotCount == 1 ? "" : "s")")
                         .font(.neueCaption2)
                         .foregroundStyle(.white.opacity(0.7))
@@ -238,16 +358,32 @@ struct StocklistView: View {
                 .background(AVIATheme.tealGradient)
                 .clipShape(.rect(topLeadingRadius: 16, topTrailingRadius: 16, bottomLeadingRadius: expandedEstateIDs.contains(estate.id) ? 0 : 16, bottomTrailingRadius: expandedEstateIDs.contains(estate.id) ? 0 : 16))
             }
+            .contextMenu {
+                if isEditMode && canEdit {
+                    Button {
+                        estateToEdit = estate
+                        showEstateEditor = true
+                    } label: {
+                        Label("Edit Estate", systemImage: "pencil")
+                    }
+                    Button(role: .destructive) {
+                        estateToDelete = estate
+                        showDeleteEstateConfirm = true
+                    } label: {
+                        Label("Delete Estate", systemImage: "trash")
+                    }
+                }
+            }
 
             if expandedEstateIDs.contains(estate.id) {
                 VStack(spacing: 0) {
                     // Deposit terms
-                    if !estate.depositTerms.isEmpty {
+                    if let terms = estate.deposit_terms, !terms.isEmpty {
                         HStack(spacing: 8) {
                             Image(systemName: "info.circle.fill")
                                 .font(.neueCaption2)
                                 .foregroundStyle(AVIATheme.teal)
-                            Text(estate.depositTerms)
+                            Text(terms)
                                 .font(.neueCaption)
                                 .foregroundStyle(AVIATheme.textSecondary)
                                 .fixedSize(horizontal: false, vertical: true)
@@ -257,10 +393,29 @@ struct StocklistView: View {
                         .background(AVIATheme.teal.opacity(0.06))
                     }
 
+                    if isEditMode && canEdit {
+                        Button {
+                            lotToEdit = nil
+                            lotEditEstateId = estate.id
+                            showLotEditor = true
+                        } label: {
+                            HStack(spacing: 6) {
+                                Image(systemName: "plus.circle.fill")
+                                    .font(.neueCaption)
+                                Text("Add Lot")
+                                    .font(.neueCaptionMedium)
+                            }
+                            .foregroundStyle(AVIATheme.teal)
+                            .frame(maxWidth: .infinity)
+                            .padding(.vertical, 10)
+                        }
+                        Rectangle().fill(AVIATheme.surfaceBorder).frame(height: 1)
+                    }
+
                     // Lot cards
-                    let lots = filteredLots(for: estate)
+                    let lots = sortedLots(stocklistVM.filteredItems(for: estate.id))
                     ForEach(Array(lots.enumerated()), id: \.element.id) { index, lot in
-                        if index > 0 || !estate.depositTerms.isEmpty {
+                        if index > 0 || estate.deposit_terms != nil {
                             Rectangle().fill(AVIATheme.surfaceBorder).frame(height: 1)
                         }
                         lotCard(lot)
@@ -281,14 +436,20 @@ struct StocklistView: View {
 
     // MARK: - Lot Card
 
-    private func lotCard(_ lot: StocklistLot) -> some View {
+    private func lotCard(_ lot: StocklistItemRow) -> some View {
         VStack(spacing: 0) {
             Button {
-                withAnimation(.easeInOut(duration: 0.2)) {
-                    if expandedLotIDs.contains(lot.id) {
-                        expandedLotIDs.remove(lot.id)
-                    } else {
-                        expandedLotIDs.insert(lot.id)
+                if isEditMode && canEdit {
+                    lotToEdit = lot
+                    lotEditEstateId = lot.estate_id
+                    showLotEditor = true
+                } else {
+                    withAnimation(.easeInOut(duration: 0.2)) {
+                        if expandedLotIDs.contains(lot.id) {
+                            expandedLotIDs.remove(lot.id)
+                        } else {
+                            expandedLotIDs.insert(lot.id)
+                        }
                     }
                 }
             } label: {
@@ -299,11 +460,11 @@ struct StocklistView: View {
                             Text("Lot")
                                 .font(.neueCaption2)
                                 .foregroundStyle(AVIATheme.textTertiary)
-                            Text(lot.lotNumber)
+                            Text(lot.lot_number)
                                 .font(.neueCorpMedium(22))
                                 .foregroundStyle(AVIATheme.textPrimary)
-                            if !lot.stage.isEmpty {
-                                Text(lot.stage)
+                            if let stage = lot.stage, !stage.isEmpty {
+                                Text(stage)
                                     .font(.neueCaption2)
                                     .foregroundStyle(AVIATheme.textTertiary)
                             }
@@ -312,36 +473,38 @@ struct StocklistView: View {
 
                         // Middle: design & specs
                         VStack(alignment: .leading, spacing: 4) {
-                            if !lot.designFacade.isEmpty && lot.designFacade != "COMING SOON" {
-                                Text(lot.designFacade)
+                            if let designFacade = lot.design_facade, !designFacade.isEmpty, designFacade != "COMING SOON" {
+                                Text(designFacade)
                                     .font(.neueCaptionMedium)
                                     .foregroundStyle(AVIATheme.textPrimary)
                             }
-                            if !lot.buildSize.isEmpty {
+                            if let buildSize = lot.build_size, !buildSize.isEmpty {
                                 HStack(spacing: 10) {
-                                    specLabel(icon: "ruler", text: lot.buildSize)
-                                    if !lot.bedrooms.isEmpty {
-                                        specLabel(icon: "bed.double.fill", text: lot.bedrooms)
+                                    specLabel(icon: "ruler", text: buildSize)
+                                    if let bedrooms = lot.bedrooms, !bedrooms.isEmpty {
+                                        specLabel(icon: "bed.double.fill", text: bedrooms)
                                     }
-                                    if !lot.bathrooms.isEmpty {
-                                        specLabel(icon: "shower.fill", text: lot.bathrooms)
+                                    if let bathrooms = lot.bathrooms, !bathrooms.isEmpty {
+                                        specLabel(icon: "shower.fill", text: bathrooms)
                                     }
-                                    if !lot.garages.isEmpty {
-                                        specLabel(icon: "car.fill", text: lot.garages)
+                                    if let garages = lot.garages, !garages.isEmpty {
+                                        specLabel(icon: "car.fill", text: garages)
                                     }
-                                    if !lot.theatre.isEmpty && lot.theatre != "0" {
-                                        specLabel(icon: "tv.fill", text: lot.theatre)
+                                    if let theatre = lot.theatre, !theatre.isEmpty, theatre != "0" {
+                                        specLabel(icon: "tv.fill", text: theatre)
                                     }
                                 }
                             }
                             HStack(spacing: 6) {
-                                Text(lot.landSize)
-                                    .font(.neueCaption2)
-                                    .foregroundStyle(AVIATheme.textSecondary)
-                                if !lot.landPrice.isEmpty {
+                                if let landSize = lot.land_size, !landSize.isEmpty {
+                                    Text(landSize)
+                                        .font(.neueCaption2)
+                                        .foregroundStyle(AVIATheme.textSecondary)
+                                }
+                                if let landPrice = lot.land_price, !landPrice.isEmpty {
                                     Text("·")
                                         .foregroundStyle(AVIATheme.textTertiary)
-                                    Text("Land \(lot.landPrice)")
+                                    Text("Land \(landPrice)")
                                         .font(.neueCaption2)
                                         .foregroundStyle(AVIATheme.textSecondary)
                                 }
@@ -352,8 +515,8 @@ struct StocklistView: View {
 
                         // Right: price & status
                         VStack(alignment: .trailing, spacing: 4) {
-                            if !lot.packagePrice.isEmpty {
-                                Text(lot.packagePrice)
+                            if let packagePrice = lot.package_price, !packagePrice.isEmpty {
+                                Text(packagePrice)
                                     .font(.neueCorpMedium(16))
                                     .foregroundStyle(AVIATheme.textPrimary)
                             }
@@ -362,6 +525,23 @@ struct StocklistView: View {
                     }
                 }
                 .padding(14)
+            }
+            .contextMenu {
+                if isEditMode && canEdit {
+                    Button {
+                        lotToEdit = lot
+                        lotEditEstateId = lot.estate_id
+                        showLotEditor = true
+                    } label: {
+                        Label("Edit Lot", systemImage: "pencil")
+                    }
+                    Button(role: .destructive) {
+                        lotToDelete = lot
+                        showDeleteLotConfirm = true
+                    } label: {
+                        Label("Delete Lot", systemImage: "trash")
+                    }
+                }
             }
 
             // Expanded detail
@@ -384,40 +564,40 @@ struct StocklistView: View {
 
     // MARK: - Lot Detail (Expanded)
 
-    private func lotDetailView(_ lot: StocklistLot) -> some View {
+    private func lotDetailView(_ lot: StocklistItemRow) -> some View {
         VStack(spacing: 0) {
             Rectangle().fill(AVIATheme.surfaceBorder).frame(height: 1)
 
             VStack(alignment: .leading, spacing: 12) {
                 // Price breakdown
-                if !lot.landPrice.isEmpty || !lot.buildPrice.isEmpty {
+                if let landPrice = lot.land_price, !landPrice.isEmpty {
                     VStack(spacing: 6) {
-                        detailRow(label: "Land Price", value: lot.landPrice)
-                        detailRow(label: "Build Price", value: lot.buildPrice)
-                        if !lot.packagePrice.isEmpty {
+                        detailRow(label: "Land Price", value: landPrice)
+                        detailRow(label: "Build Price", value: lot.build_price ?? "—")
+                        if let packagePrice = lot.package_price, !packagePrice.isEmpty {
                             Rectangle().fill(AVIATheme.surfaceBorder).frame(height: 1)
-                            detailRow(label: "Package Price", value: lot.packagePrice, bold: true)
+                            detailRow(label: "Package Price", value: packagePrice, bold: true)
                         }
                     }
                 }
 
                 // Specs grid
                 VStack(spacing: 6) {
-                    detailRow(label: "Land Size", value: lot.landSize)
-                    detailRow(label: "Build Size", value: lot.buildSize)
-                    detailRow(label: "Design/Facade", value: lot.designFacade)
-                    detailRow(label: "Specification", value: lot.specification)
-                    detailRow(label: "Registration", value: lot.registered)
-                    detailRow(label: "Availability", value: lot.availability)
+                    detailRow(label: "Land Size", value: lot.land_size ?? "—")
+                    detailRow(label: "Build Size", value: lot.build_size ?? "—")
+                    detailRow(label: "Design/Facade", value: lot.design_facade ?? "—")
+                    detailRow(label: "Specification", value: lot.specification ?? "—")
+                    detailRow(label: "Registration", value: lot.registered ?? "—")
+                    detailRow(label: "Availability", value: lot.availability ?? "—")
                 }
 
                 // Owner occ badge
-                if !lot.ownerOccInvestor.isEmpty {
+                if let ownerOcc = lot.owner_occ_investor, !ownerOcc.isEmpty {
                     HStack(spacing: 6) {
                         Image(systemName: "person.fill")
                             .font(.system(size: 10))
                             .foregroundStyle(AVIATheme.teal)
-                        Text(lot.ownerOccInvestor)
+                        Text(ownerOcc)
                             .font(.neueCaption2Medium)
                             .foregroundStyle(AVIATheme.teal)
                     }
@@ -427,37 +607,46 @@ struct StocklistView: View {
                 }
 
                 // Alternative designs
-                if !lot.alternativeDesigns.isEmpty {
+                let alts = stocklistVM.altDesigns(for: lot.id)
+                if !alts.isEmpty {
                     VStack(alignment: .leading, spacing: 8) {
                         Text("ALTERNATIVE DESIGNS")
                             .font(.neueCaption2Medium)
                             .foregroundStyle(AVIATheme.textTertiary)
                             .kerning(0.5)
 
-                        ForEach(lot.alternativeDesigns) { alt in
+                        ForEach(alts) { alt in
                             VStack(spacing: 6) {
                                 HStack {
-                                    Text(alt.designFacade)
+                                    Text(alt.design_facade)
                                         .font(.neueCaptionMedium)
                                         .foregroundStyle(AVIATheme.textPrimary)
                                     Spacer()
-                                    if !alt.packagePrice.isEmpty {
-                                        Text(alt.packagePrice)
+                                    if let pp = alt.package_price, !pp.isEmpty {
+                                        Text(pp)
                                             .font(.neueCaptionMedium)
                                             .foregroundStyle(AVIATheme.textPrimary)
                                     }
                                 }
                                 HStack(spacing: 10) {
-                                    specLabel(icon: "ruler", text: alt.buildSize)
-                                    specLabel(icon: "bed.double.fill", text: alt.bedrooms)
-                                    specLabel(icon: "shower.fill", text: alt.bathrooms)
-                                    specLabel(icon: "car.fill", text: alt.garages)
-                                    if !alt.theatre.isEmpty && alt.theatre != "0" {
-                                        specLabel(icon: "tv.fill", text: alt.theatre)
+                                    if let bs = alt.build_size, !bs.isEmpty {
+                                        specLabel(icon: "ruler", text: bs)
+                                    }
+                                    if let bed = alt.bedrooms, !bed.isEmpty {
+                                        specLabel(icon: "bed.double.fill", text: bed)
+                                    }
+                                    if let bath = alt.bathrooms, !bath.isEmpty {
+                                        specLabel(icon: "shower.fill", text: bath)
+                                    }
+                                    if let gar = alt.garages, !gar.isEmpty {
+                                        specLabel(icon: "car.fill", text: gar)
+                                    }
+                                    if let th = alt.theatre, !th.isEmpty, th != "0" {
+                                        specLabel(icon: "tv.fill", text: th)
                                     }
                                 }
-                                if !alt.buildPrice.isEmpty {
-                                    detailRow(label: "Build Price", value: alt.buildPrice)
+                                if let bp = alt.build_price, !bp.isEmpty {
+                                    detailRow(label: "Build Price", value: bp)
                                 }
                             }
                             .padding(10)
@@ -467,7 +656,7 @@ struct StocklistView: View {
                 }
 
                 // Sales package link
-                if let linkString = lot.salesPackageLink, let url = URL(string: linkString) {
+                if let linkString = lot.sales_package_link, let url = URL(string: linkString) {
                     Link(destination: url) {
                         HStack(spacing: 8) {
                             Image(systemName: "doc.text.fill")
@@ -525,68 +714,28 @@ struct StocklistView: View {
             return AVIATheme.textTertiary
         case "COMING SOON":
             return Color(hex: "3B82C9")
+        case "Sold":
+            return AVIATheme.destructive
         default:
             return AVIATheme.textTertiary
         }
     }
 
-    // MARK: - Computed Properties
+    // MARK: - Sorting
 
-    private var selectedRegion: StocklistRegion {
-        regions[min(selectedRegionIndex, regions.count - 1)]
-    }
-
-    private var selectedSubRegion: StocklistSubRegion {
-        let subRegions = selectedRegion.subRegions
-        guard !subRegions.isEmpty else {
-            return StocklistSubRegion(name: "", estates: [])
-        }
-        return subRegions[min(selectedSubRegionIndex, subRegions.count - 1)]
-    }
-
-    private var filteredEstates: [StocklistEstate] {
-        let estates = selectedSubRegion.estates
-        return estates.filter { estate in
-            let lots = filteredLots(for: estate)
-            let matchesSearch = searchText.isEmpty || estate.name.localizedCaseInsensitiveContains(searchText) || !lots.isEmpty
-            return matchesSearch && (!lots.isEmpty || estate.lots.isEmpty)
-        }
-    }
-
-    private func filteredLots(for estate: StocklistEstate) -> [StocklistLot] {
-        var lots = estate.lots
-
-        // Search filter
-        if !searchText.isEmpty {
-            lots = lots.filter { lot in
-                lot.lotNumber.localizedCaseInsensitiveContains(searchText) ||
-                lot.designFacade.localizedCaseInsensitiveContains(searchText) ||
-                estate.name.localizedCaseInsensitiveContains(searchText) ||
-                lot.stage.localizedCaseInsensitiveContains(searchText) ||
-                lot.specification.localizedCaseInsensitiveContains(searchText)
-            }
-        }
-
-        // Status filter
-        if let selectedStatus {
-            lots = lots.filter { $0.status == selectedStatus }
-        }
-
-        // Sort
+    private func sortedLots(_ lots: [StocklistItemRow]) -> [StocklistItemRow] {
         switch sortOption {
         case .none:
-            break
+            return lots
         case .priceLowHigh:
-            lots.sort { parsePrice($0.packagePrice) < parsePrice($1.packagePrice) }
+            return lots.sorted { parsePrice($0.package_price ?? "") < parsePrice($1.package_price ?? "") }
         case .priceHighLow:
-            lots.sort { parsePrice($0.packagePrice) > parsePrice($1.packagePrice) }
+            return lots.sorted { parsePrice($0.package_price ?? "") > parsePrice($1.package_price ?? "") }
         case .landSizeSmallLarge:
-            lots.sort { parseLandSize($0.landSize) < parseLandSize($1.landSize) }
+            return lots.sorted { parseLandSize($0.land_size ?? "") < parseLandSize($1.land_size ?? "") }
         case .landSizeLargeSmall:
-            lots.sort { parseLandSize($0.landSize) > parseLandSize($1.landSize) }
+            return lots.sorted { parseLandSize($0.land_size ?? "") > parseLandSize($1.land_size ?? "") }
         }
-
-        return lots
     }
 
     private func parsePrice(_ price: String) -> Int {

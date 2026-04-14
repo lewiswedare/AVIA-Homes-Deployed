@@ -1648,4 +1648,99 @@ class SupabaseService {
             }
         }
     }
+
+    // MARK: - Stocklist
+
+    func fetchStocklistEstates() async -> [StocklistEstateRow] {
+        guard isConfigured else { return [] }
+        do {
+            let rows: [StocklistEstateRow] = try await client.from("stocklist_estates")
+                .select()
+                .eq("is_active", value: true)
+                .order("sort_order")
+                .execute().value
+            return rows
+        } catch {
+            print("[SupabaseService] fetchStocklistEstates error: \(error)")
+            return []
+        }
+    }
+
+    func fetchStocklistItems(estateId: String? = nil) async -> [StocklistItemRow] {
+        guard isConfigured else { return [] }
+        do {
+            var query = client.from("stocklist_items").select()
+            if let estateId = estateId {
+                query = query.eq("estate_id", value: estateId)
+            }
+            let rows: [StocklistItemRow] = try await query.order("sort_order").execute().value
+            return rows
+        } catch {
+            print("[SupabaseService] fetchStocklistItems error: \(error)")
+            return []
+        }
+    }
+
+    func fetchStocklistAltDesigns(itemIds: [String]) async -> [StocklistAltDesignRow] {
+        guard isConfigured else { return [] }
+        guard !itemIds.isEmpty else { return [] }
+        do {
+            let rows: [StocklistAltDesignRow] = try await client.from("stocklist_alternative_designs")
+                .select()
+                .in("stocklist_item_id", values: itemIds)
+                .execute().value
+            return rows
+        } catch {
+            print("[SupabaseService] fetchStocklistAltDesigns error: \(error)")
+            return []
+        }
+    }
+
+    @discardableResult
+    func upsertStocklistEstate(_ row: StocklistEstateRow) async -> Bool {
+        guard isConfigured else { return false }
+        do {
+            try await client.from("stocklist_estates").upsert(row, onConflict: "id").execute()
+            return true
+        } catch {
+            print("[SupabaseService] upsertStocklistEstate error: \(error)")
+            return false
+        }
+    }
+
+    @discardableResult
+    func deleteStocklistEstate(id: String) async -> Bool {
+        guard isConfigured else { return false }
+        do {
+            try await client.from("stocklist_estates").delete().eq("id", value: id).execute()
+            return true
+        } catch {
+            print("[SupabaseService] deleteStocklistEstate error: \(error)")
+            return false
+        }
+    }
+
+    @discardableResult
+    func upsertStocklistItem(_ row: StocklistItemRow) async -> Bool {
+        guard isConfigured else { return false }
+        do {
+            try await client.from("stocklist_items").upsert(row, onConflict: "id").execute()
+            return true
+        } catch {
+            print("[SupabaseService] upsertStocklistItem error: \(error)")
+            return false
+        }
+    }
+
+    @discardableResult
+    func deleteStocklistItem(id: String) async -> Bool {
+        guard isConfigured else { return false }
+        do {
+            try await client.from("stocklist_items").delete().eq("id", value: id).execute()
+            return true
+        } catch {
+            print("[SupabaseService] deleteStocklistItem error: \(error)")
+            return false
+        }
+    }
 }
