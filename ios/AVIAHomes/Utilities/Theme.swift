@@ -158,7 +158,7 @@ struct PremiumButton: View {
     let action: () -> Void
 
     enum ButtonType {
-        case primary, secondary, outlined
+        case primary, secondary, outlined, destructive
     }
 
     init(_ title: String, icon: String? = nil, style: ButtonType = .primary, action: @escaping () -> Void) {
@@ -187,6 +187,9 @@ struct PremiumButton: View {
                 if style == .outlined {
                     RoundedRectangle(cornerRadius: 14)
                         .stroke(AVIATheme.teal.opacity(0.3), lineWidth: 1.5)
+                } else if style == .destructive {
+                    RoundedRectangle(cornerRadius: 14)
+                        .stroke(AVIATheme.destructive.opacity(0.3), lineWidth: 1.5)
                 }
             }
         }
@@ -197,6 +200,7 @@ struct PremiumButton: View {
         case .primary: .white
         case .secondary: AVIATheme.teal
         case .outlined: AVIATheme.teal
+        case .destructive: AVIATheme.destructive
         }
     }
 
@@ -209,6 +213,8 @@ struct PremiumButton: View {
             AVIATheme.teal.opacity(0.1)
         case .outlined:
             Color.clear
+        case .destructive:
+            AVIATheme.destructive.opacity(0.08)
         }
     }
 }

@@ -28,7 +28,8 @@ struct AdminOverviewSection: View {
         let recentAccepted = viewModel.packageAssignments.flatMap(\.clientResponses).filter { $0.status == .accepted }.count
         let recentDeclined = viewModel.packageAssignments.flatMap(\.clientResponses).filter { $0.status == .declined }.count
         let pendingPkgResponses = viewModel.packageAssignments.flatMap(\.clientResponses).filter { $0.status == .pending }.count
-        let totalAlerts = pendingUsers + openRequests + pendingSpecCount + pendingPkgResponses
+        let pendingEOIs = viewModel.packageAssignments.filter { $0.eoiStatus == "submitted" || $0.eoiStatus == "resubmitted" }.count
+        let totalAlerts = pendingUsers + openRequests + pendingSpecCount + pendingPkgResponses + pendingEOIs
 
         if totalAlerts > 0 {
             BentoCard(cornerRadius: 16) {
@@ -57,6 +58,11 @@ struct AdminOverviewSection: View {
                         if openRequests > 0 {
                             alertNavRow(icon: "bubble.left.fill", text: "\(openRequests) open client request\(openRequests == 1 ? "" : "s")", color: Color(hex: "5B7DB1")) {
                                 RequestsView()
+                            }
+                        }
+                        if pendingEOIs > 0 {
+                            alertNavRow(icon: "doc.text.magnifyingglass", text: "\(pendingEOIs) EOI submission\(pendingEOIs == 1 ? "" : "s") awaiting review", color: AVIATheme.warning) {
+                                AdminEOIReviewView()
                             }
                         }
                         if pendingPkgResponses > 0 {
@@ -169,6 +175,9 @@ struct AdminOverviewSection: View {
                 }
                 NavigationLink { PackageManagementView() } label: {
                     AdminQuickActionContent(icon: "house.and.flag.fill", label: "Packages", color: Color(hex: "5B7DB1"))
+                }
+                NavigationLink { AdminEOIReviewView() } label: {
+                    AdminQuickActionContent(icon: "doc.text.magnifyingglass", label: "EOI Reviews", color: Color(hex: "E8A317"))
                 }
                 NavigationLink { AdminBuildManagementView() } label: {
                     AdminQuickActionContent(icon: "slider.horizontal.3", label: "Build Mgmt", color: AVIATheme.success)
@@ -291,6 +300,8 @@ struct AdminOverviewSection: View {
                     AdminPendingRow(icon: "clock.fill", label: "In-Progress Requests", count: viewModel.requests.filter { $0.status == .inProgress }.count, color: AVIATheme.teal)
                     Rectangle().fill(AVIATheme.surfaceBorder).frame(height: 1).padding(.leading, 52)
                     AdminPendingRow(icon: "square.grid.2x2.fill", label: "Pending Pkg Responses", count: viewModel.packageAssignments.flatMap(\.clientResponses).filter { $0.status == .pending }.count, color: AVIATheme.success)
+                    Rectangle().fill(AVIATheme.surfaceBorder).frame(height: 1).padding(.leading, 52)
+                    AdminPendingRow(icon: "doc.text.magnifyingglass", label: "EOIs Awaiting Review", count: viewModel.packageAssignments.filter { $0.eoiStatus == "submitted" || $0.eoiStatus == "resubmitted" }.count, color: AVIATheme.warning)
                     Rectangle().fill(AVIATheme.surfaceBorder).frame(height: 1).padding(.leading, 52)
                     AdminPendingRow(icon: "checklist.checked", label: "Spec Reviews Pending", count: Set(viewModel.pendingSpecReviews.map(\.buildId)).count, color: Color(hex: "E8A317"))
                     if !viewModel.pendingSpecReviews.filter({ $0.selectionType == .upgradeRequested || $0.selectionType == .upgradeAccepted }).isEmpty {

@@ -25,6 +25,7 @@ struct PackageManagementView: View {
             VStack(spacing: 16) {
                 createPackageBanner
                 summaryStats
+                eoiReviewsLink
                 packagesList
             }
             .padding(.horizontal, 16)
@@ -88,52 +89,127 @@ struct PackageManagementView: View {
     }
 
     private var summaryStats: some View {
-        HStack(spacing: 12) {
-            BentoCard(cornerRadius: 16) {
-                VStack(alignment: .leading, spacing: 6) {
-                    BentoIconCircle(icon: "square.grid.2x2.fill", color: AVIATheme.teal)
-                    Text("\(viewModel.allPackages.count)")
-                        .font(.neueCorpMedium(32))
-                        .foregroundStyle(AVIATheme.textPrimary)
-                    Text("Total")
-                        .font(.neueCaption)
-                        .foregroundStyle(AVIATheme.textSecondary)
+        let allResponses = viewModel.packageAssignments.flatMap(\.clientResponses)
+        let pendingCount = allResponses.filter { $0.status == .pending }.count
+        let acceptedCount = allResponses.filter { $0.status == .accepted }.count
+        let declinedCount = allResponses.filter { $0.status == .declined }.count
+
+        return VStack(spacing: 12) {
+            HStack(spacing: 12) {
+                BentoCard(cornerRadius: 16) {
+                    VStack(alignment: .leading, spacing: 6) {
+                        BentoIconCircle(icon: "square.grid.2x2.fill", color: AVIATheme.teal)
+                        Text("\(viewModel.allPackages.count)")
+                            .font(.neueCorpMedium(32))
+                            .foregroundStyle(AVIATheme.textPrimary)
+                        Text("Total")
+                            .font(.neueCaption)
+                            .foregroundStyle(AVIATheme.textSecondary)
+                    }
+                    .padding(16)
+                    .frame(maxWidth: .infinity, alignment: .leading)
                 }
-                .padding(16)
-                .frame(maxWidth: .infinity, alignment: .leading)
+
+                BentoCard(cornerRadius: 16) {
+                    VStack(alignment: .leading, spacing: 6) {
+                        BentoIconCircle(icon: "paperplane.fill", color: AVIATheme.success)
+                        let sharedCount = viewModel.packageAssignments.filter { !$0.sharedWithClientIds.isEmpty }.count
+                        Text("\(sharedCount)")
+                            .font(.neueCorpMedium(32))
+                            .foregroundStyle(AVIATheme.textPrimary)
+                        Text("Shared")
+                            .font(.neueCaption)
+                            .foregroundStyle(AVIATheme.textSecondary)
+                    }
+                    .padding(16)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                }
             }
 
-            BentoCard(cornerRadius: 16) {
-                VStack(alignment: .leading, spacing: 6) {
-                    BentoIconCircle(icon: "paperplane.fill", color: AVIATheme.success)
-                    let sharedCount = viewModel.packageAssignments.filter { !$0.sharedWithClientIds.isEmpty }.count
-                    Text("\(sharedCount)")
-                        .font(.neueCorpMedium(32))
-                        .foregroundStyle(AVIATheme.textPrimary)
-                    Text("Shared")
-                        .font(.neueCaption)
-                        .foregroundStyle(AVIATheme.textSecondary)
+            HStack(spacing: 12) {
+                BentoCard(cornerRadius: 16) {
+                    VStack(alignment: .leading, spacing: 6) {
+                        BentoIconCircle(icon: "clock.fill", color: AVIATheme.warning)
+                        Text("\(pendingCount)")
+                            .font(.neueCorpMedium(32))
+                            .foregroundStyle(AVIATheme.textPrimary)
+                        Text("Pending")
+                            .font(.neueCaption)
+                            .foregroundStyle(AVIATheme.textSecondary)
+                    }
+                    .padding(16)
+                    .frame(maxWidth: .infinity, alignment: .leading)
                 }
-                .padding(16)
-                .frame(maxWidth: .infinity, alignment: .leading)
-            }
 
-            BentoCard(cornerRadius: 16) {
-                VStack(alignment: .leading, spacing: 6) {
-                    BentoIconCircle(icon: "clock.fill", color: AVIATheme.warning)
-                    let pendingCount = viewModel.packageAssignments.flatMap(\.clientResponses).filter { $0.status == .pending }.count
-                    Text("\(pendingCount)")
-                        .font(.neueCorpMedium(32))
-                        .foregroundStyle(AVIATheme.textPrimary)
-                    Text("Pending")
-                        .font(.neueCaption)
-                        .foregroundStyle(AVIATheme.textSecondary)
+                BentoCard(cornerRadius: 16) {
+                    VStack(alignment: .leading, spacing: 6) {
+                        BentoIconCircle(icon: "checkmark.circle.fill", color: AVIATheme.success)
+                        Text("\(acceptedCount)")
+                            .font(.neueCorpMedium(32))
+                            .foregroundStyle(AVIATheme.textPrimary)
+                        Text("Accepted")
+                            .font(.neueCaption)
+                            .foregroundStyle(AVIATheme.textSecondary)
+                    }
+                    .padding(16)
+                    .frame(maxWidth: .infinity, alignment: .leading)
                 }
-                .padding(16)
-                .frame(maxWidth: .infinity, alignment: .leading)
+
+                BentoCard(cornerRadius: 16) {
+                    VStack(alignment: .leading, spacing: 6) {
+                        BentoIconCircle(icon: "xmark.circle.fill", color: AVIATheme.destructive)
+                        Text("\(declinedCount)")
+                            .font(.neueCorpMedium(32))
+                            .foregroundStyle(AVIATheme.textPrimary)
+                        Text("Declined")
+                            .font(.neueCaption)
+                            .foregroundStyle(AVIATheme.textSecondary)
+                    }
+                    .padding(16)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                }
             }
         }
         .fixedSize(horizontal: false, vertical: true)
+    }
+
+    private var eoiReviewsLink: some View {
+        let eoiAssignments = viewModel.packageAssignments.filter { $0.eoiStatus != "none" }
+        let submittedCount = eoiAssignments.filter { $0.eoiStatus == "submitted" || $0.eoiStatus == "resubmitted" }.count
+
+        return NavigationLink {
+            AdminEOIReviewView()
+        } label: {
+            BentoCard(cornerRadius: 14) {
+                HStack(spacing: 12) {
+                    Image(systemName: "doc.text.magnifyingglass")
+                        .font(.system(size: 20))
+                        .foregroundStyle(AVIATheme.teal)
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text("EOI Submissions")
+                            .font(.neueSubheadlineMedium)
+                            .foregroundStyle(AVIATheme.textPrimary)
+                        Text("Review and manage all expressions of interest")
+                            .font(.neueCaption2)
+                            .foregroundStyle(AVIATheme.textSecondary)
+                    }
+                    Spacer()
+                    if submittedCount > 0 {
+                        Text("\(submittedCount)")
+                            .font(.neueCorpMedium(11))
+                            .foregroundStyle(.white)
+                            .frame(width: 24, height: 24)
+                            .background(AVIATheme.warning)
+                            .clipShape(Circle())
+                    }
+                    Image(systemName: "chevron.right")
+                        .font(.neueCaption2)
+                        .foregroundStyle(AVIATheme.textTertiary)
+                }
+                .padding(16)
+            }
+        }
+        .buttonStyle(.plain)
     }
 
     private var packagesList: some View {
@@ -231,9 +307,40 @@ struct PackageManagementView: View {
                                 .background(AVIATheme.success.opacity(0.1))
                                 .clipShape(Capsule())
                         }
+
+                        let declinedCount = assignment.clientResponses.filter { $0.status == .declined }.count
+                        if declinedCount > 0 {
+                            Text("\(declinedCount) declined")
+                                .font(.neueCorpMedium(9))
+                                .foregroundStyle(AVIATheme.destructive)
+                                .padding(.horizontal, 8)
+                                .padding(.vertical, 3)
+                                .background(AVIATheme.destructive.opacity(0.1))
+                                .clipShape(Capsule())
+                        }
                     }
                     .padding(.horizontal, 14)
                     .padding(.vertical, 10)
+
+                    // EOI status indicator
+                    if assignment.eoiStatus != "none" {
+                        Rectangle().fill(AVIATheme.surfaceBorder).frame(height: 1)
+                        HStack(spacing: 8) {
+                            Image(systemName: eoiStatusIcon(assignment.eoiStatus))
+                                .font(.system(size: 10))
+                                .foregroundStyle(eoiStatusColor(assignment.eoiStatus))
+                            Text("EOI: \(eoiStatusLabel(assignment.eoiStatus))")
+                                .font(.neueCorpMedium(9))
+                                .foregroundStyle(eoiStatusColor(assignment.eoiStatus))
+                                .padding(.horizontal, 8)
+                                .padding(.vertical, 3)
+                                .background(eoiStatusColor(assignment.eoiStatus).opacity(0.1))
+                                .clipShape(Capsule())
+                            Spacer()
+                        }
+                        .padding(.horizontal, 14)
+                        .padding(.vertical, 8)
+                    }
                 }
 
                 Rectangle().fill(AVIATheme.surfaceBorder).frame(height: 1)
@@ -287,6 +394,36 @@ struct PackageManagementView: View {
                     }
                 }
             }
+        }
+    }
+
+    private func eoiStatusLabel(_ status: String) -> String {
+        switch status {
+        case "submitted", "resubmitted": "Submitted"
+        case "approved": "Approved"
+        case "declined": "Declined"
+        case "changes_requested": "Changes Requested"
+        default: status.capitalized
+        }
+    }
+
+    private func eoiStatusColor(_ status: String) -> Color {
+        switch status {
+        case "submitted", "resubmitted": AVIATheme.warning
+        case "approved": AVIATheme.success
+        case "declined": AVIATheme.destructive
+        case "changes_requested": Color(hex: "E8A317")
+        default: AVIATheme.textTertiary
+        }
+    }
+
+    private func eoiStatusIcon(_ status: String) -> String {
+        switch status {
+        case "submitted", "resubmitted": "doc.text.fill"
+        case "approved": "checkmark.seal.fill"
+        case "declined": "xmark.circle.fill"
+        case "changes_requested": "exclamationmark.bubble.fill"
+        default: "doc.text.fill"
         }
     }
 }

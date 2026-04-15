@@ -12,6 +12,7 @@ struct AdminEOIReviewView: View {
         case all = "All"
         case submitted = "Submitted"
         case approved = "Approved"
+        case declined = "Declined"
         case changesRequested = "Changes Requested"
 
         var queryValue: String? {
@@ -19,6 +20,7 @@ struct AdminEOIReviewView: View {
             case .all: nil
             case .submitted: "submitted"
             case .approved: "approved"
+            case .declined: "declined"
             case .changesRequested: "changes_requested"
             }
         }
@@ -85,28 +87,57 @@ struct AdminEOIReviewView: View {
     }
 
     private func eoiRow(_ eoi: EOISubmissionRow) -> some View {
-        BentoCard(cornerRadius: 14) {
-            HStack(spacing: 12) {
-                VStack(alignment: .leading, spacing: 4) {
-                    Text(eoi.buyer1_name)
-                        .font(.neueSubheadlineMedium)
-                        .foregroundStyle(AVIATheme.textPrimary)
-                    Text("Lot \(eoi.lot_number) — \(eoi.estate_name)")
-                        .font(.neueCaption)
-                        .foregroundStyle(AVIATheme.textSecondary)
-                    if let date = eoi.created_at {
-                        Text(formatDate(date))
-                            .font(.neueCaption2)
-                            .foregroundStyle(AVIATheme.textTertiary)
+        let otherEOIsForPackage = eoiList.filter { $0.package_id == eoi.package_id && $0.id != eoi.id }
+        return BentoCard(cornerRadius: 14) {
+            VStack(spacing: 0) {
+                HStack(spacing: 12) {
+                    VStack(alignment: .leading, spacing: 4) {
+                        Text(eoi.buyer1_name)
+                            .font(.neueSubheadlineMedium)
+                            .foregroundStyle(AVIATheme.textPrimary)
+                        Text("Lot \(eoi.lot_number) — \(eoi.estate_name)")
+                            .font(.neueCaption)
+                            .foregroundStyle(AVIATheme.textSecondary)
+                        if let date = eoi.created_at {
+                            Text(formatDate(date))
+                                .font(.neueCaption2)
+                                .foregroundStyle(AVIATheme.textTertiary)
+                        }
                     }
+                    Spacer()
+                    eoiStatusBadge(eoi.status)
+                    Image(systemName: "chevron.right")
+                        .font(.neueCaption2)
+                        .foregroundStyle(AVIATheme.textTertiary)
                 }
-                Spacer()
-                eoiStatusBadge(eoi.status)
-                Image(systemName: "chevron.right")
-                    .font(.neueCaption2)
-                    .foregroundStyle(AVIATheme.textTertiary)
+                .padding(16)
+
+                if !otherEOIsForPackage.isEmpty {
+                    Rectangle().fill(AVIATheme.surfaceBorder).frame(height: 1)
+                    HStack(spacing: 6) {
+                        Image(systemName: "person.2.fill")
+                            .font(.system(size: 9))
+                            .foregroundStyle(Color(hex: "5B7DB1"))
+                        Text("\(otherEOIsForPackage.count + 1) EOIs for this package")
+                            .font(.neueCaption2)
+                            .foregroundStyle(AVIATheme.textSecondary)
+                        Spacer()
+                        let pendingCount = otherEOIsForPackage.filter { $0.status == "submitted" || $0.status == "resubmitted" }.count + (eoi.status == "submitted" || eoi.status == "resubmitted" ? 1 : 0)
+                        if pendingCount > 0 {
+                            Text("\(pendingCount) pending")
+                                .font(.neueCorpMedium(9))
+                                .foregroundStyle(AVIATheme.warning)
+                                .padding(.horizontal, 6)
+                                .padding(.vertical, 2)
+                                .background(AVIATheme.warning.opacity(0.1))
+                                .clipShape(Capsule())
+                        }
+                    }
+                    .padding(.horizontal, 16)
+                    .padding(.vertical, 8)
+                    .background(AVIATheme.cardBackgroundAlt)
+                }
             }
-            .padding(16)
         }
     }
 
@@ -119,7 +150,8 @@ struct AdminEOIReviewView: View {
         switch status {
         case "submitted", "resubmitted": ("Submitted", AVIATheme.warning)
         case "approved": ("Approved", AVIATheme.success)
-        case "changes_requested": ("Changes Requested", AVIATheme.destructive)
+        case "declined": ("Declined", AVIATheme.destructive)
+        case "changes_requested": ("Changes Requested", Color(hex: "E8A317"))
         default: (status.capitalized, AVIATheme.textTertiary)
         }
     }
@@ -304,7 +336,8 @@ struct AdminEOIDetailSheet: View {
         switch eoi.status {
         case "submitted", "resubmitted": ("Pending Review", AVIATheme.warning)
         case "approved": ("Approved", AVIATheme.success)
-        case "changes_requested": ("Changes Requested", AVIATheme.destructive)
+        case "declined": ("Declined", AVIATheme.destructive)
+        case "changes_requested": ("Changes Requested", Color(hex: "E8A317"))
         default: (eoi.status.capitalized, AVIATheme.textTertiary)
         }
     }
@@ -313,6 +346,7 @@ struct AdminEOIDetailSheet: View {
         switch eoi.status {
         case "submitted", "resubmitted": "clock.fill"
         case "approved": "checkmark.seal.fill"
+        case "declined": "xmark.circle.fill"
         case "changes_requested": "exclamationmark.bubble.fill"
         default: "doc.text.fill"
         }
@@ -324,6 +358,11 @@ struct AdminEOIDetailSheet: View {
             VStack(spacing: 12) {
                 PremiumButton("Approve EOI", icon: "checkmark.seal.fill", style: .primary) {
                     Task { await approveEOI() }
+                }
+                .disabled(isProcessing)
+
+                PremiumButton("Accept & Decline Others", icon: "person.crop.circle.badge.checkmark", style: .primary) {
+                    Task { await acceptAndDeclineOthers() }
                 }
                 .disabled(isProcessing)
 
@@ -344,10 +383,17 @@ struct AdminEOIDetailSheet: View {
                         }
                 }
 
-                PremiumButton("Request Changes", icon: "exclamationmark.bubble.fill", style: .outlined) {
-                    Task { await requestChanges() }
+                HStack(spacing: 12) {
+                    PremiumButton("Request Changes", icon: "exclamationmark.bubble.fill", style: .outlined) {
+                        Task { await requestChanges() }
+                    }
+                    .disabled(isProcessing || adminNotes.isEmpty)
+
+                    PremiumButton("Decline EOI", icon: "xmark.circle.fill", style: .destructive) {
+                        Task { await declineEOI() }
+                    }
+                    .disabled(isProcessing)
                 }
-                .disabled(isProcessing || adminNotes.isEmpty)
             }
         } else if eoi.status == "approved" {
             VStack(spacing: 12) {
@@ -368,6 +414,26 @@ struct AdminEOIDetailSheet: View {
                     showDocumentPicker = true
                 }
                 .disabled(isProcessing)
+            }
+        } else if eoi.status == "declined" {
+            BentoCard(cornerRadius: 14) {
+                HStack(spacing: 12) {
+                    Image(systemName: "xmark.circle.fill")
+                        .font(.system(size: 20))
+                        .foregroundStyle(AVIATheme.destructive)
+                    VStack(alignment: .leading, spacing: 3) {
+                        Text("EOI Declined")
+                            .font(.neueSubheadlineMedium)
+                            .foregroundStyle(AVIATheme.textPrimary)
+                        if let notes = eoi.admin_notes, !notes.isEmpty {
+                            Text(notes)
+                                .font(.neueCaption)
+                                .foregroundStyle(AVIATheme.textSecondary)
+                        }
+                    }
+                    Spacer()
+                }
+                .padding(16)
             }
         }
     }
@@ -431,6 +497,83 @@ struct AdminEOIDetailSheet: View {
             referenceId: eoi.package_id,
             referenceType: "package"
         )
+
+        await onUpdate()
+        dismiss()
+    }
+
+    private func declineEOI() async {
+        isProcessing = true
+        defer { isProcessing = false }
+
+        let success = await SupabaseService.shared.declineEOI(
+            eoiId: eoi.id,
+            assignmentId: eoi.package_assignment_id,
+            reviewedBy: viewModel.currentUser.id,
+            adminNotes: adminNotes.isEmpty ? nil : adminNotes
+        )
+        guard success else { return }
+
+        await viewModel.notificationService.createNotification(
+            recipientId: eoi.client_id,
+            senderId: viewModel.currentUser.id,
+            senderName: viewModel.currentUser.fullName,
+            type: .eoiChangesRequested,
+            title: "EOI Declined",
+            message: "Your expression of interest for Lot \(eoi.lot_number) has been declined",
+            referenceId: eoi.package_id,
+            referenceType: "package"
+        )
+
+        await onUpdate()
+        dismiss()
+    }
+
+    private func acceptAndDeclineOthers() async {
+        isProcessing = true
+        defer { isProcessing = false }
+
+        let success = await SupabaseService.shared.acceptEOIAndDeclineOthers(
+            acceptedEOIId: eoi.id,
+            packageId: eoi.package_id,
+            assignmentId: eoi.package_assignment_id,
+            reviewedBy: viewModel.currentUser.id
+        )
+        guard success else { return }
+
+        // Create contract record for accepted EOI
+        _ = await SupabaseService.shared.createContractRecord(
+            eoiId: eoi.id,
+            assignmentId: eoi.package_assignment_id,
+            clientId: eoi.client_id
+        )
+
+        // Notify the accepted client
+        await viewModel.notificationService.createNotification(
+            recipientId: eoi.client_id,
+            senderId: viewModel.currentUser.id,
+            senderName: viewModel.currentUser.fullName,
+            type: .eoiApproved,
+            title: "EOI Approved",
+            message: "Your expression of interest for Lot \(eoi.lot_number) has been approved",
+            referenceId: eoi.package_id,
+            referenceType: "package"
+        )
+
+        // Notify declined clients
+        let allEOIs = await SupabaseService.shared.fetchEOIsForPackage(packageId: eoi.package_id)
+        for otherEOI in allEOIs where otherEOI.id != eoi.id && otherEOI.status == "declined" {
+            await viewModel.notificationService.createNotification(
+                recipientId: otherEOI.client_id,
+                senderId: viewModel.currentUser.id,
+                senderName: viewModel.currentUser.fullName,
+                type: .eoiChangesRequested,
+                title: "EOI Declined",
+                message: "Your expression of interest for Lot \(otherEOI.lot_number) has been declined — another EOI was accepted",
+                referenceId: otherEOI.package_id,
+                referenceType: "package"
+            )
+        }
 
         await onUpdate()
         dismiss()

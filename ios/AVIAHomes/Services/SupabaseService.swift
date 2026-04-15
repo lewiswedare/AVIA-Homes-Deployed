@@ -1518,6 +1518,66 @@ class SupabaseService {
         }
     }
 
+    func fetchEOIsForPackage(packageId: String) async -> [EOISubmissionRow] {
+        do {
+            let rows: [EOISubmissionRow] = try await client.from("eoi_submissions")
+                .select()
+                .eq("package_id", value: packageId)
+                .order("created_at", ascending: false)
+                .execute()
+                .value
+            return rows
+        } catch {
+            print("[SupabaseService] fetchEOIsForPackage error: \(error)")
+            return []
+        }
+    }
+
+    func declineEOI(eoiId: String, assignmentId: String, reviewedBy: String, adminNotes: String? = nil) async -> Bool {
+        do {
+            var updates: [String: String] = [
+                "status": "declined",
+                "reviewed_by": reviewedBy,
+                "reviewed_at": ISO8601DateFormatter().string(from: .now)
+            ]
+            if let notes = adminNotes {
+                updates["admin_notes"] = notes
+            }
+            try await client.from("eoi_submissions")
+                .update(updates)
+                .eq("id", value: eoiId)
+                .execute()
+            return true
+        } catch {
+            print("[SupabaseService] declineEOI error: \(error)")
+            return false
+        }
+    }
+
+    func acceptEOIAndDeclineOthers(acceptedEOIId: String, packageId: String, assignmentId: String, reviewedBy: String) async -> Bool {
+        // First approve the selected EOI
+        let approveSuccess = await reviewEOI(
+            eoiId: acceptedEOIId,
+            assignmentId: assignmentId,
+            status: "approved",
+            adminNotes: nil,
+            reviewedBy: reviewedBy
+        )
+        guard approveSuccess else { return false }
+
+        // Fetch all other EOIs for this package and decline them
+        let allEOIs = await fetchEOIsForPackage(packageId: packageId)
+        for eoi in allEOIs where eoi.id != acceptedEOIId && eoi.status != "declined" && eoi.status != "approved" {
+            _ = await declineEOI(
+                eoiId: eoi.id,
+                assignmentId: eoi.package_assignment_id,
+                reviewedBy: reviewedBy,
+                adminNotes: "Auto-declined: another EOI was accepted for this package"
+            )
+        }
+        return true
+    }
+
     // MARK: - Contract Signatures
 
     func createContractRecord(eoiId: String, assignmentId: String, clientId: String) async -> ContractSignatureRow? {
