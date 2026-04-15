@@ -31,33 +31,6 @@ struct ProfileView: View {
                     }
                 }
 
-                settingsSection(title: "Favourites") {
-                    NavigationLink {
-                        FavouriteDesignsView()
-                    } label: {
-                        HStack(spacing: 14) {
-                            Image(systemName: "heart.fill")
-                                .font(.neueSubheadline)
-                                .foregroundStyle(.red)
-                                .frame(width: 28)
-                            VStack(alignment: .leading, spacing: 2) {
-                                Text("My Favourite Designs")
-                                    .font(.neueSubheadline)
-                                    .foregroundStyle(AVIATheme.textPrimary)
-                                Text("\(viewModel.favouriteDesigns.count) design\(viewModel.favouriteDesigns.count == 1 ? "" : "s") saved")
-                                    .font(.neueCaption)
-                                    .foregroundStyle(AVIATheme.textTertiary)
-                            }
-                            Spacer()
-                            Image(systemName: "chevron.right")
-                                .font(.neueCaption2)
-                                .foregroundStyle(AVIATheme.textTertiary)
-                        }
-                        .padding(.horizontal, 16)
-                        .padding(.vertical, 12)
-                    }
-                }
-
                 settingsSection(title: "Contact") {
                     DetailRow(icon: "envelope.fill", title: "Email", value: viewModel.currentUser.email)
                     Rectangle().fill(AVIATheme.surfaceBorder).frame(height: 1).padding(.leading, 48)

@@ -79,10 +79,6 @@ nonisolated enum UserRole: String, Codable, CaseIterable, Sendable {
         self == .admin || self == .partner || self == .salesAdmin || self == .salesPartner || self == .superAdmin
     }
 
-    var canViewUserFavourites: Bool {
-        self == .admin || self == .superAdmin || self == .salesAdmin || self == .salesPartner
-    }
-
     var isPending: Bool {
         self == .pending
     }

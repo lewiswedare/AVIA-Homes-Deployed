@@ -34,7 +34,6 @@ struct SuperAdminDashboard: View {
             ScrollView {
                 VStack(spacing: 16) {
                     allBuildsSummary
-                    popularDesignsCard
                     staffOverviewSection("Pre-Construction", staff: preConstructionStaff, countType: .builds)
                     staffOverviewSection("Building Support", staff: buildingSupportStaff, countType: .builds)
                     staffOverviewSection("Staff", staff: generalStaff, countType: .packages)
@@ -96,68 +95,6 @@ struct SuperAdminDashboard: View {
                 }
             }
             .padding(16)
-        }
-    }
-
-    private var popularDesignsCard: some View {
-        NavigationLink {
-            PopularDesignsView()
-        } label: {
-            BentoCard(cornerRadius: 16) {
-                VStack(alignment: .leading, spacing: 12) {
-                    HStack {
-                        Text("POPULAR DESIGNS")
-                            .font(.neueCaption2Medium)
-                            .foregroundStyle(AVIATheme.textTertiary)
-                            .kerning(0.5)
-                        Spacer()
-                        HStack(spacing: 4) {
-                            Text("View All")
-                                .font(.neueCaptionMedium)
-                            Image(systemName: "chevron.right")
-                                .font(.system(size: 10, weight: .semibold))
-                        }
-                        .foregroundStyle(AVIATheme.teal)
-                    }
-
-                    if viewModel.popularDesigns.isEmpty {
-                        Text("No favourites data yet")
-                            .font(.neueCaption)
-                            .foregroundStyle(AVIATheme.textTertiary)
-                            .padding(.vertical, 8)
-                    } else {
-                        ForEach(viewModel.popularDesigns.prefix(3), id: \.design.id) { entry in
-                            HStack(spacing: 10) {
-                                AsyncImage(url: URL(string: entry.design.imageURL)) { phase in
-                                    if let image = phase.image {
-                                        image.resizable().aspectRatio(contentMode: .fill)
-                                    } else {
-                                        Color(AVIATheme.surfaceElevated)
-                                    }
-                                }
-                                .frame(width: 40, height: 40)
-                                .clipShape(.rect(cornerRadius: 8))
-
-                                Text(entry.design.name)
-                                    .font(.neueSubheadlineMedium)
-                                    .foregroundStyle(AVIATheme.textPrimary)
-
-                                Spacer()
-
-                                HStack(spacing: 3) {
-                                    Image(systemName: "heart.fill")
-                                        .font(.system(size: 10))
-                                        .foregroundStyle(.red)
-                                    Text("\(entry.count)")
-                                        .font(.neueCaptionMedium)
-                                        .foregroundStyle(AVIATheme.textPrimary)
-                                }
-                            }
-                        }
-                    }
-                }
-                .padding(16)
-            }
         }
     }
 

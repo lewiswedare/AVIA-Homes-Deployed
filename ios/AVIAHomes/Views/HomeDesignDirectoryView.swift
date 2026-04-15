@@ -337,22 +337,6 @@ struct HomeDesignDirectoryView: View {
                     }
                     .allowsHitTesting(false)
                 }
-                .overlay(alignment: .topLeading) {
-                    Button {
-                        withAnimation(.spring(response: 0.3)) {
-                            viewModel.toggleDesignFavourite(design.id)
-                        }
-                    } label: {
-                        Image(systemName: viewModel.isDesignFavourited(design.id) ? "heart.fill" : "heart")
-                            .font(.system(size: 14, weight: .semibold))
-                            .foregroundStyle(viewModel.isDesignFavourited(design.id) ? .red : .white)
-                            .frame(width: 30, height: 30)
-                            .background(.black.opacity(0.35))
-                            .clipShape(Circle())
-                            .padding(8)
-                    }
-                    .sensoryFeedback(.selection, trigger: viewModel.isDesignFavourited(design.id))
-                }
                 .overlay(alignment: .topTrailing) {
                     if design.storeys == 2 {
                         Text("2 STOREY")
