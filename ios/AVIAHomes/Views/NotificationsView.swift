@@ -123,7 +123,9 @@ struct NotificationsView: View {
             return true
         case .eoiSubmitted, .eoiApproved, .eoiChangesRequested:
             return true
-        case .contractUploaded, .contractSigned:
+        case .contractUploaded, .contractSigned, .contractRaised:
+            return true
+        case .invoiceRaised, .invoicePaid:
             return true
         case .roleAssigned:
             return false
@@ -180,7 +182,13 @@ struct NotificationsView: View {
             } else {
                 ClientPackageReviewView()
             }
-        case .contractUploaded, .contractSigned:
+        case .contractUploaded, .contractSigned, .contractRaised:
+            if isAdminOrStaff {
+                AdminEOIReviewView()
+            } else {
+                ClientPackageReviewView()
+            }
+        case .invoiceRaised, .invoicePaid:
             if isAdminOrStaff {
                 AdminEOIReviewView()
             } else {
