@@ -66,7 +66,7 @@ struct StaffDashboardView: View {
                 .clipShape(Circle())
 
             VStack(alignment: .leading, spacing: 2) {
-                Text("Welcome, \(viewModel.currentUser.firstName)")
+                Text(viewModel.currentUser.firstName.isEmpty ? "Welcome Home" : "Welcome Home, \(viewModel.currentUser.firstName)")
                     .font(.neueCorpMedium(22))
                     .foregroundStyle(AVIATheme.textPrimary)
                 Text("Pre-Site Coordinator")

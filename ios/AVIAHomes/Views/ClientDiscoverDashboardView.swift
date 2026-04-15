@@ -106,7 +106,7 @@ struct ClientDiscoverDashboardView: View {
                     .clipShape(Circle())
             }
 
-            Text("Welcome, \(viewModel.currentUser.firstName)")
+            Text(viewModel.currentUser.firstName.isEmpty ? "Welcome Home" : "Welcome Home, \(viewModel.currentUser.firstName)")
                 .font(.neueCorpMedium(28))
                 .foregroundStyle(AVIATheme.textPrimary)
         }
