@@ -901,6 +901,9 @@ struct DashboardView: View {
 
     private var discoverContent: some View {
         VStack(spacing: 20) {
+            if !viewModel.favouriteDesigns.isEmpty {
+                myFavouritesSection
+            }
             latestNewsSection
             ourDesignsSection
             specRangesSlider
@@ -1263,6 +1266,39 @@ struct DashboardView: View {
                     .foregroundStyle(AVIATheme.textTertiary)
             }
             .padding(12)
+        }
+    }
+
+    private var myFavouritesSection: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            HStack(spacing: 8) {
+                Image(systemName: "heart.fill")
+                    .font(.system(size: 16))
+                    .foregroundStyle(.red)
+                Text("My Favourites")
+                    .font(.neueCorpMedium(24))
+                    .foregroundStyle(AVIATheme.textPrimary)
+                Spacer()
+                NavigationLink {
+                    FavouriteDesignsView()
+                } label: {
+                    Text("See All")
+                        .font(.neueCaptionMedium)
+                        .foregroundStyle(AVIATheme.teal)
+                }
+            }
+
+            ScrollView(.horizontal) {
+                HStack(spacing: 12) {
+                    ForEach(viewModel.favouriteDesigns.prefix(6)) { design in
+                        NavigationLink(value: design) {
+                            designCard(design: design)
+                        }
+                    }
+                }
+            }
+            .contentMargins(.horizontal, 0)
+            .scrollIndicators(.hidden)
         }
     }
 

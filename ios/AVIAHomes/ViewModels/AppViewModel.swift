@@ -18,6 +18,9 @@ class AppViewModel {
     var cachedUsers: [ClientUser] = []
     var pendingSpecReviews: [BuildSpecSelection] = []
 
+    var favouriteDesignIds: Set<String> = []
+    var allDesignFavourites: [DesignFavourite] = []
+
     var allHomeDesigns: [HomeDesign] = []
     var allPackages: [HouseLandPackage] = []
     var allBlogPosts: [BlogPost] = []
@@ -154,6 +157,7 @@ class AppViewModel {
         await loadDocumentsFromSupabase()
         await loadScheduleItemsFromSupabase()
         await loadPendingSpecReviews()
+        await loadDesignFavourites()
         await notificationService.loadNotifications(for: currentUser.id)
         await messagingService.loadConversations(for: currentUser.id)
         notificationService.onNotificationReceived = { [weak self] notif in
@@ -204,6 +208,7 @@ class AppViewModel {
         await loadDocumentsFromSupabase()
         await loadScheduleItemsFromSupabase()
         await loadPendingSpecReviews()
+        await loadDesignFavourites()
     }
 
     private func loadRequestsFromSupabase() async {
@@ -256,6 +261,65 @@ class AppViewModel {
         guard !currentUser.id.isEmpty else { return }
         let items = await SupabaseService.shared.fetchScheduleItems(clientId: currentUser.id)
         scheduleItems = items
+    }
+
+    // MARK: - Design Favourites
+
+    func isDesignFavourited(_ designId: String) -> Bool {
+        favouriteDesignIds.contains(designId)
+    }
+
+    func toggleDesignFavourite(_ designId: String) {
+        let userId = currentUser.id
+        guard !userId.isEmpty else { return }
+
+        if favouriteDesignIds.contains(designId) {
+            favouriteDesignIds.remove(designId)
+            Task {
+                await SupabaseService.shared.deleteDesignFavourite(userId: userId, designId: designId)
+            }
+        } else {
+            favouriteDesignIds.insert(designId)
+            Task {
+                await SupabaseService.shared.insertDesignFavourite(userId: userId, designId: designId)
+            }
+        }
+    }
+
+    var favouriteDesigns: [HomeDesign] {
+        allHomeDesigns.filter { favouriteDesignIds.contains($0.id) }
+    }
+
+    func favouritesForUser(_ userId: String) -> [DesignFavourite] {
+        allDesignFavourites.filter { $0.userId == userId }
+    }
+
+    func designFavouriteCount(_ designId: String) -> Int {
+        allDesignFavourites.filter { $0.designId == designId }.count
+    }
+
+    var popularDesigns: [(design: HomeDesign, count: Int)] {
+        var counts: [String: Int] = [:]
+        for fav in allDesignFavourites {
+            counts[fav.designId, default: 0] += 1
+        }
+        return counts
+            .sorted { $0.value > $1.value }
+            .compactMap { entry in
+                guard let design = allHomeDesigns.first(where: { $0.id == entry.key }) else { return nil }
+                return (design: design, count: entry.value)
+            }
+    }
+
+    private func loadDesignFavourites() async {
+        guard !currentUser.id.isEmpty else { return }
+        let rows = await SupabaseService.shared.fetchDesignFavourites(userId: currentUser.id)
+        favouriteDesignIds = Set(rows.map(\.design_id))
+
+        if currentRole.canViewAllClients {
+            let allRows = await SupabaseService.shared.fetchAllDesignFavourites()
+            allDesignFavourites = allRows.map { $0.toDesignFavourite() }
+        }
     }
 
     private func setupRealtimeSubscriptions() {
@@ -476,6 +540,8 @@ class AppViewModel {
         scheduleItems = []
         buildStages = []
         pendingSpecReviews = []
+        favouriteDesignIds = []
+        allDesignFavourites = []
         allHomeDesigns = []
         allPackages = []
         allBlogPosts = []

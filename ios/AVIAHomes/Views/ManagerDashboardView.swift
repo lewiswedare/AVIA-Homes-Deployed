@@ -45,6 +45,9 @@ struct AdminDashboardView: View {
                         NavigationLink { AdminEOIReviewView() } label: {
                             Label("EOI Reviews", systemImage: "doc.text.magnifyingglass")
                         }
+                        NavigationLink { PopularDesignsView() } label: {
+                            Label("Popular Designs", systemImage: "heart.text.square.fill")
+                        }
                     } label: {
                         Image(systemName: "ellipsis.circle.fill")
                             .foregroundStyle(AVIATheme.teal)

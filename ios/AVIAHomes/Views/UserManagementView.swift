@@ -214,11 +214,63 @@ struct UserRoleAssignmentSheet: View {
         _selectedRole = State(initialValue: user.role == .pending ? .client : user.role)
     }
 
+    private var userFavourites: [HomeDesign] {
+        let favDesignIds = viewModel.favouritesForUser(user.id).map(\.designId)
+        return viewModel.allHomeDesigns.filter { favDesignIds.contains($0.id) }
+    }
+
     var body: some View {
         NavigationStack {
             ScrollView {
                 VStack(spacing: 28) {
                     userHeader
+
+                    if viewModel.currentRole.canViewUserFavourites && !userFavourites.isEmpty {
+                        VStack(alignment: .leading, spacing: 12) {
+                            HStack(spacing: 6) {
+                                Image(systemName: "heart.fill")
+                                    .font(.system(size: 12))
+                                    .foregroundStyle(.red)
+                                Text("Favourite Designs (\(userFavourites.count))")
+                                    .font(.neueSubheadlineMedium)
+                                    .foregroundStyle(AVIATheme.textPrimary)
+                            }
+
+                            VStack(spacing: 8) {
+                                ForEach(userFavourites) { design in
+                                    HStack(spacing: 12) {
+                                        AsyncImage(url: URL(string: design.imageURL)) { phase in
+                                            if let image = phase.image {
+                                                image.resizable().aspectRatio(contentMode: .fill)
+                                            } else {
+                                                Color(AVIATheme.surfaceElevated)
+                                            }
+                                        }
+                                        .frame(width: 48, height: 48)
+                                        .clipShape(.rect(cornerRadius: 8))
+
+                                        VStack(alignment: .leading, spacing: 2) {
+                                            Text(design.name)
+                                                .font(.neueSubheadlineMedium)
+                                                .foregroundStyle(AVIATheme.textPrimary)
+                                            HStack(spacing: 6) {
+                                                Label("\(design.bedrooms)", systemImage: "bed.double.fill")
+                                                Label("\(design.bathrooms)", systemImage: "shower.fill")
+                                                Text(String(format: "%.0fm\u{00B2}", design.squareMeters))
+                                            }
+                                            .font(.neueCaption2)
+                                            .foregroundStyle(AVIATheme.textSecondary)
+                                        }
+                                        Spacer()
+                                    }
+                                    .padding(10)
+                                    .background(AVIATheme.cardBackground)
+                                    .clipShape(.rect(cornerRadius: 12))
+                                }
+                            }
+                        }
+                        .padding(.horizontal, 20)
+                    }
 
                     VStack(alignment: .leading, spacing: 12) {
                         Text("Assign Role")

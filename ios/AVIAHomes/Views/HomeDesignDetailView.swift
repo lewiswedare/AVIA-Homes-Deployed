@@ -2,6 +2,7 @@ import SwiftUI
 
 struct HomeDesignDetailView: View {
     let design: HomeDesign
+    @Environment(AppViewModel.self) private var viewModel
     @State private var showingFloorplan: Bool = false
     @State private var showingEnquiryForm: Bool = false
 
@@ -22,10 +23,23 @@ struct HomeDesignDetailView: View {
                     .foregroundStyle(AVIATheme.textPrimary)
             }
             ToolbarItem(placement: .topBarTrailing) {
-                if let url = URL(string: "https://www.aviahomes.com.au/homes/\(design.slug)") {
-                    ShareLink(item: url) {
-                        Image(systemName: "square.and.arrow.up")
+                HStack(spacing: 12) {
+                    Button {
+                        withAnimation(.spring(response: 0.3)) {
+                            viewModel.toggleDesignFavourite(design.id)
+                        }
+                    } label: {
+                        Image(systemName: viewModel.isDesignFavourited(design.id) ? "heart.fill" : "heart")
                             .font(.neueSubheadline)
+                            .foregroundStyle(viewModel.isDesignFavourited(design.id) ? .red : AVIATheme.textSecondary)
+                    }
+                    .sensoryFeedback(.selection, trigger: viewModel.isDesignFavourited(design.id))
+
+                    if let url = URL(string: "https://www.aviahomes.com.au/homes/\(design.slug)") {
+                        ShareLink(item: url) {
+                            Image(systemName: "square.and.arrow.up")
+                                .font(.neueSubheadline)
+                        }
                     }
                 }
             }
