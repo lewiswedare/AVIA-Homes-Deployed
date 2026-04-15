@@ -22,7 +22,7 @@ struct DesignEnquiryFormView: View {
                     formFields
                     if let errorMessage {
                         Text(errorMessage)
-                            .font(.neueCaption1)
+                            .font(.neueCaption)
                             .foregroundStyle(AVIATheme.destructive)
                             .frame(maxWidth: .infinity, alignment: .leading)
                     }
@@ -55,10 +55,10 @@ struct DesignEnquiryFormView: View {
                 .foregroundStyle(AVIATheme.teal)
             VStack(alignment: .leading, spacing: 2) {
                 Text("Enquiring about")
-                    .font(.neueCaption1)
+                    .font(.neueCaption)
                     .foregroundStyle(AVIATheme.textTertiary)
                 Text(designName)
-                    .font(.neueHeadlineMedium)
+                    .font(.neueHeadline)
                     .foregroundStyle(AVIATheme.textPrimary)
             }
             Spacer()
@@ -77,7 +77,7 @@ struct DesignEnquiryFormView: View {
             fieldRow(title: "Phone Number", text: $phone, placeholder: "Enter your phone number", keyboardType: .phonePad)
             VStack(alignment: .leading, spacing: 6) {
                 Text("Message / Notes")
-                    .font(.neueCaption1)
+                    .font(.neueCaption)
                     .foregroundStyle(AVIATheme.textSecondary)
                 TextEditor(text: $message)
                     .font(.neueSubheadline)
@@ -97,7 +97,7 @@ struct DesignEnquiryFormView: View {
     private func fieldRow(title: String, text: Binding<String>, placeholder: String, keyboardType: UIKeyboardType) -> some View {
         VStack(alignment: .leading, spacing: 6) {
             Text(title)
-                .font(.neueCaption1)
+                .font(.neueCaption)
                 .foregroundStyle(AVIATheme.textSecondary)
             TextField(placeholder, text: text)
                 .font(.neueSubheadline)
