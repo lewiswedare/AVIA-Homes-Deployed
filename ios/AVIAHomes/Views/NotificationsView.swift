@@ -130,6 +130,10 @@ struct NotificationsView: View {
         }
     }
 
+    private var isAdminOrStaff: Bool {
+        viewModel.currentRole.isAnyStaffRole
+    }
+
     @ViewBuilder
     private func notificationDestination(_ notification: AppNotification) -> some View {
         switch notification.type {
@@ -139,7 +143,11 @@ struct NotificationsView: View {
                 ChatView(conversation: conversation)
             }
         case .specTierChanged, .upgradeQuoted:
-            SpecificationsOverviewView()
+            if isAdminOrStaff {
+                AdminBuildManagementView()
+            } else {
+                SpecificationsOverviewView()
+            }
         case .colourSelectionSubmitted:
             if let buildId = resolveBuildId(for: notification) {
                 BuildColourSelectionView(buildId: buildId)
@@ -147,25 +155,33 @@ struct NotificationsView: View {
         case .requestSubmitted, .requestResponse:
             RequestsView()
         case .packageShared, .packageApproved, .packageDeclined, .packageAccepted:
-            ClientPackageReviewView()
+            if isAdminOrStaff {
+                PackageManagementView()
+            } else {
+                ClientPackageReviewView()
+            }
         case .depositInvoice, .depositReceived:
-            ClientPackageReviewView()
+            if isAdminOrStaff {
+                PackageManagementView()
+            } else {
+                ClientPackageReviewView()
+            }
         case .buildUpdate, .handoverTriggered:
-            BuildProgressView()
+            if isAdminOrStaff {
+                AdminBuildManagementView()
+            } else {
+                BuildProgressView()
+            }
         case .documentAdded:
             DocumentsView()
-        case .eoiSubmitted:
-            if viewModel.currentRole == .admin || viewModel.currentRole.isAnyStaffRole {
+        case .eoiSubmitted, .eoiApproved, .eoiChangesRequested:
+            if isAdminOrStaff {
                 AdminEOIReviewView()
             } else {
                 ClientPackageReviewView()
             }
-        case .eoiApproved, .eoiChangesRequested:
-            ClientPackageReviewView()
-        case .contractUploaded:
-            ClientPackageReviewView()
-        case .contractSigned:
-            if viewModel.currentRole == .admin || viewModel.currentRole.isAnyStaffRole {
+        case .contractUploaded, .contractSigned:
+            if isAdminOrStaff {
                 AdminEOIReviewView()
             } else {
                 ClientPackageReviewView()

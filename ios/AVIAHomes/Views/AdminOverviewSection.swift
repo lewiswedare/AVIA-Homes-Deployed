@@ -50,29 +50,29 @@ struct AdminOverviewSection: View {
                     }
                     VStack(spacing: 6) {
                         if pendingUsers > 0 {
-                            alertRow(icon: "person.badge.clock.fill", text: "\(pendingUsers) user\(pendingUsers == 1 ? "" : "s") awaiting role assignment", color: AVIATheme.warning) {
-                                selectedSection = .staff
+                            alertNavRow(icon: "person.badge.clock.fill", text: "\(pendingUsers) user\(pendingUsers == 1 ? "" : "s") awaiting role assignment", color: AVIATheme.warning) {
+                                UserManagementView()
                             }
                         }
                         if openRequests > 0 {
-                            alertRow(icon: "bubble.left.fill", text: "\(openRequests) open client request\(openRequests == 1 ? "" : "s")", color: Color(hex: "5B7DB1")) {
-                                selectedSection = .requests
+                            alertNavRow(icon: "bubble.left.fill", text: "\(openRequests) open client request\(openRequests == 1 ? "" : "s")", color: Color(hex: "5B7DB1")) {
+                                RequestsView()
                             }
                         }
                         if pendingPkgResponses > 0 {
-                            alertRow(icon: "square.grid.2x2.fill", text: "\(pendingPkgResponses) package response\(pendingPkgResponses == 1 ? "" : "s") pending", color: AVIATheme.success) {
-                                selectedSection = .activity
+                            alertNavRow(icon: "square.grid.2x2.fill", text: "\(pendingPkgResponses) package response\(pendingPkgResponses == 1 ? "" : "s") pending", color: AVIATheme.success) {
+                                PackageManagementView()
                             }
                         }
                         if recentAccepted > 0 || recentDeclined > 0 {
                             let parts = [recentAccepted > 0 ? "\(recentAccepted) accepted" : nil, recentDeclined > 0 ? "\(recentDeclined) declined" : nil].compactMap { $0 }.joined(separator: ", ")
-                            alertRow(icon: "envelope.open.fill", text: "Package responses: \(parts)", color: recentDeclined > 0 ? AVIATheme.destructive : AVIATheme.success) {
-                                selectedSection = .activity
+                            alertNavRow(icon: "envelope.open.fill", text: "Package responses: \(parts)", color: recentDeclined > 0 ? AVIATheme.destructive : AVIATheme.success) {
+                                PackageManagementView()
                             }
                         }
                         if pendingSpecCount > 0 {
-                            alertRow(icon: "checklist.checked", text: "\(pendingSpecCount) build\(pendingSpecCount == 1 ? "" : "s") awaiting spec review" + (upgradeRequestCount > 0 ? " (\(upgradeRequestCount) upgrade req\(upgradeRequestCount == 1 ? "" : "s"))" : ""), color: Color(hex: "E8A317")) {
-                                selectedSection = .builds
+                            alertNavRow(icon: "checklist.checked", text: "\(pendingSpecCount) build\(pendingSpecCount == 1 ? "" : "s") awaiting spec review" + (upgradeRequestCount > 0 ? " (\(upgradeRequestCount) upgrade req\(upgradeRequestCount == 1 ? "" : "s"))" : ""), color: Color(hex: "E8A317")) {
+                                AdminBuildManagementView()
                             }
                         }
                     }
@@ -82,8 +82,10 @@ struct AdminOverviewSection: View {
         }
     }
 
-    private func alertRow(icon: String, text: String, color: Color, action: @escaping () -> Void) -> some View {
-        Button(action: action) {
+    private func alertNavRow<Destination: View>(icon: String, text: String, color: Color, @ViewBuilder destination: () -> Destination) -> some View {
+        NavigationLink {
+            destination()
+        } label: {
             HStack(spacing: 10) {
                 Image(systemName: icon)
                     .font(.neueCorp(12))
@@ -103,6 +105,7 @@ struct AdminOverviewSection: View {
             .background(AVIATheme.cardBackgroundAlt)
             .clipShape(.rect(cornerRadius: 10))
         }
+        .buttonStyle(.plain)
     }
 
     private var metricsGrid: some View {
