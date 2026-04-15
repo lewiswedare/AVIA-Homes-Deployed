@@ -51,50 +51,97 @@ struct ClientBuildCardView: View {
 
                 Rectangle().fill(AVIATheme.surfaceBorder).frame(height: 1)
 
-                HStack(spacing: 16) {
-                    buildMetric(
-                        icon: "hammer.fill",
-                        value: build.statusLabel,
-                        label: "Stage"
-                    )
+                if build.isAwaitingRegistration {
+                    awaitingRegistrationBanner
+                } else {
+                    HStack(spacing: 16) {
+                        buildMetric(
+                            icon: "hammer.fill",
+                            value: build.statusLabel,
+                            label: "Stage"
+                        )
 
-                    Rectangle()
-                        .fill(AVIATheme.surfaceBorder)
-                        .frame(width: 1, height: 32)
+                        Rectangle()
+                            .fill(AVIATheme.surfaceBorder)
+                            .frame(width: 1, height: 32)
 
-                    buildMetric(
-                        icon: "chart.bar.fill",
-                        value: "\(Int(build.overallProgress * 100))%",
-                        label: "Progress"
-                    )
+                        buildMetric(
+                            icon: "chart.bar.fill",
+                            value: "\(Int(build.overallProgress * 100))%",
+                            label: "Progress"
+                        )
 
-                    Rectangle()
-                        .fill(AVIATheme.surfaceBorder)
-                        .frame(width: 1, height: 32)
+                        Rectangle()
+                            .fill(AVIATheme.surfaceBorder)
+                            .frame(width: 1, height: 32)
 
-                    buildMetric(
-                        icon: "mappin.circle.fill",
-                        value: build.estate.components(separatedBy: ",").first ?? build.estate,
-                        label: "Estate"
-                    )
+                        buildMetric(
+                            icon: "mappin.circle.fill",
+                            value: build.estate.components(separatedBy: ",").first ?? build.estate,
+                            label: "Estate"
+                        )
+                    }
+                    .padding(.horizontal, 16)
+                    .padding(.vertical, 12)
+
+                    GeometryReader { geo in
+                        ZStack(alignment: .leading) {
+                            Capsule()
+                                .fill(AVIATheme.teal.opacity(0.1))
+                                .frame(height: 4)
+                            Capsule()
+                                .fill(AVIATheme.tealGradient)
+                                .frame(width: max(0, geo.size.width * build.overallProgress), height: 4)
+                        }
+                    }
+                    .frame(height: 4)
+                    .padding(.horizontal, 16)
+                    .padding(.bottom, 14)
                 }
-                .padding(.horizontal, 16)
-                .padding(.vertical, 12)
+            }
+        }
+    }
 
-                GeometryReader { geo in
-                    ZStack(alignment: .leading) {
-                        Capsule()
-                            .fill(AVIATheme.teal.opacity(0.1))
-                            .frame(height: 4)
-                        Capsule()
-                            .fill(AVIATheme.tealGradient)
-                            .frame(width: max(0, geo.size.width * build.overallProgress), height: 4)
+    private var awaitingRegistrationBanner: some View {
+        VStack(spacing: 8) {
+            HStack(spacing: 10) {
+                Image(systemName: "clock.badge.questionmark")
+                    .font(.system(size: 18))
+                    .foregroundStyle(AVIATheme.warning)
+
+                VStack(alignment: .leading, spacing: 2) {
+                    Text("Awaiting Site Registration")
+                        .font(.neueCaptionMedium)
+                        .foregroundStyle(AVIATheme.textPrimary)
+                    if let regStage = build.awaitingRegistrationStage, let estDate = regStage.estimatedEndDate {
+                        Text("Est. \(estDate.formatted(.dateTime.month(.abbreviated).day().year()))")
+                            .font(.neueCaption2)
+                            .foregroundStyle(AVIATheme.textSecondary)
                     }
                 }
-                .frame(height: 4)
-                .padding(.horizontal, 16)
-                .padding(.bottom, 14)
+
+                Spacer()
+
+                Text(build.estate.components(separatedBy: ",").first ?? build.estate)
+                    .font(.neueCaption2)
+                    .foregroundStyle(AVIATheme.textTertiary)
             }
+            .padding(.horizontal, 16)
+            .padding(.vertical, 12)
+
+            GeometryReader { geo in
+                ZStack(alignment: .leading) {
+                    Capsule()
+                        .fill(AVIATheme.warning.opacity(0.1))
+                        .frame(height: 4)
+                    Capsule()
+                        .fill(AVIATheme.warning.opacity(0.5))
+                        .frame(width: max(0, geo.size.width * 0.05), height: 4)
+                }
+            }
+            .frame(height: 4)
+            .padding(.horizontal, 16)
+            .padding(.bottom, 14)
         }
     }
 

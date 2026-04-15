@@ -23,6 +23,9 @@ struct AddBuildSheet: View {
     @State private var estimatedStartDate = Date.now
     @State private var estimatedCompletionDate = Calendar.current.date(byAdding: .month, value: 10, to: .now) ?? .now
     @State private var showTimelineConfig = false
+    @State private var awaitingRegistration = false
+    @State private var estimatedRegistrationDate = Calendar.current.date(byAdding: .month, value: 2, to: .now) ?? .now
+    @State private var registrationNotes = ""
 
     private var designs: [HomeDesign] {
         let d = viewModel.allHomeDesigns
@@ -43,6 +46,8 @@ struct AddBuildSheet: View {
             ScrollView {
                 VStack(spacing: 20) {
                     buildTypeToggle
+
+                    awaitingRegistrationCard
 
                     if isCustomHome {
                         customDesignCard
@@ -406,23 +411,29 @@ struct AddBuildSheet: View {
                         Divider().foregroundStyle(AVIATheme.surfaceBorder)
 
                         VStack(alignment: .leading, spacing: 6) {
-                            Text("10-STAGE BUILD TEMPLATE")
+                            let totalStages = awaitingRegistration ? 11 : 10
+                            Text("\(totalStages)-STAGE BUILD TEMPLATE")
                                 .font(.neueCaption2Medium)
                                 .kerning(0.6)
                                 .foregroundStyle(AVIATheme.textTertiary)
 
-                            let stageNames = defaultStageNames
-                            ForEach(Array(stageNames.enumerated()), id: \.offset) { idx, name in
+                            let allStageNames = awaitingRegistration ? ["Awaiting Registration"] + defaultStageNames : defaultStageNames
+                            ForEach(Array(allStageNames.enumerated()), id: \.offset) { idx, name in
                                 HStack(spacing: 10) {
                                     Text("\(idx + 1)")
                                         .font(.neueCorpMedium(10))
                                         .foregroundStyle(.white)
                                         .frame(width: 22, height: 22)
-                                        .background(AVIATheme.tealGradient)
+                                        .background(name == "Awaiting Registration" ? LinearGradient(colors: [AVIATheme.warning], startPoint: .leading, endPoint: .trailing) : AVIATheme.tealGradient)
                                         .clipShape(Circle())
                                     Text(name)
                                         .font(.neueCaption)
                                         .foregroundStyle(AVIATheme.textPrimary)
+                                    if name == "Awaiting Registration" {
+                                        Image(systemName: "clock.badge.questionmark")
+                                            .font(.neueCaption2)
+                                            .foregroundStyle(AVIATheme.warning)
+                                    }
                                     Spacer()
                                 }
                                 .padding(.vertical, 2)
@@ -451,7 +462,7 @@ struct AddBuildSheet: View {
                                 .foregroundStyle(AVIATheme.textPrimary)
                         }
                         Spacer()
-                        Text("10 stages")
+                        Text(awaitingRegistration ? "11 stages" : "10 stages")
                             .font(.neueCaption2)
                             .foregroundStyle(AVIATheme.teal)
                     }
@@ -459,6 +470,71 @@ struct AddBuildSheet: View {
             }
             .padding(16)
         }
+    }
+
+    private var awaitingRegistrationCard: some View {
+        BentoCard(cornerRadius: 16) {
+            VStack(alignment: .leading, spacing: 12) {
+                Toggle(isOn: $awaitingRegistration) {
+                    HStack(spacing: 8) {
+                        Image(systemName: "clock.badge.questionmark")
+                            .font(.neueCorp(12))
+                            .foregroundStyle(AVIATheme.warning)
+                        VStack(alignment: .leading, spacing: 1) {
+                            Text("Awaiting Site Registration")
+                                .font(.neueCaptionMedium)
+                                .foregroundStyle(AVIATheme.textPrimary)
+                            Text("Site needs to register before construction")
+                                .font(.neueCaption2)
+                                .foregroundStyle(AVIATheme.textTertiary)
+                        }
+                    }
+                }
+                .tint(AVIATheme.warning)
+
+                if awaitingRegistration {
+                    VStack(alignment: .leading, spacing: 10) {
+                        VStack(alignment: .leading, spacing: 6) {
+                            Label("Estimated Registration Date", systemImage: "calendar.badge.clock")
+                                .font(.neueCaption)
+                                .foregroundStyle(AVIATheme.textTertiary)
+                            DatePicker("", selection: $estimatedRegistrationDate, displayedComponents: .date)
+                                .labelsHidden()
+                                .tint(AVIATheme.teal)
+                        }
+
+                        VStack(alignment: .leading, spacing: 6) {
+                            Label("Registration Notes", systemImage: "note.text")
+                                .font(.neueCaption)
+                                .foregroundStyle(AVIATheme.textTertiary)
+                            TextField("e.g. Waiting on council approval", text: $registrationNotes)
+                                .font(.neueSubheadline)
+                                .foregroundStyle(AVIATheme.textPrimary)
+                                .padding(12)
+                                .background(AVIATheme.cardBackgroundAlt)
+                                .clipShape(.rect(cornerRadius: 10))
+                                .overlay {
+                                    RoundedRectangle(cornerRadius: 10)
+                                        .stroke(AVIATheme.surfaceBorder, lineWidth: 1)
+                                }
+                        }
+
+                        HStack(spacing: 8) {
+                            Image(systemName: "info.circle")
+                                .foregroundStyle(AVIATheme.teal)
+                            Text("An \"Awaiting Registration\" stage will be added as the first stage of the build timeline.")
+                                .font(.neueCaption2)
+                                .foregroundStyle(AVIATheme.textSecondary)
+                        }
+                        .padding(10)
+                        .background(AVIATheme.teal.opacity(0.06))
+                        .clipShape(.rect(cornerRadius: 10))
+                    }
+                }
+            }
+            .padding(16)
+        }
+        .sensoryFeedback(.impact(weight: .light), trigger: awaitingRegistration)
     }
 
     private var defaultStageNames: [String] {
@@ -692,7 +768,10 @@ struct AddBuildSheet: View {
                 customSquareMeters: isCustomHome ? Double(customSquareMeters) : nil,
                 customStoreys: isCustomHome ? customStoreys : nil,
                 estimatedStartDate: estimatedStartDate,
-                estimatedCompletionDate: estimatedCompletionDate
+                estimatedCompletionDate: estimatedCompletionDate,
+                awaitingRegistration: awaitingRegistration,
+                estimatedRegistrationDate: awaitingRegistration ? estimatedRegistrationDate : nil,
+                registrationNotes: awaitingRegistration && !registrationNotes.trimmingCharacters(in: .whitespaces).isEmpty ? registrationNotes : nil
             )
             isSaving = false
             dismiss()

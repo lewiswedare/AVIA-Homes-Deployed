@@ -48,7 +48,11 @@ create table if not exists public.build_stages (
   completion_date timestamptz,
   notes text,
   photo_count integer not null default 0,
-  sort_order integer not null default 0
+  sort_order integer not null default 0,
+  estimated_start_date timestamptz,
+  estimated_end_date timestamptz,
+  actual_start_date timestamptz,
+  actual_end_date timestamptz
 );
 
 -- 4. PACKAGE ASSIGNMENTS TABLE

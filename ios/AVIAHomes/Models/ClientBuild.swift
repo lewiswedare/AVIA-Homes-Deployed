@@ -95,7 +95,26 @@ nonisolated struct ClientBuild: Identifiable, Sendable {
     }
 
     var statusLabel: String {
-        currentStage?.name ?? "Pre-Construction"
+        if isAwaitingRegistration {
+            if let regStage = awaitingRegistrationStage, let estDate = regStage.estimatedEndDate {
+                return "Awaiting Registration - Est. \(estDate.formatted(.dateTime.month(.abbreviated).day()))"
+            }
+            return "Awaiting Site Registration"
+        }
+        return currentStage?.name ?? "Pre-Construction"
+    }
+
+    var awaitingRegistrationStage: BuildStage? {
+        buildStages.first { $0.name == "Awaiting Registration" }
+    }
+
+    var isAwaitingRegistration: Bool {
+        guard let regStage = awaitingRegistrationStage else { return false }
+        return regStage.status != .completed
+    }
+
+    var constructionStages: [BuildStage] {
+        buildStages.filter { $0.name != "Awaiting Registration" }
     }
 
     static let samples: [ClientBuild] = []

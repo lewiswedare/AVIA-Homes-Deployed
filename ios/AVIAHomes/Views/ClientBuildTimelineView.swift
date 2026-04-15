@@ -14,6 +14,9 @@ struct ClientBuildTimelineView: View {
         ScrollView {
             VStack(spacing: 20) {
                 progressHeader
+                if build.isAwaitingRegistration {
+                    awaitingRegistrationCard
+                }
                 nextMilestoneCard
                 actionRequiredSection
                 timelineSection
@@ -44,7 +47,15 @@ struct ClientBuildTimelineView: View {
                     }
                     Spacer()
                     VStack(alignment: .trailing, spacing: 4) {
-                        if let stage = build.currentStage {
+                        if build.isAwaitingRegistration {
+                            Text("STATUS")
+                                .font(.neueCorpMedium(9))
+                                .kerning(1.5)
+                                .foregroundStyle(AVIATheme.textTertiary)
+                            Text("Awaiting Registration")
+                                .font(.neueHeadline)
+                                .foregroundStyle(AVIATheme.warning)
+                        } else if let stage = build.currentStage {
                             Text("CURRENT STAGE")
                                 .font(.neueCorpMedium(9))
                                 .kerning(1.5)
@@ -91,6 +102,77 @@ struct ClientBuildTimelineView: View {
                 }
             }
             .padding(20)
+        }
+    }
+
+    // MARK: - Awaiting Registration Card
+
+    @ViewBuilder
+    private var awaitingRegistrationCard: some View {
+        if let regStage = build.awaitingRegistrationStage, regStage.status != .completed {
+            BentoCard(cornerRadius: 16) {
+                VStack(spacing: 14) {
+                    HStack(spacing: 14) {
+                        Image(systemName: "clock.badge.questionmark")
+                            .font(.system(size: 28))
+                            .foregroundStyle(AVIATheme.warning)
+                            .frame(width: 52, height: 52)
+                            .background(AVIATheme.warning.opacity(0.1))
+                            .clipShape(Circle())
+
+                        VStack(alignment: .leading, spacing: 4) {
+                            Text("AWAITING SITE REGISTRATION")
+                                .font(.neueCorpMedium(10))
+                                .kerning(1.0)
+                                .foregroundStyle(AVIATheme.warning)
+                            Text("Your site needs to be registered before construction can begin.")
+                                .font(.neueCaption)
+                                .foregroundStyle(AVIATheme.textSecondary)
+                        }
+
+                        Spacer()
+                    }
+
+                    if let estDate = regStage.estimatedEndDate {
+                        HStack(spacing: 10) {
+                            Image(systemName: "calendar.badge.clock")
+                                .font(.system(size: 16))
+                                .foregroundStyle(AVIATheme.teal)
+
+                            VStack(alignment: .leading, spacing: 2) {
+                                Text("ESTIMATED REGISTRATION DATE")
+                                    .font(.neueCorpMedium(8))
+                                    .kerning(0.5)
+                                    .foregroundStyle(AVIATheme.textTertiary)
+                                Text(estDate.formatted(.dateTime.weekday(.wide).month(.wide).day().year()))
+                                    .font(.neueSubheadlineMedium)
+                                    .foregroundStyle(AVIATheme.textPrimary)
+                            }
+
+                            Spacer()
+                        }
+                        .padding(12)
+                        .background(AVIATheme.surfaceElevated)
+                        .clipShape(.rect(cornerRadius: 12))
+                    }
+
+                    if let notes = regStage.notes, !notes.isEmpty {
+                        HStack(spacing: 8) {
+                            Image(systemName: "note.text")
+                                .font(.neueCaption)
+                                .foregroundStyle(AVIATheme.textTertiary)
+                            Text(notes)
+                                .font(.neueCaption)
+                                .foregroundStyle(AVIATheme.textSecondary)
+                        }
+                        .padding(12)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .background(AVIATheme.surfaceElevated)
+                        .clipShape(.rect(cornerRadius: 10))
+                    }
+                }
+                .padding(16)
+            }
         }
     }
 
@@ -226,12 +308,19 @@ struct ClientTimelineStageRow: View {
     let isExpanded: Bool
     let action: () -> Void
 
+    private var isRegistrationStage: Bool {
+        stage.name == "Awaiting Registration"
+    }
+
     private var statusColor: Color {
+        if isRegistrationStage && stage.status != .completed {
+            return AVIATheme.warning
+        }
         switch stage.status {
-        case .completed: AVIATheme.success
-        case .inProgress: AVIATheme.teal
-        case .upcoming: AVIATheme.textTertiary
-        case .delayed: AVIATheme.destructive
+        case .completed: return AVIATheme.success
+        case .inProgress: return AVIATheme.teal
+        case .upcoming: return AVIATheme.textTertiary
+        case .delayed: return AVIATheme.destructive
         }
     }
 
@@ -256,19 +345,25 @@ struct ClientTimelineStageRow: View {
                         .fill(statusColor)
                         .frame(width: 28, height: 28)
 
-                    switch stage.status {
-                    case .completed:
-                        Image(systemName: "checkmark")
+                    if isRegistrationStage && stage.status != .completed {
+                        Image(systemName: "clock")
                             .font(.neueCaptionMedium)
                             .foregroundStyle(.white)
-                    case .inProgress:
-                        Circle().fill(.white).frame(width: 10, height: 10)
-                    case .upcoming:
-                        Circle().fill(.white.opacity(0.5)).frame(width: 10, height: 10)
-                    case .delayed:
-                        Image(systemName: "exclamationmark")
-                            .font(.neueCaptionMedium)
-                            .foregroundStyle(.white)
+                    } else {
+                        switch stage.status {
+                        case .completed:
+                            Image(systemName: "checkmark")
+                                .font(.neueCaptionMedium)
+                                .foregroundStyle(.white)
+                        case .inProgress:
+                            Circle().fill(.white).frame(width: 10, height: 10)
+                        case .upcoming:
+                            Circle().fill(.white.opacity(0.5)).frame(width: 10, height: 10)
+                        case .delayed:
+                            Image(systemName: "exclamationmark")
+                                .font(.neueCaptionMedium)
+                                .foregroundStyle(.white)
+                        }
                     }
                 }
 
@@ -290,7 +385,12 @@ struct ClientTimelineStageRow: View {
                                 HStack(spacing: 6) {
                                     Text(stage.name)
                                         .font(.neueSubheadlineMedium)
-                                        .foregroundStyle(stage.status == .upcoming ? AVIATheme.textTertiary : AVIATheme.textPrimary)
+                                        .foregroundStyle(isRegistrationStage && stage.status != .completed ? AVIATheme.warning : (stage.status == .upcoming ? AVIATheme.textTertiary : AVIATheme.textPrimary))
+                                    if isRegistrationStage && stage.status != .completed {
+                                        Image(systemName: "clock.badge.questionmark")
+                                            .font(.system(size: 12))
+                                            .foregroundStyle(AVIATheme.warning)
+                                    }
                                     if actionCount > 0 {
                                         Text("\(actionCount)")
                                             .font(.neueCorpMedium(8))
@@ -333,6 +433,17 @@ struct ClientTimelineStageRow: View {
     @ViewBuilder
     private var expandedContent: some View {
         VStack(alignment: .leading, spacing: 10) {
+            if isRegistrationStage && stage.status != .completed, let estDate = stage.estimatedEndDate {
+                HStack(spacing: 8) {
+                    Image(systemName: "calendar.badge.clock")
+                        .font(.neueCaption)
+                        .foregroundStyle(AVIATheme.warning)
+                    Text("Est. Registration: \(estDate.formatted(date: .abbreviated, time: .omitted))")
+                        .font(.neueCaption)
+                        .foregroundStyle(AVIATheme.textSecondary)
+                }
+            }
+
             if stage.status == .inProgress {
                 GeometryReader { geo in
                     ZStack(alignment: .leading) {

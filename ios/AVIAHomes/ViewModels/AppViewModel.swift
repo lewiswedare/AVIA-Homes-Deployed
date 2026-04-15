@@ -958,7 +958,84 @@ class AppViewModel {
         Task { await SupabaseService.shared.updateBuildStage(updatedStage, buildId: buildId, sortOrder: stageIndex) }
     }
 
-    func addNewBuild(homeDesign: String, lotNumber: String, estate: String, contractDate: Date, clientId: String, staffId: String, isCustom: Bool = false, selectedFacadeId: String? = nil, customBedrooms: Int? = nil, customBathrooms: Int? = nil, customGarages: Int? = nil, customSquareMeters: Double? = nil, customStoreys: Int? = nil, estimatedStartDate: Date? = nil, estimatedCompletionDate: Date? = nil, customStages: [BuildStage]? = nil) {
+    func addAwaitingRegistrationStage(buildId: String, estimatedDate: Date?, notes: String?) {
+        guard let buildIndex = allClientBuilds.firstIndex(where: { $0.id == buildId }) else { return }
+        let oldBuild = allClientBuilds[buildIndex]
+        guard oldBuild.awaitingRegistrationStage == nil else { return }
+
+        let regStage = BuildStage(
+            id: "reg_\(UUID().uuidString.prefix(8))",
+            name: "Awaiting Registration",
+            description: "Site registration required before construction can begin",
+            status: .upcoming,
+            progress: 0,
+            startDate: nil,
+            completionDate: nil,
+            notes: notes,
+            photoCount: 0,
+            estimatedStartDate: nil,
+            estimatedEndDate: estimatedDate
+        )
+        let newStages = [regStage] + oldBuild.buildStages
+        allClientBuilds[buildIndex] = ClientBuild(
+            id: oldBuild.id, client: oldBuild.client, homeDesign: oldBuild.homeDesign,
+            lotNumber: oldBuild.lotNumber, estate: oldBuild.estate, contractDate: oldBuild.contractDate,
+            buildStages: newStages, assignedStaffId: oldBuild.assignedStaffId,
+            salesPartnerId: oldBuild.salesPartnerId, isCustom: oldBuild.isCustom,
+            selectedFacadeId: oldBuild.selectedFacadeId, customBedrooms: oldBuild.customBedrooms,
+            customBathrooms: oldBuild.customBathrooms, customGarages: oldBuild.customGarages,
+            customSquareMeters: oldBuild.customSquareMeters, customStoreys: oldBuild.customStoreys,
+            additionalClients: oldBuild.additionalClients,
+            preConstructionStaffId: oldBuild.preConstructionStaffId,
+            buildingSupportStaffId: oldBuild.buildingSupportStaffId,
+            handoverTriggeredAt: oldBuild.handoverTriggeredAt, buildStatus: oldBuild.buildStatus,
+            eoiId: oldBuild.eoiId, estimatedStartDate: oldBuild.estimatedStartDate,
+            estimatedCompletionDate: oldBuild.estimatedCompletionDate,
+            actualStartDate: oldBuild.actualStartDate, actualCompletionDate: oldBuild.actualCompletionDate
+        )
+        syncBuildStagesForCurrentUser()
+        Task {
+            await SupabaseService.shared.updateBuildStage(regStage, buildId: buildId, sortOrder: 0)
+            // Update sort_order for all other stages
+            for (idx, stage) in oldBuild.buildStages.enumerated() {
+                await SupabaseService.shared.updateBuildStage(stage, buildId: buildId, sortOrder: idx + 1)
+            }
+        }
+    }
+
+    func removeAwaitingRegistrationStage(buildId: String) {
+        guard let buildIndex = allClientBuilds.firstIndex(where: { $0.id == buildId }) else { return }
+        let oldBuild = allClientBuilds[buildIndex]
+        guard let regStage = oldBuild.awaitingRegistrationStage else { return }
+
+        let newStages = oldBuild.buildStages.filter { $0.name != "Awaiting Registration" }
+        allClientBuilds[buildIndex] = ClientBuild(
+            id: oldBuild.id, client: oldBuild.client, homeDesign: oldBuild.homeDesign,
+            lotNumber: oldBuild.lotNumber, estate: oldBuild.estate, contractDate: oldBuild.contractDate,
+            buildStages: newStages, assignedStaffId: oldBuild.assignedStaffId,
+            salesPartnerId: oldBuild.salesPartnerId, isCustom: oldBuild.isCustom,
+            selectedFacadeId: oldBuild.selectedFacadeId, customBedrooms: oldBuild.customBedrooms,
+            customBathrooms: oldBuild.customBathrooms, customGarages: oldBuild.customGarages,
+            customSquareMeters: oldBuild.customSquareMeters, customStoreys: oldBuild.customStoreys,
+            additionalClients: oldBuild.additionalClients,
+            preConstructionStaffId: oldBuild.preConstructionStaffId,
+            buildingSupportStaffId: oldBuild.buildingSupportStaffId,
+            handoverTriggeredAt: oldBuild.handoverTriggeredAt, buildStatus: oldBuild.buildStatus,
+            eoiId: oldBuild.eoiId, estimatedStartDate: oldBuild.estimatedStartDate,
+            estimatedCompletionDate: oldBuild.estimatedCompletionDate,
+            actualStartDate: oldBuild.actualStartDate, actualCompletionDate: oldBuild.actualCompletionDate
+        )
+        syncBuildStagesForCurrentUser()
+        Task {
+            await SupabaseService.shared.deleteBuildStage(stageId: regStage.id)
+            // Re-index sort_order for remaining stages
+            for (idx, stage) in newStages.enumerated() {
+                await SupabaseService.shared.updateBuildStage(stage, buildId: buildId, sortOrder: idx)
+            }
+        }
+    }
+
+    func addNewBuild(homeDesign: String, lotNumber: String, estate: String, contractDate: Date, clientId: String, staffId: String, isCustom: Bool = false, selectedFacadeId: String? = nil, customBedrooms: Int? = nil, customBathrooms: Int? = nil, customGarages: Int? = nil, customSquareMeters: Double? = nil, customStoreys: Int? = nil, estimatedStartDate: Date? = nil, estimatedCompletionDate: Date? = nil, customStages: [BuildStage]? = nil, awaitingRegistration: Bool = false, estimatedRegistrationDate: Date? = nil, registrationNotes: String? = nil) {
         let client: ClientUser
         if !clientId.isEmpty, let found = allRegisteredUsers.first(where: { $0.id == clientId }) {
             client = found
@@ -988,9 +1065,26 @@ class AppViewModel {
                 "Final inspections and defect check",
                 "Keys and welcome to your new home"
             ]
-            stages = defaultStages.enumerated().map { index, name in
+            let offset = awaitingRegistration ? 1 : 0
+            var builtStages: [BuildStage] = []
+            if awaitingRegistration {
+                builtStages.append(BuildStage(
+                    id: "new_\(UUID().uuidString.prefix(8))_reg",
+                    name: "Awaiting Registration",
+                    description: "Site registration required before construction can begin",
+                    status: .upcoming,
+                    progress: 0,
+                    startDate: nil,
+                    completionDate: nil,
+                    notes: registrationNotes,
+                    photoCount: 0,
+                    estimatedStartDate: nil,
+                    estimatedEndDate: estimatedRegistrationDate
+                ))
+            }
+            builtStages.append(contentsOf: defaultStages.enumerated().map { index, name in
                 BuildStage(
-                    id: "new_\(UUID().uuidString.prefix(8))_\(index)",
+                    id: "new_\(UUID().uuidString.prefix(8))_\(index + offset)",
                     name: name,
                     description: stageDescriptions[index],
                     status: .upcoming,
@@ -1000,7 +1094,8 @@ class AppViewModel {
                     notes: nil,
                     photoCount: 0
                 )
-            }
+            })
+            stages = builtStages
         }
         let build = ClientBuild(
             id: UUID().uuidString,
@@ -1044,8 +1139,8 @@ class AppViewModel {
         }
     }
 
-    func addNewBuildWithSpec(homeDesign: String, lotNumber: String, estate: String, contractDate: Date, clientId: String, staffId: String, specTier: SpecTier, isCustom: Bool = false, selectedFacadeId: String? = nil, customBedrooms: Int? = nil, customBathrooms: Int? = nil, customGarages: Int? = nil, customSquareMeters: Double? = nil, customStoreys: Int? = nil, estimatedStartDate: Date? = nil, estimatedCompletionDate: Date? = nil) {
-        addNewBuild(homeDesign: homeDesign, lotNumber: lotNumber, estate: estate, contractDate: contractDate, clientId: clientId, staffId: staffId, isCustom: isCustom, selectedFacadeId: selectedFacadeId, customBedrooms: customBedrooms, customBathrooms: customBathrooms, customGarages: customGarages, customSquareMeters: customSquareMeters, customStoreys: customStoreys, estimatedStartDate: estimatedStartDate, estimatedCompletionDate: estimatedCompletionDate)
+    func addNewBuildWithSpec(homeDesign: String, lotNumber: String, estate: String, contractDate: Date, clientId: String, staffId: String, specTier: SpecTier, isCustom: Bool = false, selectedFacadeId: String? = nil, customBedrooms: Int? = nil, customBathrooms: Int? = nil, customGarages: Int? = nil, customSquareMeters: Double? = nil, customStoreys: Int? = nil, estimatedStartDate: Date? = nil, estimatedCompletionDate: Date? = nil, awaitingRegistration: Bool = false, estimatedRegistrationDate: Date? = nil, registrationNotes: String? = nil) {
+        addNewBuild(homeDesign: homeDesign, lotNumber: lotNumber, estate: estate, contractDate: contractDate, clientId: clientId, staffId: staffId, isCustom: isCustom, selectedFacadeId: selectedFacadeId, customBedrooms: customBedrooms, customBathrooms: customBathrooms, customGarages: customGarages, customSquareMeters: customSquareMeters, customStoreys: customStoreys, estimatedStartDate: estimatedStartDate, estimatedCompletionDate: estimatedCompletionDate, awaitingRegistration: awaitingRegistration, estimatedRegistrationDate: estimatedRegistrationDate, registrationNotes: registrationNotes)
         if let build = allClientBuilds.last {
             Task {
                 await SupabaseService.shared.createBuildSpecSnapshot(buildId: build.id, specTier: specTier)

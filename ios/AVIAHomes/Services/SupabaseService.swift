@@ -315,6 +315,15 @@ class SupabaseService {
             .execute()
     }
 
+    func deleteBuildStage(stageId: String) async {
+        guard isConfigured else { return }
+        _ = try? await client
+            .from("build_stages")
+            .delete()
+            .eq("id", value: stageId)
+            .execute()
+    }
+
     // MARK: - Build Milestones
 
     func fetchMilestonesForBuild(buildId: String) async -> [BuildMilestone] {

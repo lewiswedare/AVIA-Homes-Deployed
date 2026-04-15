@@ -492,7 +492,7 @@ struct AdminBuildEditSheet: View {
                             .font(.neueSubheadlineMedium)
                             .foregroundStyle(AVIATheme.textPrimary)
                         Spacer()
-                        Text("\(Int(build.overallProgress * 100))% complete")
+                        Text("\(Int(latestBuild.overallProgress * 100))% complete")
                             .font(.neueCaptionMedium)
                             .foregroundStyle(AVIATheme.teal)
                     }
@@ -500,7 +500,7 @@ struct AdminBuildEditSheet: View {
                     GeometryReader { geo in
                         ZStack(alignment: .leading) {
                             Capsule().fill(AVIATheme.teal.opacity(0.1)).frame(height: 8)
-                            Capsule().fill(AVIATheme.tealGradient).frame(width: max(0, geo.size.width * build.overallProgress), height: 8)
+                            Capsule().fill(AVIATheme.tealGradient).frame(width: max(0, geo.size.width * latestBuild.overallProgress), height: 8)
                         }
                     }
                     .frame(height: 8)
@@ -508,18 +508,27 @@ struct AdminBuildEditSheet: View {
                 .padding(16)
             }
 
-            ForEach(build.buildStages, id: \.id) { stage in
+            registrationToggleCard
+
+            ForEach(latestBuild.buildStages, id: \.id) { stage in
                 Button {
                     editingStage = stage
                 } label: {
                     BentoCard(cornerRadius: 14) {
                         HStack(spacing: 14) {
-                            stageStatusIcon(stage.status)
+                            stageStatusIcon(for: stage)
 
                             VStack(alignment: .leading, spacing: 3) {
-                                Text(stage.name)
-                                    .font(.neueSubheadlineMedium)
-                                    .foregroundStyle(AVIATheme.textPrimary)
+                                HStack(spacing: 6) {
+                                    Text(stage.name)
+                                        .font(.neueSubheadlineMedium)
+                                        .foregroundStyle(stage.name == "Awaiting Registration" && stage.status != .completed ? AVIATheme.warning : AVIATheme.textPrimary)
+                                    if stage.name == "Awaiting Registration" && stage.status != .completed {
+                                        Image(systemName: "clock.badge.questionmark")
+                                            .font(.system(size: 11))
+                                            .foregroundStyle(AVIATheme.warning)
+                                    }
+                                }
                                 HStack(spacing: 8) {
                                     Text(stage.status.rawValue)
                                         .font(.neueCaption)
@@ -530,6 +539,13 @@ struct AdminBuildEditSheet: View {
                                         Text("\(Int(stage.progress * 100))%")
                                             .font(.neueCaptionMedium)
                                             .foregroundStyle(AVIATheme.teal)
+                                    }
+                                    if stage.name == "Awaiting Registration", let estDate = stage.estimatedEndDate {
+                                        Text("·")
+                                            .foregroundStyle(AVIATheme.textTertiary)
+                                        Text("Est. \(estDate.formatted(.dateTime.month(.abbreviated).day()))")
+                                            .font(.neueCaption2)
+                                            .foregroundStyle(AVIATheme.textSecondary)
                                     }
                                 }
                             }
@@ -548,10 +564,75 @@ struct AdminBuildEditSheet: View {
         }
     }
 
-    private func stageStatusIcon(_ status: BuildStage.StageStatus) -> some View {
-        Image(systemName: status == .completed ? "checkmark.circle.fill" : status == .inProgress ? "circle.dotted.circle.fill" : "circle")
-            .font(.system(size: 22))
-            .foregroundStyle(statusColor(status))
+    private var registrationToggleCard: some View {
+        let hasRegistration = latestBuild.awaitingRegistrationStage != nil
+        return BentoCard(cornerRadius: 14) {
+            HStack(spacing: 12) {
+                Image(systemName: "clock.badge.questionmark")
+                    .font(.system(size: 18))
+                    .foregroundStyle(hasRegistration ? AVIATheme.warning : AVIATheme.textTertiary)
+
+                VStack(alignment: .leading, spacing: 2) {
+                    Text("Awaiting Site Registration")
+                        .font(.neueCaptionMedium)
+                        .foregroundStyle(AVIATheme.textPrimary)
+                    Text(hasRegistration ? "Registration stage is active" : "Add registration stage before construction")
+                        .font(.neueCaption2)
+                        .foregroundStyle(AVIATheme.textSecondary)
+                }
+
+                Spacer()
+
+                if hasRegistration {
+                    Button {
+                        withAnimation(.spring(response: 0.3)) {
+                            viewModel.removeAwaitingRegistrationStage(buildId: build.id)
+                        }
+                    } label: {
+                        Text("Remove")
+                            .font(.neueCaption2Medium)
+                            .foregroundStyle(AVIATheme.destructive)
+                            .padding(.horizontal, 10)
+                            .padding(.vertical, 5)
+                            .background(AVIATheme.destructive.opacity(0.1))
+                            .clipShape(Capsule())
+                    }
+                } else {
+                    Button {
+                        withAnimation(.spring(response: 0.3)) {
+                            viewModel.addAwaitingRegistrationStage(
+                                buildId: build.id,
+                                estimatedDate: Calendar.current.date(byAdding: .month, value: 2, to: .now),
+                                notes: nil
+                            )
+                        }
+                    } label: {
+                        Text("Add")
+                            .font(.neueCaption2Medium)
+                            .foregroundStyle(.white)
+                            .padding(.horizontal, 10)
+                            .padding(.vertical, 5)
+                            .background(AVIATheme.warning)
+                            .clipShape(Capsule())
+                    }
+                }
+            }
+            .padding(14)
+        }
+    }
+
+    private func stageStatusIcon(for stage: BuildStage) -> some View {
+        Group {
+            if stage.name == "Awaiting Registration" && stage.status != .completed {
+                Image(systemName: "clock.circle.fill")
+                    .font(.system(size: 22))
+                    .foregroundStyle(AVIATheme.warning)
+            } else {
+                Image(systemName: stage.status == .completed ? "checkmark.circle.fill" : stage.status == .inProgress ? "circle.dotted.circle.fill" : "circle")
+                    .font(.system(size: 22))
+                    .foregroundStyle(statusColor(stage.status))
+            }
+        }
     }
 
     private func statusColor(_ status: BuildStage.StageStatus) -> Color {
