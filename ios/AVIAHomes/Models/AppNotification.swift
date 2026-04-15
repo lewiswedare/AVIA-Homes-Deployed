@@ -22,6 +22,9 @@ nonisolated enum NotificationType: String, Codable, Sendable {
     case eoiChangesRequested = "eoi_changes_requested"
     case contractUploaded = "contract_uploaded"
     case contractSigned = "contract_signed"
+    case contractRaised = "contract_raised"
+    case invoiceRaised = "invoice_raised"
+    case invoicePaid = "invoice_paid"
 
     var icon: String {
         switch self {
@@ -46,6 +49,9 @@ nonisolated enum NotificationType: String, Codable, Sendable {
         case .eoiChangesRequested: "exclamationmark.bubble.fill"
         case .contractUploaded: "doc.richtext.fill"
         case .contractSigned: "signature"
+        case .contractRaised: "doc.richtext.fill"
+        case .invoiceRaised: "dollarsign.circle.fill"
+        case .invoicePaid: "checkmark.seal.fill"
         }
     }
 
@@ -72,6 +78,9 @@ nonisolated enum NotificationType: String, Codable, Sendable {
         case .eoiChangesRequested: "destructive"
         case .contractUploaded: "teal"
         case .contractSigned: "success"
+        case .contractRaised: "teal"
+        case .invoiceRaised: "warning"
+        case .invoicePaid: "success"
         }
     }
 }
@@ -121,6 +130,9 @@ nonisolated struct AppNotification: Identifiable, Sendable, Hashable {
         case .eoiChangesRequested: return "EOI Changes Requested"
         case .contractUploaded: return "Contract Ready"
         case .contractSigned: return "Contract Signed"
+        case .contractRaised: return "Contract Ready"
+        case .invoiceRaised: return "Invoice Ready"
+        case .invoicePaid: return "Invoice Paid"
         }
     }
 
@@ -148,6 +160,9 @@ nonisolated struct AppNotification: Identifiable, Sendable, Hashable {
         case .eoiChangesRequested: return "Changes have been requested on your EOI"
         case .contractUploaded: return "A contract is ready for your signature"
         case .contractSigned: return "A contract has been signed"
+        case .contractRaised: return "A contract has been raised for your review"
+        case .invoiceRaised: return "An invoice has been raised for your package"
+        case .invoicePaid: return "Your invoice has been marked as paid"
         }
     }
 

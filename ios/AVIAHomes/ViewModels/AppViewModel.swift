@@ -17,6 +17,8 @@ class AppViewModel {
 
     var cachedUsers: [ClientUser] = []
     var pendingSpecReviews: [BuildSpecSelection] = []
+    var buildMilestones: [String: [BuildMilestone]] = [:]
+    var buildReminders: [BuildReminder] = []
 
     var allHomeDesigns: [HomeDesign] = []
     var allPackages: [HouseLandPackage] = []
@@ -145,6 +147,39 @@ class AppViewModel {
         }
     }
 
+    var unreadReminders: [BuildReminder] {
+        buildReminders.filter { !$0.isRead }
+    }
+
+    var upcomingReminders: [BuildReminder] {
+        buildReminders
+            .filter { !$0.isRead }
+            .sorted { ($0.reminderDate ?? .distantFuture) < ($1.reminderDate ?? .distantFuture) }
+    }
+
+    func milestonesForBuild(_ buildId: String) -> [BuildMilestone] {
+        buildMilestones[buildId] ?? []
+    }
+
+    var nextMilestoneForCurrentUser: BuildMilestone? {
+        let builds = clientBuildsForCurrentUser
+        for build in builds {
+            if let milestones = buildMilestones[build.id] {
+                if let next = milestones.first(where: { $0.status != .completed }) {
+                    return next
+                }
+            }
+        }
+        return nil
+    }
+
+    var actionRequiredMilestones: [BuildMilestone] {
+        let builds = clientBuildsForCurrentUser
+        return builds.flatMap { build in
+            (buildMilestones[build.id] ?? []).filter { $0.isActionRequired }
+        }
+    }
+
     func loadUserData() async {
         await loadContentFromSupabase()
         await fetchAllUsersFromSupabase()
@@ -154,6 +189,8 @@ class AppViewModel {
         await loadDocumentsFromSupabase()
         await loadScheduleItemsFromSupabase()
         await loadPendingSpecReviews()
+        await loadMilestonesForCurrentBuilds()
+        await loadRemindersForCurrentUser()
         await notificationService.loadNotifications(for: currentUser.id)
         await messagingService.loadConversations(for: currentUser.id)
         notificationService.onNotificationReceived = { [weak self] notif in
@@ -204,6 +241,8 @@ class AppViewModel {
         await loadDocumentsFromSupabase()
         await loadScheduleItemsFromSupabase()
         await loadPendingSpecReviews()
+        await loadMilestonesForCurrentBuilds()
+        await loadRemindersForCurrentUser()
     }
 
     private func loadRequestsFromSupabase() async {
@@ -256,6 +295,113 @@ class AppViewModel {
         guard !currentUser.id.isEmpty else { return }
         let items = await SupabaseService.shared.fetchScheduleItems(clientId: currentUser.id)
         scheduleItems = items
+    }
+
+    private func loadMilestonesForCurrentBuilds() async {
+        let builds = clientBuildsForCurrentUser
+        var result: [String: [BuildMilestone]] = [:]
+        for build in builds {
+            let milestones = await SupabaseService.shared.fetchMilestonesForBuild(buildId: build.id)
+            result[build.id] = milestones
+        }
+        buildMilestones = result
+    }
+
+    private func loadRemindersForCurrentUser() async {
+        guard !currentUser.id.isEmpty else { return }
+        if currentRole == .client {
+            buildReminders = await SupabaseService.shared.fetchRemindersForClient(clientId: currentUser.id)
+        } else if currentRole.isAnyStaffRole {
+            var allReminders: [BuildReminder] = []
+            for build in clientBuildsForCurrentUser {
+                let reminders = await SupabaseService.shared.fetchRemindersForBuild(buildId: build.id)
+                allReminders.append(contentsOf: reminders)
+            }
+            buildReminders = allReminders
+        }
+    }
+
+    func refreshMilestonesAndReminders() async {
+        await loadMilestonesForCurrentBuilds()
+        await loadRemindersForCurrentUser()
+    }
+
+    func addMilestone(_ milestone: BuildMilestone) {
+        var current = buildMilestones[milestone.buildId] ?? []
+        current.append(milestone)
+        buildMilestones[milestone.buildId] = current
+        Task {
+            await SupabaseService.shared.upsertMilestone(milestone)
+        }
+    }
+
+    func updateMilestone(_ milestone: BuildMilestone) {
+        if var current = buildMilestones[milestone.buildId],
+           let idx = current.firstIndex(where: { $0.id == milestone.id }) {
+            current[idx] = milestone
+            buildMilestones[milestone.buildId] = current
+        }
+        Task {
+            await SupabaseService.shared.upsertMilestone(milestone)
+        }
+    }
+
+    func completeMilestone(id: String, buildId: String) {
+        if var current = buildMilestones[buildId],
+           let idx = current.firstIndex(where: { $0.id == id }) {
+            let old = current[idx]
+            let updated = BuildMilestone(
+                id: old.id,
+                buildStageId: old.buildStageId,
+                buildId: old.buildId,
+                title: old.title,
+                description: old.description,
+                dueDate: old.dueDate,
+                completedAt: .now,
+                status: .completed,
+                requiresClientAction: old.requiresClientAction,
+                clientActionDescription: old.clientActionDescription,
+                createdAt: old.createdAt
+            )
+            current[idx] = updated
+            buildMilestones[buildId] = current
+        }
+        Task {
+            await SupabaseService.shared.completeMilestone(id: id)
+        }
+    }
+
+    func deleteMilestone(id: String, buildId: String) {
+        if var current = buildMilestones[buildId] {
+            current.removeAll { $0.id == id }
+            buildMilestones[buildId] = current
+        }
+        Task {
+            await SupabaseService.shared.deleteMilestone(id: id)
+        }
+    }
+
+    func addReminder(_ reminder: BuildReminder) {
+        buildReminders.append(reminder)
+        Task {
+            await SupabaseService.shared.upsertReminder(reminder)
+        }
+    }
+
+    func markReminderRead(id: String) {
+        if let idx = buildReminders.firstIndex(where: { $0.id == id }) {
+            buildReminders[idx].isRead = true
+        }
+        Task {
+            await SupabaseService.shared.markReminderRead(id: id)
+        }
+    }
+
+    func deleteReminder(id: String) {
+        buildReminders.removeAll { $0.id == id }
+        Task {
+            await SupabaseService.shared.deleteReminder(id: id)
+        }
     }
 
     private func setupRealtimeSubscriptions() {
@@ -476,6 +622,8 @@ class AppViewModel {
         scheduleItems = []
         buildStages = []
         pendingSpecReviews = []
+        buildMilestones = [:]
+        buildReminders = []
         allHomeDesigns = []
         allPackages = []
         allBlogPosts = []
@@ -810,7 +958,7 @@ class AppViewModel {
         Task { await SupabaseService.shared.updateBuildStage(updatedStage, buildId: buildId, sortOrder: stageIndex) }
     }
 
-    func addNewBuild(homeDesign: String, lotNumber: String, estate: String, contractDate: Date, clientId: String, staffId: String, isCustom: Bool = false, selectedFacadeId: String? = nil, customBedrooms: Int? = nil, customBathrooms: Int? = nil, customGarages: Int? = nil, customSquareMeters: Double? = nil, customStoreys: Int? = nil) {
+    func addNewBuild(homeDesign: String, lotNumber: String, estate: String, contractDate: Date, clientId: String, staffId: String, isCustom: Bool = false, selectedFacadeId: String? = nil, customBedrooms: Int? = nil, customBathrooms: Int? = nil, customGarages: Int? = nil, customSquareMeters: Double? = nil, customStoreys: Int? = nil, estimatedStartDate: Date? = nil, estimatedCompletionDate: Date? = nil, customStages: [BuildStage]? = nil) {
         let client: ClientUser
         if !clientId.isEmpty, let found = allRegisteredUsers.first(where: { $0.id == clientId }) {
             client = found
@@ -819,31 +967,40 @@ class AppViewModel {
             empty.id = clientId
             client = empty
         }
-        let defaultStages = [
-            "Pre-Construction", "Slab Stage", "Frame Stage", "Lock-Up",
-            "Fix Stage", "Practical Completion", "Handover"
-        ]
-        let stageDescriptions = [
-            "Plans, permits and site prep",
-            "Foundation and slab pour",
-            "Structural framing and roof trusses",
-            "External cladding, windows and doors",
-            "Internal fit-out and finishes",
-            "Final inspections and defect check",
-            "Keys and welcome to your new home"
-        ]
-        let stages = defaultStages.enumerated().map { index, name in
-            BuildStage(
-                id: "new_\(UUID().uuidString.prefix(8))_\(index)",
-                name: name,
-                description: stageDescriptions[index],
-                status: .upcoming,
-                progress: 0,
-                startDate: nil,
-                completionDate: nil,
-                notes: nil,
-                photoCount: 0
-            )
+        let stages: [BuildStage]
+        if let customStages, !customStages.isEmpty {
+            stages = customStages
+        } else {
+            let defaultStages = [
+                "Pre-Construction", "Site Preparation", "Slab & Foundation", "Frame Stage",
+                "Roofing & Wrap", "Lock-Up", "Rough-In", "Fix Stage",
+                "Practical Completion", "Handover"
+            ]
+            let stageDescriptions = [
+                "Plans, permits, contracts and approvals",
+                "Site clearing, levelling and services",
+                "Foundation and concrete slab pour",
+                "Structural framing and roof trusses",
+                "Roofing, sarking and building wrap",
+                "External cladding, windows and doors",
+                "Plumbing, electrical and HVAC rough-in",
+                "Internal fit-out, cabinetry and finishes",
+                "Final inspections and defect check",
+                "Keys and welcome to your new home"
+            ]
+            stages = defaultStages.enumerated().map { index, name in
+                BuildStage(
+                    id: "new_\(UUID().uuidString.prefix(8))_\(index)",
+                    name: name,
+                    description: stageDescriptions[index],
+                    status: .upcoming,
+                    progress: 0,
+                    startDate: nil,
+                    completionDate: nil,
+                    notes: nil,
+                    photoCount: 0
+                )
+            }
         }
         let build = ClientBuild(
             id: UUID().uuidString,
@@ -861,7 +1018,9 @@ class AppViewModel {
             customBathrooms: customBathrooms,
             customGarages: customGarages,
             customSquareMeters: customSquareMeters,
-            customStoreys: customStoreys
+            customStoreys: customStoreys,
+            estimatedStartDate: estimatedStartDate,
+            estimatedCompletionDate: estimatedCompletionDate
         )
         allClientBuilds.append(build)
         syncBuildStagesForCurrentUser()
@@ -885,8 +1044,8 @@ class AppViewModel {
         }
     }
 
-    func addNewBuildWithSpec(homeDesign: String, lotNumber: String, estate: String, contractDate: Date, clientId: String, staffId: String, specTier: SpecTier, isCustom: Bool = false, selectedFacadeId: String? = nil, customBedrooms: Int? = nil, customBathrooms: Int? = nil, customGarages: Int? = nil, customSquareMeters: Double? = nil, customStoreys: Int? = nil) {
-        addNewBuild(homeDesign: homeDesign, lotNumber: lotNumber, estate: estate, contractDate: contractDate, clientId: clientId, staffId: staffId, isCustom: isCustom, selectedFacadeId: selectedFacadeId, customBedrooms: customBedrooms, customBathrooms: customBathrooms, customGarages: customGarages, customSquareMeters: customSquareMeters, customStoreys: customStoreys)
+    func addNewBuildWithSpec(homeDesign: String, lotNumber: String, estate: String, contractDate: Date, clientId: String, staffId: String, specTier: SpecTier, isCustom: Bool = false, selectedFacadeId: String? = nil, customBedrooms: Int? = nil, customBathrooms: Int? = nil, customGarages: Int? = nil, customSquareMeters: Double? = nil, customStoreys: Int? = nil, estimatedStartDate: Date? = nil, estimatedCompletionDate: Date? = nil) {
+        addNewBuild(homeDesign: homeDesign, lotNumber: lotNumber, estate: estate, contractDate: contractDate, clientId: clientId, staffId: staffId, isCustom: isCustom, selectedFacadeId: selectedFacadeId, customBedrooms: customBedrooms, customBathrooms: customBathrooms, customGarages: customGarages, customSquareMeters: customSquareMeters, customStoreys: customStoreys, estimatedStartDate: estimatedStartDate, estimatedCompletionDate: estimatedCompletionDate)
         if let build = allClientBuilds.last {
             Task {
                 await SupabaseService.shared.createBuildSpecSnapshot(buildId: build.id, specTier: specTier)

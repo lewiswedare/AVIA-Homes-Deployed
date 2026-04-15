@@ -23,6 +23,11 @@ nonisolated struct BuildRow: Codable, Sendable {
     let custom_garages: Int?
     let custom_square_meters: Double?
     let custom_storeys: Int?
+    let eoi_id: String?
+    let estimated_start_date: String?
+    let estimated_completion_date: String?
+    let actual_start_date: String?
+    let actual_completion_date: String?
 
     nonisolated enum CodingKeys: String, CodingKey {
         case id, client_id, additional_client_ids, home_design, lot_number, estate
@@ -33,6 +38,8 @@ nonisolated struct BuildRow: Codable, Sendable {
         case is_custom, selected_facade_id
         case custom_bedrooms, custom_bathrooms, custom_garages
         case custom_square_meters, custom_storeys
+        case eoi_id, estimated_start_date, estimated_completion_date
+        case actual_start_date, actual_completion_date
     }
 
     init(from decoder: Decoder) throws {
@@ -59,6 +66,11 @@ nonisolated struct BuildRow: Codable, Sendable {
         custom_garages = try? container.decode(Int.self, forKey: .custom_garages)
         custom_square_meters = try? container.decode(Double.self, forKey: .custom_square_meters)
         custom_storeys = try? container.decode(Int.self, forKey: .custom_storeys)
+        eoi_id = try? container.decode(String.self, forKey: .eoi_id)
+        estimated_start_date = try? container.decode(String.self, forKey: .estimated_start_date)
+        estimated_completion_date = try? container.decode(String.self, forKey: .estimated_completion_date)
+        actual_start_date = try? container.decode(String.self, forKey: .actual_start_date)
+        actual_completion_date = try? container.decode(String.self, forKey: .actual_completion_date)
     }
 
     func encode(to encoder: Encoder) throws {
@@ -84,6 +96,11 @@ nonisolated struct BuildRow: Codable, Sendable {
         try container.encodeIfPresent(custom_garages, forKey: .custom_garages)
         try container.encodeIfPresent(custom_square_meters, forKey: .custom_square_meters)
         try container.encodeIfPresent(custom_storeys, forKey: .custom_storeys)
+        try container.encodeIfPresent(eoi_id, forKey: .eoi_id)
+        try container.encodeIfPresent(estimated_start_date, forKey: .estimated_start_date)
+        try container.encodeIfPresent(estimated_completion_date, forKey: .estimated_completion_date)
+        try container.encodeIfPresent(actual_start_date, forKey: .actual_start_date)
+        try container.encodeIfPresent(actual_completion_date, forKey: .actual_completion_date)
     }
 
     init(from build: ClientBuild) {
@@ -110,6 +127,11 @@ nonisolated struct BuildRow: Codable, Sendable {
         custom_garages = build.customGarages
         custom_square_meters = build.customSquareMeters
         custom_storeys = build.customStoreys
+        eoi_id = build.eoiId
+        estimated_start_date = build.estimatedStartDate.map { iso.string(from: $0) }
+        estimated_completion_date = build.estimatedCompletionDate.map { iso.string(from: $0) }
+        actual_start_date = build.actualStartDate.map { iso.string(from: $0) }
+        actual_completion_date = build.actualCompletionDate.map { iso.string(from: $0) }
     }
 
     func toClientBuild(client: ClientUser, stages: [BuildStage], additionalClients: [ClientUser] = []) -> ClientBuild {
@@ -138,7 +160,12 @@ nonisolated struct BuildRow: Codable, Sendable {
             preConstructionStaffId: preconstruction_staff_id,
             buildingSupportStaffId: building_support_staff_id,
             handoverTriggeredAt: handover_triggered_at,
-            buildStatus: status
+            buildStatus: status,
+            eoiId: eoi_id,
+            estimatedStartDate: estimated_start_date.flatMap { formatter.date(from: $0) ?? fallback.date(from: $0) },
+            estimatedCompletionDate: estimated_completion_date.flatMap { formatter.date(from: $0) ?? fallback.date(from: $0) },
+            actualStartDate: actual_start_date.flatMap { formatter.date(from: $0) ?? fallback.date(from: $0) },
+            actualCompletionDate: actual_completion_date.flatMap { formatter.date(from: $0) ?? fallback.date(from: $0) }
         )
     }
 }
@@ -160,6 +187,55 @@ nonisolated struct BuildStageRow: Codable, Sendable {
     let notes: String?
     let photo_count: Int
     let sort_order: Int
+    let estimated_start_date: String?
+    let estimated_end_date: String?
+    let actual_start_date: String?
+    let actual_end_date: String?
+
+    nonisolated enum CodingKeys: String, CodingKey {
+        case id, build_id, name, description, status, progress
+        case start_date, completion_date, notes, photo_count, sort_order
+        case estimated_start_date, estimated_end_date
+        case actual_start_date, actual_end_date
+    }
+
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        id = try container.decode(String.self, forKey: .id)
+        build_id = try container.decode(String.self, forKey: .build_id)
+        name = try container.decode(String.self, forKey: .name)
+        description = (try? container.decode(String.self, forKey: .description)) ?? ""
+        status = try container.decode(String.self, forKey: .status)
+        progress = (try? container.decode(Double.self, forKey: .progress)) ?? 0
+        start_date = try? container.decode(String.self, forKey: .start_date)
+        completion_date = try? container.decode(String.self, forKey: .completion_date)
+        notes = try? container.decode(String.self, forKey: .notes)
+        photo_count = (try? container.decode(Int.self, forKey: .photo_count)) ?? 0
+        sort_order = (try? container.decode(Int.self, forKey: .sort_order)) ?? 0
+        estimated_start_date = try? container.decode(String.self, forKey: .estimated_start_date)
+        estimated_end_date = try? container.decode(String.self, forKey: .estimated_end_date)
+        actual_start_date = try? container.decode(String.self, forKey: .actual_start_date)
+        actual_end_date = try? container.decode(String.self, forKey: .actual_end_date)
+    }
+
+    func encode(to encoder: Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        try container.encode(id, forKey: .id)
+        try container.encode(build_id, forKey: .build_id)
+        try container.encode(name, forKey: .name)
+        try container.encode(description, forKey: .description)
+        try container.encode(status, forKey: .status)
+        try container.encode(progress, forKey: .progress)
+        try container.encodeIfPresent(start_date, forKey: .start_date)
+        try container.encodeIfPresent(completion_date, forKey: .completion_date)
+        try container.encodeIfPresent(notes, forKey: .notes)
+        try container.encode(photo_count, forKey: .photo_count)
+        try container.encode(sort_order, forKey: .sort_order)
+        try container.encodeIfPresent(estimated_start_date, forKey: .estimated_start_date)
+        try container.encodeIfPresent(estimated_end_date, forKey: .estimated_end_date)
+        try container.encodeIfPresent(actual_start_date, forKey: .actual_start_date)
+        try container.encodeIfPresent(actual_end_date, forKey: .actual_end_date)
+    }
 
     init(from stage: BuildStage, buildId: String, sortOrder: Int) {
         let iso = ISO8601DateFormatter()
@@ -174,6 +250,10 @@ nonisolated struct BuildStageRow: Codable, Sendable {
         notes = stage.notes
         photo_count = stage.photoCount
         sort_order = sortOrder
+        estimated_start_date = stage.estimatedStartDate.map { iso.string(from: $0) }
+        estimated_end_date = stage.estimatedEndDate.map { iso.string(from: $0) }
+        actual_start_date = stage.actualStartDate.map { iso.string(from: $0) }
+        actual_end_date = stage.actualEndDate.map { iso.string(from: $0) }
     }
 
     func toBuildStage() -> BuildStage {
@@ -189,7 +269,168 @@ nonisolated struct BuildStageRow: Codable, Sendable {
             startDate: start_date.flatMap { formatter.date(from: $0) ?? fallback.date(from: $0) },
             completionDate: completion_date.flatMap { formatter.date(from: $0) ?? fallback.date(from: $0) },
             notes: notes,
-            photoCount: photo_count
+            photoCount: photo_count,
+            estimatedStartDate: estimated_start_date.flatMap { formatter.date(from: $0) ?? fallback.date(from: $0) },
+            estimatedEndDate: estimated_end_date.flatMap { formatter.date(from: $0) ?? fallback.date(from: $0) },
+            actualStartDate: actual_start_date.flatMap { formatter.date(from: $0) ?? fallback.date(from: $0) },
+            actualEndDate: actual_end_date.flatMap { formatter.date(from: $0) ?? fallback.date(from: $0) }
+        )
+    }
+}
+
+nonisolated struct BuildMilestoneRow: Codable, Sendable {
+    let id: String
+    let build_stage_id: String
+    let build_id: String
+    let title: String
+    let description: String
+    let due_date: String?
+    let completed_at: String?
+    let status: String
+    let requires_client_action: Bool
+    let client_action_description: String?
+    let created_at: String?
+
+    nonisolated enum CodingKeys: String, CodingKey {
+        case id, build_stage_id, build_id, title, description
+        case due_date, completed_at, status
+        case requires_client_action, client_action_description
+        case created_at
+    }
+
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        id = try container.decode(String.self, forKey: .id)
+        build_stage_id = try container.decode(String.self, forKey: .build_stage_id)
+        build_id = try container.decode(String.self, forKey: .build_id)
+        title = try container.decode(String.self, forKey: .title)
+        description = (try? container.decode(String.self, forKey: .description)) ?? ""
+        due_date = try? container.decode(String.self, forKey: .due_date)
+        completed_at = try? container.decode(String.self, forKey: .completed_at)
+        status = (try? container.decode(String.self, forKey: .status)) ?? "pending"
+        requires_client_action = (try? container.decode(Bool.self, forKey: .requires_client_action)) ?? false
+        client_action_description = try? container.decode(String.self, forKey: .client_action_description)
+        created_at = try? container.decode(String.self, forKey: .created_at)
+    }
+
+    func encode(to encoder: Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        try container.encode(id, forKey: .id)
+        try container.encode(build_stage_id, forKey: .build_stage_id)
+        try container.encode(build_id, forKey: .build_id)
+        try container.encode(title, forKey: .title)
+        try container.encode(description, forKey: .description)
+        try container.encodeIfPresent(due_date, forKey: .due_date)
+        try container.encodeIfPresent(completed_at, forKey: .completed_at)
+        try container.encode(status, forKey: .status)
+        try container.encode(requires_client_action, forKey: .requires_client_action)
+        try container.encodeIfPresent(client_action_description, forKey: .client_action_description)
+    }
+
+    init(from milestone: BuildMilestone) {
+        let iso = ISO8601DateFormatter()
+        id = milestone.id
+        build_stage_id = milestone.buildStageId
+        build_id = milestone.buildId
+        title = milestone.title
+        description = milestone.description
+        due_date = milestone.dueDate.map { iso.string(from: $0) }
+        completed_at = milestone.completedAt.map { iso.string(from: $0) }
+        status = milestone.status.rawValue
+        requires_client_action = milestone.requiresClientAction
+        client_action_description = milestone.clientActionDescription
+        created_at = milestone.createdAt.map { iso.string(from: $0) }
+    }
+
+    func toBuildMilestone() -> BuildMilestone {
+        let formatter = ISO8601DateFormatter()
+        formatter.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
+        let fallback = ISO8601DateFormatter()
+        return BuildMilestone(
+            id: id,
+            buildStageId: build_stage_id,
+            buildId: build_id,
+            title: title,
+            description: description,
+            dueDate: due_date.flatMap { formatter.date(from: $0) ?? fallback.date(from: $0) },
+            completedAt: completed_at.flatMap { formatter.date(from: $0) ?? fallback.date(from: $0) },
+            status: BuildMilestone.MilestoneStatus(rawValue: status) ?? .pending,
+            requiresClientAction: requires_client_action,
+            clientActionDescription: client_action_description,
+            createdAt: created_at.flatMap { formatter.date(from: $0) ?? fallback.date(from: $0) }
+        )
+    }
+}
+
+nonisolated struct BuildReminderRow: Codable, Sendable {
+    let id: String
+    let build_id: String
+    let milestone_id: String?
+    let client_id: String
+    let title: String
+    let message: String
+    let reminder_date: String?
+    let is_read: Bool
+    let created_at: String?
+
+    nonisolated enum CodingKeys: String, CodingKey {
+        case id, build_id, milestone_id, client_id
+        case title, message, reminder_date
+        case is_read, created_at
+    }
+
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        id = try container.decode(String.self, forKey: .id)
+        build_id = try container.decode(String.self, forKey: .build_id)
+        milestone_id = try? container.decode(String.self, forKey: .milestone_id)
+        client_id = try container.decode(String.self, forKey: .client_id)
+        title = try container.decode(String.self, forKey: .title)
+        message = (try? container.decode(String.self, forKey: .message)) ?? ""
+        reminder_date = try? container.decode(String.self, forKey: .reminder_date)
+        is_read = (try? container.decode(Bool.self, forKey: .is_read)) ?? false
+        created_at = try? container.decode(String.self, forKey: .created_at)
+    }
+
+    func encode(to encoder: Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        try container.encode(id, forKey: .id)
+        try container.encode(build_id, forKey: .build_id)
+        try container.encodeIfPresent(milestone_id, forKey: .milestone_id)
+        try container.encode(client_id, forKey: .client_id)
+        try container.encode(title, forKey: .title)
+        try container.encode(message, forKey: .message)
+        try container.encodeIfPresent(reminder_date, forKey: .reminder_date)
+        try container.encode(is_read, forKey: .is_read)
+    }
+
+    init(from reminder: BuildReminder) {
+        let iso = ISO8601DateFormatter()
+        id = reminder.id
+        build_id = reminder.buildId
+        milestone_id = reminder.milestoneId
+        client_id = reminder.clientId
+        title = reminder.title
+        message = reminder.message
+        reminder_date = reminder.reminderDate.map { iso.string(from: $0) }
+        is_read = reminder.isRead
+        created_at = reminder.createdAt.map { iso.string(from: $0) }
+    }
+
+    func toBuildReminder() -> BuildReminder {
+        let formatter = ISO8601DateFormatter()
+        formatter.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
+        let fallback = ISO8601DateFormatter()
+        return BuildReminder(
+            id: id,
+            buildId: build_id,
+            milestoneId: milestone_id,
+            clientId: client_id,
+            title: title,
+            message: message,
+            reminderDate: reminder_date.flatMap { formatter.date(from: $0) ?? fallback.date(from: $0) },
+            isRead: is_read,
+            createdAt: created_at.flatMap { formatter.date(from: $0) ?? fallback.date(from: $0) }
         )
     }
 }

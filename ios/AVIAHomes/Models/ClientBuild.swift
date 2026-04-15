@@ -22,6 +22,11 @@ nonisolated struct ClientBuild: Identifiable, Sendable {
     let buildingSupportStaffId: String?
     let handoverTriggeredAt: String?
     let buildStatus: String
+    let eoiId: String?
+    let estimatedStartDate: Date?
+    let estimatedCompletionDate: Date?
+    let actualStartDate: Date?
+    let actualCompletionDate: Date?
 
     var allClients: [ClientUser] {
         var result = [client]
@@ -47,7 +52,7 @@ nonisolated struct ClientBuild: Identifiable, Sendable {
         client.id == userId || additionalClients.contains { $0.id == userId }
     }
 
-    init(id: String, client: ClientUser, homeDesign: String, lotNumber: String, estate: String, contractDate: Date, buildStages: [BuildStage], assignedStaffId: String, salesPartnerId: String?, isCustom: Bool = false, selectedFacadeId: String? = nil, customBedrooms: Int? = nil, customBathrooms: Int? = nil, customGarages: Int? = nil, customSquareMeters: Double? = nil, customStoreys: Int? = nil, additionalClients: [ClientUser] = [], preConstructionStaffId: String? = nil, buildingSupportStaffId: String? = nil, handoverTriggeredAt: String? = nil, buildStatus: String = "active") {
+    init(id: String, client: ClientUser, homeDesign: String, lotNumber: String, estate: String, contractDate: Date, buildStages: [BuildStage], assignedStaffId: String, salesPartnerId: String?, isCustom: Bool = false, selectedFacadeId: String? = nil, customBedrooms: Int? = nil, customBathrooms: Int? = nil, customGarages: Int? = nil, customSquareMeters: Double? = nil, customStoreys: Int? = nil, additionalClients: [ClientUser] = [], preConstructionStaffId: String? = nil, buildingSupportStaffId: String? = nil, handoverTriggeredAt: String? = nil, buildStatus: String = "active", eoiId: String? = nil, estimatedStartDate: Date? = nil, estimatedCompletionDate: Date? = nil, actualStartDate: Date? = nil, actualCompletionDate: Date? = nil) {
         self.id = id
         self.client = client
         self.additionalClients = additionalClients
@@ -69,6 +74,11 @@ nonisolated struct ClientBuild: Identifiable, Sendable {
         self.buildingSupportStaffId = buildingSupportStaffId
         self.handoverTriggeredAt = handoverTriggeredAt
         self.buildStatus = buildStatus
+        self.eoiId = eoiId
+        self.estimatedStartDate = estimatedStartDate
+        self.estimatedCompletionDate = estimatedCompletionDate
+        self.actualStartDate = actualStartDate
+        self.actualCompletionDate = actualCompletionDate
     }
 
     var currentStage: BuildStage? {

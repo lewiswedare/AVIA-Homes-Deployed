@@ -32,6 +32,7 @@ struct AdminBuildEditSheet: View {
         case details = "Details"
         case clients = "Clients"
         case stages = "Stages"
+        case timeline = "Timeline"
         case documents = "Docs"
         case selections = "Selections"
 
@@ -40,6 +41,7 @@ struct AdminBuildEditSheet: View {
             case .details: "square.and.pencil"
             case .clients: "person.2.fill"
             case .stages: "chart.bar.fill"
+            case .timeline: "calendar.badge.clock"
             case .documents: "doc.text.fill"
             case .selections: "paintpalette.fill"
             }
@@ -203,6 +205,8 @@ struct AdminBuildEditSheet: View {
             clientsSection
         case .stages:
             stagesSection
+        case .timeline:
+            AdminBuildTimelineEditor(build: latestBuild)
         case .documents:
             documentsSection
         case .selections:
@@ -555,6 +559,7 @@ struct AdminBuildEditSheet: View {
         case .completed: AVIATheme.success
         case .inProgress: AVIATheme.warning
         case .upcoming: AVIATheme.textTertiary
+        case .delayed: AVIATheme.destructive
         }
     }
 

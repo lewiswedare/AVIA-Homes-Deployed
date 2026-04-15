@@ -199,6 +199,7 @@ struct AdminEOIDetailSheet: View {
     @State private var contractRecord: ContractSignatureRow?
     @State private var isEditing = false
     @State private var editedEOI: EOISubmissionRow
+    @State private var showPipeline = false
 
     init(eoi: EOISubmissionRow, onUpdate: @escaping () async -> Void) {
         self.eoi = eoi
@@ -307,6 +308,9 @@ struct AdminEOIDetailSheet: View {
             .navigationDestination(for: HouseLandPackage.self) { pkg in
                 PackageDetailView(package: pkg)
             }
+            .sheet(isPresented: $showPipeline) {
+                AdminPipelineView(eoi: eoi)
+            }
         }
     }
 
@@ -410,7 +414,11 @@ struct AdminEOIDetailSheet: View {
                     .padding(16)
                 }
 
-                PremiumButton("Upload Contract PDF", icon: "doc.richtext.fill", style: .primary) {
+                PremiumButton("View Pipeline", icon: "arrow.triangle.branch", style: .primary) {
+                    showPipeline = true
+                }
+
+                PremiumButton("Upload Contract PDF", icon: "doc.richtext.fill", style: .outlined) {
                     showDocumentPicker = true
                 }
                 .disabled(isProcessing)

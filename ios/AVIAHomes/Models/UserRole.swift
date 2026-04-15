@@ -79,6 +79,10 @@ nonisolated enum UserRole: String, Codable, CaseIterable, Sendable {
         self == .admin || self == .partner || self == .salesAdmin || self == .salesPartner || self == .superAdmin
     }
 
+    var canManagePipeline: Bool {
+        self == .admin || self == .salesAdmin || self == .superAdmin
+    }
+
     var isPending: Bool {
         self == .pending
     }

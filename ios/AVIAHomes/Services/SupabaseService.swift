@@ -227,6 +227,8 @@ class SupabaseService {
         guard isConfigured else { return false }
         // Delete all child rows before removing the build itself
         let childTables = [
+            ("build_milestones",       "build_id"),
+            ("build_reminders",        "build_id"),
             ("build_stages",           "build_id"),
             ("build_spec_selections",  "build_id"),
             ("build_colour_selections","build_id"),
@@ -280,6 +282,8 @@ class SupabaseService {
     func deleteBuildForce(buildId: String) async -> Bool {
         guard isConfigured else { return false }
         let allChildTables: [(String, String)] = [
+            ("build_milestones",        "build_id"),
+            ("build_reminders",         "build_id"),
             ("build_stages",            "build_id"),
             ("build_spec_selections",   "build_id"),
             ("build_colour_selections", "build_id"),
@@ -309,6 +313,174 @@ class SupabaseService {
             .from("build_stages")
             .upsert(row)
             .execute()
+    }
+
+    // MARK: - Build Milestones
+
+    func fetchMilestonesForBuild(buildId: String) async -> [BuildMilestone] {
+        guard isConfigured else { return [] }
+        do {
+            let rows: [BuildMilestoneRow] = try await client
+                .from("build_milestones")
+                .select()
+                .eq("build_id", value: buildId)
+                .order("due_date", ascending: true)
+                .execute()
+                .value
+            return rows.map { $0.toBuildMilestone() }
+        } catch {
+            print("[SupabaseService] fetchMilestonesForBuild FAILED: \(error)")
+            return []
+        }
+    }
+
+    func fetchMilestonesForStage(stageId: String) async -> [BuildMilestone] {
+        guard isConfigured else { return [] }
+        do {
+            let rows: [BuildMilestoneRow] = try await client
+                .from("build_milestones")
+                .select()
+                .eq("build_stage_id", value: stageId)
+                .order("due_date", ascending: true)
+                .execute()
+                .value
+            return rows.map { $0.toBuildMilestone() }
+        } catch {
+            print("[SupabaseService] fetchMilestonesForStage FAILED: \(error)")
+            return []
+        }
+    }
+
+    @discardableResult
+    func upsertMilestone(_ milestone: BuildMilestone) async -> Bool {
+        guard isConfigured else { return false }
+        let row = BuildMilestoneRow(from: milestone)
+        do {
+            try await client
+                .from("build_milestones")
+                .upsert(row)
+                .execute()
+            return true
+        } catch {
+            print("[SupabaseService] upsertMilestone FAILED: \(error)")
+            return false
+        }
+    }
+
+    @discardableResult
+    func deleteMilestone(id: String) async -> Bool {
+        guard isConfigured else { return false }
+        do {
+            try await client
+                .from("build_milestones")
+                .delete()
+                .eq("id", value: id)
+                .execute()
+            return true
+        } catch {
+            print("[SupabaseService] deleteMilestone FAILED: \(error)")
+            return false
+        }
+    }
+
+    @discardableResult
+    func completeMilestone(id: String) async -> Bool {
+        guard isConfigured else { return false }
+        do {
+            try await client
+                .from("build_milestones")
+                .update(["status": "completed", "completed_at": ISO8601DateFormatter().string(from: .now)])
+                .eq("id", value: id)
+                .execute()
+            return true
+        } catch {
+            print("[SupabaseService] completeMilestone FAILED: \(error)")
+            return false
+        }
+    }
+
+    // MARK: - Build Reminders
+
+    func fetchRemindersForClient(clientId: String) async -> [BuildReminder] {
+        guard isConfigured else { return [] }
+        do {
+            let rows: [BuildReminderRow] = try await client
+                .from("build_reminders")
+                .select()
+                .eq("client_id", value: clientId)
+                .order("reminder_date", ascending: true)
+                .execute()
+                .value
+            return rows.map { $0.toBuildReminder() }
+        } catch {
+            print("[SupabaseService] fetchRemindersForClient FAILED: \(error)")
+            return []
+        }
+    }
+
+    func fetchRemindersForBuild(buildId: String) async -> [BuildReminder] {
+        guard isConfigured else { return [] }
+        do {
+            let rows: [BuildReminderRow] = try await client
+                .from("build_reminders")
+                .select()
+                .eq("build_id", value: buildId)
+                .order("reminder_date", ascending: true)
+                .execute()
+                .value
+            return rows.map { $0.toBuildReminder() }
+        } catch {
+            print("[SupabaseService] fetchRemindersForBuild FAILED: \(error)")
+            return []
+        }
+    }
+
+    @discardableResult
+    func upsertReminder(_ reminder: BuildReminder) async -> Bool {
+        guard isConfigured else { return false }
+        let row = BuildReminderRow(from: reminder)
+        do {
+            try await client
+                .from("build_reminders")
+                .upsert(row)
+                .execute()
+            return true
+        } catch {
+            print("[SupabaseService] upsertReminder FAILED: \(error)")
+            return false
+        }
+    }
+
+    @discardableResult
+    func deleteReminder(id: String) async -> Bool {
+        guard isConfigured else { return false }
+        do {
+            try await client
+                .from("build_reminders")
+                .delete()
+                .eq("id", value: id)
+                .execute()
+            return true
+        } catch {
+            print("[SupabaseService] deleteReminder FAILED: \(error)")
+            return false
+        }
+    }
+
+    @discardableResult
+    func markReminderRead(id: String) async -> Bool {
+        guard isConfigured else { return false }
+        do {
+            try await client
+                .from("build_reminders")
+                .update(["is_read": "true"])
+                .eq("id", value: id)
+                .execute()
+            return true
+        } catch {
+            print("[SupabaseService] markReminderRead FAILED: \(error)")
+            return false
+        }
     }
 
     // MARK: - Package Assignments
@@ -1674,6 +1846,263 @@ class SupabaseService {
             return true
         } catch {
             print("[SupabaseService] signContract error: \(error)")
+            return false
+        }
+    }
+
+    // MARK: - Contracts (Pipeline)
+
+    @discardableResult
+    func createContract(eoiId: String?, packageAssignmentId: String?, clientId: String, adminId: String, contractUrl: String?, notes: String?) async -> ContractRow? {
+        guard isConfigured else {
+            print("[SupabaseService] createContract: not configured")
+            return nil
+        }
+        let row = ContractRow(
+            id: UUID().uuidString,
+            eoi_id: eoiId,
+            package_assignment_id: packageAssignmentId,
+            build_id: nil,
+            client_id: clientId,
+            admin_id: adminId,
+            contract_url: contractUrl,
+            signed_contract_url: nil,
+            status: contractUrl != nil ? "sent" : "draft",
+            sent_at: contractUrl != nil ? ISO8601DateFormatter().string(from: .now) : nil,
+            signed_at: nil,
+            notes: notes,
+            created_at: nil,
+            updated_at: nil
+        )
+        do {
+            try await client.from("contracts").insert(row).execute()
+            print("[SupabaseService] createContract SUCCESS id=\(row.id)")
+            return row
+        } catch {
+            print("[SupabaseService] createContract error: \(error)")
+            return nil
+        }
+    }
+
+    @discardableResult
+    func updateContract(contractId: String, fields: [String: String]) async -> Bool {
+        guard isConfigured else { return false }
+        do {
+            try await client.from("contracts")
+                .update(fields)
+                .eq("id", value: contractId)
+                .execute()
+            print("[SupabaseService] updateContract SUCCESS id=\(contractId)")
+            return true
+        } catch {
+            print("[SupabaseService] updateContract error: \(error)")
+            return false
+        }
+    }
+
+    func fetchContractsForClient(clientId: String) async -> [ContractRow] {
+        guard isConfigured else { return [] }
+        do {
+            let rows: [ContractRow] = try await client.from("contracts")
+                .select()
+                .eq("client_id", value: clientId)
+                .order("created_at", ascending: false)
+                .execute()
+                .value
+            return rows
+        } catch {
+            print("[SupabaseService] fetchContractsForClient error: \(error)")
+            return []
+        }
+    }
+
+    func fetchAllContracts() async -> [ContractRow] {
+        guard isConfigured else { return [] }
+        do {
+            let rows: [ContractRow] = try await client.from("contracts")
+                .select()
+                .order("created_at", ascending: false)
+                .execute()
+                .value
+            return rows
+        } catch {
+            print("[SupabaseService] fetchAllContracts error: \(error)")
+            return []
+        }
+    }
+
+    func fetchContract(forEOI eoiId: String) async -> ContractRow? {
+        guard isConfigured else { return nil }
+        do {
+            let rows: [ContractRow] = try await client.from("contracts")
+                .select()
+                .eq("eoi_id", value: eoiId)
+                .order("created_at", ascending: false)
+                .limit(1)
+                .execute()
+                .value
+            return rows.first
+        } catch {
+            print("[SupabaseService] fetchContract forEOI error: \(error)")
+            return nil
+        }
+    }
+
+    func uploadContractPDF(contractId: String, fileData: Data, fileName: String) async -> String? {
+        guard isConfigured else { return nil }
+        do {
+            let path = "contracts/\(contractId)/\(fileName)"
+            try await client.storage.from("contracts").upload(path: path, file: fileData, options: .init(contentType: "application/pdf"))
+            let url = try client.storage.from("contracts").getPublicURL(path: path).absoluteString
+            try await client.from("contracts")
+                .update([
+                    "contract_url": url,
+                    "status": "sent",
+                    "sent_at": ISO8601DateFormatter().string(from: .now)
+                ])
+                .eq("id", value: contractId)
+                .execute()
+            print("[SupabaseService] uploadContractPDF SUCCESS id=\(contractId)")
+            return url
+        } catch {
+            print("[SupabaseService] uploadContractPDF error: \(error)")
+            return nil
+        }
+    }
+
+    @discardableResult
+    func markContractSigned(contractId: String) async -> Bool {
+        guard isConfigured else { return false }
+        do {
+            try await client.from("contracts")
+                .update([
+                    "status": "signed",
+                    "signed_at": ISO8601DateFormatter().string(from: .now)
+                ])
+                .eq("id", value: contractId)
+                .execute()
+            print("[SupabaseService] markContractSigned SUCCESS id=\(contractId)")
+            return true
+        } catch {
+            print("[SupabaseService] markContractSigned error: \(error)")
+            return false
+        }
+    }
+
+    // MARK: - Invoices (Pipeline)
+
+    @discardableResult
+    func createInvoice(contractId: String?, clientId: String, adminId: String, invoiceNumber: String?, description: String?, amount: Double?, packagePrice: Double?, dueDate: String?, notes: String?) async -> InvoiceRow? {
+        guard isConfigured else {
+            print("[SupabaseService] createInvoice: not configured")
+            return nil
+        }
+        let row = InvoiceRow(
+            id: UUID().uuidString,
+            contract_id: contractId,
+            client_id: clientId,
+            admin_id: adminId,
+            invoice_number: invoiceNumber,
+            description: description,
+            amount: amount,
+            package_price: packagePrice,
+            status: "sent",
+            due_date: dueDate,
+            paid_at: nil,
+            invoice_url: nil,
+            notes: notes,
+            created_at: nil,
+            updated_at: nil
+        )
+        do {
+            try await client.from("invoices").insert(row).execute()
+            print("[SupabaseService] createInvoice SUCCESS id=\(row.id)")
+            return row
+        } catch {
+            print("[SupabaseService] createInvoice error: \(error)")
+            return nil
+        }
+    }
+
+    @discardableResult
+    func updateInvoice(invoiceId: String, fields: [String: String]) async -> Bool {
+        guard isConfigured else { return false }
+        do {
+            try await client.from("invoices")
+                .update(fields)
+                .eq("id", value: invoiceId)
+                .execute()
+            print("[SupabaseService] updateInvoice SUCCESS id=\(invoiceId)")
+            return true
+        } catch {
+            print("[SupabaseService] updateInvoice error: \(error)")
+            return false
+        }
+    }
+
+    func fetchInvoicesForClient(clientId: String) async -> [InvoiceRow] {
+        guard isConfigured else { return [] }
+        do {
+            let rows: [InvoiceRow] = try await client.from("invoices")
+                .select()
+                .eq("client_id", value: clientId)
+                .order("created_at", ascending: false)
+                .execute()
+                .value
+            return rows
+        } catch {
+            print("[SupabaseService] fetchInvoicesForClient error: \(error)")
+            return []
+        }
+    }
+
+    func fetchAllInvoices() async -> [InvoiceRow] {
+        guard isConfigured else { return [] }
+        do {
+            let rows: [InvoiceRow] = try await client.from("invoices")
+                .select()
+                .order("created_at", ascending: false)
+                .execute()
+                .value
+            return rows
+        } catch {
+            print("[SupabaseService] fetchAllInvoices error: \(error)")
+            return []
+        }
+    }
+
+    func fetchInvoice(forContract contractId: String) async -> InvoiceRow? {
+        guard isConfigured else { return nil }
+        do {
+            let rows: [InvoiceRow] = try await client.from("invoices")
+                .select()
+                .eq("contract_id", value: contractId)
+                .order("created_at", ascending: false)
+                .limit(1)
+                .execute()
+                .value
+            return rows.first
+        } catch {
+            print("[SupabaseService] fetchInvoice forContract error: \(error)")
+            return nil
+        }
+    }
+
+    @discardableResult
+    func markInvoicePaid(invoiceId: String) async -> Bool {
+        guard isConfigured else { return false }
+        do {
+            try await client.from("invoices")
+                .update([
+                    "status": "paid",
+                    "paid_at": ISO8601DateFormatter().string(from: .now)
+                ])
+                .eq("id", value: invoiceId)
+                .execute()
+            print("[SupabaseService] markInvoicePaid SUCCESS id=\(invoiceId)")
+            return true
+        } catch {
+            print("[SupabaseService] markInvoicePaid error: \(error)")
             return false
         }
     }

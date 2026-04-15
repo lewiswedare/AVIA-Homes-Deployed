@@ -20,6 +20,9 @@ struct AddBuildSheet: View {
     @State private var selectedFacadeId = ""
     @State private var selectedDesignId = ""
     @State private var selectedSpecTier: SpecTier = .messina
+    @State private var estimatedStartDate = Date.now
+    @State private var estimatedCompletionDate = Calendar.current.date(byAdding: .month, value: 10, to: .now) ?? .now
+    @State private var showTimelineConfig = false
 
     private var designs: [HomeDesign] {
         let d = viewModel.allHomeDesigns
@@ -48,6 +51,8 @@ struct AddBuildSheet: View {
                     }
 
                     buildDetailsCard
+
+                    timelineConfigCard
 
                     specTierCard
 
@@ -361,6 +366,131 @@ struct AddBuildSheet: View {
         }
     }
 
+    private var timelineConfigCard: some View {
+        BentoCard(cornerRadius: 16) {
+            VStack(alignment: .leading, spacing: 16) {
+                HStack {
+                    Label("Build Timeline", systemImage: "calendar.badge.clock")
+                        .font(.neueSubheadlineMedium)
+                        .foregroundStyle(AVIATheme.textPrimary)
+                    Spacer()
+                    Button {
+                        withAnimation(.spring(response: 0.3)) { showTimelineConfig.toggle() }
+                    } label: {
+                        Text(showTimelineConfig ? "Hide" : "Configure")
+                            .font(.neueCaption2Medium)
+                            .foregroundStyle(AVIATheme.teal)
+                    }
+                }
+
+                if showTimelineConfig {
+                    VStack(alignment: .leading, spacing: 12) {
+                        VStack(alignment: .leading, spacing: 6) {
+                            Label("Estimated Start", systemImage: "play.circle.fill")
+                                .font(.neueCaption)
+                                .foregroundStyle(AVIATheme.textTertiary)
+                            DatePicker("", selection: $estimatedStartDate, displayedComponents: .date)
+                                .labelsHidden()
+                                .tint(AVIATheme.teal)
+                        }
+
+                        VStack(alignment: .leading, spacing: 6) {
+                            Label("Estimated Completion", systemImage: "flag.checkered")
+                                .font(.neueCaption)
+                                .foregroundStyle(AVIATheme.textTertiary)
+                            DatePicker("", selection: $estimatedCompletionDate, displayedComponents: .date)
+                                .labelsHidden()
+                                .tint(AVIATheme.teal)
+                        }
+
+                        Divider().foregroundStyle(AVIATheme.surfaceBorder)
+
+                        VStack(alignment: .leading, spacing: 6) {
+                            Text("10-STAGE BUILD TEMPLATE")
+                                .font(.neueCaption2Medium)
+                                .kerning(0.6)
+                                .foregroundStyle(AVIATheme.textTertiary)
+
+                            let stageNames = defaultStageNames
+                            ForEach(Array(stageNames.enumerated()), id: \.offset) { idx, name in
+                                HStack(spacing: 10) {
+                                    Text("\(idx + 1)")
+                                        .font(.neueCorpMedium(10))
+                                        .foregroundStyle(.white)
+                                        .frame(width: 22, height: 22)
+                                        .background(AVIATheme.tealGradient)
+                                        .clipShape(Circle())
+                                    Text(name)
+                                        .font(.neueCaption)
+                                        .foregroundStyle(AVIATheme.textPrimary)
+                                    Spacer()
+                                }
+                                .padding(.vertical, 2)
+                            }
+                        }
+                    }
+                } else {
+                    HStack(spacing: 16) {
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text("Start")
+                                .font(.neueCaption2)
+                                .foregroundStyle(AVIATheme.textTertiary)
+                            Text(estimatedStartDate.formatted(.dateTime.month(.abbreviated).day().year()))
+                                .font(.neueCaptionMedium)
+                                .foregroundStyle(AVIATheme.textPrimary)
+                        }
+                        Image(systemName: "arrow.right")
+                            .font(.neueCaption2)
+                            .foregroundStyle(AVIATheme.textTertiary)
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text("Completion")
+                                .font(.neueCaption2)
+                                .foregroundStyle(AVIATheme.textTertiary)
+                            Text(estimatedCompletionDate.formatted(.dateTime.month(.abbreviated).day().year()))
+                                .font(.neueCaptionMedium)
+                                .foregroundStyle(AVIATheme.textPrimary)
+                        }
+                        Spacer()
+                        Text("10 stages")
+                            .font(.neueCaption2)
+                            .foregroundStyle(AVIATheme.teal)
+                    }
+                }
+            }
+            .padding(16)
+        }
+    }
+
+    private var defaultStageNames: [String] {
+        [
+            "Pre-Construction",
+            "Site Preparation",
+            "Slab & Foundation",
+            "Frame Stage",
+            "Roofing & Wrap",
+            "Lock-Up",
+            "Rough-In",
+            "Fix Stage",
+            "Practical Completion",
+            "Handover"
+        ]
+    }
+
+    private var defaultStageDescriptions: [String] {
+        [
+            "Plans, permits, contracts and approvals",
+            "Site clearing, levelling and services",
+            "Foundation and concrete slab pour",
+            "Structural framing and roof trusses",
+            "Roofing, sarking and building wrap",
+            "External cladding, windows and doors",
+            "Plumbing, electrical and HVAC rough-in",
+            "Internal fit-out, cabinetry and finishes",
+            "Final inspections and defect check",
+            "Keys and welcome to your new home"
+        ]
+    }
+
     private var clientCard: some View {
         BentoCard(cornerRadius: 16) {
             VStack(alignment: .leading, spacing: 14) {
@@ -560,7 +690,9 @@ struct AddBuildSheet: View {
                 customBathrooms: isCustomHome ? customBathrooms : nil,
                 customGarages: isCustomHome ? customGarages : nil,
                 customSquareMeters: isCustomHome ? Double(customSquareMeters) : nil,
-                customStoreys: isCustomHome ? customStoreys : nil
+                customStoreys: isCustomHome ? customStoreys : nil,
+                estimatedStartDate: estimatedStartDate,
+                estimatedCompletionDate: estimatedCompletionDate
             )
             isSaving = false
             dismiss()
