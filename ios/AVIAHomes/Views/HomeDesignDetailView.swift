@@ -3,6 +3,7 @@ import SwiftUI
 struct HomeDesignDetailView: View {
     let design: HomeDesign
     @State private var showingFloorplan: Bool = false
+    @State private var showingEnquiryForm: Bool = false
 
     var body: some View {
         ScrollView {
@@ -474,20 +475,23 @@ struct HomeDesignDetailView: View {
 
     private var ctaSection: some View {
         VStack(spacing: 10) {
-            if let url = URL(string: "https://www.aviahomes.com.au/homes/\(design.slug)") {
-                Link(destination: url) {
-                    HStack(spacing: 8) {
-                        Image(systemName: "safari")
-                            .font(.neueSubheadlineMedium)
-                        Text("View Full Details")
-                            .font(.neueSubheadlineMedium)
-                    }
-                    .frame(maxWidth: .infinity)
-                    .frame(height: 52)
-                    .foregroundStyle(.white)
-                    .background(AVIATheme.tealGradient)
-                    .clipShape(.rect(cornerRadius: 14))
+            Button {
+                showingEnquiryForm = true
+            } label: {
+                HStack(spacing: 8) {
+                    Image(systemName: "envelope.fill")
+                        .font(.neueSubheadlineMedium)
+                    Text("Enquire for Pricing")
+                        .font(.neueSubheadlineMedium)
                 }
+                .frame(maxWidth: .infinity)
+                .frame(height: 52)
+                .foregroundStyle(.white)
+                .background(AVIATheme.tealGradient)
+                .clipShape(.rect(cornerRadius: 14))
+            }
+            .sheet(isPresented: $showingEnquiryForm) {
+                DesignEnquiryFormView(designName: design.name)
             }
 
             if let phoneURL = URL(string: "tel:0756545123") {
@@ -495,7 +499,7 @@ struct HomeDesignDetailView: View {
                     HStack(spacing: 8) {
                         Image(systemName: "phone.fill")
                             .font(.neueSubheadlineMedium)
-                        Text("Enquire About This Design")
+                        Text("Call Us About This Design")
                             .font(.neueSubheadlineMedium)
                     }
                     .frame(maxWidth: .infinity)

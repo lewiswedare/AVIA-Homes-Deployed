@@ -1743,4 +1743,16 @@ class SupabaseService {
             return false
         }
     }
+
+    @discardableResult
+    func submitDesignEnquiry(_ row: DesignEnquiryInsertRow) async -> Bool {
+        guard isConfigured else { return false }
+        do {
+            try await client.from("design_enquiries").insert(row).execute()
+            return true
+        } catch {
+            print("[SupabaseService] submitDesignEnquiry error: \(error)")
+            return false
+        }
+    }
 }
