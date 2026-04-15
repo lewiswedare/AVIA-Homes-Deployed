@@ -152,6 +152,7 @@ struct TimelineStageRow: View {
         case .completed: AVIATheme.success
         case .inProgress: AVIATheme.teal
         case .upcoming: AVIATheme.textTertiary
+        case .delayed: AVIATheme.destructive
         }
     }
 
@@ -190,6 +191,10 @@ struct TimelineStageRow: View {
                     Circle()
                         .fill(.white.opacity(0.5))
                         .frame(width: 10, height: 10)
+                case .delayed:
+                    Image(systemName: "exclamationmark")
+                        .font(.neueCaptionMedium)
+                        .foregroundStyle(.white)
                 }
             }
 

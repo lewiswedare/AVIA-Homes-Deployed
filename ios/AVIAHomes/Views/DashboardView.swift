@@ -268,6 +268,7 @@ struct DashboardView: View {
             dateAndBuildInfo
             statCards
             buildProgressGauge
+            upcomingRemindersSection
             resourceUsageCard
             upcomingScheduleList
         }
@@ -716,6 +717,24 @@ struct DashboardView: View {
                                     .foregroundStyle(AVIATheme.textTertiary)
                             }
                         }
+
+                        if let next = viewModel.nextMilestoneForCurrentUser {
+                            Rectangle().fill(AVIATheme.surfaceBorder).frame(height: 1)
+                            HStack(spacing: 8) {
+                                Image(systemName: "flag.fill")
+                                    .font(.system(size: 12))
+                                    .foregroundStyle(AVIATheme.teal)
+                                VStack(alignment: .leading, spacing: 2) {
+                                    Text("Next Milestone")
+                                        .font(.neueCaption2)
+                                        .foregroundStyle(AVIATheme.textTertiary)
+                                    Text(next.title)
+                                        .font(.neueCaptionMedium)
+                                        .foregroundStyle(AVIATheme.textPrimary)
+                                        .lineLimit(1)
+                                }
+                            }
+                        }
                     }
                     .padding(16)
                     .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
@@ -725,6 +744,66 @@ struct DashboardView: View {
             staffContactCard
         }
         .fixedSize(horizontal: false, vertical: true)
+    }
+
+    @ViewBuilder
+    private var upcomingRemindersSection: some View {
+        let reminders = viewModel.upcomingReminders
+        if !reminders.isEmpty {
+            VStack(alignment: .leading, spacing: 10) {
+                HStack(spacing: 6) {
+                    Image(systemName: "bell.fill")
+                        .foregroundStyle(AVIATheme.teal)
+                    Text("Upcoming Reminders")
+                        .font(.neueSubheadlineMedium)
+                        .foregroundStyle(AVIATheme.textPrimary)
+                    Spacer()
+                    if viewModel.unreadReminders.count > 0 {
+                        StatusBadge(title: "\(viewModel.unreadReminders.count)", color: AVIATheme.warning)
+                    }
+                }
+
+                ForEach(reminders.prefix(3)) { reminder in
+                    BentoCard(cornerRadius: 14) {
+                        HStack(spacing: 12) {
+                            Image(systemName: reminder.isRead ? "bell" : "bell.badge.fill")
+                                .font(.system(size: 16))
+                                .foregroundStyle(reminder.isRead ? AVIATheme.textTertiary : AVIATheme.teal)
+
+                            VStack(alignment: .leading, spacing: 3) {
+                                Text(reminder.title)
+                                    .font(.neueCaptionMedium)
+                                    .foregroundStyle(reminder.isRead ? AVIATheme.textTertiary : AVIATheme.textPrimary)
+                                if !reminder.message.isEmpty {
+                                    Text(reminder.message)
+                                        .font(.neueCaption2)
+                                        .foregroundStyle(AVIATheme.textSecondary)
+                                        .lineLimit(2)
+                                }
+                                if let date = reminder.reminderDate {
+                                    Text(date.formatted(.dateTime.month(.abbreviated).day().year()))
+                                        .font(.neueCaption2)
+                                        .foregroundStyle(AVIATheme.textTertiary)
+                                }
+                            }
+
+                            Spacer()
+
+                            if !reminder.isRead {
+                                Button {
+                                    Task { await viewModel.markReminderRead(id: reminder.id) }
+                                } label: {
+                                    Image(systemName: "checkmark.circle")
+                                        .font(.system(size: 20))
+                                        .foregroundStyle(AVIATheme.teal)
+                                }
+                            }
+                        }
+                        .padding(14)
+                    }
+                }
+            }
+        }
     }
 
     private var resourceUsageCard: some View {

@@ -44,6 +44,7 @@ struct AdminBuildStageEditor: View {
                                     Text("Upcoming").tag(BuildStage.StageStatus.upcoming)
                                     Text("In Progress").tag(BuildStage.StageStatus.inProgress)
                                     Text("Completed").tag(BuildStage.StageStatus.completed)
+                                    Text("Delayed").tag(BuildStage.StageStatus.delayed)
                                 }
                                 .pickerStyle(.segmented)
                             }
