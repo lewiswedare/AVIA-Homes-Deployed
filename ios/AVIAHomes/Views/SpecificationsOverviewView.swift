@@ -238,10 +238,14 @@ struct SpecificationsOverviewView: View {
                 }
                 .padding(20)
             }
-            .background(AVIATheme.timelessBrown)
-            .clipShape(.rect(cornerRadii: .init(topLeading: 20, topTrailing: 20)))
+
 
             if specVM.upgradeTiers.count > 0 {
+                Rectangle()
+                    .fill(AVIATheme.aviaWhite.opacity(0.15))
+                    .frame(height: 1)
+                    .padding(.horizontal, 16)
+
                 NavigationLink {
                     SpecRangeComparisonOverviewView()
                 } label: {
@@ -253,15 +257,15 @@ struct SpecificationsOverviewView: View {
                         Spacer()
                         Image(systemName: "chevron.right")
                             .font(.system(size: 14, weight: .semibold))
-                            .foregroundStyle(AVIATheme.textSecondary)
+                            .foregroundStyle(AVIATheme.aviaWhite.opacity(0.5))
                     }
-                    .foregroundStyle(AVIATheme.textPrimary)
+                    .foregroundStyle(AVIATheme.aviaWhite)
                     .padding(16)
-                    .background(AVIATheme.cardBackground)
-                    .clipShape(.rect(cornerRadii: .init(bottomLeading: 16, bottomTrailing: 16)))
                 }
             }
         }
+        .background(AVIATheme.timelessBrown)
+        .clipShape(.rect(cornerRadius: 20))
     }
 
     private var categoriesList: some View {
