@@ -95,14 +95,6 @@ nonisolated struct SpecItem: Identifiable, Sendable {
         self.messinaToPortobelloCost = messinaToPortobelloCost
     }
 
-    func cost(for tier: SpecTier) -> Double? {
-        switch tier {
-        case .volos: volosCost
-        case .messina: messinaCost
-        case .portobello: portobelloCost
-        }
-    }
-
     func upgradeCost(from: SpecTier, to: SpecTier) -> Double? {
         switch (from, to) {
         case (.volos, .messina): volosToMessinaCost

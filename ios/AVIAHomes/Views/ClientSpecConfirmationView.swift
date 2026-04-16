@@ -6,6 +6,7 @@ struct ClientSpecConfirmationView: View {
     @State private var showConfirmAlert = false
     @State private var upgradeSelectionId: String?
     @State private var upgradeNotes = ""
+    @State private var fullRangePricing: [UpgradePricing] = []
     let buildId: String
 
     var body: some View {
@@ -27,7 +28,10 @@ struct ClientSpecConfirmationView: View {
             viewModel.notificationService = appViewModel.notificationService
             viewModel.clientId = appViewModel.currentUser.id
             viewModel.adminRecipientIds = appViewModel.allRegisteredUsers.filter { $0.role.isAnyStaffRole }.map(\.id)
-            await viewModel.load(buildId: buildId)
+            async let specLoad: Void = viewModel.load(buildId: buildId)
+            async let pricingLoad = SupabaseService.shared.fetchFullRangeUpgradePricing()
+            _ = await specLoad
+            fullRangePricing = await pricingLoad
         }
         .alert("Confirm Specifications", isPresented: $showConfirmAlert) {
             Button("Cancel", role: .cancel) {}
@@ -52,6 +56,7 @@ struct ClientSpecConfirmationView: View {
             VStack(spacing: 16) {
                 statusBanner
                 tierInfoBanner
+                specRangeUpgradeCard
 
                 ForEach(viewModel.groupedSelections, id: \.categoryId) { group in
                     BuildSpecCategorySection(
@@ -169,6 +174,106 @@ struct ClientSpecConfirmationView: View {
         .frame(maxWidth: .infinity, alignment: .leading)
         .background(AVIATheme.teal.opacity(0.06))
         .clipShape(.rect(cornerRadius: 12))
+    }
+
+    @ViewBuilder
+    private var specRangeUpgradeCard: some View {
+        let currentTier = SpecTier(rawValue: viewModel.specTier.lowercased()) ?? .volos
+        let availableUpgrades = fullRangePricing.filter { pricing in
+            guard pricing.isActive,
+                  let from = pricing.fromTier,
+                  let to = pricing.toTier,
+                  let fromTier = SpecTier(rawValue: from),
+                  let toTier = SpecTier(rawValue: to),
+                  fromTier == currentTier,
+                  toTier.tierIndex > currentTier.tierIndex
+            else { return false }
+            return true
+        }
+
+        if !availableUpgrades.isEmpty {
+            BentoCard(cornerRadius: 14) {
+                VStack(alignment: .leading, spacing: 12) {
+                    HStack(spacing: 10) {
+                        Image(systemName: "arrow.up.forward.circle.fill")
+                            .font(.neueCorpMedium(18))
+                            .foregroundStyle(AVIATheme.teal)
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text("Upgrade Your Entire Spec Range")
+                                .font(.neueCaptionMedium)
+                                .foregroundStyle(AVIATheme.textPrimary)
+                            Text("Upgrade everything at once with package pricing, or upgrade individual items below.")
+                                .font(.neueCaption2)
+                                .foregroundStyle(AVIATheme.textSecondary)
+                                .lineLimit(2)
+                        }
+                    }
+
+                    ForEach(availableUpgrades, id: \.id) { pricing in
+                        if let toTier = pricing.toTier, let tier = SpecTier(rawValue: toTier) {
+                            HStack(spacing: 10) {
+                                Image(systemName: tier.icon)
+                                    .font(.neueCorp(12))
+                                    .foregroundStyle(tierColor(tier))
+                                    .frame(width: 28, height: 28)
+                                    .background(tierColor(tier).opacity(0.12))
+                                    .clipShape(Circle())
+
+                                VStack(alignment: .leading, spacing: 2) {
+                                    Text("Upgrade to \(tier.displayName)")
+                                        .font(.neueCaptionMedium)
+                                        .foregroundStyle(AVIATheme.textPrimary)
+                                    Text(tier.tagline)
+                                        .font(.neueCaption2)
+                                        .foregroundStyle(AVIATheme.textTertiary)
+                                }
+
+                                Spacer()
+
+                                Text(formatCurrency(pricing.cost))
+                                    .font(.neueCorpMedium(16))
+                                    .foregroundStyle(AVIATheme.teal)
+                            }
+                            .padding(12)
+                            .background(tierColor(tier).opacity(0.04))
+                            .clipShape(.rect(cornerRadius: 10))
+                            .overlay {
+                                RoundedRectangle(cornerRadius: 10)
+                                    .stroke(tierColor(tier).opacity(0.15), lineWidth: 1)
+                            }
+                        }
+                    }
+
+                    HStack(spacing: 6) {
+                        Image(systemName: "info.circle")
+                            .font(.neueCorp(10))
+                            .foregroundStyle(AVIATheme.textTertiary)
+                        Text("Contact your AVIA consultant to proceed with a full range upgrade.")
+                            .font(.neueCaption2)
+                            .foregroundStyle(AVIATheme.textTertiary)
+                    }
+                }
+                .padding(14)
+            }
+        }
+    }
+
+    private func tierColor(_ tier: SpecTier) -> Color {
+        switch tier {
+        case .volos: AVIATheme.teal
+        case .messina: AVIATheme.warning
+        case .portobello: Color(hex: "8B5CF6")
+        }
+    }
+
+    private func formatCurrency(_ value: Double) -> String {
+        let formatter = NumberFormatter()
+        formatter.numberStyle = .currency
+        formatter.currencyCode = "AUD"
+        formatter.currencySymbol = "$"
+        formatter.maximumFractionDigits = 0
+        formatter.minimumFractionDigits = 0
+        return formatter.string(from: NSNumber(value: value)) ?? String(format: "$%.0f", value)
     }
 
     private var confirmButton: some View {

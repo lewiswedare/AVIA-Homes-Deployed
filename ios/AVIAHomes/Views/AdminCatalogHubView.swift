@@ -66,6 +66,39 @@ struct AdminCatalogHubView: View {
 
                 }
 
+                NavigationLink {
+                    AdminSpecRangePricingView()
+                } label: {
+                    BentoCard(cornerRadius: 14) {
+                        HStack(spacing: 14) {
+                            Image(systemName: "dollarsign.arrow.trianglehead.counterclockwise.rotate.90")
+                                .font(.neueCorpMedium(16))
+                                .foregroundStyle(AVIATheme.teal)
+                                .frame(width: 44, height: 44)
+                                .background(AVIATheme.teal.opacity(0.12))
+                                .clipShape(.rect(cornerRadius: 12))
+
+                            VStack(alignment: .leading, spacing: 3) {
+                                Text("Spec Range Upgrade Pricing")
+                                    .font(.neueCaptionMedium)
+                                    .foregroundStyle(AVIATheme.textPrimary)
+                                Text("Set the cost for upgrading the entire spec range between tiers")
+                                    .font(.neueCaption2)
+                                    .foregroundStyle(AVIATheme.textTertiary)
+                                    .lineLimit(2)
+                                    .multilineTextAlignment(.leading)
+                            }
+
+                            Spacer()
+
+                            Image(systemName: "chevron.right")
+                                .font(.neueCaption2)
+                                .foregroundStyle(AVIATheme.textTertiary)
+                        }
+                        .padding(14)
+                    }
+                }
+
                 infoCard
             }
             .padding(.horizontal, 16)

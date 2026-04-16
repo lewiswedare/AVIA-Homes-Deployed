@@ -1176,6 +1176,24 @@ class SupabaseService {
         }
     }
 
+    func fetchFullRangeUpgradePricing() async -> [UpgradePricing] {
+        guard isConfigured else { return [] }
+        do {
+            let allRows: [UpgradePricingRow] = try await client
+                .from("upgrade_pricing")
+                .select()
+                .execute()
+                .value
+            let fullRange = allRows.filter {
+                $0.spec_item_id == nil && $0.colour_category_id == nil && $0.colour_option_id == nil
+            }
+            return fullRange.map { $0.toModel() }
+        } catch {
+            print("[SupabaseService] fetchFullRangeUpgradePricing FAILED: \(error)")
+            return []
+        }
+    }
+
     func upsertHomeDesign(_ row: HomeDesignRow) async -> Bool {
         guard isConfigured else { return false }
         do {
