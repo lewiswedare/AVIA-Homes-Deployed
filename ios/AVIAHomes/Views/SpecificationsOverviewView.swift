@@ -12,11 +12,8 @@ struct SpecificationsOverviewView: View {
                 VStack(spacing: 0) {
                     heroImage
 
-                    VStack(spacing: 16) {
-                        specificationCard
-                        if specVM.upgradeTiers.count > 0 {
-                            compareUpgradeButton
-                        }
+                    VStack(spacing: 14) {
+                        currentTierHeader
                         categoriesList
                         if !specVM.upgradeRequests.isEmpty {
                             upgradeRequestsSection
@@ -145,66 +142,129 @@ struct SpecificationsOverviewView: View {
             .clipped()
     }
 
-    private var specificationCard: some View {
-        BentoCard(cornerRadius: 18) {
-            HStack(spacing: 16) {
-                ZStack {
-                    Circle()
-                        .fill(AVIATheme.timelessBrown.opacity(0.12))
-                    Image(systemName: "checkmark.seal.fill")
-                        .font(.neueCorpMedium(24))
-                        .foregroundStyle(AVIATheme.timelessBrown)
-                }
-                .frame(width: 68, height: 68)
+    private var currentTierHeader: some View {
+        VStack(spacing: 0) {
+            VStack(spacing: 0) {
+                Color.clear
+                    .frame(height: 140)
+                    .overlay {
+                        Image("spec_kitchen")
+                            .resizable()
+                            .aspectRatio(contentMode: .fill)
+                            .allowsHitTesting(false)
+                    }
+                    .overlay {
+                        LinearGradient(
+                            stops: [
+                                .init(color: AVIATheme.aviaBlack.opacity(0.0), location: 0.0),
+                                .init(color: AVIATheme.aviaBlack.opacity(0.0), location: 0.3),
+                                .init(color: AVIATheme.aviaBlack.opacity(0.15), location: 0.6),
+                                .init(color: AVIATheme.aviaBlack.opacity(0.4), location: 1.0)
+                            ],
+                            startPoint: .top,
+                            endPoint: .bottom
+                        )
+                    }
+                    .overlay(alignment: .topTrailing) {
+                        Text(specVM.currentTier.tagline)
+                            .font(.neueCaption2Medium)
+                            .foregroundStyle(AVIATheme.aviaWhite.opacity(0.8))
+                            .padding(.horizontal, 10)
+                            .padding(.vertical, 5)
+                            .background(.ultraThinMaterial.opacity(0.6))
+                            .clipShape(Capsule())
+                            .padding(14)
+                    }
+                    .clipped()
 
-                VStack(alignment: .leading, spacing: 4) {
-                    Text("Your Specification")
-                        .font(.neueCaption)
-                        .foregroundStyle(AVIATheme.textSecondary)
-                    Text(specVM.currentTier.displayName)
-                        .font(.neueCorpMedium(22))
-                        .foregroundStyle(AVIATheme.textPrimary)
-                    let totalItems = specVM.categories.reduce(0) { $0 + $1.items.count }
-                    Text("\(specVM.categories.count) categories · \(totalItems) inclusions")
-                        .font(.neueCaption)
-                        .foregroundStyle(AVIATheme.textSecondary)
+                VStack(spacing: 12) {
+                    HStack(spacing: 10) {
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text("Your Specification")
+                                .font(.neueCaption)
+                                .foregroundStyle(AVIATheme.aviaWhite.opacity(0.7))
+                            Text(specVM.currentTier.displayName)
+                                .font(.neueCorpMedium(24))
+                                .foregroundStyle(AVIATheme.aviaWhite)
+                        }
+
+                        Spacer()
+
+                        Image("spec_arrow")
+                            .resizable()
+                            .aspectRatio(contentMode: .fit)
+                            .frame(height: 28)
+                    }
+
+                    HStack(spacing: 16) {
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text("\(specVM.categories.count)")
+                                .font(.neueCorpMedium(20))
+                                .foregroundStyle(AVIATheme.aviaWhite)
+                            Text("Categories")
+                                .font(.neueCaption2)
+                                .foregroundStyle(AVIATheme.aviaWhite.opacity(0.6))
+                        }
+
+                        Rectangle()
+                            .fill(AVIATheme.aviaWhite.opacity(0.15))
+                            .frame(width: 1, height: 30)
+
+                        VStack(alignment: .leading, spacing: 2) {
+                            let totalItems = specVM.categories.reduce(0) { $0 + $1.items.count }
+                            Text("\(totalItems)")
+                                .font(.neueCorpMedium(20))
+                                .foregroundStyle(AVIATheme.aviaWhite)
+                            Text("Inclusions")
+                                .font(.neueCaption2)
+                                .foregroundStyle(AVIATheme.aviaWhite.opacity(0.6))
+                        }
+
+                        Rectangle()
+                            .fill(AVIATheme.aviaWhite.opacity(0.15))
+                            .frame(width: 1, height: 30)
+
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text("\(specVM.upgradeRequests.count)")
+                                .font(.neueCorpMedium(20))
+                                .foregroundStyle(AVIATheme.aviaWhite)
+                            Text("Upgrades")
+                                .font(.neueCaption2)
+                                .foregroundStyle(AVIATheme.aviaWhite.opacity(0.6))
+                        }
+
+                        Spacer()
+                    }
                 }
-                Spacer()
+                .padding(20)
             }
-            .padding(18)
-        }
-    }
 
-    private var compareUpgradeButton: some View {
-        NavigationLink {
-            SpecRangeComparisonOverviewView()
-        } label: {
-            HStack(spacing: 14) {
-                Image(systemName: "arrow.up.circle.fill")
-                    .font(.neueTitle3)
+            if specVM.upgradeTiers.count > 0 {
+                Rectangle()
+                    .fill(AVIATheme.aviaWhite.opacity(0.15))
+                    .frame(height: 1)
+                    .padding(.horizontal, 16)
+
+                NavigationLink {
+                    SpecRangeComparisonOverviewView()
+                } label: {
+                    HStack(spacing: 12) {
+                        Image(systemName: "arrow.up.circle.fill")
+                            .font(.system(size: 20, weight: .semibold))
+                        Text("Compare & Upgrade Ranges")
+                            .font(.neueSubheadlineMedium)
+                        Spacer()
+                        Image(systemName: "chevron.right")
+                            .font(.system(size: 14, weight: .semibold))
+                            .foregroundStyle(AVIATheme.aviaWhite.opacity(0.5))
+                    }
                     .foregroundStyle(AVIATheme.aviaWhite)
-                    .frame(width: 44, height: 44)
-                    .background(AVIATheme.aviaWhite.opacity(0.15))
-                    .clipShape(.rect(cornerRadius: 12))
-
-                VStack(alignment: .leading, spacing: 3) {
-                    Text("Compare & Upgrade Ranges")
-                        .font(.neueSubheadlineMedium)
-                        .foregroundStyle(AVIATheme.aviaWhite)
-                    Text("See what's included in each spec range")
-                        .font(.neueCaption)
-                        .foregroundStyle(AVIATheme.aviaWhite.opacity(0.7))
+                    .padding(16)
                 }
-                Spacer()
-                Image(systemName: "chevron.right")
-                    .font(.neueCaptionMedium)
-                    .foregroundStyle(AVIATheme.aviaWhite.opacity(0.5))
             }
-            .padding(16)
-            .background(AVIATheme.primaryGradient)
-            .clipShape(.rect(cornerRadius: 18))
         }
-        .buttonStyle(.plain)
+        .background(AVIATheme.timelessBrown)
+        .clipShape(.rect(cornerRadius: 20))
     }
 
     private var categoriesList: some View {
@@ -278,6 +338,7 @@ struct SpecificationsOverviewView: View {
         }
         .padding(.horizontal, 14)
         .padding(.vertical, 12)
+        .contentShape(Rectangle())
     }
 
     private var upgradeTotalCost: Double {
