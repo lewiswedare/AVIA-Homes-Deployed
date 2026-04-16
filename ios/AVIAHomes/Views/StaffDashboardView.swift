@@ -60,7 +60,7 @@ struct StaffDashboardView: View {
             HStack(spacing: 14) {
                 Text(viewModel.currentUser.initials)
                     .font(.neueCaptionMedium)
-                    .foregroundStyle(.white)
+                    .foregroundStyle(AVIATheme.aviaWhite)
                     .frame(width: 44, height: 44)
                     .background(AVIATheme.brownGradient)
                     .clipShape(Circle())

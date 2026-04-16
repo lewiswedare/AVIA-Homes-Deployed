@@ -112,7 +112,7 @@ struct LoginView: View {
                         Button(action: signIn) {
                             Group {
                                 if appViewModel.authService.isLoading {
-                                    ProgressView().tint(.white)
+                                    ProgressView().tint(AVIATheme.aviaWhite)
                                 } else {
                                     Text("Sign In")
                                         .font(.neueSubheadlineMedium)
@@ -120,7 +120,7 @@ struct LoginView: View {
                             }
                             .frame(maxWidth: .infinity)
                             .frame(height: 52)
-                            .foregroundStyle(.white)
+                            .foregroundStyle(AVIATheme.aviaWhite)
                             .background(AVIATheme.primaryGradient)
                             .clipShape(.rect(cornerRadius: 14))
                         }

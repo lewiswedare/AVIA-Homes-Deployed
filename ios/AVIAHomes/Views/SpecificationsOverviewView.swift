@@ -71,7 +71,7 @@ struct SpecificationsOverviewView: View {
                     Text("Confirm My Specifications")
                         .font(.neueSubheadlineMedium)
                 }
-                .foregroundStyle(.white)
+                .foregroundStyle(AVIATheme.aviaWhite)
                 .frame(maxWidth: .infinity)
                 .frame(height: 52)
                 .background(AVIATheme.primaryGradient)
@@ -119,7 +119,7 @@ struct SpecificationsOverviewView: View {
             .overlay(alignment: .bottom) {
                 Text("Fittings & Fixtures")
                     .font(.neueCorpMedium(28))
-                    .foregroundStyle(.white)
+                    .foregroundStyle(AVIATheme.aviaWhite)
                     .frame(maxWidth: .infinity, alignment: .leading)
                     .padding(.horizontal, 20)
                     .padding(.vertical, 16)
@@ -154,7 +154,7 @@ struct SpecificationsOverviewView: View {
                     .overlay(alignment: .topTrailing) {
                         Text(specVM.currentTier.tagline)
                             .font(.neueCaption2Medium)
-                            .foregroundStyle(.white.opacity(0.8))
+                            .foregroundStyle(AVIATheme.aviaWhite.opacity(0.8))
                             .padding(.horizontal, 10)
                             .padding(.vertical, 5)
                             .background(.ultraThinMaterial.opacity(0.6))
@@ -168,10 +168,10 @@ struct SpecificationsOverviewView: View {
                         VStack(alignment: .leading, spacing: 2) {
                             Text("Your Specification")
                                 .font(.neueCaption)
-                                .foregroundStyle(.white.opacity(0.7))
+                                .foregroundStyle(AVIATheme.aviaWhite.opacity(0.7))
                             Text(specVM.currentTier.displayName)
                                 .font(.neueCorpMedium(24))
-                                .foregroundStyle(.white)
+                                .foregroundStyle(AVIATheme.aviaWhite)
                         }
 
                         Spacer()
@@ -186,37 +186,37 @@ struct SpecificationsOverviewView: View {
                         VStack(alignment: .leading, spacing: 2) {
                             Text("\(specVM.categories.count)")
                                 .font(.neueCorpMedium(20))
-                                .foregroundStyle(.white)
+                                .foregroundStyle(AVIATheme.aviaWhite)
                             Text("Categories")
                                 .font(.neueCaption2)
-                                .foregroundStyle(.white.opacity(0.6))
+                                .foregroundStyle(AVIATheme.aviaWhite.opacity(0.6))
                         }
 
                         Rectangle()
-                            .fill(.white.opacity(0.15))
+                            .fill(AVIATheme.aviaWhite.opacity(0.15))
                             .frame(width: 1, height: 30)
 
                         VStack(alignment: .leading, spacing: 2) {
                             let totalItems = specVM.categories.reduce(0) { $0 + $1.items.count }
                             Text("\(totalItems)")
                                 .font(.neueCorpMedium(20))
-                                .foregroundStyle(.white)
+                                .foregroundStyle(AVIATheme.aviaWhite)
                             Text("Inclusions")
                                 .font(.neueCaption2)
-                                .foregroundStyle(.white.opacity(0.6))
+                                .foregroundStyle(AVIATheme.aviaWhite.opacity(0.6))
                         }
 
                         Rectangle()
-                            .fill(.white.opacity(0.15))
+                            .fill(AVIATheme.aviaWhite.opacity(0.15))
                             .frame(width: 1, height: 30)
 
                         VStack(alignment: .leading, spacing: 2) {
                             Text("\(specVM.upgradeRequests.count)")
                                 .font(.neueCorpMedium(20))
-                                .foregroundStyle(.white)
+                                .foregroundStyle(AVIATheme.aviaWhite)
                             Text("Upgrades")
                                 .font(.neueCaption2)
-                                .foregroundStyle(.white.opacity(0.6))
+                                .foregroundStyle(AVIATheme.aviaWhite.opacity(0.6))
                         }
 
                         Spacer()
@@ -267,7 +267,7 @@ struct SpecificationsOverviewView: View {
                     Text(tier.displayName)
                         .font(.neueCaption2Medium)
                 }
-                .foregroundStyle(isActive ? .white : AVIATheme.textSecondary)
+                .foregroundStyle(isActive ? AVIATheme.aviaWhite : AVIATheme.textSecondary)
                 .padding(.horizontal, 12)
                 .padding(.vertical, 8)
                 .frame(maxWidth: .infinity)
@@ -322,7 +322,7 @@ struct SpecificationsOverviewView: View {
                     if pendingCount > 0 {
                         Text("\(pendingCount)")
                             .font(.neueCaption2Medium)
-                            .foregroundStyle(.white)
+                            .foregroundStyle(AVIATheme.aviaWhite)
                             .frame(width: 22, height: 22)
                             .background(AVIATheme.warning)
                             .clipShape(Circle())

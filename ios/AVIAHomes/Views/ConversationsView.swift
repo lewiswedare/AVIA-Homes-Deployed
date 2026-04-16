@@ -57,7 +57,7 @@ struct ConversationsView: View {
         return HStack(spacing: 14) {
             Text(otherUser?.initials ?? "?")
                 .font(.neueCorpMedium(14))
-                .foregroundStyle(.white)
+                .foregroundStyle(AVIATheme.aviaWhite)
                 .frame(width: 48, height: 48)
                 .background(AVIATheme.primaryGradient)
                 .clipShape(Circle())
@@ -90,7 +90,7 @@ struct ConversationsView: View {
                     if hasUnread {
                         Text("\(conversation.unreadCount)")
                             .font(.neueCorpMedium(10))
-                            .foregroundStyle(.white)
+                            .foregroundStyle(AVIATheme.aviaWhite)
                             .frame(minWidth: 20, minHeight: 20)
                             .background(AVIATheme.timelessBrown)
                             .clipShape(Circle())
@@ -123,7 +123,7 @@ struct ConversationsView: View {
                     Text("New Message")
                 }
                 .font(.neueSubheadlineMedium)
-                .foregroundStyle(.white)
+                .foregroundStyle(AVIATheme.aviaWhite)
                 .padding(.horizontal, 24)
                 .padding(.vertical, 14)
                 .background(AVIATheme.primaryGradient)
@@ -206,7 +206,7 @@ struct NewConversationSheet: View {
                         HStack(spacing: 12) {
                             Text(user.initials.isEmpty ? "?" : user.initials)
                                 .font(.neueCaptionMedium)
-                                .foregroundStyle(.white)
+                                .foregroundStyle(AVIATheme.aviaWhite)
                                 .frame(width: 40, height: 40)
                                 .background(AVIATheme.primaryGradient)
                                 .clipShape(Circle())

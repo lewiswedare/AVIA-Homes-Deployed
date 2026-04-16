@@ -325,11 +325,11 @@ struct AdminPipelineView: View {
                     if isComplete {
                         Image(systemName: "checkmark")
                             .font(.system(size: 14, weight: .bold))
-                            .foregroundStyle(.white)
+                            .foregroundStyle(AVIATheme.aviaWhite)
                     } else {
                         Text("\(number)")
                             .font(.neueCorpMedium(14))
-                            .foregroundStyle(isActive ? .white : AVIATheme.textTertiary)
+                            .foregroundStyle(isActive ? AVIATheme.aviaWhite : AVIATheme.textTertiary)
                     }
                 }
 

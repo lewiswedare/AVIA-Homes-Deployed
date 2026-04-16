@@ -190,7 +190,7 @@ struct AdminBuildTimelineEditor: View {
                             Text("ACTION")
                                 .font(.neueCorpMedium(7))
                                 .kerning(0.3)
-                                .foregroundStyle(.white)
+                                .foregroundStyle(AVIATheme.aviaWhite)
                                 .padding(.horizontal, 5)
                                 .padding(.vertical, 1)
                                 .background(AVIATheme.warning)

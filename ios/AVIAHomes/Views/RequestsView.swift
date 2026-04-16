@@ -396,7 +396,7 @@ struct NewRequestView: View {
                                     Capsule().fill(AVIATheme.cardBackground)
                                 }
                             }
-                            .foregroundStyle(category == cat ? .white : AVIATheme.textSecondary)
+                            .foregroundStyle(category == cat ? AVIATheme.aviaWhite : AVIATheme.textSecondary)
                             .overlay {
                                 if category != cat {
                                     Capsule().stroke(AVIATheme.surfaceBorder, lineWidth: 1)
@@ -497,7 +497,7 @@ struct NewRequestView: View {
                 Image(systemName: "xmark.circle.fill")
                     .font(.system(size: 20))
                     .symbolRenderingMode(.palette)
-                    .foregroundStyle(.white, Color.black.opacity(0.6))
+                    .foregroundStyle(AVIATheme.aviaWhite, AVIATheme.aviaBlack.opacity(0.6))
             }
             .offset(x: 6, y: -6)
         }
@@ -547,12 +547,12 @@ struct PhotoPreviewOverlay: View {
                 .resizable()
                 .aspectRatio(contentMode: .fit)
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
-                .background(.black)
+                .background(AVIATheme.aviaBlack)
                 .navigationBarTitleDisplayMode(.inline)
                 .toolbar {
                     ToolbarItem(placement: .topBarTrailing) {
                         Button("Done") { dismiss() }
-                            .tint(.white)
+                            .tint(AVIATheme.aviaWhite)
                     }
                 }
                 .toolbarBackground(.hidden, for: .navigationBar)

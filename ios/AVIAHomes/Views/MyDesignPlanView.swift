@@ -66,9 +66,9 @@ struct MyDesignPlanView: View {
                     } else if phase.error != nil {
                         Image(systemName: "rectangle.split.2x2")
                             .font(.system(size: 48))
-                            .foregroundStyle(.white.opacity(0.3))
+                            .foregroundStyle(AVIATheme.aviaWhite.opacity(0.3))
                     } else {
-                        ProgressView().tint(.white.opacity(0.6))
+                        ProgressView().tint(AVIATheme.aviaWhite.opacity(0.6))
                     }
                 }
                 .allowsHitTesting(false)
@@ -83,7 +83,7 @@ struct MyDesignPlanView: View {
                         Text("Markup")
                             .font(.neueCaptionMedium)
                     }
-                    .foregroundStyle(.white)
+                    .foregroundStyle(AVIATheme.aviaWhite)
                     .padding(.horizontal, 14)
                     .padding(.vertical, 8)
                     .background(AVIATheme.primaryGradient)
@@ -148,7 +148,7 @@ struct MyDesignPlanView: View {
                                 Text("Confirm Plans")
                                     .font(.neueCaptionMedium)
                             }
-                            .foregroundStyle(.white)
+                            .foregroundStyle(AVIATheme.aviaWhite)
                             .frame(maxWidth: .infinity)
                             .frame(height: 40)
                             .background(AVIATheme.primaryGradient)
@@ -370,7 +370,7 @@ struct MyDesignPlanView: View {
 
                 Text(msg.message)
                     .font(.neueCaption)
-                    .foregroundStyle(isClient ? .white : AVIATheme.textSecondary)
+                    .foregroundStyle(isClient ? AVIATheme.aviaWhite : AVIATheme.textSecondary)
                     .lineSpacing(3)
                     .multilineTextAlignment(isClient ? .trailing : .leading)
                     .padding(12)
@@ -400,7 +400,7 @@ struct MyDesignPlanView: View {
         let initials = name.split(separator: " ").compactMap(\.first).prefix(2).map(String.init).joined()
         return Text(initials)
             .font(.neueCaption2Medium)
-            .foregroundStyle(.white)
+            .foregroundStyle(AVIATheme.aviaWhite)
             .frame(width: 28, height: 28)
             .background(isAvia ? AVIATheme.primaryGradient : LinearGradient(colors: [AVIATheme.timelessBrownLight, AVIATheme.timelessBrownDark], startPoint: .topLeading, endPoint: .bottomTrailing))
             .clipShape(Circle())
@@ -439,7 +439,7 @@ struct MyDesignPlanView: View {
                             Text("Send")
                                 .font(.neueCaptionMedium)
                         }
-                        .foregroundStyle(.white)
+                        .foregroundStyle(AVIATheme.aviaWhite)
                         .padding(.horizontal, 20)
                         .padding(.vertical, 9)
                         .background(viewModel.newMessageText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty ? LinearGradient(colors: [AVIATheme.textTertiary], startPoint: .leading, endPoint: .trailing) : AVIATheme.primaryGradient)
@@ -523,7 +523,7 @@ struct MyDesignPlanView: View {
                         Text("FINAL")
                             .font(.neueCorpMedium(8))
                             .kerning(0.6)
-                            .foregroundStyle(.white)
+                            .foregroundStyle(AVIATheme.aviaWhite)
                             .padding(.horizontal, 6)
                             .padding(.vertical, 2)
                             .background(AVIATheme.success)

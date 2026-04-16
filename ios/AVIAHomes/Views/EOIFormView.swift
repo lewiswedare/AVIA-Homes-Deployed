@@ -86,11 +86,11 @@ struct EOIFormView: View {
                         if step < currentStep {
                             Image(systemName: "checkmark")
                                 .font(.system(size: 12, weight: .bold))
-                                .foregroundStyle(.white)
+                                .foregroundStyle(AVIATheme.aviaWhite)
                         } else {
                             Text("\(step + 1)")
                                 .font(.neueCaption2Medium)
-                                .foregroundStyle(step <= currentStep ? .white : AVIATheme.textTertiary)
+                                .foregroundStyle(step <= currentStep ? AVIATheme.aviaWhite : AVIATheme.textTertiary)
                         }
                     }
                     Text(stepTitles[step])
@@ -298,7 +298,7 @@ struct EOIFormView: View {
                     }
                     .frame(maxWidth: .infinity)
                     .frame(height: 52)
-                    .foregroundStyle(.white)
+                    .foregroundStyle(AVIATheme.aviaWhite)
                     .background(AVIATheme.primaryGradient)
                     .clipShape(.rect(cornerRadius: 14))
                 }
@@ -309,7 +309,7 @@ struct EOIFormView: View {
                     HStack(spacing: 8) {
                         if isSubmitting {
                             ProgressView()
-                                .tint(.white)
+                                .tint(AVIATheme.aviaWhite)
                         } else {
                             Image(systemName: "paperplane.fill")
                                 .font(.neueSubheadlineMedium)
@@ -319,7 +319,7 @@ struct EOIFormView: View {
                     }
                     .frame(maxWidth: .infinity)
                     .frame(height: 52)
-                    .foregroundStyle(.white)
+                    .foregroundStyle(AVIATheme.aviaWhite)
                     .background(AVIATheme.primaryGradient)
                     .clipShape(.rect(cornerRadius: 14))
                 }

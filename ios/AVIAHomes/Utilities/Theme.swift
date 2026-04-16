@@ -4,53 +4,62 @@ enum AVIATheme {
     static let aviaBlack = Color(hex: "1A1A1A")
     static let aviaWhite = Color(hex: "E1DDDC")
     static let timelessBrown = Color(hex: "37332B")
+    static let heritageBlue = Color(hex: "8E9B92")
 
-    static let timelessBrownLight = Color(hex: "4A453B")
-    static let timelessBrownDark = Color(hex: "2A261F")
+    static let timelessBrownLight = timelessBrown.opacity(0.75)
+    static let timelessBrownDark = timelessBrown
 
-    static let background = Color(hex: "E1DDDC")
-    static let cardBackground = Color(hex: "EBE8E7")
-    static let cardBackgroundAlt = Color(hex: "F2F0EF")
-    static let surfaceElevated = Color(hex: "D8D4D3")
-    static let surfaceBorder = Color(hex: "CDC9C7")
+    static let background = aviaWhite
+    static let cardBackground = Color(uiColor: UIColor(
+        red: 235/255, green: 232/255, blue: 231/255, alpha: 1
+    ))
+    static let cardBackgroundAlt = Color(uiColor: UIColor(
+        red: 242/255, green: 240/255, blue: 239/255, alpha: 1
+    ))
+    static let surfaceElevated = Color(uiColor: UIColor(
+        red: 216/255, green: 212/255, blue: 211/255, alpha: 1
+    ))
+    static let surfaceBorder = Color(uiColor: UIColor(
+        red: 205/255, green: 201/255, blue: 199/255, alpha: 1
+    ))
 
-    static let textPrimary = Color(hex: "1A1A1A")
-    static let textSecondary = Color(hex: "5C5856")
-    static let textTertiary = Color(hex: "8A8583")
+    static let textPrimary = aviaBlack
+    static let textSecondary = aviaBlack.opacity(0.55)
+    static let textTertiary = aviaBlack.opacity(0.35)
 
     static let accent = timelessBrown
-    static let success = Color(hex: "2D7A3A")
-    static let warning = Color(hex: "C67A1A")
-    static let destructive = Color(hex: "C93B3B")
+    static let success = heritageBlue
+    static let warning = timelessBrown.opacity(0.8)
+    static let destructive = aviaBlack.opacity(0.85)
 
     static let primaryGradient = LinearGradient(
-        colors: [Color(hex: "1A1A1A"), Color(hex: "37332B")],
+        colors: [aviaBlack, timelessBrown],
         startPoint: .topLeading,
         endPoint: .bottomTrailing
     )
 
     static let subtleGradient = LinearGradient(
-        colors: [Color(hex: "EBE8E7"), Color(hex: "E1DDDC")],
+        colors: [aviaWhite.opacity(0.7), aviaWhite],
         startPoint: .top,
         endPoint: .bottom
     )
 
     static let brownGradient = LinearGradient(
-        colors: [Color(hex: "37332B"), Color(hex: "4A453B")],
+        colors: [timelessBrown, timelessBrown.opacity(0.8)],
         startPoint: .topLeading,
         endPoint: .bottomTrailing
     )
 
     static let immersiveGradient = LinearGradient(
         stops: [
-            .init(color: Color(hex: "37332B").opacity(0.85), location: 0.0),
+            .init(color: timelessBrown.opacity(0.85), location: 0.0),
             .init(color: Color.clear, location: 1.0)
         ],
         startPoint: .top,
         endPoint: .bottom
     )
 
-    static let warmAccent = Color(hex: "37332B").opacity(0.12)
+    static let warmAccent = timelessBrown.opacity(0.12)
 
     static func formatCost(_ amount: Double) -> String {
         let formatter = NumberFormatter()
@@ -121,7 +130,7 @@ struct StatusBadge: View {
     var body: some View {
         Text(title)
             .font(.neueCaption2Medium)
-            .foregroundStyle(.white)
+            .foregroundStyle(AVIATheme.aviaWhite)
             .padding(.horizontal, 10)
             .padding(.vertical, 4)
             .background(color, in: Capsule())
@@ -249,7 +258,7 @@ extension View {
         self
             .background(.ultraThinMaterial)
             .clipShape(.rect(cornerRadius: cornerRadius))
-            .shadow(color: .black.opacity(0.06), radius: 8, y: 2)
+            .shadow(color: AVIATheme.aviaBlack.opacity(0.06), radius: 8, y: 2)
     }
 
     func frostedOverlay() -> some View {

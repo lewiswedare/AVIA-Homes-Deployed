@@ -69,11 +69,11 @@ struct DesignComparisonView: View {
                     VStack(spacing: 2) {
                         Text(design.name)
                             .font(.neueCaptionMedium)
-                            .foregroundStyle(.white)
+                            .foregroundStyle(AVIATheme.aviaWhite)
                             .lineLimit(1)
                         Text(String(format: "%.0fm²", design.squareMeters))
                             .font(.neueCaption2)
-                            .foregroundStyle(.white.opacity(0.85))
+                            .foregroundStyle(AVIATheme.aviaWhite.opacity(0.85))
                     }
                     .frame(maxWidth: .infinity)
                     .padding(.vertical, 10)

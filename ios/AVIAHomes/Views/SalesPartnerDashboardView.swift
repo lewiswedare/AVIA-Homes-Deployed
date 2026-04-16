@@ -42,7 +42,7 @@ struct PartnerDashboardView: View {
             HStack(spacing: 14) {
                 Text(viewModel.currentUser.initials)
                     .font(.neueCaptionMedium)
-                    .foregroundStyle(.white)
+                    .foregroundStyle(AVIATheme.aviaWhite)
                     .frame(width: 44, height: 44)
                     .background(AVIATheme.brownGradient)
                     .clipShape(Circle())
@@ -85,7 +85,7 @@ struct PartnerDashboardView: View {
             .frame(maxWidth: .infinity, alignment: .leading)
             .background(.ultraThinMaterial)
             .clipShape(.rect(cornerRadius: 16))
-            .shadow(color: .black.opacity(0.06), radius: 8, y: 2)
+            .shadow(color: AVIATheme.aviaBlack.opacity(0.06), radius: 8, y: 2)
 
             VStack(alignment: .leading, spacing: 4) {
                 let avgProgress = viewModel.clientBuildsForCurrentUser.isEmpty ? 0.0 :
@@ -139,7 +139,7 @@ struct PartnerDashboardView: View {
                 HStack(spacing: 14) {
                     Text(build.client.initials.isEmpty ? "?" : build.client.initials)
                         .font(.neueCaptionMedium)
-                        .foregroundStyle(.white)
+                        .foregroundStyle(AVIATheme.aviaWhite)
                         .frame(width: 42, height: 42)
                         .background(AVIATheme.primaryGradient)
                         .clipShape(Circle())
@@ -208,7 +208,7 @@ struct PartnerClientDetailView: View {
                 HStack(spacing: 14) {
                     Text(build.client.initials.isEmpty ? "?" : build.client.initials)
                         .font(.neueCorpMedium(20))
-                        .foregroundStyle(.white)
+                        .foregroundStyle(AVIATheme.aviaWhite)
                         .frame(width: 52, height: 52)
                         .background(AVIATheme.primaryGradient)
                         .clipShape(Circle())

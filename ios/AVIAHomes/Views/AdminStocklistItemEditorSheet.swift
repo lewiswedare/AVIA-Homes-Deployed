@@ -263,12 +263,12 @@ struct AdminStocklistItemEditorSheet: View {
                         HStack {
                             if isSaving {
                                 ProgressView()
-                                    .tint(.white)
+                                    .tint(AVIATheme.aviaWhite)
                             }
                             Text(isNew ? "Create Lot" : "Save Changes")
                                 .font(.neueCaptionMedium)
                         }
-                        .foregroundStyle(.white)
+                        .foregroundStyle(AVIATheme.aviaWhite)
                         .frame(maxWidth: .infinity)
                         .padding(.vertical, 14)
                         .background(AVIATheme.primaryGradient, in: RoundedRectangle(cornerRadius: 12))

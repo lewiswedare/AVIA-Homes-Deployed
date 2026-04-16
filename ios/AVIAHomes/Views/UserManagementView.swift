@@ -67,15 +67,15 @@ struct UserManagementView: View {
         HStack(spacing: 12) {
             Image(systemName: "exclamationmark.circle.fill")
                 .font(.system(size: 20))
-                .foregroundStyle(.white)
+                .foregroundStyle(AVIATheme.aviaWhite)
 
             VStack(alignment: .leading, spacing: 2) {
                 Text("\(pendingCount) pending \(pendingCount == 1 ? "user" : "users")")
                     .font(.neueSubheadlineMedium)
-                    .foregroundStyle(.white)
+                    .foregroundStyle(AVIATheme.aviaWhite)
                 Text("Tap to review and assign roles")
                     .font(.neueCaption)
-                    .foregroundStyle(.white.opacity(0.8))
+                    .foregroundStyle(AVIATheme.aviaWhite.opacity(0.8))
             }
 
             Spacer()
@@ -88,7 +88,7 @@ struct UserManagementView: View {
                     .foregroundStyle(AVIATheme.timelessBrown)
                     .padding(.horizontal, 14)
                     .padding(.vertical, 6)
-                    .background(.white)
+                    .background(AVIATheme.aviaWhite)
                     .clipShape(.capsule)
             }
         }
@@ -119,7 +119,7 @@ struct UserManagementView: View {
         } label: {
             Text(label)
                 .font(.neueCaptionMedium)
-                .foregroundStyle(isSelected ? .white : AVIATheme.textSecondary)
+                .foregroundStyle(isSelected ? AVIATheme.aviaWhite : AVIATheme.textSecondary)
                 .padding(.horizontal, 14)
                 .padding(.vertical, 8)
                 .background(isSelected ? AVIATheme.timelessBrown : AVIATheme.cardBackground)
@@ -134,7 +134,7 @@ struct UserManagementView: View {
         HStack(spacing: 14) {
             Text(user.initials.isEmpty ? "?" : user.initials)
                 .font(.neueCorpMedium(14))
-                .foregroundStyle(.white)
+                .foregroundStyle(AVIATheme.aviaWhite)
                 .frame(width: 42, height: 42)
                 .background {
                     Group {
@@ -269,7 +269,7 @@ struct UserRoleAssignmentSheet: View {
                     Button(action: saveRole) {
                         Group {
                             if isSaving {
-                                ProgressView().tint(.white)
+                                ProgressView().tint(AVIATheme.aviaWhite)
                             } else {
                                 Text("Save Role")
                                     .font(.neueSubheadlineMedium)
@@ -277,7 +277,7 @@ struct UserRoleAssignmentSheet: View {
                         }
                         .frame(maxWidth: .infinity)
                         .frame(height: 52)
-                        .foregroundStyle(.white)
+                        .foregroundStyle(AVIATheme.aviaWhite)
                         .background(AVIATheme.primaryGradient)
                         .clipShape(.rect(cornerRadius: 14))
                     }
@@ -306,7 +306,7 @@ struct UserRoleAssignmentSheet: View {
         VStack(spacing: 12) {
             Text(user.initials.isEmpty ? "?" : user.initials)
                 .font(.neueCorpMedium(24))
-                .foregroundStyle(.white)
+                .foregroundStyle(AVIATheme.aviaWhite)
                 .frame(width: 64, height: 64)
                 .background {
                     Group {

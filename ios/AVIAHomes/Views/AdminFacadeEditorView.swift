@@ -112,7 +112,7 @@ struct AdminFacadeEditorView: View {
                 .font(.neueCaptionMedium)
                 .padding(.horizontal, 14)
                 .padding(.vertical, 7)
-                .foregroundStyle(filterPricing == value ? .white : AVIATheme.textSecondary)
+                .foregroundStyle(filterPricing == value ? AVIATheme.aviaWhite : AVIATheme.textSecondary)
                 .background(filterPricing == value ? AVIATheme.timelessBrown : AVIATheme.cardBackground)
                 .clipShape(Capsule())
                 .overlay {
@@ -212,7 +212,7 @@ struct AdminFacadeEditorView: View {
         if let msg = viewModel.successMessage {
             Text(msg)
                 .font(.neueCaptionMedium)
-                .foregroundStyle(.white)
+                .foregroundStyle(AVIATheme.aviaWhite)
                 .padding(.horizontal, 20)
                 .padding(.vertical, 12)
                 .background(AVIATheme.success, in: Capsule())
@@ -227,7 +227,7 @@ struct AdminFacadeEditorView: View {
         if let msg = viewModel.errorMessage {
             Text(msg)
                 .font(.neueCaptionMedium)
-                .foregroundStyle(.white)
+                .foregroundStyle(AVIATheme.aviaWhite)
                 .padding(.horizontal, 20)
                 .padding(.vertical, 12)
                 .background(AVIATheme.destructive, in: Capsule())

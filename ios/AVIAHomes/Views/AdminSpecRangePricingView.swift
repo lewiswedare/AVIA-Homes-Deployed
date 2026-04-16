@@ -52,7 +52,7 @@ struct AdminSpecRangePricingView: View {
             HStack(spacing: 14) {
                 Image(systemName: "dollarsign.arrow.trianglehead.counterclockwise.rotate.90")
                     .font(.neueCorpMedium(18))
-                    .foregroundStyle(.white)
+                    .foregroundStyle(AVIATheme.aviaWhite)
                     .frame(width: 44, height: 44)
                     .background(AVIATheme.primaryGradient)
                     .clipShape(.rect(cornerRadius: 12))
@@ -97,13 +97,13 @@ struct AdminSpecRangePricingView: View {
                         label: "Full upgrade Volos \u{2192} Portobello",
                         text: $singleVolosToPortobelloCost,
                         fromColor: AVIATheme.timelessBrown,
-                        toColor: Color(hex: "8B5CF6")
+                        toColor: AVIATheme.heritageBlue
                     )
                     fullRangeCostField(
                         label: "Full upgrade Messina \u{2192} Portobello",
                         text: $singleMessinaToPortobelloCost,
                         fromColor: AVIATheme.warning,
-                        toColor: Color(hex: "8B5CF6")
+                        toColor: AVIATheme.heritageBlue
                     )
                 }
                 .padding(.horizontal, 14)
@@ -118,7 +118,7 @@ struct AdminSpecRangePricingView: View {
                 HStack(spacing: 8) {
                     Image(systemName: "building.2")
                         .font(.neueCorpMedium(12))
-                        .foregroundStyle(Color(hex: "8B5CF6"))
+                        .foregroundStyle(AVIATheme.heritageBlue)
                     Text("DOUBLE STOREY")
                         .font(.neueCorpMedium(9))
                         .kerning(0.5)
@@ -137,13 +137,13 @@ struct AdminSpecRangePricingView: View {
                         label: "Full upgrade Volos \u{2192} Portobello",
                         text: $doubleVolosToPortobelloCost,
                         fromColor: AVIATheme.timelessBrown,
-                        toColor: Color(hex: "8B5CF6")
+                        toColor: AVIATheme.heritageBlue
                     )
                     fullRangeCostField(
                         label: "Full upgrade Messina \u{2192} Portobello",
                         text: $doubleMessinaToPortobelloCost,
                         fromColor: AVIATheme.warning,
-                        toColor: Color(hex: "8B5CF6")
+                        toColor: AVIATheme.heritageBlue
                     )
                 }
                 .padding(.horizontal, 14)
@@ -187,7 +187,7 @@ struct AdminSpecRangePricingView: View {
             HStack(spacing: 8) {
                 if isSaving {
                     ProgressView()
-                        .tint(.white)
+                        .tint(AVIATheme.aviaWhite)
                         .scaleEffect(0.8)
                 } else {
                     Image(systemName: "checkmark.circle.fill")
@@ -197,7 +197,7 @@ struct AdminSpecRangePricingView: View {
             .font(.neueSubheadlineMedium)
             .frame(maxWidth: .infinity)
             .frame(height: 52)
-            .foregroundStyle(.white)
+            .foregroundStyle(AVIATheme.aviaWhite)
             .background(AVIATheme.primaryGradient)
             .clipShape(.rect(cornerRadius: 14))
         }
@@ -209,7 +209,7 @@ struct AdminSpecRangePricingView: View {
         if let msg = successMessage {
             Text(msg)
                 .font(.neueCaptionMedium)
-                .foregroundStyle(.white)
+                .foregroundStyle(AVIATheme.aviaWhite)
                 .padding(.horizontal, 20)
                 .padding(.vertical, 12)
                 .background(AVIATheme.success, in: Capsule())
@@ -224,7 +224,7 @@ struct AdminSpecRangePricingView: View {
         if let msg = errorMessage {
             Text(msg)
                 .font(.neueCaptionMedium)
-                .foregroundStyle(.white)
+                .foregroundStyle(AVIATheme.aviaWhite)
                 .padding(.horizontal, 20)
                 .padding(.vertical, 12)
                 .background(AVIATheme.destructive, in: Capsule())

@@ -61,7 +61,7 @@ struct HomeDesignDetailView: View {
                     VStack(alignment: .leading, spacing: 6) {
                         Text(design.name)
                             .font(.neueCorpMedium(28))
-                            .foregroundStyle(.white)
+                            .foregroundStyle(AVIATheme.aviaWhite)
                         HStack(spacing: 16) {
                             Text("\(design.bedrooms) Bed")
                             Text("\(design.bathrooms) Bath")
@@ -69,7 +69,7 @@ struct HomeDesignDetailView: View {
                             Text(String(format: "%.0fm²", design.squareMeters))
                         }
                         .font(.neueCaption)
-                        .foregroundStyle(.white.opacity(0.85))
+                        .foregroundStyle(AVIATheme.aviaWhite.opacity(0.85))
                     }
                     .frame(maxWidth: .infinity, alignment: .leading)
                     .padding(.horizontal, 20)
@@ -209,10 +209,10 @@ struct HomeDesignDetailView: View {
                                 } else if phase.error != nil {
                                     Image(systemName: "rectangle.split.2x2")
                                         .font(.system(size: 36))
-                                        .foregroundStyle(.white.opacity(0.3))
+                                        .foregroundStyle(AVIATheme.aviaWhite.opacity(0.3))
                                 } else {
                                     ProgressView()
-                                        .tint(.white.opacity(0.5))
+                                        .tint(AVIATheme.aviaWhite.opacity(0.5))
                                 }
                             }
                             .allowsHitTesting(false)
@@ -466,7 +466,7 @@ struct HomeDesignDetailView: View {
                 }
                 .frame(maxWidth: .infinity)
                 .frame(height: 52)
-                .foregroundStyle(.white)
+                .foregroundStyle(AVIATheme.aviaWhite)
                 .background(AVIATheme.primaryGradient)
                 .clipShape(.rect(cornerRadius: 14))
             }
@@ -565,14 +565,14 @@ struct FloorplanFullscreenView: View {
                             VStack(spacing: 12) {
                                 Image(systemName: "rectangle.split.2x2")
                                     .font(.system(size: 48))
-                                    .foregroundStyle(.white.opacity(0.3))
+                                    .foregroundStyle(AVIATheme.aviaWhite.opacity(0.3))
                                 Text("Unable to load floorplan")
                                     .font(.neueSubheadline)
-                                    .foregroundStyle(.white.opacity(0.5))
+                                    .foregroundStyle(AVIATheme.aviaWhite.opacity(0.5))
                             }
                         } else {
                             ProgressView()
-                                .tint(.white.opacity(0.6))
+                                .tint(AVIATheme.aviaWhite.opacity(0.6))
                                 .scaleEffect(1.2)
                         }
                     }
@@ -586,10 +586,10 @@ struct FloorplanFullscreenView: View {
                     VStack(spacing: 1) {
                         Text("\(design.name) Floorplan")
                             .font(.neueSubheadlineMedium)
-                            .foregroundStyle(.white)
+                            .foregroundStyle(AVIATheme.aviaWhite)
                         Text(String(format: "%.0f m²", design.squareMeters))
                             .font(.neueCaption2)
-                            .foregroundStyle(.white.opacity(0.6))
+                            .foregroundStyle(AVIATheme.aviaWhite.opacity(0.6))
                     }
                 }
                 ToolbarItem(placement: .topBarLeading) {
@@ -599,7 +599,7 @@ struct FloorplanFullscreenView: View {
                         Image(systemName: "xmark.circle.fill")
                             .font(.title3)
                             .symbolRenderingMode(.hierarchical)
-                            .foregroundStyle(.white.opacity(0.7))
+                            .foregroundStyle(AVIATheme.aviaWhite.opacity(0.7))
                     }
                 }
             }

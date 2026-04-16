@@ -136,7 +136,7 @@ struct AdminBuildEditSheet: View {
         HStack(spacing: 14) {
             Text(latestBuild.client.initials.isEmpty ? "?" : latestBuild.client.initials)
                 .font(.neueCorpMedium(20))
-                .foregroundStyle(.white)
+                .foregroundStyle(AVIATheme.aviaWhite)
                 .frame(width: 52, height: 52)
                 .background(AVIATheme.primaryGradient)
                 .clipShape(Circle())
@@ -182,7 +182,7 @@ struct AdminBuildEditSheet: View {
                         }
                         .padding(.horizontal, 12)
                         .padding(.vertical, 8)
-                        .foregroundStyle(selectedTab == tab ? .white : AVIATheme.textSecondary)
+                        .foregroundStyle(selectedTab == tab ? AVIATheme.aviaWhite : AVIATheme.textSecondary)
                         .background(selectedTab == tab ? AVIATheme.timelessBrown : AVIATheme.cardBackground)
                         .clipShape(Capsule())
                         .overlay {
@@ -266,7 +266,7 @@ struct AdminBuildEditSheet: View {
                 .font(.neueSubheadlineMedium)
                 .frame(maxWidth: .infinity)
                 .frame(height: 48)
-                .foregroundStyle(.white)
+                .foregroundStyle(AVIATheme.aviaWhite)
                 .background(AVIATheme.primaryGradient)
                 .clipShape(.rect(cornerRadius: 14))
             }
@@ -296,7 +296,7 @@ struct AdminBuildEditSheet: View {
         HStack(spacing: 12) {
             Text(client.initials.isEmpty ? "?" : client.initials)
                 .font(.neueCorp(11))
-                .foregroundStyle(.white)
+                .foregroundStyle(AVIATheme.aviaWhite)
                 .frame(width: 36, height: 36)
                 .background(AVIATheme.primaryGradient)
                 .clipShape(Circle())
@@ -310,7 +310,7 @@ struct AdminBuildEditSheet: View {
                         Text("PRIMARY")
                             .font(.neueCorpMedium(7))
                             .kerning(0.3)
-                            .foregroundStyle(.white)
+                            .foregroundStyle(AVIATheme.aviaWhite)
                             .padding(.horizontal, 5)
                             .padding(.vertical, 1)
                             .background(AVIATheme.timelessBrown)
@@ -353,7 +353,7 @@ struct AdminBuildEditSheet: View {
                 .font(.neueSubheadlineMedium)
                 .frame(maxWidth: .infinity)
                 .frame(height: 48)
-                .foregroundStyle(.white)
+                .foregroundStyle(AVIATheme.aviaWhite)
                 .background(AVIATheme.destructive)
                 .clipShape(.rect(cornerRadius: 14))
             }
@@ -411,7 +411,7 @@ struct AdminBuildEditSheet: View {
                                     }
                                     .frame(maxWidth: .infinity)
                                     .padding(.vertical, 10)
-                                    .foregroundStyle(selectedSpecTier == tier.rawValue ? .white : AVIATheme.textSecondary)
+                                    .foregroundStyle(selectedSpecTier == tier.rawValue ? AVIATheme.aviaWhite : AVIATheme.textSecondary)
                                     .background(selectedSpecTier == tier.rawValue ? AVIATheme.timelessBrown : AVIATheme.cardBackgroundAlt)
                                     .clipShape(.rect(cornerRadius: 10))
                                     .overlay {
@@ -451,7 +451,7 @@ struct AdminBuildEditSheet: View {
                                     HStack(spacing: 12) {
                                         Text(member.initials)
                                             .font(.neueCorp(11))
-                                            .foregroundStyle(.white)
+                                            .foregroundStyle(AVIATheme.aviaWhite)
                                             .frame(width: 32, height: 32)
                                             .background(AVIATheme.primaryGradient)
                                             .clipShape(Circle())
@@ -485,7 +485,7 @@ struct AdminBuildEditSheet: View {
             Button(action: saveDetails) {
                 Group {
                     if isSaving {
-                        ProgressView().tint(.white)
+                        ProgressView().tint(AVIATheme.aviaWhite)
                     } else {
                         HStack(spacing: 8) {
                             Image(systemName: "checkmark.circle.fill")
@@ -496,7 +496,7 @@ struct AdminBuildEditSheet: View {
                 }
                 .frame(maxWidth: .infinity)
                 .frame(height: 52)
-                .foregroundStyle(.white)
+                .foregroundStyle(AVIATheme.aviaWhite)
                 .background(AVIATheme.primaryGradient)
                 .clipShape(.rect(cornerRadius: 14))
             }
@@ -648,7 +648,7 @@ struct AdminBuildEditSheet: View {
                     } label: {
                         Text("Add")
                             .font(.neueCaption2Medium)
-                            .foregroundStyle(.white)
+                            .foregroundStyle(AVIATheme.aviaWhite)
                             .padding(.horizontal, 10)
                             .padding(.vertical, 5)
                             .background(AVIATheme.warning)
@@ -696,7 +696,7 @@ struct AdminBuildEditSheet: View {
                 .font(.neueSubheadlineMedium)
                 .frame(maxWidth: .infinity)
                 .frame(height: 48)
-                .foregroundStyle(.white)
+                .foregroundStyle(AVIATheme.aviaWhite)
                 .background(AVIATheme.primaryGradient)
                 .clipShape(.rect(cornerRadius: 14))
             }
@@ -794,13 +794,13 @@ struct AdminBuildEditSheet: View {
         .overlay {
             if isUploadingDoc {
                 ZStack {
-                    Color.black.opacity(0.4).ignoresSafeArea()
+                    AVIATheme.aviaBlack.opacity(0.4).ignoresSafeArea()
                     VStack(spacing: 16) {
                         ProgressView()
                             .scaleEffect(1.3)
                         Text("Uploading...")
                             .font(.neueSubheadlineMedium)
-                            .foregroundStyle(.white)
+                            .foregroundStyle(AVIATheme.aviaWhite)
                     }
                     .padding(32)
                     .background(.ultraThinMaterial)

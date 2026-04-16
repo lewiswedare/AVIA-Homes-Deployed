@@ -181,7 +181,7 @@ struct DashboardView: View {
                 }
                 Text(String(viewModel.currentUser.firstName.prefix(1)) + String(viewModel.currentUser.lastName.prefix(1)))
                     .font(.neueCaptionMedium)
-                    .foregroundStyle(.white)
+                    .foregroundStyle(AVIATheme.aviaWhite)
                     .frame(width: 36, height: 36)
                     .background(AVIATheme.brownGradient)
                     .clipShape(Circle())
@@ -366,8 +366,8 @@ struct DashboardView: View {
                 LinearGradient(
                     stops: [
                         .init(color: Color.clear, location: 0.0),
-                        .init(color: Color.black.opacity(0.3), location: 0.4),
-                        .init(color: Color.black.opacity(0.75), location: 1.0)
+                        .init(color: AVIATheme.aviaBlack.opacity(0.3), location: 0.4),
+                        .init(color: AVIATheme.aviaBlack.opacity(0.75), location: 1.0)
                     ],
                     startPoint: .top,
                     endPoint: .bottom
@@ -378,20 +378,20 @@ struct DashboardView: View {
                 VStack(alignment: .leading, spacing: 4) {
                     Text("Drew Holden")
                         .font(.neueSubheadlineMedium)
-                        .foregroundStyle(.white)
+                        .foregroundStyle(AVIATheme.aviaWhite)
 
                     Text("Pre-Site Coordinator")
                         .font(.neueCaption2)
-                        .foregroundStyle(.white.opacity(0.7))
+                        .foregroundStyle(AVIATheme.aviaWhite.opacity(0.7))
 
                     HStack(spacing: 6) {
                         if let phoneURL = URL(string: "tel:0468040280") {
                             Link(destination: phoneURL) {
                                 Image(systemName: "phone.fill")
                                     .font(.neueCorp(10))
-                                    .foregroundStyle(.white)
+                                    .foregroundStyle(AVIATheme.aviaWhite)
                                     .frame(width: 28, height: 28)
-                                    .background(.white.opacity(0.2))
+                                    .background(AVIATheme.aviaWhite.opacity(0.2))
                                     .clipShape(Circle())
                             }
                         }
@@ -399,9 +399,9 @@ struct DashboardView: View {
                             Link(destination: mailURL) {
                                 Image(systemName: "envelope.fill")
                                     .font(.neueCorp(10))
-                                    .foregroundStyle(.white)
+                                    .foregroundStyle(AVIATheme.aviaWhite)
                                     .frame(width: 28, height: 28)
-                                    .background(.white.opacity(0.2))
+                                    .background(AVIATheme.aviaWhite.opacity(0.2))
                                     .clipShape(Circle())
                             }
                         }
@@ -486,7 +486,7 @@ struct DashboardView: View {
                                     Text("Add to Calendar")
                                         .font(.neueCaptionMedium)
                                 }
-                                .foregroundStyle(.white)
+                                .foregroundStyle(AVIATheme.aviaWhite)
                                 .frame(maxWidth: .infinity)
                                 .frame(height: 38)
                                 .background(AVIATheme.primaryGradient)
@@ -647,7 +647,7 @@ struct DashboardView: View {
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .background(.ultraThinMaterial)
                 .clipShape(.rect(cornerRadius: 16))
-                .shadow(color: .black.opacity(0.06), radius: 8, y: 2)
+                .shadow(color: AVIATheme.aviaBlack.opacity(0.06), radius: 8, y: 2)
             }
 
             NavigationLink {
@@ -946,7 +946,7 @@ struct DashboardView: View {
         case .walkthrough: return AVIATheme.timelessBrown
         case .colourDue: return AVIATheme.warning
         case .inspection: return AVIATheme.success
-        case .meeting: return Color(hex: "8B6BA8")
+        case .meeting: return AVIATheme.heritageBlue
         case .handover: return AVIATheme.timelessBrown
         }
     }
@@ -997,10 +997,10 @@ struct DashboardView: View {
                                 .resizable()
                                 .aspectRatio(contentMode: .fit)
                                 .frame(height: 28)
-                                .foregroundStyle(.white)
+                                .foregroundStyle(AVIATheme.aviaWhite)
                             Text("Building Homes Worth Living In")
                                 .font(.neueCaption)
-                                .foregroundStyle(.white.opacity(0.8))
+                                .foregroundStyle(AVIATheme.aviaWhite.opacity(0.8))
                         }
                     }
                     .clipShape(.rect(cornerRadii: .init(topLeading: 16, topTrailing: 16)))
@@ -1030,7 +1030,7 @@ struct DashboardView: View {
                                 Image(systemName: "arrow.down.circle.fill")
                                     .font(.neueSubheadlineMedium)
                             }
-                            .foregroundStyle(.white)
+                            .foregroundStyle(AVIATheme.aviaWhite)
                             .padding(.horizontal, 16)
                             .padding(.vertical, 12)
                             .background(AVIATheme.primaryGradient)
@@ -1104,7 +1104,7 @@ struct DashboardView: View {
                     Text(item.name.uppercased())
                         .font(.neueCorpMedium(9))
                         .kerning(0.8)
-                        .foregroundStyle(.white)
+                        .foregroundStyle(AVIATheme.aviaWhite)
                         .padding(.horizontal, 10)
                         .padding(.vertical, 5)
                         .background(AVIATheme.aviaBlack.opacity(0.7))
@@ -1181,7 +1181,7 @@ struct DashboardView: View {
                 .overlay(alignment: .bottomLeading) {
                     Text(tier.displayName)
                         .font(.neueSubheadlineMedium)
-                        .foregroundStyle(.white)
+                        .foregroundStyle(AVIATheme.aviaWhite)
                         .padding(10)
                 }
                 .clipShape(.rect(cornerRadii: .init(topLeading: 16, topTrailing: 16)))
@@ -1254,7 +1254,7 @@ struct DashboardView: View {
                     Text(post.category.uppercased())
                         .font(.neueCaption2Medium)
                         .kerning(0.8)
-                        .foregroundStyle(.white)
+                        .foregroundStyle(AVIATheme.aviaWhite)
                         .padding(.horizontal, 10)
                         .padding(.vertical, 5)
                         .background(AVIATheme.aviaBlack.opacity(0.7))
@@ -1401,7 +1401,7 @@ struct DashboardView: View {
                     Text("2 STOREY")
                         .font(.neueCorpMedium(7))
                         .kerning(0.4)
-                        .foregroundStyle(.white)
+                        .foregroundStyle(AVIATheme.aviaWhite)
                         .padding(.horizontal, 6)
                         .padding(.vertical, 3)
                         .background(AVIATheme.timelessBrown)
@@ -1455,7 +1455,7 @@ struct DashboardView: View {
                         if package.isNew {
                             Text("NEW")
                                 .font(.neueCorpMedium(8))
-                                .foregroundStyle(.white)
+                                .foregroundStyle(AVIATheme.aviaWhite)
                                 .padding(.horizontal, 6)
                                 .padding(.vertical, 3)
                                 .background(AVIATheme.timelessBrown)
@@ -1577,7 +1577,7 @@ struct DashboardView: View {
                                 Image(systemName: "phone.fill").font(.neueCaption2)
                                 Text("Call Us").font(.neueCaptionMedium)
                             }
-                            .foregroundStyle(.white)
+                            .foregroundStyle(AVIATheme.aviaWhite)
                             .frame(maxWidth: .infinity)
                             .frame(height: 38)
                             .background(AVIATheme.brownGradient)

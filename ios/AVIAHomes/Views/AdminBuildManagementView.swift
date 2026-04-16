@@ -121,7 +121,7 @@ struct AdminBuildManagementView: View {
                             .font(.neueCaptionMedium)
                             .padding(.horizontal, 14)
                             .padding(.vertical, 8)
-                            .foregroundStyle(selectedFilter == filter ? .white : AVIATheme.textSecondary)
+                            .foregroundStyle(selectedFilter == filter ? AVIATheme.aviaWhite : AVIATheme.textSecondary)
                             .background(selectedFilter == filter ? AVIATheme.timelessBrown : AVIATheme.cardBackground)
                             .clipShape(Capsule())
                             .overlay {
@@ -178,7 +178,7 @@ struct AdminBuildRow: View {
                     ZStack(alignment: .topTrailing) {
                         Text(build.client.initials.isEmpty ? "?" : build.client.initials)
                             .font(.neueCaptionMedium)
-                            .foregroundStyle(.white)
+                            .foregroundStyle(AVIATheme.aviaWhite)
                             .frame(width: 42, height: 42)
                             .background(AVIATheme.primaryGradient)
                             .clipShape(Circle())
@@ -201,7 +201,7 @@ struct AdminBuildRow: View {
                             if specReviewStatus != .none {
                                 Text(specReviewStatus == .upgradeRequested ? "UPGRADE REQ" : "SPEC REVIEW")
                                     .font(.neueCorpMedium(7))
-                                    .foregroundStyle(.white)
+                                    .foregroundStyle(AVIATheme.aviaWhite)
                                     .padding(.horizontal, 6)
                                     .padding(.vertical, 2)
                                     .background(specReviewStatus == .upgradeRequested ? AVIATheme.warning : AVIATheme.warning)

@@ -59,7 +59,7 @@ struct AdminBuildSelectionsTab: View {
                     .font(.neueSubheadlineMedium)
                     .frame(maxWidth: .infinity)
                     .frame(height: 48)
-                    .foregroundStyle(.white)
+                    .foregroundStyle(AVIATheme.aviaWhite)
                     .background(AVIATheme.primaryGradient)
                     .clipShape(.rect(cornerRadius: 14))
                 }
@@ -105,7 +105,7 @@ struct AdminBuildSelectionsTab: View {
                     Spacer()
                     Text(specViewModel.overallStatus.displayLabel)
                         .font(.neueCorpMedium(9))
-                        .foregroundStyle(.white)
+                        .foregroundStyle(AVIATheme.aviaWhite)
                         .padding(.horizontal, 10)
                         .padding(.vertical, 4)
                         .background(statusColor(specViewModel.overallStatus))
@@ -126,7 +126,7 @@ struct AdminBuildSelectionsTab: View {
                     summaryMetric(
                         value: "\(specViewModel.colourSelections.count)",
                         label: "Colours",
-                        color: Color(hex: "8B5CF6")
+                        color: AVIATheme.heritageBlue
                     )
                     summaryMetric(
                         value: specViewModel.specTier.capitalized,
@@ -156,7 +156,7 @@ struct AdminBuildSelectionsTab: View {
         case .draft, .clientReviewing: AVIATheme.textTertiary
         case .awaitingAdmin: AVIATheme.warning
         case .awaitingClient: AVIATheme.timelessBrown
-        case .reopenedByAdmin, .amendedByAdmin: Color(hex: "8B5CF6")
+        case .reopenedByAdmin, .amendedByAdmin: AVIATheme.heritageBlue
         case .approved: AVIATheme.success
         }
     }
@@ -291,7 +291,7 @@ struct AdminBuildSelectionsTab: View {
         case .upgradeAccepted: ("UPG ✓", AVIATheme.success)
         case .upgradeDeclined: ("UPG ✗", AVIATheme.destructive)
         case .upgradeApproved: ("UPG ✓", AVIATheme.success)
-        case .substituted: ("SUB", Color(hex: "8B5CF6"))
+        case .substituted: ("SUB", AVIATheme.heritageBlue)
         case .removed: ("REM", AVIATheme.destructive)
         }
         Text(label)
@@ -367,7 +367,7 @@ struct AdminBuildSelectionsTab: View {
         case .draft: AVIATheme.textTertiary
         case .submitted: AVIATheme.warning
         case .approved: AVIATheme.success
-        case .reopened: Color(hex: "8B5CF6")
+        case .reopened: AVIATheme.heritageBlue
         }
     }
 
@@ -454,7 +454,7 @@ struct AdminBuildSelectionsTab: View {
         case .draft: ("circle", AVIATheme.textTertiary)
         case .submitted: ("clock.fill", AVIATheme.warning)
         case .approved: ("checkmark.circle.fill", AVIATheme.success)
-        case .reopened: ("arrow.counterclockwise", Color(hex: "8B5CF6"))
+        case .reopened: ("arrow.counterclockwise", AVIATheme.heritageBlue)
         }
         Image(systemName: icon)
             .font(.neueCorp(12))

@@ -64,7 +64,7 @@ struct SpecificationCompareView: View {
                             if isCurrent {
                                 Text("CURRENT")
                                     .font(.neueCorpMedium(8))
-                                    .foregroundStyle(.white)
+                                    .foregroundStyle(AVIATheme.aviaWhite)
                                     .padding(.horizontal, 6)
                                     .padding(.vertical, 2)
                                     .background(AVIATheme.aviaBlack)
@@ -85,7 +85,7 @@ struct SpecificationCompareView: View {
                         } label: {
                             Text("Upgrade")
                                 .font(.neueCaption2Medium)
-                                .foregroundStyle(.white)
+                                .foregroundStyle(AVIATheme.aviaWhite)
                                 .padding(.horizontal, 14)
                                 .padding(.vertical, 7)
                                 .background(AVIATheme.primaryGradient)
@@ -126,7 +126,7 @@ struct SpecificationCompareView: View {
                             Text(category.name)
                                 .font(.neueCaption2Medium)
                         }
-                        .foregroundStyle(isSelected ? .white : AVIATheme.textSecondary)
+                        .foregroundStyle(isSelected ? AVIATheme.aviaWhite : AVIATheme.textSecondary)
                         .padding(.horizontal, 14)
                         .padding(.vertical, 8)
                         .background(isSelected ? AVIATheme.aviaBlack : AVIATheme.cardBackground)

@@ -118,7 +118,7 @@ struct StocklistView: View {
                     } label: {
                         Text(region.uppercased())
                             .font(.neueCaptionMedium)
-                            .foregroundStyle(stocklistVM.selectedRegion == region ? .white : AVIATheme.textSecondary)
+                            .foregroundStyle(stocklistVM.selectedRegion == region ? AVIATheme.aviaWhite : AVIATheme.textSecondary)
                             .padding(.horizontal, 16)
                             .padding(.vertical, 8)
                             .background(
@@ -145,7 +145,7 @@ struct StocklistView: View {
                 } label: {
                     Text("All")
                         .font(.neueCaption)
-                        .foregroundStyle(stocklistVM.selectedSubRegion == nil ? .white : AVIATheme.textTertiary)
+                        .foregroundStyle(stocklistVM.selectedSubRegion == nil ? AVIATheme.aviaWhite : AVIATheme.textTertiary)
                         .padding(.horizontal, 14)
                         .padding(.vertical, 6)
                         .background(
@@ -162,7 +162,7 @@ struct StocklistView: View {
                     } label: {
                         Text(subRegion)
                             .font(.neueCaption)
-                            .foregroundStyle(stocklistVM.selectedSubRegion == subRegion ? .white : AVIATheme.textTertiary)
+                            .foregroundStyle(stocklistVM.selectedSubRegion == subRegion ? AVIATheme.aviaWhite : AVIATheme.textTertiary)
                             .padding(.horizontal, 14)
                             .padding(.vertical, 6)
                             .background(
@@ -247,7 +247,7 @@ struct StocklistView: View {
         Button(action: action) {
             Text(title)
                 .font(.neueCaption2Medium)
-                .foregroundStyle(isSelected ? .white : AVIATheme.textSecondary)
+                .foregroundStyle(isSelected ? AVIATheme.aviaWhite : AVIATheme.textSecondary)
                 .padding(.horizontal, 12)
                 .padding(.vertical, 6)
                 .background(isSelected ? statusColor(for: title == "All" ? "" : title) : AVIATheme.cardBackground, in: Capsule())
@@ -270,7 +270,7 @@ struct StocklistView: View {
                             Text("Add Estate")
                                 .font(.neueCaptionMedium)
                         }
-                        .foregroundStyle(.white)
+                        .foregroundStyle(AVIATheme.aviaWhite)
                         .frame(maxWidth: .infinity)
                         .padding(.vertical, 12)
                         .background(AVIATheme.primaryGradient, in: RoundedRectangle(cornerRadius: 12))
@@ -338,22 +338,22 @@ struct StocklistView: View {
                     VStack(alignment: .leading, spacing: 4) {
                         Text(estate.name)
                             .font(.neueCaptionMedium)
-                            .foregroundStyle(.white)
+                            .foregroundStyle(AVIATheme.aviaWhite)
                             .multilineTextAlignment(.leading)
                     }
                     Spacer()
                     if isEditMode && canEdit {
                         Image(systemName: "pencil.circle.fill")
                             .font(.neueSubheadline)
-                            .foregroundStyle(.white.opacity(0.7))
+                            .foregroundStyle(AVIATheme.aviaWhite.opacity(0.7))
                     }
                     let lotCount = sortedLots(stocklistVM.filteredItems(for: estate.id)).count
                     Text("\(lotCount) lot\(lotCount == 1 ? "" : "s")")
                         .font(.neueCaption2)
-                        .foregroundStyle(.white.opacity(0.7))
+                        .foregroundStyle(AVIATheme.aviaWhite.opacity(0.7))
                     Image(systemName: expandedEstateIDs.contains(estate.id) ? "chevron.up" : "chevron.down")
                         .font(.neueCaption2)
-                        .foregroundStyle(.white.opacity(0.7))
+                        .foregroundStyle(AVIATheme.aviaWhite.opacity(0.7))
                 }
                 .padding(.horizontal, 16)
                 .padding(.vertical, 14)
@@ -493,7 +493,7 @@ struct StocklistView: View {
                                 Text("COMING SOON")
                                     .font(.neueCorpMedium(8))
                                     .kerning(0.5)
-                                    .foregroundStyle(.white)
+                                    .foregroundStyle(AVIATheme.aviaWhite)
                                     .padding(.horizontal, 8)
                                     .padding(.vertical, 4)
                                     .background(Color.blue)
@@ -507,7 +507,7 @@ struct StocklistView: View {
                             Text(spec.uppercased())
                                 .font(.neueCorpMedium(8))
                                 .kerning(0.5)
-                                .foregroundStyle(.white)
+                                .foregroundStyle(AVIATheme.aviaWhite)
                                 .padding(.horizontal, 8)
                                 .padding(.vertical, 4)
                                 .background(AVIATheme.textSecondary)
@@ -602,7 +602,7 @@ struct StocklistView: View {
         Text(status.isEmpty ? "—" : status)
             .font(.neueCorpMedium(8))
             .kerning(0.5)
-            .foregroundStyle(.white)
+            .foregroundStyle(AVIATheme.aviaWhite)
             .padding(.horizontal, 8)
             .padding(.vertical, 4)
             .background(stocklistStatusColor(status))
@@ -626,13 +626,13 @@ struct StocklistView: View {
         case "Available":
             return AVIATheme.success
         case "Available (Exclusive)":
-            return Color(hex: "7B4BBE")
+            return AVIATheme.heritageBlue
         case "EOI":
             return AVIATheme.warning
         case "ON HOLD":
             return AVIATheme.textTertiary
         case "COMING SOON":
-            return Color(hex: "3B82C9")
+            return AVIATheme.heritageBlue
         case "Sold":
             return AVIATheme.destructive
         default:

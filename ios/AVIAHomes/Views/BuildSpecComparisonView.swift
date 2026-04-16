@@ -80,14 +80,14 @@ struct BuildSpecItemRow: View {
                 HStack(spacing: 6) {
                     Image(systemName: "person.badge.shield.checkmark")
                         .font(.neueCorp(9))
-                        .foregroundStyle(Color(hex: "8B5CF6"))
+                        .foregroundStyle(AVIATheme.heritageBlue)
                     Text(notes)
                         .font(.neueCaption2)
                         .foregroundStyle(AVIATheme.textSecondary)
                         .lineLimit(2)
                 }
                 .padding(8)
-                .background(Color(hex: "8B5CF6").opacity(0.06))
+                .background(AVIATheme.heritageBlue.opacity(0.06))
                 .clipShape(.rect(cornerRadius: 8))
             }
 
@@ -142,10 +142,10 @@ struct BuildSpecItemRow: View {
         case .upgradeAccepted:
             Text("ACCEPTED")
                 .font(.neueCorpMedium(7))
-                .foregroundStyle(Color.green)
+                .foregroundStyle(AVIATheme.heritageBlue)
                 .padding(.horizontal, 6)
                 .padding(.vertical, 2)
-                .background(Color.green.opacity(0.12))
+                .background(AVIATheme.heritageBlue.opacity(0.12))
                 .clipShape(Capsule())
         case .upgradeDeclined:
             EmptyView()
@@ -160,10 +160,10 @@ struct BuildSpecItemRow: View {
         case .substituted:
             Text("SUBSTITUTED")
                 .font(.neueCorpMedium(7))
-                .foregroundStyle(Color(hex: "8B5CF6"))
+                .foregroundStyle(AVIATheme.heritageBlue)
                 .padding(.horizontal, 6)
                 .padding(.vertical, 2)
-                .background(Color(hex: "8B5CF6").opacity(0.12))
+                .background(AVIATheme.heritageBlue.opacity(0.12))
                 .clipShape(Capsule())
         case .removed:
             Text("REMOVED")
@@ -206,7 +206,7 @@ struct BuildSpecItemRow: View {
                             Text("Accept Upgrade")
                                 .font(.neueCaption2Medium)
                         }
-                        .foregroundStyle(.white)
+                        .foregroundStyle(AVIATheme.aviaWhite)
                         .padding(.horizontal, 12)
                         .padding(.vertical, 8)
                         .background(AVIATheme.success)
@@ -307,10 +307,10 @@ struct BuildSpecItemRow: View {
                                 Text("Note")
                                     .font(.neueCaption2Medium)
                             }
-                            .foregroundStyle(Color(hex: "8B5CF6"))
+                            .foregroundStyle(AVIATheme.heritageBlue)
                             .padding(.horizontal, 10)
                             .padding(.vertical, 6)
-                            .background(Color(hex: "8B5CF6").opacity(0.1))
+                            .background(AVIATheme.heritageBlue.opacity(0.1))
                             .clipShape(Capsule())
                         }
                     }
@@ -337,7 +337,7 @@ struct BuildSpecItemRow: View {
                     showNotes = false
                 }
                 .font(.neueCaption2Medium)
-                .foregroundStyle(.white)
+                .foregroundStyle(AVIATheme.aviaWhite)
                 .padding(.horizontal, 16)
                 .padding(.vertical, 8)
                 .background(AVIATheme.primaryGradient)

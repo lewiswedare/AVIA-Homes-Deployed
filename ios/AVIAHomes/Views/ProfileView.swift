@@ -98,7 +98,7 @@ struct ProfileView: View {
         HStack(spacing: 16) {
             Text(String(viewModel.currentUser.firstName.prefix(1)) + String(viewModel.currentUser.lastName.prefix(1)))
                 .font(.neueCorpMedium(22))
-                .foregroundStyle(.white)
+                .foregroundStyle(AVIATheme.aviaWhite)
                 .frame(width: 56, height: 56)
                 .background(AVIATheme.primaryGradient)
                 .clipShape(Circle())

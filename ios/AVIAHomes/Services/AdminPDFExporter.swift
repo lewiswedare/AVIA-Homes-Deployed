@@ -48,9 +48,9 @@ enum AdminPDFExporter {
             let smallFont = UIFont.systemFont(ofSize: 8)
             let smallItalicFont = UIFont.italicSystemFont(ofSize: 8)
 
-            let darkColor = UIColor(white: 0.1, alpha: 1)
-            let grayColor = UIColor(white: 0.45, alpha: 1)
-            let lightGray = UIColor(white: 0.65, alpha: 1)
+            let darkColor = UIColor(red: 26/255, green: 26/255, blue: 26/255, alpha: 1)
+            let grayColor = UIColor(red: 26/255, green: 26/255, blue: 26/255, alpha: 0.55)
+            let lightGray = UIColor(red: 26/255, green: 26/255, blue: 26/255, alpha: 0.35)
 
             // MARK: - Cover / Header
             newPage()
@@ -121,17 +121,17 @@ enum AdminPDFExporter {
                     nameStr.draw(with: nameRect, options: [.usesLineFragmentOrigin, .truncatesLastVisibleLine], context: nil)
 
                     item.selectionType.displayLabel.draw(at: CGPoint(x: colType, y: y), withAttributes: [
-                        .font: smallFont, .foregroundColor: item.selectionType == .included ? grayColor : UIColor.systemOrange
+                        .font: smallFont, .foregroundColor: item.selectionType == .included ? grayColor : UIColor(red: 55/255, green: 51/255, blue: 43/255, alpha: 0.8)
                     ])
 
                     let clientMark = item.clientConfirmed ? "✓" : "—"
                     clientMark.draw(at: CGPoint(x: colClient + 6, y: y), withAttributes: [
-                        .font: bodyFont, .foregroundColor: item.clientConfirmed ? UIColor.systemGreen : lightGray
+                        .font: bodyFont, .foregroundColor: item.clientConfirmed ? UIColor(red: 142/255, green: 155/255, blue: 146/255, alpha: 1) : lightGray
                     ])
 
                     let adminMark = item.adminConfirmed ? "✓" : "—"
                     adminMark.draw(at: CGPoint(x: colAdmin + 6, y: y), withAttributes: [
-                        .font: bodyFont, .foregroundColor: item.adminConfirmed ? UIColor.systemGreen : lightGray
+                        .font: bodyFont, .foregroundColor: item.adminConfirmed ? UIColor(red: 142/255, green: 155/255, blue: 146/255, alpha: 1) : lightGray
                     ])
 
                     y += 14
@@ -151,14 +151,14 @@ enum AdminPDFExporter {
                     }
                     if let notes = item.adminNotes, !notes.isEmpty {
                         "Admin: \(notes)".draw(at: CGPoint(x: colItem + 4, y: y), withAttributes: [
-                            .font: smallItalicFont, .foregroundColor: UIColor.systemBlue
+                            .font: smallItalicFont, .foregroundColor: UIColor(red: 142/255, green: 155/255, blue: 146/255, alpha: 1)
                         ])
                         y += 10
                     }
                     if let cost = item.upgradeCost, (item.selectionType == .upgradeRequested || item.selectionType == .upgradeCosted || item.selectionType == .upgradeAccepted || item.selectionType == .upgradeApproved) {
                         let costStr = "Upgrade cost: $\(String(format: "%.2f", cost))\(item.upgradeCostNote.map { " — \($0)" } ?? "")"
                         costStr.draw(at: CGPoint(x: colItem + 4, y: y), withAttributes: [
-                            .font: smallItalicFont, .foregroundColor: UIColor.systemOrange
+                            .font: smallItalicFont, .foregroundColor: UIColor(red: 55/255, green: 51/255, blue: 43/255, alpha: 0.8)
                         ])
                         y += 10
                     }

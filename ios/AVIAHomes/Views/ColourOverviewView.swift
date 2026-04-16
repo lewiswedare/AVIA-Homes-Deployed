@@ -182,23 +182,23 @@ struct ColourOverviewView: View {
             HStack(spacing: 14) {
                 Image(systemName: "wand.and.stars")
                     .font(.neueTitle3)
-                    .foregroundStyle(.white)
+                    .foregroundStyle(AVIATheme.aviaWhite)
                     .frame(width: 44, height: 44)
-                    .background(.white.opacity(0.15))
+                    .background(AVIATheme.aviaWhite.opacity(0.15))
                     .clipShape(.rect(cornerRadius: 12))
 
                 VStack(alignment: .leading, spacing: 3) {
                     Text("Start Guided Tour")
                         .font(.neueSubheadlineMedium)
-                        .foregroundStyle(.white)
+                        .foregroundStyle(AVIATheme.aviaWhite)
                     Text("Step-by-step through every selection")
                         .font(.neueCaption)
-                        .foregroundStyle(.white.opacity(0.7))
+                        .foregroundStyle(AVIATheme.aviaWhite.opacity(0.7))
                 }
                 Spacer()
                 Image(systemName: "chevron.right")
                     .font(.neueCaptionMedium)
-                    .foregroundStyle(.white.opacity(0.5))
+                    .foregroundStyle(AVIATheme.aviaWhite.opacity(0.5))
             }
             .padding(16)
             .background(AVIATheme.primaryGradient)
@@ -218,7 +218,7 @@ struct ColourOverviewView: View {
                         .font(.neueSubheadlineMedium)
                         .frame(maxWidth: .infinity)
                         .padding(.vertical, 11)
-                        .foregroundStyle(selectedSection == section ? .white : AVIATheme.textSecondary)
+                        .foregroundStyle(selectedSection == section ? AVIATheme.aviaWhite : AVIATheme.textSecondary)
                         .background {
                             if selectedSection == section {
                                 Capsule().fill(AVIATheme.timelessBrown)
@@ -277,7 +277,7 @@ struct CategoryCard: View {
                             .overlay(alignment: .topTrailing) {
                                 Image(systemName: "checkmark")
                                     .font(.neueCorpMedium(8))
-                                    .foregroundStyle(.white)
+                                    .foregroundStyle(AVIATheme.aviaWhite)
                                     .padding(5)
                                     .background(AVIATheme.timelessBrown, in: Circle())
                                     .offset(x: 6, y: -6)

@@ -60,7 +60,7 @@ struct AdminCatalogHubView: View {
                             subtitle: "Manage facade styles, images, pricing & features",
                             count: facadeCount,
                             countLabel: "facades",
-                            color: Color(hex: "8B5CF6")
+                            color: AVIATheme.heritageBlue
                         )
                     }
 
@@ -115,7 +115,7 @@ struct AdminCatalogHubView: View {
             HStack(spacing: 14) {
                 Image(systemName: "slider.horizontal.3")
                     .font(.neueCorpMedium(18))
-                    .foregroundStyle(.white)
+                    .foregroundStyle(AVIATheme.aviaWhite)
                     .frame(width: 44, height: 44)
                     .background(AVIATheme.primaryGradient)
                     .clipShape(.rect(cornerRadius: 12))

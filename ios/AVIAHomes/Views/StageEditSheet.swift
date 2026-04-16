@@ -124,7 +124,7 @@ struct StageEditSheet: View {
                     Button(action: saveStage) {
                         Group {
                             if isSaving {
-                                ProgressView().tint(.white)
+                                ProgressView().tint(AVIATheme.aviaWhite)
                             } else {
                                 HStack(spacing: 8) {
                                     Image(systemName: "checkmark.circle.fill")
@@ -135,7 +135,7 @@ struct StageEditSheet: View {
                         }
                         .frame(maxWidth: .infinity)
                         .frame(height: 52)
-                        .foregroundStyle(.white)
+                        .foregroundStyle(AVIATheme.aviaWhite)
                         .background(AVIATheme.primaryGradient)
                         .clipShape(.rect(cornerRadius: 14))
                     }
@@ -187,7 +187,7 @@ struct StageEditSheet: View {
         } label: {
             Text(label)
                 .font(.neueCaption2Medium)
-                .foregroundStyle(abs(progress - value) < 0.01 ? .white : AVIATheme.textSecondary)
+                .foregroundStyle(abs(progress - value) < 0.01 ? AVIATheme.aviaWhite : AVIATheme.textSecondary)
                 .frame(maxWidth: .infinity)
                 .padding(.vertical, 8)
                 .background(abs(progress - value) < 0.01 ? AVIATheme.timelessBrown : AVIATheme.cardBackgroundAlt)

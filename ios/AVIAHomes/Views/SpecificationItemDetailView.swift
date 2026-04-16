@@ -111,10 +111,10 @@ struct SpecificationItemDetailView: View {
                 } label: {
                     Text(tier.displayName)
                         .font(.neueCaption2Medium)
-                    .foregroundStyle(activeTier == tier ? AVIATheme.aviaBlack : .white)
+                    .foregroundStyle(activeTier == tier ? AVIATheme.aviaBlack : AVIATheme.aviaWhite)
                     .padding(.horizontal, activeTier == tier ? 12 : 10)
                     .padding(.vertical, 7)
-                    .background(activeTier == tier ? .white : .white.opacity(0.25))
+                    .background(activeTier == tier ? AVIATheme.aviaWhite : AVIATheme.aviaWhite.opacity(0.25))
                     .clipShape(Capsule())
                 }
             }
@@ -136,7 +136,7 @@ struct SpecificationItemDetailView: View {
                 Spacer()
                 Text(activeTier.displayName)
                     .font(.neueCaption2Medium)
-                    .foregroundStyle(.white)
+                    .foregroundStyle(AVIATheme.aviaWhite)
                     .padding(.horizontal, 10)
                     .padding(.vertical, 4)
                     .background(AVIATheme.aviaBlack)
@@ -244,7 +244,7 @@ struct SpecificationItemDetailView: View {
                         Text(cost != nil && cost! > 0 ? "Request Upgrade · \(AVIATheme.formatCost(cost!))" : "Request Upgrade")
                             .font(.neueCaptionMedium)
                     }
-                    .foregroundStyle(.white)
+                    .foregroundStyle(AVIATheme.aviaWhite)
                     .frame(maxWidth: .infinity)
                     .padding(.vertical, 10)
                     .background(AVIATheme.primaryGradient)

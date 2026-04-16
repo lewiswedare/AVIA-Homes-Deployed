@@ -28,14 +28,14 @@ struct AdminImagePickerField: View {
                         if isUploading {
                             ProgressView()
                                 .controlSize(.small)
-                                .tint(.white)
+                                .tint(AVIATheme.aviaWhite)
                         } else {
                             Image(systemName: "photo.badge.plus")
                         }
                         Text(isUploading ? "Uploading..." : (imageURL.isEmpty ? "Choose Image" : "Replace Image"))
                             .font(.neueCaptionMedium)
                     }
-                    .foregroundStyle(.white)
+                    .foregroundStyle(AVIATheme.aviaWhite)
                     .padding(.horizontal, 14)
                     .padding(.vertical, 9)
                     .background(isUploading ? AVIATheme.textTertiary : AVIATheme.timelessBrown)

@@ -25,7 +25,7 @@ struct StaffContactCard: View {
                                     Text("Call")
                                         .font(.neueCaption2Medium)
                                 }
-                                .foregroundStyle(.white)
+                                .foregroundStyle(AVIATheme.aviaWhite)
                                 .padding(.horizontal, 12)
                                 .padding(.vertical, 6)
                                 .background(AVIATheme.primaryGradient)
@@ -74,7 +74,7 @@ struct StaffContactCard: View {
     private var initialsCircle: some View {
         Text(staffUser.initials)
             .font(.neueCorpMedium(18))
-            .foregroundStyle(.white)
+            .foregroundStyle(AVIATheme.aviaWhite)
             .frame(width: 52, height: 52)
             .background(AVIATheme.primaryGradient)
             .clipShape(Circle())

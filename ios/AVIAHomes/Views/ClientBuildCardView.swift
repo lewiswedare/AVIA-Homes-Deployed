@@ -15,7 +15,7 @@ struct ClientBuildCardView: View {
                 HStack(spacing: 14) {
                     Text(build.client.initials.isEmpty ? "?" : build.client.initials)
                         .font(.neueCaptionMedium)
-                        .foregroundStyle(.white)
+                        .foregroundStyle(AVIATheme.aviaWhite)
                         .frame(width: 42, height: 42)
                         .background(AVIATheme.primaryGradient)
                         .clipShape(Circle())
@@ -32,7 +32,7 @@ struct ClientBuildCardView: View {
                                 Text("CUSTOM")
                                     .font(.neueCorpMedium(7))
                                     .kerning(0.3)
-                                    .foregroundStyle(.white)
+                                    .foregroundStyle(AVIATheme.aviaWhite)
                                     .padding(.horizontal, 5)
                                     .padding(.vertical, 1)
                                     .background(AVIATheme.timelessBrown)

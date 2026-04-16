@@ -74,7 +74,7 @@ struct BuildJourneyCard: View {
                                     .frame(width: 24, height: 24)
                                 Image(systemName: "checkmark")
                                     .font(.neueCorpMedium(10))
-                                    .foregroundStyle(.white)
+                                    .foregroundStyle(AVIATheme.aviaWhite)
                             } else if isCurrent {
                                 Circle()
                                     .fill(AVIATheme.timelessBrown.opacity(0.15))
@@ -149,7 +149,7 @@ struct BuildJourneyCard: View {
                 Image(systemName: "arrow.right")
                     .font(.neueCorp(12))
             }
-            .foregroundStyle(.white)
+            .foregroundStyle(AVIATheme.aviaWhite)
             .frame(maxWidth: .infinity)
             .frame(height: 44)
             .background(AVIATheme.primaryGradient)

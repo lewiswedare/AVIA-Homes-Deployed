@@ -71,7 +71,7 @@ struct AdminEOIReviewView: View {
                             .font(.neueCaptionMedium)
                             .padding(.horizontal, 12)
                             .padding(.vertical, 8)
-                            .foregroundStyle(selectedFilter == filter ? .white : AVIATheme.textSecondary)
+                            .foregroundStyle(selectedFilter == filter ? AVIATheme.aviaWhite : AVIATheme.textSecondary)
                             .background(selectedFilter == filter ? AVIATheme.timelessBrown : AVIATheme.cardBackground)
                             .clipShape(Capsule())
                             .overlay {

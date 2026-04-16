@@ -70,7 +70,7 @@ struct ForgotPasswordView: View {
                         Button(action: sendReset) {
                             Group {
                                 if appViewModel.authService.isLoading {
-                                    ProgressView().tint(.white)
+                                    ProgressView().tint(AVIATheme.aviaWhite)
                                 } else {
                                     Text("Send Reset Link")
                                         .font(.neueSubheadlineMedium)
@@ -78,7 +78,7 @@ struct ForgotPasswordView: View {
                             }
                             .frame(maxWidth: .infinity)
                             .frame(height: 52)
-                            .foregroundStyle(.white)
+                            .foregroundStyle(AVIATheme.aviaWhite)
                             .background(AVIATheme.primaryGradient)
                             .clipShape(.rect(cornerRadius: 14))
                         }

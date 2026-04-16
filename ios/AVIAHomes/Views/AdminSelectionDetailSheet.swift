@@ -123,10 +123,10 @@ struct AdminSelectionDetailSheet: View {
         case .included: ("Included", AVIATheme.success)
         case .upgradeRequested: ("Upgrade Requested", AVIATheme.warning)
         case .upgradeCosted: ("Upgrade Costed", AVIATheme.accent)
-        case .upgradeAccepted: ("Upgrade Accepted", Color.green)
-        case .upgradeDeclined: ("Upgrade Declined", Color.gray)
+        case .upgradeAccepted: ("Upgrade Accepted", AVIATheme.heritageBlue)
+        case .upgradeDeclined: ("Upgrade Declined", AVIATheme.textTertiary)
         case .upgradeApproved: ("Upgrade Approved", AVIATheme.success)
-        case .substituted: ("Substituted", Color(hex: "8B5CF6"))
+        case .substituted: ("Substituted", AVIATheme.heritageBlue)
         case .removed: ("Removed", AVIATheme.destructive)
         }
         Text(label.uppercased())
@@ -341,7 +341,7 @@ struct AdminSelectionDetailSheet: View {
                             onAddNotes(selection.id, adminNotes)
                         }
                         .font(.neueCaption2Medium)
-                        .foregroundStyle(.white)
+                        .foregroundStyle(AVIATheme.aviaWhite)
                         .padding(.horizontal, 14)
                         .padding(.vertical, 7)
                         .background(AVIATheme.primaryGradient)
@@ -395,7 +395,7 @@ struct AdminSelectionDetailSheet: View {
                             dismiss()
                         }
                         .font(.neueCaption2Medium)
-                        .foregroundStyle(.white)
+                        .foregroundStyle(AVIATheme.aviaWhite)
                         .padding(.horizontal, 14)
                         .padding(.vertical, 7)
                         .background(AVIATheme.primaryGradient)
@@ -466,10 +466,10 @@ struct AdminSelectionDetailSheet: View {
                         Text(selection.selectionType == .upgradeApproved ? "Upgrade approved" : "Client accepted — awaiting your final confirmation")
                             .font(.neueCaptionMedium)
                     }
-                    .foregroundStyle(selection.selectionType == .upgradeApproved ? AVIATheme.success : Color.green)
+                    .foregroundStyle(selection.selectionType == .upgradeApproved ? AVIATheme.success : AVIATheme.heritageBlue)
                     .frame(maxWidth: .infinity)
                     .padding(.vertical, 10)
-                    .background((selection.selectionType == .upgradeApproved ? AVIATheme.success : Color.green).opacity(0.1))
+                    .background((selection.selectionType == .upgradeApproved ? AVIATheme.success : AVIATheme.heritageBlue).opacity(0.1))
                     .clipShape(.rect(cornerRadius: 10))
 
                     reviseCostFields
@@ -492,10 +492,10 @@ struct AdminSelectionDetailSheet: View {
                         Text("Declined by client")
                             .font(.neueCaptionMedium)
                     }
-                    .foregroundStyle(Color.gray)
+                    .foregroundStyle(AVIATheme.textTertiary)
                     .frame(maxWidth: .infinity)
                     .padding(.vertical, 10)
-                    .background(Color.gray.opacity(0.1))
+                    .background(AVIATheme.textTertiary.opacity(0.1))
                     .clipShape(.rect(cornerRadius: 10))
                 }
                 .padding(16)
@@ -542,7 +542,7 @@ struct AdminSelectionDetailSheet: View {
                     dismiss()
                 }
                 .font(.neueCaption2Medium)
-                .foregroundStyle(.white)
+                .foregroundStyle(AVIATheme.aviaWhite)
                 .padding(.horizontal, 14)
                 .padding(.vertical, 7)
                 .background(AVIATheme.accent)
@@ -592,21 +592,21 @@ struct AdminSelectionDetailSheet: View {
                     .font(.neueSubheadlineMedium)
                     .frame(maxWidth: .infinity)
                     .frame(height: 48)
-                    .foregroundStyle(.white)
+                    .foregroundStyle(AVIATheme.aviaWhite)
                     .background(AVIATheme.success)
                     .clipShape(.rect(cornerRadius: 14))
                 }
             } else if selection.selectionType == .upgradeDeclined {
                 HStack(spacing: 8) {
                     Image(systemName: "xmark.circle.fill")
-                        .foregroundStyle(Color.gray)
+                        .foregroundStyle(AVIATheme.textTertiary)
                     Text("Declined by client — no action needed")
                         .font(.neueCaptionMedium)
-                        .foregroundStyle(Color.gray)
+                        .foregroundStyle(AVIATheme.textTertiary)
                 }
                 .frame(maxWidth: .infinity)
                 .frame(height: 48)
-                .background(Color.gray.opacity(0.08))
+                .background(AVIATheme.textTertiary.opacity(0.08))
                 .clipShape(.rect(cornerRadius: 14))
             } else if !selection.adminConfirmed {
                 Button {
@@ -619,7 +619,7 @@ struct AdminSelectionDetailSheet: View {
                     .font(.neueSubheadlineMedium)
                     .frame(maxWidth: .infinity)
                     .frame(height: 48)
-                    .foregroundStyle(.white)
+                    .foregroundStyle(AVIATheme.aviaWhite)
                     .background(AVIATheme.success)
                     .clipShape(.rect(cornerRadius: 14))
                 }

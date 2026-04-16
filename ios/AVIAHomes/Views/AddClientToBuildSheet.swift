@@ -52,7 +52,7 @@ struct AddClientToBuildSheet: View {
                                         HStack(spacing: 12) {
                                             Text(client.initials.isEmpty ? "?" : client.initials)
                                                 .font(.neueCorp(11))
-                                                .foregroundStyle(.white)
+                                                .foregroundStyle(AVIATheme.aviaWhite)
                                                 .frame(width: 36, height: 36)
                                                 .background(AVIATheme.primaryGradient)
                                                 .clipShape(Circle())

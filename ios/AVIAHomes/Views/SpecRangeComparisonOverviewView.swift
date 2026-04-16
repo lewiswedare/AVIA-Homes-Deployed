@@ -88,7 +88,7 @@ struct SpecRangeComparisonOverviewView: View {
                     Text("Viewing \(tier.displayName)")
                         .font(.neueCaption2Medium)
                 }
-                .foregroundStyle(.white)
+                .foregroundStyle(AVIATheme.aviaWhite)
                 .padding(.horizontal, 12)
                 .padding(.vertical, 6)
                 .background(AVIATheme.aviaBlack)
@@ -115,7 +115,7 @@ struct SpecRangeComparisonOverviewView: View {
                             Text(category.name)
                                 .font(.neueCaption2Medium)
                         }
-                        .foregroundStyle(isSelected ? .white : AVIATheme.textSecondary)
+                        .foregroundStyle(isSelected ? AVIATheme.aviaWhite : AVIATheme.textSecondary)
                         .padding(.horizontal, 14)
                         .padding(.vertical, 8)
                         .background(isSelected ? AVIATheme.aviaBlack : AVIATheme.cardBackground)

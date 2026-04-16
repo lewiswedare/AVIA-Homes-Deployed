@@ -60,7 +60,7 @@ struct BuildProgressView: View {
             .overlay(alignment: .bottom) {
                 Text("Build Progress")
                     .font(.neueCorpMedium(28))
-                    .foregroundStyle(.white)
+                    .foregroundStyle(AVIATheme.aviaWhite)
                     .frame(maxWidth: .infinity, alignment: .leading)
                     .padding(.horizontal, 20)
                     .padding(.vertical, 16)
@@ -75,10 +75,10 @@ struct BuildProgressView: View {
                 VStack(alignment: .leading, spacing: 4) {
                     Text("\(Int(effectiveProgress * 100))%")
                         .font(.neueCorpMedium(38))
-                        .foregroundStyle(.white)
+                        .foregroundStyle(AVIATheme.aviaWhite)
                     Text("Overall Completion")
                         .font(.neueSubheadline)
-                        .foregroundStyle(.white.opacity(0.7))
+                        .foregroundStyle(AVIATheme.aviaWhite.opacity(0.7))
                 }
                 Spacer()
                 if let build = effectiveBuild, build.isAwaitingRegistration {
@@ -86,7 +86,7 @@ struct BuildProgressView: View {
                         Text("STATUS")
                             .font(.neueCorpMedium(9))
                             .kerning(1.5)
-                            .foregroundStyle(.white.opacity(0.6))
+                            .foregroundStyle(AVIATheme.aviaWhite.opacity(0.6))
                         Text("Awaiting Registration")
                             .font(.neueHeadline)
                             .foregroundStyle(AVIATheme.warning)
@@ -96,10 +96,10 @@ struct BuildProgressView: View {
                         Text("CURRENT STAGE")
                             .font(.neueCorpMedium(9))
                             .kerning(1.5)
-                            .foregroundStyle(.white.opacity(0.6))
+                            .foregroundStyle(AVIATheme.aviaWhite.opacity(0.6))
                         Text(stage.name)
                             .font(.neueHeadline)
-                            .foregroundStyle(.white)
+                            .foregroundStyle(AVIATheme.aviaWhite)
                     }
                 }
             }
@@ -107,12 +107,12 @@ struct BuildProgressView: View {
             GeometryReader { geo in
                 ZStack(alignment: .leading) {
                     Capsule()
-                        .fill(.white.opacity(0.15))
+                        .fill(AVIATheme.aviaWhite.opacity(0.15))
                         .frame(height: 8)
                     Capsule()
                         .fill(
                             LinearGradient(
-                                colors: [AVIATheme.timelessBrown, Color(hex: "5C5856")],
+                                colors: [AVIATheme.timelessBrown, AVIATheme.heritageBlue],
                                 startPoint: .leading,
                                 endPoint: .trailing
                             )
@@ -194,19 +194,19 @@ struct TimelineStageRow: View {
                 case .completed:
                     Image(systemName: "checkmark")
                         .font(.neueCaptionMedium)
-                        .foregroundStyle(.white)
+                        .foregroundStyle(AVIATheme.aviaWhite)
                 case .inProgress:
                     Circle()
-                        .fill(.white)
+                        .fill(AVIATheme.aviaWhite)
                         .frame(width: 10, height: 10)
                 case .upcoming:
                     Circle()
-                        .fill(.white.opacity(0.5))
+                        .fill(AVIATheme.aviaWhite.opacity(0.5))
                         .frame(width: 10, height: 10)
                 case .delayed:
                     Image(systemName: "exclamationmark")
                         .font(.neueCaptionMedium)
-                        .foregroundStyle(.white)
+                        .foregroundStyle(AVIATheme.aviaWhite)
                 }
             }
 
@@ -278,7 +278,7 @@ struct TimelineStageRow: View {
                         Capsule().fill(AVIATheme.timelessBrown.opacity(0.1)).frame(height: 4)
                         Capsule().fill(
                             LinearGradient(
-                                colors: [AVIATheme.timelessBrown, Color(hex: "5C5856")],
+                                colors: [AVIATheme.timelessBrown, AVIATheme.heritageBlue],
                                 startPoint: .leading,
                                 endPoint: .trailing
                             )

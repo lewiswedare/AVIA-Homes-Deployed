@@ -212,7 +212,7 @@ struct StaffPackageSharingView: View {
                         HStack(spacing: 12) {
                             Text(client.initials.isEmpty ? "?" : client.initials)
                                 .font(.neueCaptionMedium)
-                                .foregroundStyle(.white)
+                                .foregroundStyle(AVIATheme.aviaWhite)
                                 .frame(width: 38, height: 38)
                                 .background(AVIATheme.primaryGradient)
                                 .clipShape(Circle())
@@ -332,7 +332,7 @@ struct StaffPackageSharingView: View {
             Text("Share link copied")
                 .font(.neueSubheadlineMedium)
         }
-        .foregroundStyle(.white)
+        .foregroundStyle(AVIATheme.aviaWhite)
         .padding(.horizontal, 20)
         .padding(.vertical, 12)
         .background(AVIATheme.primaryGradient)

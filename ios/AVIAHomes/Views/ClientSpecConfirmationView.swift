@@ -117,7 +117,7 @@ struct ClientSpecConfirmationView: View {
 
             Text(viewModel.overallStatus.displayLabel)
                 .font(.neueCorpMedium(9))
-                .foregroundStyle(.white)
+                .foregroundStyle(AVIATheme.aviaWhite)
                 .padding(.horizontal, 10)
                 .padding(.vertical, 4)
                 .background(statusColor)
@@ -137,9 +137,9 @@ struct ClientSpecConfirmationView: View {
         case .draft, .clientReviewing: AVIATheme.timelessBrown
         case .awaitingAdmin: AVIATheme.warning
         case .awaitingClient: AVIATheme.accent
-        case .reopenedByAdmin: Color(hex: "8B5CF6")
+        case .reopenedByAdmin: AVIATheme.heritageBlue
         case .approved: AVIATheme.success
-        case .amendedByAdmin: Color(hex: "8B5CF6")
+        case .amendedByAdmin: AVIATheme.heritageBlue
         }
     }
 
@@ -271,7 +271,7 @@ struct ClientSpecConfirmationView: View {
         switch tier {
         case .volos: AVIATheme.timelessBrown
         case .messina: AVIATheme.warning
-        case .portobello: Color(hex: "8B5CF6")
+        case .portobello: AVIATheme.heritageBlue
         }
     }
 
@@ -296,7 +296,7 @@ struct ClientSpecConfirmationView: View {
             .font(.neueSubheadlineMedium)
             .frame(maxWidth: .infinity)
             .frame(height: 52)
-            .foregroundStyle(.white)
+            .foregroundStyle(AVIATheme.aviaWhite)
             .background(AVIATheme.primaryGradient)
             .clipShape(.rect(cornerRadius: 14))
         }
@@ -327,7 +327,7 @@ struct ClientSpecConfirmationView: View {
                                 Text("View PDF")
                             }
                             .font(.neueCaption2Medium)
-                            .foregroundStyle(.white)
+                            .foregroundStyle(AVIATheme.aviaWhite)
                             .padding(.horizontal, 16)
                             .padding(.vertical, 10)
                             .background(AVIATheme.primaryGradient)
@@ -368,7 +368,7 @@ struct ClientSpecConfirmationView: View {
         if let msg = viewModel.successMessage {
             Text(msg)
                 .font(.neueCaptionMedium)
-                .foregroundStyle(.white)
+                .foregroundStyle(AVIATheme.aviaWhite)
                 .padding(.horizontal, 20)
                 .padding(.vertical, 12)
                 .background(AVIATheme.success, in: Capsule())
@@ -383,7 +383,7 @@ struct ClientSpecConfirmationView: View {
         if let msg = viewModel.errorMessage {
             Text(msg)
                 .font(.neueCaptionMedium)
-                .foregroundStyle(.white)
+                .foregroundStyle(AVIATheme.aviaWhite)
                 .padding(.horizontal, 20)
                 .padding(.vertical, 12)
                 .background(AVIATheme.destructive, in: Capsule())
@@ -434,7 +434,7 @@ struct UpgradeRequestSheet: View {
                         .font(.neueSubheadlineMedium)
                         .frame(maxWidth: .infinity)
                         .frame(height: 48)
-                        .foregroundStyle(.white)
+                        .foregroundStyle(AVIATheme.aviaWhite)
                         .background(AVIATheme.primaryGradient)
                         .clipShape(.rect(cornerRadius: 12))
                 }

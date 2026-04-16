@@ -120,14 +120,14 @@ struct PackageDetailView: View {
                     VStack(alignment: .leading, spacing: 6) {
                         Text(package.title)
                             .font(.neueCorpMedium(26))
-                            .foregroundStyle(.white)
+                            .foregroundStyle(AVIATheme.aviaWhite)
                         HStack(spacing: 12) {
                             Text(package.price)
                                 .font(.neueCorpMedium(18))
-                                .foregroundStyle(.white.opacity(0.95))
+                                .foregroundStyle(AVIATheme.aviaWhite.opacity(0.95))
                             Text(package.location)
                                 .font(.neueCaption)
-                                .foregroundStyle(.white.opacity(0.8))
+                                .foregroundStyle(AVIATheme.aviaWhite.opacity(0.8))
                         }
                     }
                     .frame(maxWidth: .infinity, alignment: .leading)
@@ -172,7 +172,7 @@ struct PackageDetailView: View {
                 Text("NEW LISTING")
                     .font(.neueCorpMedium(9))
                     .kerning(0.8)
-                    .foregroundStyle(.white)
+                    .foregroundStyle(AVIATheme.aviaWhite)
                     .padding(.horizontal, 10)
                     .padding(.vertical, 5)
                     .background(AVIATheme.timelessBrown)
@@ -337,7 +337,7 @@ struct PackageDetailView: View {
                                     Text("DOUBLE STOREY")
                                         .font(.neueCorpMedium(8))
                                         .kerning(0.5)
-                                        .foregroundStyle(.white)
+                                        .foregroundStyle(AVIATheme.aviaWhite)
                                         .padding(.horizontal, 8)
                                         .padding(.vertical, 4)
                                         .background(AVIATheme.timelessBrown)
@@ -452,10 +452,10 @@ struct PackageDetailView: View {
                             Text(facade.style.uppercased())
                                 .font(.neueCorpMedium(11))
                                 .kerning(0.8)
-                                .foregroundStyle(.white)
+                                .foregroundStyle(AVIATheme.aviaWhite)
                                 .padding(.horizontal, 12)
                                 .padding(.vertical, 7)
-                                .background(.black.opacity(0.55))
+                                .background(AVIATheme.aviaBlack.opacity(0.55))
                                 .clipShape(Capsule())
                                 .padding(12)
                         }
@@ -555,10 +555,10 @@ struct PackageDetailView: View {
                                     .font(.neueCorpMedium(11))
                                     .kerning(0.8)
                             }
-                            .foregroundStyle(.white)
+                            .foregroundStyle(AVIATheme.aviaWhite)
                             .padding(.horizontal, 12)
                             .padding(.vertical, 7)
-                            .background(.black.opacity(0.55))
+                            .background(AVIATheme.aviaBlack.opacity(0.55))
                             .clipShape(Capsule())
                             .padding(12)
                         }
@@ -603,7 +603,7 @@ struct PackageDetailView: View {
                     Image(systemName: "chevron.right")
                         .font(.neueCaptionMedium)
                 }
-                .foregroundStyle(.white)
+                .foregroundStyle(AVIATheme.aviaWhite)
                 .padding(.horizontal, 20)
                 .padding(.vertical, 16)
                 .background(AVIATheme.primaryGradient)
@@ -803,7 +803,7 @@ struct PackageDetailView: View {
                         }
                         .frame(maxWidth: .infinity)
                         .frame(height: 52)
-                        .foregroundStyle(.white)
+                        .foregroundStyle(AVIATheme.aviaWhite)
                         .background(AVIATheme.primaryGradient)
                         .clipShape(.rect(cornerRadius: 14))
                     }
@@ -848,7 +848,7 @@ struct PackageDetailView: View {
                     Image(systemName: "chevron.right")
                         .font(.neueCaptionMedium)
                 }
-                .foregroundStyle(.white)
+                .foregroundStyle(AVIATheme.aviaWhite)
                 .padding(.horizontal, 20)
                 .padding(.vertical, 16)
                 .background(AVIATheme.primaryGradient)
@@ -997,7 +997,7 @@ struct PackageDetailView: View {
                         }
                         .frame(maxWidth: .infinity)
                         .frame(height: 52)
-                        .foregroundStyle(.white)
+                        .foregroundStyle(AVIATheme.aviaWhite)
                         .background(AVIATheme.primaryGradient)
                         .clipShape(.rect(cornerRadius: 14))
                     }
@@ -1085,7 +1085,7 @@ struct PackageDetailView: View {
                         }
                         .frame(maxWidth: .infinity)
                         .frame(height: 52)
-                        .foregroundStyle(.white)
+                        .foregroundStyle(AVIATheme.aviaWhite)
                         .background(AVIATheme.primaryGradient)
                         .clipShape(.rect(cornerRadius: 14))
                     }
@@ -1143,7 +1143,7 @@ struct PackageDetailView: View {
                     }
                     .frame(maxWidth: .infinity)
                     .frame(height: 52)
-                    .foregroundStyle(.white)
+                    .foregroundStyle(AVIATheme.aviaWhite)
                     .background(AVIATheme.primaryGradient)
                     .clipShape(.rect(cornerRadius: 14))
                 }
@@ -1177,7 +1177,7 @@ struct PackageDetailView: View {
         Text(status.rawValue.uppercased())
             .font(.neueCorpMedium(9))
             .kerning(0.5)
-            .foregroundStyle(.white)
+            .foregroundStyle(AVIATheme.aviaWhite)
             .padding(.horizontal, 10)
             .padding(.vertical, 5)
             .background(statusColor(status))

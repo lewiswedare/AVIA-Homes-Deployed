@@ -119,7 +119,7 @@ struct DesignEnquiryFormView: View {
             HStack(spacing: 8) {
                 if isSubmitting {
                     ProgressView()
-                        .tint(.white)
+                        .tint(AVIATheme.aviaWhite)
                 } else {
                     Image(systemName: "paperplane.fill")
                         .font(.neueSubheadlineMedium)
@@ -129,7 +129,7 @@ struct DesignEnquiryFormView: View {
             }
             .frame(maxWidth: .infinity)
             .frame(height: 52)
-            .foregroundStyle(.white)
+            .foregroundStyle(AVIATheme.aviaWhite)
             .background(isFormValid ? AVIATheme.primaryGradient : LinearGradient(colors: [AVIATheme.textTertiary, AVIATheme.textTertiary], startPoint: .topLeading, endPoint: .bottomTrailing))
             .clipShape(.rect(cornerRadius: 14))
         }

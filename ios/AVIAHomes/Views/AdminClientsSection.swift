@@ -53,7 +53,7 @@ struct AdminClientCard: View {
                 HStack(spacing: 12) {
                     Text(client.initials.isEmpty ? "?" : client.initials)
                         .font(.neueCaptionMedium)
-                        .foregroundStyle(.white)
+                        .foregroundStyle(AVIATheme.aviaWhite)
                         .frame(width: 42, height: 42)
                         .background(AVIATheme.primaryGradient)
                         .clipShape(Circle())

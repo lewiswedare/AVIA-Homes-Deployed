@@ -263,10 +263,10 @@ struct AdminBuildSpecReviewView: View {
         case .included: ("STD", AVIATheme.textTertiary)
         case .upgradeRequested: ("UPG REQ", AVIATheme.warning)
         case .upgradeCosted: ("COSTED", AVIATheme.accent)
-        case .upgradeAccepted: ("ACCEPTED", Color.green)
-        case .upgradeDeclined: ("DECLINED", Color.gray)
+        case .upgradeAccepted: ("ACCEPTED", AVIATheme.heritageBlue)
+        case .upgradeDeclined: ("DECLINED", AVIATheme.textTertiary)
         case .upgradeApproved: ("UPG ✓", AVIATheme.success)
-        case .substituted: ("SUB", Color(hex: "8B5CF6"))
+        case .substituted: ("SUB", AVIATheme.heritageBlue)
         case .removed: ("REM", AVIATheme.destructive)
         }
         Text(label)
@@ -349,7 +349,7 @@ struct AdminBuildSpecReviewView: View {
             Spacer()
             Text(viewModel.colourSelectionOverallStatus.rawValue.capitalized)
                 .font(.neueCorpMedium(9))
-                .foregroundStyle(.white)
+                .foregroundStyle(AVIATheme.aviaWhite)
                 .padding(.horizontal, 10)
                 .padding(.vertical, 4)
                 .background(colourStatusColor)
@@ -369,7 +369,7 @@ struct AdminBuildSpecReviewView: View {
         case .draft: AVIATheme.textTertiary
         case .submitted: AVIATheme.warning
         case .approved: AVIATheme.success
-        case .reopened: Color(hex: "8B5CF6")
+        case .reopened: AVIATheme.heritageBlue
         }
     }
 
@@ -457,7 +457,7 @@ struct AdminBuildSpecReviewView: View {
         case .draft: ("circle", AVIATheme.textTertiary)
         case .submitted: ("clock.fill", AVIATheme.warning)
         case .approved: ("checkmark.circle.fill", AVIATheme.success)
-        case .reopened: ("arrow.counterclockwise", Color(hex: "8B5CF6"))
+        case .reopened: ("arrow.counterclockwise", AVIATheme.heritageBlue)
         }
         Image(systemName: icon)
             .font(.neueCorp(12))
@@ -539,7 +539,7 @@ struct AdminBuildSpecReviewView: View {
 
             Text(viewModel.overallStatus.displayLabel)
                 .font(.neueCorpMedium(9))
-                .foregroundStyle(.white)
+                .foregroundStyle(AVIATheme.aviaWhite)
                 .padding(.horizontal, 10)
                 .padding(.vertical, 4)
                 .background(adminStatusColor)
@@ -559,9 +559,9 @@ struct AdminBuildSpecReviewView: View {
         case .draft, .clientReviewing: AVIATheme.textTertiary
         case .awaitingAdmin: AVIATheme.warning
         case .awaitingClient: AVIATheme.accent
-        case .reopenedByAdmin: Color(hex: "8B5CF6")
+        case .reopenedByAdmin: AVIATheme.heritageBlue
         case .approved: AVIATheme.success
-        case .amendedByAdmin: Color(hex: "8B5CF6")
+        case .amendedByAdmin: AVIATheme.heritageBlue
         }
     }
 
@@ -636,7 +636,7 @@ struct AdminBuildSpecReviewView: View {
                 } label: {
                     HStack(spacing: 8) {
                         if viewModel.isSaving {
-                            ProgressView().tint(.white)
+                            ProgressView().tint(AVIATheme.aviaWhite)
                         } else {
                             Image(systemName: "checkmark.seal.fill")
                             Text("Approve All & Generate PDF")
@@ -645,7 +645,7 @@ struct AdminBuildSpecReviewView: View {
                     .font(.neueSubheadlineMedium)
                     .frame(maxWidth: .infinity)
                     .frame(height: 52)
-                    .foregroundStyle(.white)
+                    .foregroundStyle(AVIATheme.aviaWhite)
                     .background(AVIATheme.success)
                     .clipShape(.rect(cornerRadius: 14))
                 }
@@ -735,7 +735,7 @@ struct AdminBuildSpecReviewView: View {
         if let msg = viewModel.successMessage {
             Text(msg)
                 .font(.neueCaptionMedium)
-                .foregroundStyle(.white)
+                .foregroundStyle(AVIATheme.aviaWhite)
                 .padding(.horizontal, 20)
                 .padding(.vertical, 12)
                 .background(AVIATheme.success, in: Capsule())
@@ -750,7 +750,7 @@ struct AdminBuildSpecReviewView: View {
         if let msg = viewModel.errorMessage {
             Text(msg)
                 .font(.neueCaptionMedium)
-                .foregroundStyle(.white)
+                .foregroundStyle(AVIATheme.aviaWhite)
                 .padding(.horizontal, 20)
                 .padding(.vertical, 12)
                 .background(AVIATheme.destructive, in: Capsule())

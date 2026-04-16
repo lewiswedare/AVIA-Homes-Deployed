@@ -200,7 +200,7 @@ struct SelectionSummaryView: View {
         } label: {
             Group {
                 if isSubmitting {
-                    ProgressView().tint(.white)
+                    ProgressView().tint(AVIATheme.aviaWhite)
                 } else {
                     Label("Submit Selections", systemImage: "paperplane.fill")
                 }
@@ -208,7 +208,7 @@ struct SelectionSummaryView: View {
             .font(.neueSubheadlineMedium)
             .frame(maxWidth: .infinity)
             .frame(height: 52)
-            .foregroundStyle(.white)
+            .foregroundStyle(AVIATheme.aviaWhite)
             .background(AVIATheme.primaryGradient)
             .clipShape(.rect(cornerRadius: 14))
         }
@@ -236,7 +236,7 @@ struct SelectionSummaryView: View {
             Button("Close") { dismiss() }
                 .font(.neueSubheadlineMedium)
                 .frame(width: 200, height: 50)
-                .foregroundStyle(.white)
+                .foregroundStyle(AVIATheme.aviaWhite)
                 .background(AVIATheme.primaryGradient)
                 .clipShape(.rect(cornerRadius: 14))
 

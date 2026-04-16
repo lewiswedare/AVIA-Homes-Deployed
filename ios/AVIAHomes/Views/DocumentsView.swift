@@ -106,7 +106,7 @@ struct FilterChip: View {
                         Capsule().fill(AVIATheme.cardBackground)
                     }
                 }
-                .foregroundStyle(isSelected ? .white : AVIATheme.textSecondary)
+                .foregroundStyle(isSelected ? AVIATheme.aviaWhite : AVIATheme.textSecondary)
                 .overlay {
                     if !isSelected {
                         Capsule().stroke(AVIATheme.surfaceBorder, lineWidth: 1)

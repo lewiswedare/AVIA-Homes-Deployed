@@ -44,7 +44,7 @@ struct AdminOverviewSection: View {
                         Spacer()
                         Text("\(totalAlerts)")
                             .font(.neueCaptionMedium)
-                            .foregroundStyle(.white)
+                            .foregroundStyle(AVIATheme.aviaWhite)
                             .frame(width: 24, height: 24)
                             .background(AVIATheme.warning)
                             .clipShape(Circle())

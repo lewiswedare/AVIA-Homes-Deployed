@@ -133,7 +133,7 @@ struct ContractSigningView: View {
 
             SignatureCanvasView(canvasView: $canvasView, hasDrawn: $hasDrawn)
                 .frame(height: 150)
-                .background(.white)
+                .background(AVIATheme.aviaWhite)
                 .clipShape(.rect(cornerRadius: 12))
                 .overlay {
                     RoundedRectangle(cornerRadius: 12)
@@ -179,7 +179,7 @@ struct ContractSigningView: View {
                 HStack(spacing: 8) {
                     if isSigning {
                         ProgressView()
-                            .tint(.white)
+                            .tint(AVIATheme.aviaWhite)
                     } else {
                         Image(systemName: "signature")
                             .font(.neueSubheadlineMedium)
@@ -189,7 +189,7 @@ struct ContractSigningView: View {
                 }
                 .frame(maxWidth: .infinity)
                 .frame(height: 52)
-                .foregroundStyle(.white)
+                .foregroundStyle(AVIATheme.aviaWhite)
                 .background(canSign ? AVIATheme.primaryGradient : LinearGradient(colors: [.gray], startPoint: .leading, endPoint: .trailing))
                 .clipShape(.rect(cornerRadius: 14))
             }
@@ -272,8 +272,8 @@ struct SignatureCanvasView: UIViewRepresentable {
 
     func makeUIView(context: Context) -> PKCanvasView {
         canvasView.drawingPolicy = .anyInput
-        canvasView.tool = PKInkingTool(.pen, color: .black, width: 3)
-        canvasView.backgroundColor = .white
+        canvasView.tool = PKInkingTool(.pen, color: UIColor(red: 26/255, green: 26/255, blue: 26/255, alpha: 1), width: 3)
+        canvasView.backgroundColor = UIColor(red: 225/255, green: 221/255, blue: 220/255, alpha: 1)
         canvasView.isOpaque = true
         canvasView.delegate = context.coordinator
         return canvasView

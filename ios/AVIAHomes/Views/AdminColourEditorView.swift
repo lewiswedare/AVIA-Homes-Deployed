@@ -112,7 +112,7 @@ struct AdminColourEditorView: View {
                 .font(.neueCaptionMedium)
                 .padding(.horizontal, 14)
                 .padding(.vertical, 7)
-                .foregroundStyle(selectedSection == section ? .white : AVIATheme.textSecondary)
+                .foregroundStyle(selectedSection == section ? AVIATheme.aviaWhite : AVIATheme.textSecondary)
                 .background(selectedSection == section ? AVIATheme.timelessBrown : AVIATheme.cardBackground)
                 .clipShape(Capsule())
                 .overlay {
@@ -127,7 +127,7 @@ struct AdminColourEditorView: View {
         HStack(spacing: 12) {
             AdminMiniStat(value: "\(viewModel.colourCategories.count)", label: "Categories", color: AVIATheme.timelessBrown)
             AdminMiniStat(value: "\(viewModel.colourCategories.flatMap(\.options).count)", label: "Options", color: AVIATheme.warning)
-            AdminMiniStat(value: "\(viewModel.colourCategories.flatMap(\.options).filter(\.isUpgrade).count)", label: "Upgrades", color: Color(hex: "8B5CF6"))
+            AdminMiniStat(value: "\(viewModel.colourCategories.flatMap(\.options).filter(\.isUpgrade).count)", label: "Upgrades", color: AVIATheme.heritageBlue)
         }
     }
 
@@ -180,7 +180,7 @@ struct AdminColourEditorView: View {
                                 ForEach(tiers.sorted(), id: \.self) { t in
                                     Text(String(t.prefix(1)).uppercased())
                                         .font(.neueCorpMedium(8))
-                                        .foregroundStyle(.white)
+                                        .foregroundStyle(AVIATheme.aviaWhite)
                                         .frame(width: 16, height: 16)
                                         .background(AVIATheme.timelessBrown)
                                         .clipShape(Circle())
@@ -240,7 +240,7 @@ struct AdminColourEditorView: View {
         if let msg = viewModel.successMessage {
             Text(msg)
                 .font(.neueCaptionMedium)
-                .foregroundStyle(.white)
+                .foregroundStyle(AVIATheme.aviaWhite)
                 .padding(.horizontal, 20)
                 .padding(.vertical, 12)
                 .background(AVIATheme.success, in: Capsule())
@@ -255,7 +255,7 @@ struct AdminColourEditorView: View {
         if let msg = viewModel.errorMessage {
             Text(msg)
                 .font(.neueCaptionMedium)
-                .foregroundStyle(.white)
+                .foregroundStyle(AVIATheme.aviaWhite)
                 .padding(.horizontal, 20)
                 .padding(.vertical, 12)
                 .background(AVIATheme.destructive, in: Capsule())
@@ -375,7 +375,7 @@ struct ColourCategoryEditSheet: View {
                                                 .font(.neueCaption2Medium)
                                                 .padding(.horizontal, 12)
                                                 .padding(.vertical, 6)
-                                                .foregroundStyle(isActive ? .white : AVIATheme.textSecondary)
+                                                .foregroundStyle(isActive ? AVIATheme.aviaWhite : AVIATheme.textSecondary)
                                                 .background(isActive ? AVIATheme.timelessBrown : AVIATheme.surfaceElevated)
                                                 .clipShape(Capsule())
                                                 .overlay {
@@ -600,12 +600,12 @@ struct ColourCategoryEditSheet: View {
                     Text(String(tier.displayName.prefix(1)))
                         .font(.neueCorpMedium(10))
                         .frame(width: 26, height: 22)
-                        .foregroundStyle(isActive ? .white : AVIATheme.textTertiary)
-                        .background(isActive ? Color(hex: "8B5CF6") : Color.clear)
+                        .foregroundStyle(isActive ? AVIATheme.aviaWhite : AVIATheme.textTertiary)
+                        .background(isActive ? AVIATheme.heritageBlue : Color.clear)
                         .clipShape(.rect(cornerRadius: 5))
                         .overlay {
                             RoundedRectangle(cornerRadius: 5)
-                                .stroke(isActive ? Color(hex: "8B5CF6") : AVIATheme.surfaceBorder, lineWidth: 1)
+                                .stroke(isActive ? AVIATheme.heritageBlue : AVIATheme.surfaceBorder, lineWidth: 1)
                         }
                 }
             }
@@ -624,7 +624,7 @@ struct ColourCategoryEditSheet: View {
             } label: {
                 Text("All")
                     .font(.neueCaption2Medium)
-                    .foregroundStyle(Color(hex: "8B5CF6"))
+                    .foregroundStyle(AVIATheme.heritageBlue)
             }
         }
         .padding(8)
@@ -652,7 +652,7 @@ struct ColourCategoryEditSheet: View {
                     Text(String(tier.displayName.prefix(1)))
                         .font(.neueCorpMedium(10))
                         .frame(width: 26, height: 22)
-                        .foregroundStyle(isActive ? .white : AVIATheme.textTertiary)
+                        .foregroundStyle(isActive ? AVIATheme.aviaWhite : AVIATheme.textTertiary)
                         .background(isActive ? AVIATheme.timelessBrown : Color.clear)
                         .clipShape(.rect(cornerRadius: 5))
                         .overlay {

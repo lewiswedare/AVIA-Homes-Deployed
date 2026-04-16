@@ -117,7 +117,7 @@ struct BuildJourneyDetailView: View {
                                     .frame(width: 32, height: 32)
                                 Image(systemName: "checkmark")
                                     .font(.neueCorpMedium(12))
-                                    .foregroundStyle(.white)
+                                    .foregroundStyle(AVIATheme.aviaWhite)
                             } else if isCurrent {
                                 Circle()
                                     .fill(AVIATheme.timelessBrown.opacity(0.15))
@@ -152,7 +152,7 @@ struct BuildJourneyDetailView: View {
                                 Text("CURRENT")
                                     .font(.neueCorpMedium(8))
                                     .kerning(0.6)
-                                    .foregroundStyle(.white)
+                                    .foregroundStyle(AVIATheme.aviaWhite)
                                     .padding(.horizontal, 8)
                                     .padding(.vertical, 3)
                                     .background(AVIATheme.timelessBrown)
@@ -231,7 +231,7 @@ struct BuildJourneyDetailView: View {
                         Image(systemName: "arrow.right")
                             .font(.neueCorp(12))
                     }
-                    .foregroundStyle(.white)
+                    .foregroundStyle(AVIATheme.aviaWhite)
                     .frame(maxWidth: .infinity)
                     .frame(height: 50)
                     .background(AVIATheme.primaryGradient)

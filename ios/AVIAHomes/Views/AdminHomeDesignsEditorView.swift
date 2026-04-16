@@ -106,7 +106,7 @@ struct AdminHomeDesignsEditorView: View {
                 .font(.neueCaptionMedium)
                 .padding(.horizontal, 14)
                 .padding(.vertical, 7)
-                .foregroundStyle(filterStoreys == value ? .white : AVIATheme.textSecondary)
+                .foregroundStyle(filterStoreys == value ? AVIATheme.aviaWhite : AVIATheme.textSecondary)
                 .background(filterStoreys == value ? AVIATheme.timelessBrown : AVIATheme.cardBackground)
                 .clipShape(Capsule())
                 .overlay {
@@ -203,7 +203,7 @@ struct AdminHomeDesignsEditorView: View {
         if let msg = viewModel.successMessage {
             Text(msg)
                 .font(.neueCaptionMedium)
-                .foregroundStyle(.white)
+                .foregroundStyle(AVIATheme.aviaWhite)
                 .padding(.horizontal, 20)
                 .padding(.vertical, 12)
                 .background(AVIATheme.success, in: Capsule())
@@ -218,7 +218,7 @@ struct AdminHomeDesignsEditorView: View {
         if let msg = viewModel.errorMessage {
             Text(msg)
                 .font(.neueCaptionMedium)
-                .foregroundStyle(.white)
+                .foregroundStyle(AVIATheme.aviaWhite)
                 .padding(.horizontal, 20)
                 .padding(.vertical, 12)
                 .background(AVIATheme.destructive, in: Capsule())

@@ -100,17 +100,17 @@ struct ColourDetailView: View {
                                 .fill(Color(hex: selection.hexColor))
                                 .frame(width: 28, height: 28)
                                 .overlay {
-                                    Circle().stroke(.white.opacity(0.5), lineWidth: 1.5)
+                                    Circle().stroke(AVIATheme.aviaWhite.opacity(0.5), lineWidth: 1.5)
                                 }
                                 .transition(.scale.combined(with: .opacity))
                         }
                         Text(selectedColour?.optionName ?? category.name)
                             .font(.neueSubheadlineMedium)
-                            .foregroundStyle(.white)
+                            .foregroundStyle(AVIATheme.aviaWhite)
                     }
                     .padding(.horizontal, 12)
                     .padding(.vertical, 8)
-                    .background(.black.opacity(0.5))
+                    .background(AVIATheme.aviaBlack.opacity(0.5))
                     .clipShape(.rect(cornerRadius: 8))
                     .padding(10)
                 }
@@ -329,7 +329,7 @@ struct ColourSwatchView: View {
                     Image(systemName: "checkmark.circle.fill")
                         .font(.system(size: 18))
                         .symbolRenderingMode(.palette)
-                        .foregroundStyle(.white, AVIATheme.timelessBrown)
+                        .foregroundStyle(AVIATheme.aviaWhite, AVIATheme.timelessBrown)
                         .offset(x: 4, y: 4)
                         .transition(.scale.combined(with: .opacity))
                 }
@@ -359,7 +359,7 @@ struct ColourSwatchView: View {
                         Image(systemName: "checkmark.circle.fill")
                             .font(.neueBody)
                             .symbolRenderingMode(.palette)
-                            .foregroundStyle(.white, AVIATheme.timelessBrown)
+                            .foregroundStyle(AVIATheme.aviaWhite, AVIATheme.timelessBrown)
                             .transition(.scale.combined(with: .opacity))
                     }
                 }

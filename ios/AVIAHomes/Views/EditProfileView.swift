@@ -76,7 +76,7 @@ struct EditProfileView: View {
             ZStack {
                 Text(initials)
                     .font(.neueCorpMedium(28))
-                    .foregroundStyle(.white)
+                    .foregroundStyle(AVIATheme.aviaWhite)
                     .frame(width: 80, height: 80)
                     .background(AVIATheme.primaryGradient)
                     .clipShape(Circle())

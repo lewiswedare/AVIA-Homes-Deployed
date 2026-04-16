@@ -58,7 +58,7 @@ struct AdminSpecItemsEditorView: View {
                             Text("Seed Default Spec Items")
                                 .font(.neueSubheadlineMedium)
                         }
-                        .foregroundStyle(.white)
+                        .foregroundStyle(AVIATheme.aviaWhite)
                         .frame(maxWidth: .infinity)
                         .frame(height: 48)
                         .background(AVIATheme.primaryGradient)
@@ -134,7 +134,7 @@ struct AdminSpecItemsEditorView: View {
                 .font(.neueCaptionMedium)
                 .padding(.horizontal, 12)
                 .padding(.vertical, 7)
-                .foregroundStyle(selectedCategory == id ? .white : AVIATheme.textSecondary)
+                .foregroundStyle(selectedCategory == id ? AVIATheme.aviaWhite : AVIATheme.textSecondary)
                 .background(selectedCategory == id ? AVIATheme.timelessBrown : AVIATheme.cardBackground)
                 .clipShape(Capsule())
                 .overlay {
@@ -222,7 +222,7 @@ struct AdminSpecItemsEditorView: View {
         if let msg = viewModel.successMessage {
             Text(msg)
                 .font(.neueCaptionMedium)
-                .foregroundStyle(.white)
+                .foregroundStyle(AVIATheme.aviaWhite)
                 .padding(.horizontal, 20)
                 .padding(.vertical, 12)
                 .background(AVIATheme.success, in: Capsule())
@@ -237,7 +237,7 @@ struct AdminSpecItemsEditorView: View {
         if let msg = viewModel.errorMessage {
             Text(msg)
                 .font(.neueCaptionMedium)
-                .foregroundStyle(.white)
+                .foregroundStyle(AVIATheme.aviaWhite)
                 .padding(.horizontal, 20)
                 .padding(.vertical, 12)
                 .background(AVIATheme.destructive, in: Capsule())
@@ -328,7 +328,7 @@ struct SpecItemEditSheet: View {
                             sectionHeader("Tier Descriptions")
                             tierField("Volos", text: $volosDesc, color: AVIATheme.timelessBrown)
                             tierField("Messina", text: $messinaDesc, color: AVIATheme.warning)
-                            tierField("Portobello", text: $portobelloDesc, color: Color(hex: "8B5CF6"))
+                            tierField("Portobello", text: $portobelloDesc, color: AVIATheme.heritageBlue)
                         }
                         .padding(.vertical, 14)
                     }
@@ -365,7 +365,7 @@ struct SpecItemEditSheet: View {
                             } else {
                                 tierImageField("Volos", imageURL: $volosImageURL, color: AVIATheme.timelessBrown, tierKey: "volos")
                                 tierImageField("Messina", imageURL: $messinaImageURL, color: AVIATheme.warning, tierKey: "messina")
-                                tierImageField("Portobello", imageURL: $portobelloImageURL, color: Color(hex: "8B5CF6"), tierKey: "portobello")
+                                tierImageField("Portobello", imageURL: $portobelloImageURL, color: AVIATheme.heritageBlue, tierKey: "portobello")
                             }
                         }
                         .padding(.vertical, 14)

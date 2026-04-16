@@ -289,7 +289,7 @@ struct SpecRangeDetailView: View {
                 }
                 .frame(maxWidth: .infinity)
                 .frame(height: 48)
-                .foregroundStyle(.white)
+                .foregroundStyle(AVIATheme.aviaWhite)
                 .background(AVIATheme.primaryGradient)
                 .clipShape(.rect(cornerRadius: 14))
             }

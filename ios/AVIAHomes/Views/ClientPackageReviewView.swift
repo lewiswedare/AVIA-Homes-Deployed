@@ -169,7 +169,7 @@ struct ClientPackageReviewView: View {
                 .font(.neueCorpMedium(9))
                 .kerning(0.3)
         }
-        .foregroundStyle(.white)
+        .foregroundStyle(AVIATheme.aviaWhite)
         .padding(.horizontal, 10)
         .padding(.vertical, 5)
         .background(statusColor(displayStatus))

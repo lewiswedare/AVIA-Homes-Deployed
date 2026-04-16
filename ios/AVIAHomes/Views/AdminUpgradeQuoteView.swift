@@ -88,7 +88,7 @@ struct AdminUpgradeQuoteView: View {
             HStack(spacing: 14) {
                 Image(systemName: "doc.text.fill")
                     .font(.neueCorpMedium(18))
-                    .foregroundStyle(.white)
+                    .foregroundStyle(AVIATheme.aviaWhite)
                     .frame(width: 44, height: 44)
                     .background(AVIATheme.primaryGradient)
                     .clipShape(.rect(cornerRadius: 12))
@@ -189,7 +189,7 @@ struct AdminUpgradeQuoteView: View {
         let (label, color): (String, Color) = switch type {
         case .upgradeRequested: ("REQUESTED", AVIATheme.warning)
         case .upgradeCosted: ("COSTED", AVIATheme.accent)
-        case .upgradeAccepted: ("ACCEPTED", Color.green)
+        case .upgradeAccepted: ("ACCEPTED", AVIATheme.heritageBlue)
         case .upgradeApproved: ("APPROVED", AVIATheme.success)
         default: ("", AVIATheme.textTertiary)
         }
@@ -325,7 +325,7 @@ struct AdminUpgradeQuoteView: View {
             .font(.neueSubheadlineMedium)
             .frame(maxWidth: .infinity)
             .frame(height: 52)
-            .foregroundStyle(.white)
+            .foregroundStyle(AVIATheme.aviaWhite)
             .background(AVIATheme.primaryGradient)
             .clipShape(.rect(cornerRadius: 14))
         }

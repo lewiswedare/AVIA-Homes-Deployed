@@ -66,20 +66,20 @@ struct PackageManagementView: View {
             HStack(spacing: 14) {
                 Image(systemName: "plus.circle.fill")
                     .font(.system(size: 28, weight: .semibold))
-                    .foregroundStyle(.white)
+                    .foregroundStyle(AVIATheme.aviaWhite)
 
                 VStack(alignment: .leading, spacing: 2) {
                     Text("Create New Package")
                         .font(.neueSubheadlineMedium)
-                        .foregroundStyle(.white)
+                        .foregroundStyle(AVIATheme.aviaWhite)
                     Text("Build a package and assign it to clients")
                         .font(.neueCaption2)
-                        .foregroundStyle(.white.opacity(0.7))
+                        .foregroundStyle(AVIATheme.aviaWhite.opacity(0.7))
                 }
                 Spacer()
                 Image(systemName: "chevron.right")
                     .font(.neueCaptionMedium)
-                    .foregroundStyle(.white.opacity(0.5))
+                    .foregroundStyle(AVIATheme.aviaWhite.opacity(0.5))
             }
             .padding(16)
             .background(AVIATheme.primaryGradient)
@@ -197,7 +197,7 @@ struct PackageManagementView: View {
                     if submittedCount > 0 {
                         Text("\(submittedCount)")
                             .font(.neueCorpMedium(11))
-                            .foregroundStyle(.white)
+                            .foregroundStyle(AVIATheme.aviaWhite)
                             .frame(width: 24, height: 24)
                             .background(AVIATheme.warning)
                             .clipShape(Circle())
@@ -476,7 +476,7 @@ struct QuickAssignSheet: View {
                                 HStack(spacing: 12) {
                                     Text(client.initials.isEmpty ? "?" : client.initials)
                                         .font(.neueCaptionMedium)
-                                        .foregroundStyle(.white)
+                                        .foregroundStyle(AVIATheme.aviaWhite)
                                         .frame(width: 38, height: 38)
                                         .background(isShared ? AVIATheme.primaryGradient : LinearGradient(colors: [AVIATheme.surfaceElevated], startPoint: .top, endPoint: .bottom))
                                         .clipShape(Circle())
@@ -740,7 +740,7 @@ struct PackageAssignmentSheet: View {
                         HStack(spacing: 12) {
                             Text(partner.initials.isEmpty ? "?" : partner.initials)
                                 .font(.neueCaptionMedium)
-                                .foregroundStyle(.white)
+                                .foregroundStyle(AVIATheme.aviaWhite)
                                 .frame(width: 38, height: 38)
                                 .background(AVIATheme.timelessBrown)
                                 .clipShape(Circle())
@@ -807,7 +807,7 @@ struct PackageAssignmentSheet: View {
                         HStack(spacing: 12) {
                             Text(client.initials.isEmpty ? "?" : client.initials)
                                 .font(.neueCaptionMedium)
-                                .foregroundStyle(.white)
+                                .foregroundStyle(AVIATheme.aviaWhite)
                                 .frame(width: 38, height: 38)
                                 .background(AVIATheme.primaryGradient)
                                 .clipShape(Circle())

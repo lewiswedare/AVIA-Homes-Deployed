@@ -373,7 +373,7 @@ class BuildSpecViewModel {
 
             let titleAttr: [NSAttributedString.Key: Any] = [
                 .font: UIFont.boldSystemFont(ofSize: 22),
-                .foregroundColor: UIColor.black
+                .foregroundColor: UIColor(red: 26/255, green: 26/255, blue: 26/255, alpha: 1)
             ]
             let title = "AVIA Homes — Specification Summary"
             title.draw(at: CGPoint(x: margin, y: yOffset), withAttributes: titleAttr)
@@ -382,14 +382,14 @@ class BuildSpecViewModel {
             let tierLabel = "Spec Range: \(specTier.capitalized)"
             tierLabel.draw(at: CGPoint(x: margin, y: yOffset), withAttributes: [
                 .font: UIFont.systemFont(ofSize: 12),
-                .foregroundColor: UIColor.darkGray
+                .foregroundColor: UIColor(red: 26/255, green: 26/255, blue: 26/255, alpha: 0.55)
             ])
             yOffset += 25
 
             let dateLabel = "Generated: \(Date.now.formatted(date: .long, time: .shortened))"
             dateLabel.draw(at: CGPoint(x: margin, y: yOffset), withAttributes: [
                 .font: UIFont.systemFont(ofSize: 10),
-                .foregroundColor: UIColor.gray
+                .foregroundColor: UIColor(red: 26/255, green: 26/255, blue: 26/255, alpha: 0.35)
             ])
             yOffset += 30
 
@@ -399,7 +399,7 @@ class BuildSpecViewModel {
 
                 let catAttr: [NSAttributedString.Key: Any] = [
                     .font: UIFont.boldSystemFont(ofSize: 14),
-                    .foregroundColor: UIColor.black
+                    .foregroundColor: UIColor(red: 26/255, green: 26/255, blue: 26/255, alpha: 1)
                 ]
                 catName.uppercased().draw(at: CGPoint(x: margin, y: yOffset), withAttributes: catAttr)
                 yOffset += 22
@@ -407,7 +407,7 @@ class BuildSpecViewModel {
                 let line = UIBezierPath()
                 line.move(to: CGPoint(x: margin, y: yOffset))
                 line.addLine(to: CGPoint(x: margin + contentWidth, y: yOffset))
-                UIColor.lightGray.setStroke()
+                UIColor(red: 205/255, green: 201/255, blue: 199/255, alpha: 1).setStroke()
                 line.lineWidth = 0.5
                 line.stroke()
                 yOffset += 8
@@ -417,7 +417,7 @@ class BuildSpecViewModel {
 
                     let nameAttr: [NSAttributedString.Key: Any] = [
                         .font: UIFont.boldSystemFont(ofSize: 11),
-                        .foregroundColor: UIColor.black
+                        .foregroundColor: UIColor(red: 26/255, green: 26/255, blue: 26/255, alpha: 1)
                     ]
                     item.snapshotName.draw(at: CGPoint(x: margin, y: yOffset), withAttributes: nameAttr)
 
@@ -425,7 +425,7 @@ class BuildSpecViewModel {
                         let badge = " [\(item.selectionType.displayLabel)]"
                         badge.draw(at: CGPoint(x: margin + 200, y: yOffset), withAttributes: [
                             .font: UIFont.italicSystemFont(ofSize: 9),
-                            .foregroundColor: UIColor.systemOrange
+                            .foregroundColor: UIColor(red: 55/255, green: 51/255, blue: 43/255, alpha: 0.8)
                         ])
                     }
                     yOffset += 16
@@ -433,7 +433,7 @@ class BuildSpecViewModel {
                     let descRect = CGRect(x: margin + 10, y: yOffset, width: contentWidth - 10, height: 40)
                     let descAttr: [NSAttributedString.Key: Any] = [
                         .font: UIFont.systemFont(ofSize: 10),
-                        .foregroundColor: UIColor.darkGray
+                        .foregroundColor: UIColor(red: 26/255, green: 26/255, blue: 26/255, alpha: 0.55)
                     ]
                     let descStr = NSAttributedString(string: item.snapshotDescription, attributes: descAttr)
                     descStr.draw(with: descRect, options: [.usesLineFragmentOrigin, .truncatesLastVisibleLine], context: nil)
@@ -443,7 +443,7 @@ class BuildSpecViewModel {
                         let notesStr = "Client notes: \(notes)"
                         notesStr.draw(at: CGPoint(x: margin + 10, y: yOffset), withAttributes: [
                             .font: UIFont.italicSystemFont(ofSize: 9),
-                            .foregroundColor: UIColor.gray
+                            .foregroundColor: UIColor(red: 26/255, green: 26/255, blue: 26/255, alpha: 0.35)
                         ])
                         yOffset += 14
                     }
@@ -451,7 +451,7 @@ class BuildSpecViewModel {
                         let notesStr = "Admin notes: \(notes)"
                         notesStr.draw(at: CGPoint(x: margin + 10, y: yOffset), withAttributes: [
                             .font: UIFont.italicSystemFont(ofSize: 9),
-                            .foregroundColor: UIColor.systemBlue
+                            .foregroundColor: UIColor(red: 142/255, green: 155/255, blue: 146/255, alpha: 1)
                         ])
                         yOffset += 14
                     }
@@ -556,19 +556,19 @@ class BuildSpecViewModel {
             let margin: CGFloat = 50
             let titleAttr: [NSAttributedString.Key: Any] = [
                 .font: UIFont.boldSystemFont(ofSize: 22),
-                .foregroundColor: UIColor.black
+                .foregroundColor: UIColor(red: 26/255, green: 26/255, blue: 26/255, alpha: 1)
             ]
             "AVIA Homes — Colour Selection Summary".draw(at: CGPoint(x: margin, y: y), withAttributes: titleAttr)
             y += 35
             "Generated: \(Date.now.formatted(date: .long, time: .shortened))".draw(at: CGPoint(x: margin, y: y), withAttributes: [
-                .font: UIFont.systemFont(ofSize: 10), .foregroundColor: UIColor.gray
+                .font: UIFont.systemFont(ofSize: 10), .foregroundColor: UIColor(red: 26/255, green: 26/255, blue: 26/255, alpha: 0.35)
             ])
             y += 30
             for selection in colourSelections {
                 if y > 720 { context.beginPage(); y = 50 }
                 let line = "Category: \(selection.colourCategoryId)  |  Option: \(selection.colourOptionId)  |  Status: \(selection.selectionStatus.rawValue)"
                 line.draw(at: CGPoint(x: margin, y: y), withAttributes: [
-                    .font: UIFont.systemFont(ofSize: 10), .foregroundColor: UIColor.darkGray
+                    .font: UIFont.systemFont(ofSize: 10), .foregroundColor: UIColor(red: 26/255, green: 26/255, blue: 26/255, alpha: 0.55)
                 ])
                 y += 18
             }

@@ -8,7 +8,7 @@ struct FloorplanMarkupView: View {
     @Environment(\.dismiss) private var dismiss
     @State private var canvasView = PKCanvasView()
     @State private var selectedTool: MarkupTool = .pen
-    @State private var selectedColor: Color = .red
+    @State private var selectedColor: Color = AVIATheme.aviaBlack
     @State private var hasDrawn: Bool = false
 
     enum MarkupTool: String, CaseIterable {
@@ -25,7 +25,7 @@ struct FloorplanMarkupView: View {
         }
     }
 
-    private let markupColors: [Color] = [.red, .blue, .green, .orange, .purple, .black]
+    private let markupColors: [Color] = [AVIATheme.aviaBlack, AVIATheme.timelessBrown, AVIATheme.heritageBlue, AVIATheme.aviaWhite]
 
     var body: some View {
         NavigationStack {
@@ -51,13 +51,13 @@ struct FloorplanMarkupView: View {
                         Image(systemName: "xmark.circle.fill")
                             .font(.title3)
                             .symbolRenderingMode(.hierarchical)
-                            .foregroundStyle(.white.opacity(0.7))
+                            .foregroundStyle(AVIATheme.aviaWhite.opacity(0.7))
                     }
                 }
                 ToolbarItem(placement: .principal) {
                     Text("Markup Plans")
                         .font(.neueSubheadlineMedium)
-                        .foregroundStyle(.white)
+                        .foregroundStyle(AVIATheme.aviaWhite)
                 }
                 ToolbarItem(placement: .topBarTrailing) {
                     HStack(spacing: 12) {
@@ -68,7 +68,7 @@ struct FloorplanMarkupView: View {
                         } label: {
                             Image(systemName: "arrow.uturn.backward")
                                 .font(.neueSubheadlineMedium)
-                                .foregroundStyle(.white.opacity(0.7))
+                                .foregroundStyle(AVIATheme.aviaWhite.opacity(0.7))
                         }
                         Button {
                             drawing = canvasView.drawing
@@ -77,7 +77,7 @@ struct FloorplanMarkupView: View {
                         } label: {
                             Text("Submit")
                                 .font(.neueCaptionMedium)
-                                .foregroundStyle(.white)
+                                .foregroundStyle(AVIATheme.aviaWhite)
                                 .padding(.horizontal, 14)
                                 .padding(.vertical, 7)
                                 .background(hasDrawn ? AVIATheme.primaryGradient : LinearGradient(colors: [.gray], startPoint: .leading, endPoint: .trailing))
@@ -97,12 +97,12 @@ struct FloorplanMarkupView: View {
                 .foregroundStyle(AVIATheme.timelessBrown)
             Text("Draw on the floor plan to indicate changes you'd like made")
                 .font(.neueCaption)
-                .foregroundStyle(.white.opacity(0.8))
+                .foregroundStyle(AVIATheme.aviaWhite.opacity(0.8))
         }
         .padding(.horizontal, 16)
         .padding(.vertical, 10)
         .frame(maxWidth: .infinity)
-        .background(Color.white.opacity(0.08))
+        .background(AVIATheme.aviaWhite.opacity(0.08))
     }
 
     private var markupCanvas: some View {
@@ -117,14 +117,14 @@ struct FloorplanMarkupView: View {
                     VStack(spacing: 12) {
                         Image(systemName: "rectangle.split.2x2")
                             .font(.system(size: 48))
-                            .foregroundStyle(.white.opacity(0.3))
+                            .foregroundStyle(AVIATheme.aviaWhite.opacity(0.3))
                         Text("Unable to load floorplan")
                             .font(.neueSubheadline)
-                            .foregroundStyle(.white.opacity(0.5))
+                            .foregroundStyle(AVIATheme.aviaWhite.opacity(0.5))
                     }
                 } else {
                     ProgressView()
-                        .tint(.white.opacity(0.6))
+                        .tint(AVIATheme.aviaWhite.opacity(0.6))
                 }
             }
             .allowsHitTesting(false)
@@ -149,13 +149,13 @@ struct FloorplanMarkupView: View {
                         VStack(spacing: 4) {
                             Image(systemName: tool.icon)
                                 .font(.neueCorpMedium(16))
-                                .foregroundStyle(selectedTool == tool ? .white : .white.opacity(0.4))
+                                .foregroundStyle(selectedTool == tool ? AVIATheme.aviaWhite : AVIATheme.aviaWhite.opacity(0.4))
                                 .frame(width: 44, height: 44)
-                                .background(selectedTool == tool ? Color.white.opacity(0.15) : Color.clear)
+                                .background(selectedTool == tool ? AVIATheme.aviaWhite.opacity(0.15) : Color.clear)
                                 .clipShape(Circle())
                             Text(tool.rawValue)
                                 .font(.neueCaption2)
-                                .foregroundStyle(selectedTool == tool ? .white : .white.opacity(0.4))
+                                .foregroundStyle(selectedTool == tool ? AVIATheme.aviaWhite : AVIATheme.aviaWhite.opacity(0.4))
                         }
                     }
                 }
@@ -174,7 +174,7 @@ struct FloorplanMarkupView: View {
                                     .overlay {
                                         if selectedColor == color {
                                             Circle()
-                                                .stroke(.white, lineWidth: 2.5)
+                                                .stroke(AVIATheme.aviaWhite, lineWidth: 2.5)
                                                 .frame(width: 30, height: 30)
                                         }
                                     }
@@ -186,7 +186,7 @@ struct FloorplanMarkupView: View {
             .padding(.horizontal, 16)
         }
         .padding(.vertical, 12)
-        .background(Color.black.opacity(0.5))
+        .background(AVIATheme.aviaBlack.opacity(0.5))
     }
 }
 

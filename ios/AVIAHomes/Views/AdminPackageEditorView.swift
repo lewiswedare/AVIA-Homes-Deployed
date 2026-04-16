@@ -412,7 +412,7 @@ struct AdminPackageEditorView: View {
                                 Text("CUSTOM")
                                     .font(.neueCorpMedium(8))
                                     .kerning(0.4)
-                                    .foregroundStyle(.white)
+                                    .foregroundStyle(AVIATheme.aviaWhite)
                                     .padding(.horizontal, 6)
                                     .padding(.vertical, 2)
                                     .background(AVIATheme.timelessBrown)
@@ -547,7 +547,7 @@ struct AdminPackageEditorView: View {
                             }
                             .frame(maxWidth: .infinity)
                             .padding(.vertical, 12)
-                            .foregroundStyle(isSelected ? .white : AVIATheme.textPrimary)
+                            .foregroundStyle(isSelected ? AVIATheme.aviaWhite : AVIATheme.textPrimary)
                             .background(isSelected ? AVIATheme.primaryGradient : LinearGradient(colors: [AVIATheme.surfaceElevated], startPoint: .top, endPoint: .bottom))
                             .clipShape(.rect(cornerRadius: 12))
                         }
@@ -625,7 +625,7 @@ struct AdminPackageEditorView: View {
                             Text("2 STOREY")
                                 .font(.neueCorpMedium(8))
                                 .kerning(0.4)
-                                .foregroundStyle(.white)
+                                .foregroundStyle(AVIATheme.aviaWhite)
                                 .padding(.horizontal, 6)
                                 .padding(.vertical, 2)
                                 .background(AVIATheme.timelessBrown)
@@ -769,7 +769,7 @@ struct AdminPackageEditorView: View {
                             HStack(spacing: 12) {
                                 Text(client.initials.isEmpty ? "?" : client.initials)
                                     .font(.neueCaptionMedium)
-                                    .foregroundStyle(.white)
+                                    .foregroundStyle(AVIATheme.aviaWhite)
                                     .frame(width: 34, height: 34)
                                     .background(AVIATheme.primaryGradient)
                                     .clipShape(Circle())
@@ -848,7 +848,7 @@ struct AdminPackageEditorView: View {
                                 HStack(spacing: 12) {
                                     Text(client.initials.isEmpty ? "?" : client.initials)
                                         .font(.neueCaptionMedium)
-                                        .foregroundStyle(.white)
+                                        .foregroundStyle(AVIATheme.aviaWhite)
                                         .frame(width: 34, height: 34)
                                         .background(AVIATheme.primaryGradient)
                                         .clipShape(Circle())
@@ -930,7 +930,7 @@ struct AdminPackageEditorView: View {
                             Image(systemName: "chevron.right")
                                 .font(.neueCaptionMedium)
                         }
-                        .foregroundStyle(.white)
+                        .foregroundStyle(AVIATheme.aviaWhite)
                         .frame(height: 48)
                         .padding(.horizontal, 24)
                         .background(AVIATheme.primaryGradient)
@@ -943,7 +943,7 @@ struct AdminPackageEditorView: View {
                         HStack(spacing: 8) {
                             if isSaving {
                                 ProgressView()
-                                    .tint(.white)
+                                    .tint(AVIATheme.aviaWhite)
                                     .scaleEffect(0.8)
                             } else {
                                 Image(systemName: isEditing ? "checkmark.circle.fill" : "plus.circle.fill")
@@ -952,7 +952,7 @@ struct AdminPackageEditorView: View {
                             Text(isEditing ? "Save Changes" : "Create & Assign")
                                 .font(.neueSubheadlineMedium)
                         }
-                        .foregroundStyle(.white)
+                        .foregroundStyle(AVIATheme.aviaWhite)
                         .frame(height: 48)
                         .padding(.horizontal, 24)
                         .background(canSave ? AVIATheme.primaryGradient : LinearGradient(colors: [AVIATheme.surfaceElevated], startPoint: .top, endPoint: .bottom))

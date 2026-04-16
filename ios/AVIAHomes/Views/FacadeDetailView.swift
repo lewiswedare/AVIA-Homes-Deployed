@@ -66,7 +66,7 @@ struct FacadeDetailView: View {
                         Text("DOUBLE STOREY")
                             .font(.neueCorpMedium(9))
                             .kerning(0.8)
-                            .foregroundStyle(.white)
+                            .foregroundStyle(AVIATheme.aviaWhite)
                             .padding(.horizontal, 10)
                             .padding(.vertical, 5)
                             .background(AVIATheme.timelessBrown)
@@ -135,7 +135,7 @@ struct FacadeDetailView: View {
                     HStack(spacing: 14) {
                         Image(systemName: "checkmark")
                             .font(.neueCaption2Medium)
-                            .foregroundStyle(.white)
+                            .foregroundStyle(AVIATheme.aviaWhite)
                             .frame(width: 28, height: 28)
                             .background(AVIATheme.timelessBrown)
                             .clipShape(Circle())
@@ -235,7 +235,7 @@ struct FacadeDetailView: View {
                     }
                     .frame(maxWidth: .infinity)
                     .frame(height: 48)
-                    .foregroundStyle(.white)
+                    .foregroundStyle(AVIATheme.aviaWhite)
                     .background(AVIATheme.primaryGradient)
                     .clipShape(.rect(cornerRadius: 14))
                 }

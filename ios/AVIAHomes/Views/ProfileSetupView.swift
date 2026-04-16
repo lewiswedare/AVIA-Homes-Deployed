@@ -225,7 +225,7 @@ struct ProfileSetupView: View {
                     .font(.neueSubheadlineMedium)
                     .frame(maxWidth: .infinity)
                     .frame(height: 52)
-                    .foregroundStyle(.white)
+                    .foregroundStyle(AVIATheme.aviaWhite)
                     .background(AVIATheme.primaryGradient)
                     .clipShape(.rect(cornerRadius: 14))
             }

@@ -48,7 +48,7 @@ struct SiteMapViewer: View {
                     }
                 }
             }
-            .background(Color.black)
+            .background(AVIATheme.aviaBlack)
             .navigationTitle("\(estateName) — Site Map")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {

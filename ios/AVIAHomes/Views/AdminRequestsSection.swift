@@ -193,7 +193,7 @@ struct AdminRequestDetailSheet: View {
                         } label: {
                             Text(status.rawValue)
                                 .font(.neueCaptionMedium)
-                                .foregroundStyle(selectedStatus == status ? .white : AVIATheme.textSecondary)
+                                .foregroundStyle(selectedStatus == status ? AVIATheme.aviaWhite : AVIATheme.textSecondary)
                                 .padding(.horizontal, 12)
                                 .padding(.vertical, 8)
                                 .background(selectedStatus == status ? statusColor(status) : AVIATheme.cardBackgroundAlt)
@@ -270,7 +270,7 @@ struct AdminRequestDetailSheet: View {
                     .font(.neueSubheadlineMedium)
                     .frame(maxWidth: .infinity)
                     .frame(height: 48)
-                    .foregroundStyle(.white)
+                    .foregroundStyle(AVIATheme.aviaWhite)
                     .background(AVIATheme.primaryGradient)
                     .clipShape(.rect(cornerRadius: 12))
                 }

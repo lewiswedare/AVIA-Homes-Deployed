@@ -199,7 +199,7 @@ struct HomeDesignDirectoryView: View {
         Button(action: action) {
             Text(label)
                 .font(.neueCaptionMedium)
-                .foregroundStyle(isActive ? .white : AVIATheme.textPrimary)
+                .foregroundStyle(isActive ? AVIATheme.aviaWhite : AVIATheme.textPrimary)
                 .padding(.horizontal, 14)
                 .padding(.vertical, 8)
                 .background(isActive ? AVIATheme.timelessBrown : AVIATheme.cardBackground)
@@ -237,8 +237,8 @@ struct HomeDesignDirectoryView: View {
                                 let isSelected = compareSelections.contains(design)
                                 Image(systemName: isSelected ? "checkmark.circle.fill" : "circle")
                                     .font(.system(size: 22, weight: .medium))
-                                    .foregroundStyle(isSelected ? AVIATheme.timelessBrown : .white.opacity(0.8))
-                                    .shadow(color: .black.opacity(0.3), radius: 2, y: 1)
+                                    .foregroundStyle(isSelected ? AVIATheme.timelessBrown : AVIATheme.aviaWhite.opacity(0.8))
+                                    .shadow(color: AVIATheme.aviaBlack.opacity(0.3), radius: 2, y: 1)
                                     .padding(8)
                             }
                             .overlay {
@@ -298,7 +298,7 @@ struct HomeDesignDirectoryView: View {
             }
             .frame(maxWidth: .infinity)
             .frame(height: 52)
-            .foregroundStyle(.white)
+            .foregroundStyle(AVIATheme.aviaWhite)
             .background(AVIATheme.primaryGradient)
             .clipShape(.rect(cornerRadius: 14))
             .shadow(color: AVIATheme.timelessBrown.opacity(0.3), radius: 12, y: 4)
@@ -341,7 +341,7 @@ struct HomeDesignDirectoryView: View {
                     Text("2 STOREY")
                         .font(.neueCorpMedium(8))
                         .kerning(0.5)
-                        .foregroundStyle(.white)
+                        .foregroundStyle(AVIATheme.aviaWhite)
                         .padding(.horizontal, 7)
                         .padding(.vertical, 3)
                         .background(AVIATheme.timelessBrown)

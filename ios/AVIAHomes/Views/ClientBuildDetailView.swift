@@ -47,7 +47,7 @@ struct ClientBuildDetailView: View {
                 HStack(spacing: 14) {
                     Text(build.client.initials.isEmpty ? "?" : build.client.initials)
                         .font(.neueCorpMedium(20))
-                        .foregroundStyle(.white)
+                        .foregroundStyle(AVIATheme.aviaWhite)
                         .frame(width: 52, height: 52)
                         .background(AVIATheme.primaryGradient)
                         .clipShape(Circle())
@@ -100,7 +100,7 @@ struct ClientBuildDetailView: View {
                                 Text("Call")
                                     .font(.neueCaptionMedium)
                             }
-                            .foregroundStyle(.white)
+                            .foregroundStyle(AVIATheme.aviaWhite)
                             .frame(maxWidth: .infinity)
                             .frame(height: 36)
                             .background(AVIATheme.primaryGradient)

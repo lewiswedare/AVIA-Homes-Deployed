@@ -132,7 +132,7 @@ struct SignUpView: View {
                         Button(action: signUp) {
                             Group {
                                 if appViewModel.authService.isLoading {
-                                    ProgressView().tint(.white)
+                                    ProgressView().tint(AVIATheme.aviaWhite)
                                 } else {
                                     Text("Create Account")
                                         .font(.neueSubheadlineMedium)
@@ -140,7 +140,7 @@ struct SignUpView: View {
                             }
                             .frame(maxWidth: .infinity)
                             .frame(height: 52)
-                            .foregroundStyle(.white)
+                            .foregroundStyle(AVIATheme.aviaWhite)
                             .background(AVIATheme.primaryGradient)
                             .clipShape(.rect(cornerRadius: 14))
                         }

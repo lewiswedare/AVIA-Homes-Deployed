@@ -26,7 +26,7 @@ struct SpecificationCategoryDetailView: View {
         HStack(spacing: 14) {
             Image(systemName: category.icon)
                 .font(.neueCorpMedium(16))
-                .foregroundStyle(.white)
+                .foregroundStyle(AVIATheme.aviaWhite)
                 .frame(width: 44, height: 44)
                 .background(AVIATheme.primaryGradient)
                 .clipShape(.rect(cornerRadius: 12))
@@ -80,7 +80,7 @@ struct SpecificationCategoryDetailView: View {
                     HStack(spacing: 8) {
                         Text(selectedTier.displayName)
                             .font(.neueCaption2Medium)
-                            .foregroundStyle(.white)
+                            .foregroundStyle(AVIATheme.aviaWhite)
                             .padding(.horizontal, 8)
                             .padding(.vertical, 3)
                             .background(AVIATheme.aviaBlack)
@@ -166,7 +166,7 @@ struct SpecificationCategoryDetailView: View {
                 LinearGradient(
                     stops: [
                         .init(color: .clear, location: 0.4),
-                        .init(color: .black.opacity(0.5), location: 1.0)
+                        .init(color: AVIATheme.aviaBlack.opacity(0.5), location: 1.0)
                     ],
                     startPoint: .top,
                     endPoint: .bottom
@@ -175,7 +175,7 @@ struct SpecificationCategoryDetailView: View {
             .overlay(alignment: .bottomLeading) {
                 Text(item.name)
                     .font(.neueCorpMedium(18))
-                    .foregroundStyle(.white)
+                    .foregroundStyle(AVIATheme.aviaWhite)
                     .padding(14)
             }
             .overlay(alignment: .topTrailing) {
@@ -187,7 +187,7 @@ struct SpecificationCategoryDetailView: View {
                             Text("Pending")
                                 .font(.neueCaption2Medium)
                         }
-                        .foregroundStyle(.white)
+                        .foregroundStyle(AVIATheme.aviaWhite)
                         .padding(.horizontal, 10)
                         .padding(.vertical, 5)
                         .background(AVIATheme.warning)
@@ -199,7 +199,7 @@ struct SpecificationCategoryDetailView: View {
                             Text("Upgradeable")
                                 .font(.neueCaption2Medium)
                         }
-                        .foregroundStyle(.white)
+                        .foregroundStyle(AVIATheme.aviaWhite)
                         .padding(.horizontal, 10)
                         .padding(.vertical, 5)
                         .background(.ultraThinMaterial.opacity(0.7))
@@ -229,9 +229,9 @@ struct SpecificationCategoryDetailView: View {
                 } label: {
                     Text(String(tier.displayName.prefix(1)))
                         .font(.neueCorpMedium(11))
-                        .foregroundStyle(selectedTier == tier ? AVIATheme.aviaBlack : .white)
+                        .foregroundStyle(selectedTier == tier ? AVIATheme.aviaBlack : AVIATheme.aviaWhite)
                         .frame(width: 28, height: 24)
-                        .background(selectedTier == tier ? .white : .white.opacity(0.25))
+                        .background(selectedTier == tier ? AVIATheme.aviaWhite : AVIATheme.aviaWhite.opacity(0.25))
                         .clipShape(.rect(cornerRadius: 6))
                 }
             }

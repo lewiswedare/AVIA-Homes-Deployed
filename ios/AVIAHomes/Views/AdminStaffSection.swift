@@ -97,14 +97,14 @@ struct AdminStaffSection: View {
         HStack(spacing: 12) {
             Image(systemName: "exclamationmark.circle.fill")
                 .font(.system(size: 20))
-                .foregroundStyle(.white)
+                .foregroundStyle(AVIATheme.aviaWhite)
             VStack(alignment: .leading, spacing: 2) {
                 Text("\(count) pending \(count == 1 ? "user" : "users")")
                     .font(.neueSubheadlineMedium)
-                    .foregroundStyle(.white)
+                    .foregroundStyle(AVIATheme.aviaWhite)
                 Text("Tap to review and assign roles")
                     .font(.neueCaption)
-                    .foregroundStyle(.white.opacity(0.8))
+                    .foregroundStyle(AVIATheme.aviaWhite.opacity(0.8))
             }
             Spacer()
             NavigationLink { UserManagementView() } label: {
@@ -113,7 +113,7 @@ struct AdminStaffSection: View {
                     .foregroundStyle(AVIATheme.timelessBrown)
                     .padding(.horizontal, 14)
                     .padding(.vertical, 6)
-                    .background(.white)
+                    .background(AVIATheme.aviaWhite)
                     .clipShape(.capsule)
             }
         }
@@ -130,7 +130,7 @@ struct AdminStaffUserRow: View {
         HStack(spacing: 12) {
             Text(user.initials.isEmpty ? "?" : user.initials)
                 .font(.neueCaptionMedium)
-                .foregroundStyle(.white)
+                .foregroundStyle(AVIATheme.aviaWhite)
                 .frame(width: 38, height: 38)
                 .background {
                     if user.role.isPending {
@@ -189,7 +189,7 @@ struct AdminStaffWorkloadCard: View {
                 HStack(spacing: 12) {
                     Text(member.initials)
                         .font(.neueCaptionMedium)
-                        .foregroundStyle(.white)
+                        .foregroundStyle(AVIATheme.aviaWhite)
                         .frame(width: 40, height: 40)
                         .background(AVIATheme.primaryGradient)
                         .clipShape(Circle())
@@ -248,7 +248,7 @@ struct AdminPartnerCard: View {
                 HStack(spacing: 12) {
                     Text(partner.initials.isEmpty ? "?" : partner.initials)
                         .font(.neueCaptionMedium)
-                        .foregroundStyle(.white)
+                        .foregroundStyle(AVIATheme.aviaWhite)
                         .frame(width: 40, height: 40)
                         .background(AVIATheme.timelessBrown)
                         .clipShape(Circle())

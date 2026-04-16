@@ -161,7 +161,7 @@ struct SuperAdminDashboard: View {
     private func initialsCircle(user: ClientUser) -> some View {
         Text(user.initials)
             .font(.neueCorpMedium(14))
-            .foregroundStyle(.white)
+            .foregroundStyle(AVIATheme.aviaWhite)
             .frame(width: 42, height: 42)
             .background(AVIATheme.primaryGradient)
             .clipShape(Circle())

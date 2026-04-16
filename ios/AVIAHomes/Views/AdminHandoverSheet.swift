@@ -39,7 +39,7 @@ struct AdminHandoverSheet: View {
                                         HStack(spacing: 12) {
                                             Text(staff.initials)
                                                 .font(.neueCorpMedium(12))
-                                                .foregroundStyle(.white)
+                                                .foregroundStyle(AVIATheme.aviaWhite)
                                                 .frame(width: 40, height: 40)
                                                 .background(AVIATheme.primaryGradient)
                                                 .clipShape(Circle())
@@ -191,7 +191,7 @@ struct AdminBuildHandoverSection: View {
         HStack(spacing: 10) {
             Text(user.initials)
                 .font(.neueCorpMedium(10))
-                .foregroundStyle(.white)
+                .foregroundStyle(AVIATheme.aviaWhite)
                 .frame(width: 30, height: 30)
                 .background(AVIATheme.primaryGradient)
                 .clipShape(Circle())

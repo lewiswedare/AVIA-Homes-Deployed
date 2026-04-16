@@ -208,7 +208,7 @@ struct GuidedColourFlowView: View {
                     .font(.neueSubheadlineMedium)
                     .frame(maxWidth: .infinity)
                     .frame(height: 50)
-                    .foregroundStyle(.white)
+                    .foregroundStyle(AVIATheme.aviaWhite)
                     .background(AVIATheme.primaryGradient)
                     .clipShape(.rect(cornerRadius: 14))
                 }
@@ -223,7 +223,7 @@ struct GuidedColourFlowView: View {
                         .font(.neueSubheadlineMedium)
                         .frame(maxWidth: .infinity)
                         .frame(height: 50)
-                        .foregroundStyle(.white)
+                        .foregroundStyle(AVIATheme.aviaWhite)
                         .background(AVIATheme.primaryGradient)
                         .clipShape(.rect(cornerRadius: 14))
                 }

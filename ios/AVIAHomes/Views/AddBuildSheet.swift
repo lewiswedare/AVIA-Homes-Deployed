@@ -71,7 +71,7 @@ struct AddBuildSheet: View {
                     Button(action: createBuild) {
                         Group {
                             if isSaving {
-                                ProgressView().tint(.white)
+                                ProgressView().tint(AVIATheme.aviaWhite)
                             } else {
                                 HStack(spacing: 8) {
                                     Image(systemName: "plus.circle.fill")
@@ -82,7 +82,7 @@ struct AddBuildSheet: View {
                         }
                         .frame(maxWidth: .infinity)
                         .frame(height: 52)
-                        .foregroundStyle(.white)
+                        .foregroundStyle(AVIATheme.aviaWhite)
                         .background(isFormValid ? AVIATheme.primaryGradient : LinearGradient(colors: [AVIATheme.textTertiary], startPoint: .leading, endPoint: .trailing))
                         .clipShape(.rect(cornerRadius: 14))
                     }
@@ -217,7 +217,7 @@ struct AddBuildSheet: View {
                     Text("CUSTOM")
                         .font(.neueCorpMedium(8))
                         .kerning(0.4)
-                        .foregroundStyle(.white)
+                        .foregroundStyle(AVIATheme.aviaWhite)
                         .padding(.horizontal, 6)
                         .padding(.vertical, 2)
                         .background(AVIATheme.timelessBrown)
@@ -283,7 +283,7 @@ struct AddBuildSheet: View {
                             }
                             .frame(maxWidth: .infinity)
                             .padding(.vertical, 12)
-                            .foregroundStyle(isSelected ? .white : AVIATheme.textPrimary)
+                            .foregroundStyle(isSelected ? AVIATheme.aviaWhite : AVIATheme.textPrimary)
                             .background(isSelected ? AVIATheme.primaryGradient : LinearGradient(colors: [AVIATheme.surfaceElevated], startPoint: .top, endPoint: .bottom))
                             .clipShape(.rect(cornerRadius: 12))
                         }
@@ -422,7 +422,7 @@ struct AddBuildSheet: View {
                                 HStack(spacing: 10) {
                                     Text("\(idx + 1)")
                                         .font(.neueCorpMedium(10))
-                                        .foregroundStyle(.white)
+                                        .foregroundStyle(AVIATheme.aviaWhite)
                                         .frame(width: 22, height: 22)
                                         .background(name == "Awaiting Registration" ? LinearGradient(colors: [AVIATheme.warning], startPoint: .leading, endPoint: .trailing) : AVIATheme.primaryGradient)
                                         .clipShape(Circle())
@@ -595,7 +595,7 @@ struct AddBuildSheet: View {
                                 HStack(spacing: 12) {
                                     Text(client.initials.isEmpty ? "?" : client.initials)
                                         .font(.neueCorp(10))
-                                        .foregroundStyle(.white)
+                                        .foregroundStyle(AVIATheme.aviaWhite)
                                         .frame(width: 30, height: 30)
                                         .background(AVIATheme.primaryGradient)
                                         .clipShape(Circle())
@@ -651,7 +651,7 @@ struct AddBuildSheet: View {
                                 HStack(spacing: 12) {
                                     Text(member.initials)
                                         .font(.neueCorp(10))
-                                        .foregroundStyle(.white)
+                                        .foregroundStyle(AVIATheme.aviaWhite)
                                         .frame(width: 30, height: 30)
                                         .background(AVIATheme.primaryGradient)
                                         .clipShape(Circle())
