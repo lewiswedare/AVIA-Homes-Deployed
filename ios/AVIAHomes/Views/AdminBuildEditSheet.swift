@@ -81,7 +81,7 @@ struct AdminBuildEditSheet: View {
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
                     Button("Close") { dismiss() }
-                        .tint(AVIATheme.teal)
+                        .tint(AVIATheme.timelessBrown)
                 }
             }
             .overlay {
@@ -138,7 +138,7 @@ struct AdminBuildEditSheet: View {
                 .font(.neueCorpMedium(20))
                 .foregroundStyle(.white)
                 .frame(width: 52, height: 52)
-                .background(AVIATheme.tealGradient)
+                .background(AVIATheme.primaryGradient)
                 .clipShape(Circle())
 
             VStack(alignment: .leading, spacing: 3) {
@@ -148,7 +148,7 @@ struct AdminBuildEditSheet: View {
                 if !latestBuild.additionalClients.isEmpty {
                     Text("\(latestBuild.allClients.count) clients assigned")
                         .font(.neueCaption)
-                        .foregroundStyle(AVIATheme.teal)
+                        .foregroundStyle(AVIATheme.timelessBrown)
                 } else {
                     Text(latestBuild.client.email)
                         .font(.neueCaption)
@@ -160,7 +160,7 @@ struct AdminBuildEditSheet: View {
 
             StatusBadge(
                 title: build.statusLabel,
-                color: build.overallProgress >= 0.7 ? AVIATheme.success : AVIATheme.teal
+                color: build.overallProgress >= 0.7 ? AVIATheme.success : AVIATheme.timelessBrown
             )
         }
     }
@@ -183,7 +183,7 @@ struct AdminBuildEditSheet: View {
                         .padding(.horizontal, 12)
                         .padding(.vertical, 8)
                         .foregroundStyle(selectedTab == tab ? .white : AVIATheme.textSecondary)
-                        .background(selectedTab == tab ? AVIATheme.teal : AVIATheme.cardBackground)
+                        .background(selectedTab == tab ? AVIATheme.timelessBrown : AVIATheme.cardBackground)
                         .clipShape(Capsule())
                         .overlay {
                             if selectedTab != tab {
@@ -227,7 +227,7 @@ struct AdminBuildEditSheet: View {
                             .font(.neueSubheadlineMedium)
                             .foregroundStyle(AVIATheme.textPrimary)
                         Spacer()
-                        StatusBadge(title: "\(latestBuild.allClients.count)", color: AVIATheme.teal)
+                        StatusBadge(title: "\(latestBuild.allClients.count)", color: AVIATheme.timelessBrown)
                     }
 
                     if latestBuild.client.id.isEmpty {
@@ -267,7 +267,7 @@ struct AdminBuildEditSheet: View {
                 .frame(maxWidth: .infinity)
                 .frame(height: 48)
                 .foregroundStyle(.white)
-                .background(AVIATheme.tealGradient)
+                .background(AVIATheme.primaryGradient)
                 .clipShape(.rect(cornerRadius: 14))
             }
 
@@ -275,7 +275,7 @@ struct AdminBuildEditSheet: View {
                 VStack(spacing: 12) {
                     Image(systemName: "info.circle.fill")
                         .font(.system(size: 24))
-                        .foregroundStyle(AVIATheme.teal)
+                        .foregroundStyle(AVIATheme.timelessBrown)
                     Text("Multiple Clients")
                         .font(.neueCaptionMedium)
                         .foregroundStyle(AVIATheme.textPrimary)
@@ -298,7 +298,7 @@ struct AdminBuildEditSheet: View {
                 .font(.neueCorp(11))
                 .foregroundStyle(.white)
                 .frame(width: 36, height: 36)
-                .background(AVIATheme.tealGradient)
+                .background(AVIATheme.primaryGradient)
                 .clipShape(Circle())
 
             VStack(alignment: .leading, spacing: 2) {
@@ -313,7 +313,7 @@ struct AdminBuildEditSheet: View {
                             .foregroundStyle(.white)
                             .padding(.horizontal, 5)
                             .padding(.vertical, 1)
-                            .background(AVIATheme.teal)
+                            .background(AVIATheme.timelessBrown)
                             .clipShape(Capsule())
                     }
                 }
@@ -334,7 +334,7 @@ struct AdminBuildEditSheet: View {
             }
         }
         .padding(10)
-        .background(isPrimary ? AVIATheme.teal.opacity(0.04) : Color.clear)
+        .background(isPrimary ? AVIATheme.timelessBrown.opacity(0.04) : Color.clear)
         .clipShape(.rect(cornerRadius: 10))
     }
 
@@ -385,7 +385,7 @@ struct AdminBuildEditSheet: View {
                             .foregroundStyle(AVIATheme.textTertiary)
                         DatePicker("", selection: $contractDate, displayedComponents: .date)
                             .labelsHidden()
-                            .tint(AVIATheme.teal)
+                            .tint(AVIATheme.timelessBrown)
                     }
 
                     VStack(alignment: .leading, spacing: 6) {
@@ -412,7 +412,7 @@ struct AdminBuildEditSheet: View {
                                     .frame(maxWidth: .infinity)
                                     .padding(.vertical, 10)
                                     .foregroundStyle(selectedSpecTier == tier.rawValue ? .white : AVIATheme.textSecondary)
-                                    .background(selectedSpecTier == tier.rawValue ? AVIATheme.teal : AVIATheme.cardBackgroundAlt)
+                                    .background(selectedSpecTier == tier.rawValue ? AVIATheme.timelessBrown : AVIATheme.cardBackgroundAlt)
                                     .clipShape(.rect(cornerRadius: 10))
                                     .overlay {
                                         if selectedSpecTier != tier.rawValue {
@@ -453,7 +453,7 @@ struct AdminBuildEditSheet: View {
                                             .font(.neueCorp(11))
                                             .foregroundStyle(.white)
                                             .frame(width: 32, height: 32)
-                                            .background(AVIATheme.tealGradient)
+                                            .background(AVIATheme.primaryGradient)
                                             .clipShape(Circle())
 
                                         VStack(alignment: .leading, spacing: 1) {
@@ -469,10 +469,10 @@ struct AdminBuildEditSheet: View {
 
                                         Image(systemName: selectedStaffId == member.id ? "checkmark.circle.fill" : "circle")
                                             .font(.system(size: 20))
-                                            .foregroundStyle(selectedStaffId == member.id ? AVIATheme.teal : AVIATheme.surfaceBorder)
+                                            .foregroundStyle(selectedStaffId == member.id ? AVIATheme.timelessBrown : AVIATheme.surfaceBorder)
                                     }
                                     .padding(10)
-                                    .background(selectedStaffId == member.id ? AVIATheme.teal.opacity(0.06) : Color.clear)
+                                    .background(selectedStaffId == member.id ? AVIATheme.timelessBrown.opacity(0.06) : Color.clear)
                                     .clipShape(.rect(cornerRadius: 10))
                                 }
                             }
@@ -497,7 +497,7 @@ struct AdminBuildEditSheet: View {
                 .frame(maxWidth: .infinity)
                 .frame(height: 52)
                 .foregroundStyle(.white)
-                .background(AVIATheme.tealGradient)
+                .background(AVIATheme.primaryGradient)
                 .clipShape(.rect(cornerRadius: 14))
             }
             .disabled(isSaving)
@@ -533,13 +533,13 @@ struct AdminBuildEditSheet: View {
                         Spacer()
                         Text("\(Int(latestBuild.overallProgress * 100))% complete")
                             .font(.neueCaptionMedium)
-                            .foregroundStyle(AVIATheme.teal)
+                            .foregroundStyle(AVIATheme.timelessBrown)
                     }
 
                     GeometryReader { geo in
                         ZStack(alignment: .leading) {
-                            Capsule().fill(AVIATheme.teal.opacity(0.1)).frame(height: 8)
-                            Capsule().fill(AVIATheme.tealGradient).frame(width: max(0, geo.size.width * latestBuild.overallProgress), height: 8)
+                            Capsule().fill(AVIATheme.timelessBrown.opacity(0.1)).frame(height: 8)
+                            Capsule().fill(AVIATheme.primaryGradient).frame(width: max(0, geo.size.width * latestBuild.overallProgress), height: 8)
                         }
                     }
                     .frame(height: 8)
@@ -577,7 +577,7 @@ struct AdminBuildEditSheet: View {
                                             .foregroundStyle(AVIATheme.textTertiary)
                                         Text("\(Int(stage.progress * 100))%")
                                             .font(.neueCaptionMedium)
-                                            .foregroundStyle(AVIATheme.teal)
+                                            .foregroundStyle(AVIATheme.timelessBrown)
                                     }
                                     if stage.name == "Awaiting Registration", let estDate = stage.estimatedEndDate {
                                         Text("·")
@@ -593,7 +593,7 @@ struct AdminBuildEditSheet: View {
 
                             Image(systemName: "pencil.circle.fill")
                                 .font(.system(size: 20))
-                                .foregroundStyle(AVIATheme.teal.opacity(0.6))
+                                .foregroundStyle(AVIATheme.timelessBrown.opacity(0.6))
                         }
                         .padding(14)
                     }
@@ -697,7 +697,7 @@ struct AdminBuildEditSheet: View {
                 .frame(maxWidth: .infinity)
                 .frame(height: 48)
                 .foregroundStyle(.white)
-                .background(AVIATheme.tealGradient)
+                .background(AVIATheme.primaryGradient)
                 .clipShape(.rect(cornerRadius: 14))
             }
 
@@ -763,7 +763,7 @@ struct AdminBuildEditSheet: View {
                         let newDocs = buildDocuments.filter { $0.isNew }.count
 
                         HStack(spacing: 20) {
-                            docStatusItem(label: "Total", value: "\(totalDocs)", color: AVIATheme.teal)
+                            docStatusItem(label: "Total", value: "\(totalDocs)", color: AVIATheme.timelessBrown)
                             docStatusItem(label: "New", value: "\(newDocs)", color: AVIATheme.warning)
                             docStatusItem(label: "Reviewed", value: "\(totalDocs - newDocs)", color: AVIATheme.success)
                         }
@@ -825,7 +825,7 @@ struct AdminBuildEditSheet: View {
 
     private func buildDocumentRowContent(_ doc: ClientDocument) -> some View {
         HStack(spacing: 14) {
-            BentoIconCircle(icon: doc.category.icon, color: AVIATheme.teal)
+            BentoIconCircle(icon: doc.category.icon, color: AVIATheme.timelessBrown)
 
             VStack(alignment: .leading, spacing: 3) {
                 HStack(spacing: 6) {
@@ -834,7 +834,7 @@ struct AdminBuildEditSheet: View {
                         .foregroundStyle(AVIATheme.textPrimary)
                         .lineLimit(1)
                     if doc.isNew {
-                        StatusBadge(title: "NEW", color: AVIATheme.teal)
+                        StatusBadge(title: "NEW", color: AVIATheme.timelessBrown)
                     }
                     if let stage = doc.buildStageName {
                         StatusBadge(title: stage, color: AVIATheme.warning)
@@ -852,7 +852,7 @@ struct AdminBuildEditSheet: View {
             Spacer()
 
             Image(systemName: doc.fileURL != nil ? "arrow.down.circle.fill" : "arrow.down.circle")
-                .foregroundStyle(doc.fileURL != nil ? AVIATheme.teal : AVIATheme.textTertiary)
+                .foregroundStyle(doc.fileURL != nil ? AVIATheme.timelessBrown : AVIATheme.textTertiary)
         }
         .padding(.horizontal, 16)
         .padding(.vertical, 12)

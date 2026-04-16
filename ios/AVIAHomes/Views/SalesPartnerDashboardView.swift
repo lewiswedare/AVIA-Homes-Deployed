@@ -141,7 +141,7 @@ struct PartnerDashboardView: View {
                         .font(.neueCaptionMedium)
                         .foregroundStyle(.white)
                         .frame(width: 42, height: 42)
-                        .background(AVIATheme.tealGradient)
+                        .background(AVIATheme.primaryGradient)
                         .clipShape(Circle())
 
                     VStack(alignment: .leading, spacing: 3) {
@@ -172,8 +172,8 @@ struct PartnerDashboardView: View {
 
                 GeometryReader { geo in
                     ZStack(alignment: .leading) {
-                        Capsule().fill(AVIATheme.teal.opacity(0.1)).frame(height: 3)
-                        Capsule().fill(AVIATheme.tealGradient).frame(width: max(0, geo.size.width * build.overallProgress), height: 3)
+                        Capsule().fill(AVIATheme.timelessBrown.opacity(0.1)).frame(height: 3)
+                        Capsule().fill(AVIATheme.primaryGradient).frame(width: max(0, geo.size.width * build.overallProgress), height: 3)
                     }
                 }
                 .frame(height: 3)
@@ -210,7 +210,7 @@ struct PartnerClientDetailView: View {
                         .font(.neueCorpMedium(20))
                         .foregroundStyle(.white)
                         .frame(width: 52, height: 52)
-                        .background(AVIATheme.tealGradient)
+                        .background(AVIATheme.primaryGradient)
                         .clipShape(Circle())
 
                     VStack(alignment: .leading, spacing: 3) {
@@ -237,8 +237,8 @@ struct PartnerClientDetailView: View {
 
                 GeometryReader { geo in
                     ZStack(alignment: .leading) {
-                        Capsule().fill(AVIATheme.teal.opacity(0.1)).frame(height: 6)
-                        Capsule().fill(AVIATheme.tealGradient).frame(width: max(0, geo.size.width * build.overallProgress), height: 6)
+                        Capsule().fill(AVIATheme.timelessBrown.opacity(0.1)).frame(height: 6)
+                        Capsule().fill(AVIATheme.primaryGradient).frame(width: max(0, geo.size.width * build.overallProgress), height: 6)
                     }
                 }
                 .frame(height: 6)

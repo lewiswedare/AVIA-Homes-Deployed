@@ -54,7 +54,7 @@ struct AddClientToBuildSheet: View {
                                                 .font(.neueCorp(11))
                                                 .foregroundStyle(.white)
                                                 .frame(width: 36, height: 36)
-                                                .background(AVIATheme.tealGradient)
+                                                .background(AVIATheme.primaryGradient)
                                                 .clipShape(Circle())
 
                                             VStack(alignment: .leading, spacing: 2) {
@@ -71,7 +71,7 @@ struct AddClientToBuildSheet: View {
 
                                             Image(systemName: "plus.circle.fill")
                                                 .font(.system(size: 22))
-                                                .foregroundStyle(AVIATheme.teal)
+                                                .foregroundStyle(AVIATheme.timelessBrown)
                                         }
                                         .padding(10)
                                         .clipShape(.rect(cornerRadius: 10))
@@ -94,7 +94,7 @@ struct AddClientToBuildSheet: View {
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
                     Button("Cancel") { dismiss() }
-                        .tint(AVIATheme.teal)
+                        .tint(AVIATheme.timelessBrown)
                 }
             }
         }

@@ -72,7 +72,7 @@ struct AdminEOIReviewView: View {
                             .padding(.horizontal, 12)
                             .padding(.vertical, 8)
                             .foregroundStyle(selectedFilter == filter ? .white : AVIATheme.textSecondary)
-                            .background(selectedFilter == filter ? AVIATheme.teal : AVIATheme.cardBackground)
+                            .background(selectedFilter == filter ? AVIATheme.timelessBrown : AVIATheme.cardBackground)
                             .clipShape(Capsule())
                             .overlay {
                                 if selectedFilter != filter {
@@ -117,7 +117,7 @@ struct AdminEOIReviewView: View {
                     HStack(spacing: 6) {
                         Image(systemName: "person.2.fill")
                             .font(.system(size: 9))
-                            .foregroundStyle(Color(hex: "5B7DB1"))
+                            .foregroundStyle(AVIATheme.timelessBrown)
                         Text("\(otherEOIsForPackage.count + 1) EOIs for this package")
                             .font(.neueCaption2)
                             .foregroundStyle(AVIATheme.textSecondary)
@@ -151,7 +151,7 @@ struct AdminEOIReviewView: View {
         case "submitted", "resubmitted": ("Submitted", AVIATheme.warning)
         case "approved": ("Approved", AVIATheme.success)
         case "declined": ("Declined", AVIATheme.destructive)
-        case "changes_requested": ("Changes Requested", Color(hex: "E8A317"))
+        case "changes_requested": ("Changes Requested", AVIATheme.warning)
         default: (status.capitalized, AVIATheme.textTertiary)
         }
     }
@@ -218,10 +218,10 @@ struct AdminEOIDetailSheet: View {
                             HStack(spacing: 10) {
                                 Image(systemName: "house.fill")
                                     .font(.neueCaption)
-                                    .foregroundStyle(AVIATheme.teal)
+                                    .foregroundStyle(AVIATheme.timelessBrown)
                                 Text("View Package")
                                     .font(.neueSubheadlineMedium)
-                                    .foregroundStyle(AVIATheme.teal)
+                                    .foregroundStyle(AVIATheme.timelessBrown)
                                 Spacer()
                                 Image(systemName: "chevron.right")
                                     .font(.neueCaption2)
@@ -341,7 +341,7 @@ struct AdminEOIDetailSheet: View {
         case "submitted", "resubmitted": ("Pending Review", AVIATheme.warning)
         case "approved": ("Approved", AVIATheme.success)
         case "declined": ("Declined", AVIATheme.destructive)
-        case "changes_requested": ("Changes Requested", Color(hex: "E8A317"))
+        case "changes_requested": ("Changes Requested", AVIATheme.warning)
         default: (eoi.status.capitalized, AVIATheme.textTertiary)
         }
     }
@@ -640,10 +640,10 @@ struct AdminEOIDetailSheet: View {
                 HStack(spacing: 8) {
                     Image(systemName: icon)
                         .font(.neueCaption)
-                        .foregroundStyle(AVIATheme.teal)
+                        .foregroundStyle(AVIATheme.timelessBrown)
                     Text(title)
                         .font(.neueSubheadlineMedium)
-                        .foregroundStyle(AVIATheme.teal)
+                        .foregroundStyle(AVIATheme.timelessBrown)
                 }
                 content()
             }

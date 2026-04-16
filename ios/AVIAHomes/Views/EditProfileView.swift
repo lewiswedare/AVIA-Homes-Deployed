@@ -49,7 +49,7 @@ struct EditProfileView: View {
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
                     Button("Cancel") { dismiss() }
-                        .tint(AVIATheme.teal)
+                        .tint(AVIATheme.timelessBrown)
                 }
                 ToolbarItem(placement: .confirmationAction) {
                     Button {
@@ -62,7 +62,7 @@ struct EditProfileView: View {
                                 .font(.neueSubheadlineMedium)
                         }
                     }
-                    .tint(AVIATheme.teal)
+                    .tint(AVIATheme.timelessBrown)
                     .disabled(!hasChanges || isSaving)
                 }
             }
@@ -78,7 +78,7 @@ struct EditProfileView: View {
                     .font(.neueCorpMedium(28))
                     .foregroundStyle(.white)
                     .frame(width: 80, height: 80)
-                    .background(AVIATheme.tealGradient)
+                    .background(AVIATheme.primaryGradient)
                     .clipShape(Circle())
 
                 Circle()

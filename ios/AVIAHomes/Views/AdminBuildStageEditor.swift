@@ -53,21 +53,21 @@ struct AdminBuildStageEditor: View {
 
                             field(label: "Progress — \(Int(progress * 100))%") {
                                 Slider(value: $progress, in: 0...1, step: 0.05)
-                                    .tint(AVIATheme.teal)
+                                    .tint(AVIATheme.timelessBrown)
                             }
 
                             Rectangle().fill(AVIATheme.surfaceBorder).frame(height: 1)
 
                             field(label: "Start Date") {
                                 Toggle("Set Start Date", isOn: $hasStartDate)
-                                    .tint(AVIATheme.teal)
+                                    .tint(AVIATheme.timelessBrown)
                                 if hasStartDate {
                                     DatePicker("", selection: Binding(
                                         get: { startDate ?? .now },
                                         set: { startDate = $0 }
                                     ), displayedComponents: .date)
                                     .labelsHidden()
-                                    .tint(AVIATheme.teal)
+                                    .tint(AVIATheme.timelessBrown)
                                 }
                             }
 
@@ -75,14 +75,14 @@ struct AdminBuildStageEditor: View {
 
                             field(label: "Completion Date") {
                                 Toggle("Set Completion Date", isOn: $hasCompletionDate)
-                                    .tint(AVIATheme.teal)
+                                    .tint(AVIATheme.timelessBrown)
                                 if hasCompletionDate {
                                     DatePicker("", selection: Binding(
                                         get: { completionDate ?? .now },
                                         set: { completionDate = $0 }
                                     ), displayedComponents: .date)
                                     .labelsHidden()
-                                    .tint(AVIATheme.teal)
+                                    .tint(AVIATheme.timelessBrown)
                                 }
                             }
 

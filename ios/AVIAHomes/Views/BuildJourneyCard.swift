@@ -28,15 +28,15 @@ struct BuildJourneyCard: View {
         HStack(spacing: 12) {
             ZStack {
                 Circle()
-                    .stroke(AVIATheme.teal.opacity(0.15), lineWidth: 4)
+                    .stroke(AVIATheme.timelessBrown.opacity(0.15), lineWidth: 4)
                 Circle()
                     .trim(from: 0, to: journeyVM.stageProgress)
-                    .stroke(AVIATheme.teal, style: StrokeStyle(lineWidth: 4, lineCap: .round))
+                    .stroke(AVIATheme.timelessBrown, style: StrokeStyle(lineWidth: 4, lineCap: .round))
                     .rotationEffect(.degrees(-90))
                     .animation(.spring(response: 0.6), value: journeyVM.stageProgress)
                 Image(systemName: journeyVM.currentStage.icon)
                     .font(.neueCorpMedium(16))
-                    .foregroundStyle(AVIATheme.teal)
+                    .foregroundStyle(AVIATheme.timelessBrown)
             }
             .frame(width: 44, height: 44)
 
@@ -45,7 +45,7 @@ struct BuildJourneyCard: View {
                     Text("YOUR JOURNEY")
                         .font(.neueCaption2Medium)
                         .kerning(1)
-                        .foregroundStyle(AVIATheme.teal)
+                        .foregroundStyle(AVIATheme.timelessBrown)
                     Spacer()
                     Text("Step \(journeyVM.currentStage.rawValue + 1) of \(JourneyStage.allCases.count)")
                         .font(.neueCaption2)
@@ -70,17 +70,17 @@ struct BuildJourneyCard: View {
                         ZStack {
                             if isCompleted {
                                 Circle()
-                                    .fill(AVIATheme.teal)
+                                    .fill(AVIATheme.timelessBrown)
                                     .frame(width: 24, height: 24)
                                 Image(systemName: "checkmark")
                                     .font(.neueCorpMedium(10))
                                     .foregroundStyle(.white)
                             } else if isCurrent {
                                 Circle()
-                                    .fill(AVIATheme.teal.opacity(0.15))
+                                    .fill(AVIATheme.timelessBrown.opacity(0.15))
                                     .frame(width: 24, height: 24)
                                 Circle()
-                                    .fill(AVIATheme.teal)
+                                    .fill(AVIATheme.timelessBrown)
                                     .frame(width: 10, height: 10)
                             } else {
                                 Circle()
@@ -99,7 +99,7 @@ struct BuildJourneyCard: View {
 
                     if stage != JourneyStage.allCases.last {
                         Rectangle()
-                            .fill(isCompleted ? AVIATheme.teal : AVIATheme.surfaceBorder)
+                            .fill(isCompleted ? AVIATheme.timelessBrown : AVIATheme.surfaceBorder)
                             .frame(height: 2)
                             .frame(maxWidth: .infinity)
                             .padding(.bottom, 28)
@@ -152,7 +152,7 @@ struct BuildJourneyCard: View {
             .foregroundStyle(.white)
             .frame(maxWidth: .infinity)
             .frame(height: 44)
-            .background(AVIATheme.tealGradient)
+            .background(AVIATheme.primaryGradient)
             .clipShape(.rect(cornerRadius: 12))
         }
         .padding(.horizontal, 16)

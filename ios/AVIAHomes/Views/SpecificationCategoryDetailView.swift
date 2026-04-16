@@ -28,7 +28,7 @@ struct SpecificationCategoryDetailView: View {
                 .font(.neueCorpMedium(16))
                 .foregroundStyle(.white)
                 .frame(width: 44, height: 44)
-                .background(AVIATheme.tealGradient)
+                .background(AVIATheme.primaryGradient)
                 .clipShape(.rect(cornerRadius: 12))
 
             VStack(alignment: .leading, spacing: 3) {
@@ -44,7 +44,7 @@ struct SpecificationCategoryDetailView: View {
                         Text("\(upgradeCount) items can be upgraded")
                             .font(.neueCaption2)
                     }
-                    .foregroundStyle(AVIATheme.teal)
+                    .foregroundStyle(AVIATheme.timelessBrown)
                 }
             }
             Spacer()
@@ -103,7 +103,7 @@ struct SpecificationCategoryDetailView: View {
                         HStack(spacing: 6) {
                             Image(systemName: "sparkles")
                                 .font(.neueCorp(10))
-                                .foregroundStyle(AVIATheme.teal)
+                                .foregroundStyle(AVIATheme.timelessBrown)
 
                             let nextTier = specVM.upgradeTiers.first { item.description(for: $0) != item.description(for: specVM.currentTier) }
                             if let nextTier {

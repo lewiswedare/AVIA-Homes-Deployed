@@ -28,7 +28,7 @@ struct StaffContactCard: View {
                                 .foregroundStyle(.white)
                                 .padding(.horizontal, 12)
                                 .padding(.vertical, 6)
-                                .background(AVIATheme.tealGradient)
+                                .background(AVIATheme.primaryGradient)
                                 .clipShape(Capsule())
                             }
                         }
@@ -40,10 +40,10 @@ struct StaffContactCard: View {
                                     Text("Email")
                                         .font(.neueCaption2Medium)
                                 }
-                                .foregroundStyle(AVIATheme.teal)
+                                .foregroundStyle(AVIATheme.timelessBrown)
                                 .padding(.horizontal, 12)
                                 .padding(.vertical, 6)
-                                .background(AVIATheme.teal.opacity(0.1))
+                                .background(AVIATheme.timelessBrown.opacity(0.1))
                                 .clipShape(Capsule())
                             }
                         }
@@ -76,7 +76,7 @@ struct StaffContactCard: View {
             .font(.neueCorpMedium(18))
             .foregroundStyle(.white)
             .frame(width: 52, height: 52)
-            .background(AVIATheme.tealGradient)
+            .background(AVIATheme.primaryGradient)
             .clipShape(Circle())
     }
 }

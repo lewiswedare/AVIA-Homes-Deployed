@@ -54,7 +54,7 @@ struct StocklistView: View {
                         } label: {
                             Text(isEditMode ? "Done" : "Edit")
                                 .font(.neueCaptionMedium)
-                                .foregroundStyle(AVIATheme.teal)
+                                .foregroundStyle(AVIATheme.timelessBrown)
                         }
                     }
                 }
@@ -122,7 +122,7 @@ struct StocklistView: View {
                             .padding(.horizontal, 16)
                             .padding(.vertical, 8)
                             .background(
-                                stocklistVM.selectedRegion == region ? AVIATheme.teal : AVIATheme.cardBackground,
+                                stocklistVM.selectedRegion == region ? AVIATheme.timelessBrown : AVIATheme.cardBackground,
                                 in: Capsule()
                             )
                     }
@@ -149,7 +149,7 @@ struct StocklistView: View {
                         .padding(.horizontal, 14)
                         .padding(.vertical, 6)
                         .background(
-                            stocklistVM.selectedSubRegion == nil ? AVIATheme.tealLight : AVIATheme.cardBackgroundAlt,
+                            stocklistVM.selectedSubRegion == nil ? AVIATheme.timelessBrownLight : AVIATheme.cardBackgroundAlt,
                             in: Capsule()
                         )
                 }
@@ -166,7 +166,7 @@ struct StocklistView: View {
                             .padding(.horizontal, 14)
                             .padding(.vertical, 6)
                             .background(
-                                stocklistVM.selectedSubRegion == subRegion ? AVIATheme.tealLight : AVIATheme.cardBackgroundAlt,
+                                stocklistVM.selectedSubRegion == subRegion ? AVIATheme.timelessBrownLight : AVIATheme.cardBackgroundAlt,
                                 in: Capsule()
                             )
                     }
@@ -199,7 +199,7 @@ struct StocklistView: View {
                 } label: {
                     Image(systemName: stocklistVM.statusFilter != nil ? "line.3.horizontal.decrease.circle.fill" : "line.3.horizontal.decrease.circle")
                         .font(.neueSubheadline)
-                        .foregroundStyle(stocklistVM.statusFilter != nil ? AVIATheme.teal : AVIATheme.textSecondary)
+                        .foregroundStyle(stocklistVM.statusFilter != nil ? AVIATheme.timelessBrown : AVIATheme.textSecondary)
                 }
 
                 Menu {
@@ -218,7 +218,7 @@ struct StocklistView: View {
                 } label: {
                     Image(systemName: "arrow.up.arrow.down")
                         .font(.neueSubheadline)
-                        .foregroundStyle(sortOption != .none ? AVIATheme.teal : AVIATheme.textSecondary)
+                        .foregroundStyle(sortOption != .none ? AVIATheme.timelessBrown : AVIATheme.textSecondary)
                 }
             }
             .padding(.horizontal, 16)
@@ -273,14 +273,14 @@ struct StocklistView: View {
                         .foregroundStyle(.white)
                         .frame(maxWidth: .infinity)
                         .padding(.vertical, 12)
-                        .background(AVIATheme.tealGradient, in: RoundedRectangle(cornerRadius: 12))
+                        .background(AVIATheme.primaryGradient, in: RoundedRectangle(cornerRadius: 12))
                     }
                 }
 
                 if stocklistVM.isLoading && stocklistVM.estates.isEmpty {
                     VStack(spacing: 12) {
                         ProgressView()
-                            .tint(AVIATheme.teal)
+                            .tint(AVIATheme.timelessBrown)
                         Text("Loading stocklist...")
                             .font(.neueCaption)
                             .foregroundStyle(AVIATheme.textTertiary)
@@ -357,7 +357,7 @@ struct StocklistView: View {
                 }
                 .padding(.horizontal, 16)
                 .padding(.vertical, 14)
-                .background(AVIATheme.tealGradient)
+                .background(AVIATheme.primaryGradient)
                 .clipShape(.rect(topLeadingRadius: 16, bottomLeadingRadius: expandedEstateIDs.contains(estate.id) ? 0 : 16, bottomTrailingRadius: expandedEstateIDs.contains(estate.id) ? 0 : 16, topTrailingRadius: 16))
             }
             .contextMenu {
@@ -384,7 +384,7 @@ struct StocklistView: View {
                         HStack(spacing: 8) {
                             Image(systemName: "info.circle.fill")
                                 .font(.neueCaption2)
-                                .foregroundStyle(AVIATheme.teal)
+                                .foregroundStyle(AVIATheme.timelessBrown)
                             Text(terms)
                                 .font(.neueCaption)
                                 .foregroundStyle(AVIATheme.textSecondary)
@@ -392,7 +392,7 @@ struct StocklistView: View {
                         }
                         .padding(12)
                         .frame(maxWidth: .infinity, alignment: .leading)
-                        .background(AVIATheme.teal.opacity(0.06))
+                        .background(AVIATheme.timelessBrown.opacity(0.06))
                     }
 
                     if isEditMode && canEdit {
@@ -407,7 +407,7 @@ struct StocklistView: View {
                                 Text("Add Lot")
                                     .font(.neueCaptionMedium)
                             }
-                            .foregroundStyle(AVIATheme.teal)
+                            .foregroundStyle(AVIATheme.timelessBrown)
                             .frame(maxWidth: .infinity)
                             .padding(.vertical, 10)
                         }
@@ -530,7 +530,7 @@ struct StocklistView: View {
                     HStack(spacing: 6) {
                         Image(systemName: "mappin.circle.fill")
                             .font(.neueCorp(10))
-                            .foregroundStyle(AVIATheme.teal)
+                            .foregroundStyle(AVIATheme.timelessBrown)
                         Text(estate.name)
                             .font(.neueCaption)
                             .foregroundStyle(AVIATheme.textSecondary)
@@ -563,11 +563,11 @@ struct StocklistView: View {
                         if let pkgPrice = lot.package_price, !pkgPrice.isEmpty {
                             Text(pkgPrice)
                                 .font(.neueCorpMedium(18))
-                                .foregroundStyle(AVIATheme.teal)
+                                .foregroundStyle(AVIATheme.timelessBrown)
                         } else if let landPrice = lot.land_price, !landPrice.isEmpty {
                             Text(landPrice)
                                 .font(.neueCorpMedium(18))
-                                .foregroundStyle(AVIATheme.teal)
+                                .foregroundStyle(AVIATheme.timelessBrown)
                             Text("land only")
                                 .font(.neueCaption2)
                                 .foregroundStyle(AVIATheme.textTertiary)

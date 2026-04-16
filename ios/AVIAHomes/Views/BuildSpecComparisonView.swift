@@ -65,14 +65,14 @@ struct BuildSpecItemRow: View {
                 HStack(spacing: 6) {
                     Image(systemName: "text.bubble")
                         .font(.neueCorp(9))
-                        .foregroundStyle(AVIATheme.teal)
+                        .foregroundStyle(AVIATheme.timelessBrown)
                     Text(notes)
                         .font(.neueCaption2)
                         .foregroundStyle(AVIATheme.textSecondary)
                         .lineLimit(2)
                 }
                 .padding(8)
-                .background(AVIATheme.teal.opacity(0.06))
+                .background(AVIATheme.timelessBrown.opacity(0.06))
                 .clipShape(.rect(cornerRadius: 8))
             }
 
@@ -253,10 +253,10 @@ struct BuildSpecItemRow: View {
                                 Text("Request Upgrade")
                                     .font(.neueCaption2Medium)
                             }
-                            .foregroundStyle(AVIATheme.teal)
+                            .foregroundStyle(AVIATheme.timelessBrown)
                             .padding(.horizontal, 10)
                             .padding(.vertical, 6)
-                            .background(AVIATheme.teal.opacity(0.1))
+                            .background(AVIATheme.timelessBrown.opacity(0.1))
                             .clipShape(Capsule())
                         }
                     }
@@ -340,7 +340,7 @@ struct BuildSpecItemRow: View {
                 .foregroundStyle(.white)
                 .padding(.horizontal, 16)
                 .padding(.vertical, 8)
-                .background(AVIATheme.tealGradient)
+                .background(AVIATheme.primaryGradient)
                 .clipShape(Capsule())
             }
         }

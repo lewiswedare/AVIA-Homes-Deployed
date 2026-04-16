@@ -172,7 +172,7 @@ struct AllFacadesView: View {
                 .foregroundStyle(isActive ? .white : AVIATheme.textPrimary)
                 .padding(.horizontal, 14)
                 .padding(.vertical, 8)
-                .background(isActive ? AVIATheme.teal : AVIATheme.cardBackground)
+                .background(isActive ? AVIATheme.timelessBrown : AVIATheme.cardBackground)
                 .clipShape(Capsule())
                 .overlay {
                     if !isActive {
@@ -196,7 +196,7 @@ struct AllFacadesView: View {
                         } else if phase.error != nil {
                             Image(systemName: "photo")
                                 .font(.neueCorpMedium(24))
-                                .foregroundStyle(AVIATheme.teal.opacity(0.25))
+                                .foregroundStyle(AVIATheme.timelessBrown.opacity(0.25))
                         } else {
                             ProgressView()
                         }
@@ -221,7 +221,7 @@ struct AllFacadesView: View {
                             .foregroundStyle(.white)
                             .padding(.horizontal, 10)
                             .padding(.vertical, 5)
-                            .background(AVIATheme.teal.opacity(0.8))
+                            .background(AVIATheme.timelessBrown.opacity(0.8))
                             .clipShape(Capsule())
                     }
                     .padding(12)
@@ -258,7 +258,7 @@ struct AllFacadesView: View {
                         Image(systemName: "arrow.right")
                             .font(.neueCaption2)
                     }
-                    .foregroundStyle(AVIATheme.teal)
+                    .foregroundStyle(AVIATheme.timelessBrown)
                 }
             }
             .padding(14)

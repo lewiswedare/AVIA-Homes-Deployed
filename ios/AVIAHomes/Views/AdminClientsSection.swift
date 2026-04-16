@@ -22,7 +22,7 @@ struct AdminClientsSection: View {
 
         VStack(spacing: 12) {
             HStack(spacing: 12) {
-                AdminMetricCard(value: "\(allClients.count)", label: "Total Clients", icon: "person.2.fill", color: AVIATheme.teal)
+                AdminMetricCard(value: "\(allClients.count)", label: "Total Clients", icon: "person.2.fill", color: AVIATheme.timelessBrown)
                 AdminMetricCard(value: "\(allClients.filter { clientsWithBuildIds.contains($0.id) }.count)", label: "With Builds", icon: "building.2.fill", color: AVIATheme.success)
             }
             .fixedSize(horizontal: false, vertical: true)
@@ -55,7 +55,7 @@ struct AdminClientCard: View {
                         .font(.neueCaptionMedium)
                         .foregroundStyle(.white)
                         .frame(width: 42, height: 42)
-                        .background(AVIATheme.tealGradient)
+                        .background(AVIATheme.primaryGradient)
                         .clipShape(Circle())
 
                     VStack(alignment: .leading, spacing: 3) {
@@ -73,7 +73,7 @@ struct AdminClientCard: View {
                     VStack(alignment: .trailing, spacing: 3) {
                         Text("\(clientBuilds.count) build\(clientBuilds.count == 1 ? "" : "s")")
                             .font(.neueCaptionMedium)
-                            .foregroundStyle(hasBuilds ? AVIATheme.teal : AVIATheme.textTertiary)
+                            .foregroundStyle(hasBuilds ? AVIATheme.timelessBrown : AVIATheme.textTertiary)
                         if let firstBuild = clientBuilds.first {
                             Text(firstBuild.homeDesign)
                                 .font(.neueCaption2)
@@ -111,7 +111,7 @@ struct AdminClientCard: View {
                                     Image(systemName: "phone.fill").font(.neueCorp(10))
                                     Text("Call").font(.neueCaption2Medium)
                                 }
-                                .foregroundStyle(AVIATheme.teal)
+                                .foregroundStyle(AVIATheme.timelessBrown)
                             }
                         }
                         if let emailURL = URL(string: "mailto:\(client.email)") {
@@ -120,7 +120,7 @@ struct AdminClientCard: View {
                                     Image(systemName: "envelope.fill").font(.neueCorp(10))
                                     Text("Email").font(.neueCaption2Medium)
                                 }
-                                .foregroundStyle(AVIATheme.teal)
+                                .foregroundStyle(AVIATheme.timelessBrown)
                             }
                         }
                         Spacer()

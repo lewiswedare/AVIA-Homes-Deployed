@@ -13,7 +13,7 @@ struct ClientSpecConfirmationView: View {
         Group {
             if viewModel.isLoading {
                 ProgressView()
-                    .tint(AVIATheme.teal)
+                    .tint(AVIATheme.timelessBrown)
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
             } else if !viewModel.hasSelections {
                 emptyState
@@ -134,7 +134,7 @@ struct ClientSpecConfirmationView: View {
 
     private var statusColor: Color {
         switch viewModel.overallStatus {
-        case .draft, .clientReviewing: AVIATheme.teal
+        case .draft, .clientReviewing: AVIATheme.timelessBrown
         case .awaitingAdmin: AVIATheme.warning
         case .awaitingClient: AVIATheme.accent
         case .reopenedByAdmin: Color(hex: "8B5CF6")
@@ -174,14 +174,14 @@ struct ClientSpecConfirmationView: View {
     private var tierInfoBanner: some View {
         HStack(spacing: 8) {
             Image(systemName: "sparkles")
-                .foregroundStyle(AVIATheme.teal)
+                .foregroundStyle(AVIATheme.timelessBrown)
             Text("**\(viewModel.specTier.capitalized)** specification range")
                 .font(.neueCaption)
                 .foregroundStyle(AVIATheme.textSecondary)
         }
         .padding(12)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .background(AVIATheme.teal.opacity(0.06))
+        .background(AVIATheme.timelessBrown.opacity(0.06))
         .clipShape(.rect(cornerRadius: 12))
     }
 
@@ -206,7 +206,7 @@ struct ClientSpecConfirmationView: View {
                     HStack(spacing: 10) {
                         Image(systemName: "arrow.up.forward.circle.fill")
                             .font(.neueCorpMedium(18))
-                            .foregroundStyle(AVIATheme.teal)
+                            .foregroundStyle(AVIATheme.timelessBrown)
                         VStack(alignment: .leading, spacing: 2) {
                             Text("Upgrade Your Entire Spec Range")
                                 .font(.neueCaptionMedium)
@@ -241,7 +241,7 @@ struct ClientSpecConfirmationView: View {
 
                                 Text(formatCurrency(pricing.cost))
                                     .font(.neueCorpMedium(16))
-                                    .foregroundStyle(AVIATheme.teal)
+                                    .foregroundStyle(AVIATheme.timelessBrown)
                             }
                             .padding(12)
                             .background(tierColor(tier).opacity(0.04))
@@ -269,7 +269,7 @@ struct ClientSpecConfirmationView: View {
 
     private func tierColor(_ tier: SpecTier) -> Color {
         switch tier {
-        case .volos: AVIATheme.teal
+        case .volos: AVIATheme.timelessBrown
         case .messina: AVIATheme.warning
         case .portobello: Color(hex: "8B5CF6")
         }
@@ -297,7 +297,7 @@ struct ClientSpecConfirmationView: View {
             .frame(maxWidth: .infinity)
             .frame(height: 52)
             .foregroundStyle(.white)
-            .background(AVIATheme.tealGradient)
+            .background(AVIATheme.primaryGradient)
             .clipShape(.rect(cornerRadius: 14))
         }
         .disabled(viewModel.isSaving)
@@ -310,7 +310,7 @@ struct ClientSpecConfirmationView: View {
                 VStack(alignment: .leading, spacing: 10) {
                     HStack(spacing: 8) {
                         Image(systemName: "doc.text.fill")
-                            .foregroundStyle(AVIATheme.teal)
+                            .foregroundStyle(AVIATheme.timelessBrown)
                         Text("Specification Document")
                             .font(.neueCaptionMedium)
                             .foregroundStyle(AVIATheme.textPrimary)
@@ -330,7 +330,7 @@ struct ClientSpecConfirmationView: View {
                             .foregroundStyle(.white)
                             .padding(.horizontal, 16)
                             .padding(.vertical, 10)
-                            .background(AVIATheme.tealGradient)
+                            .background(AVIATheme.primaryGradient)
                             .clipShape(Capsule())
                         }
                     }
@@ -435,7 +435,7 @@ struct UpgradeRequestSheet: View {
                         .frame(maxWidth: .infinity)
                         .frame(height: 48)
                         .foregroundStyle(.white)
-                        .background(AVIATheme.tealGradient)
+                        .background(AVIATheme.primaryGradient)
                         .clipShape(.rect(cornerRadius: 12))
                 }
 

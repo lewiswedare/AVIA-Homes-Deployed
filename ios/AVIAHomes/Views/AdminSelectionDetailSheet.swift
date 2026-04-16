@@ -48,7 +48,7 @@ struct AdminSelectionDetailSheet: View {
                 ToolbarItem(placement: .topBarTrailing) {
                     Button("Done") { dismiss() }
                         .font(.neueSubheadlineMedium)
-                        .tint(AVIATheme.teal)
+                        .tint(AVIATheme.timelessBrown)
                 }
             }
             .onAppear {
@@ -309,7 +309,7 @@ struct AdminSelectionDetailSheet: View {
                     HStack(alignment: .top, spacing: 8) {
                         Image(systemName: "person.fill")
                             .font(.neueCorp(10))
-                            .foregroundStyle(AVIATheme.teal)
+                            .foregroundStyle(AVIATheme.timelessBrown)
                         VStack(alignment: .leading, spacing: 2) {
                             Text("Client Notes")
                                 .font(.neueCaption2Medium)
@@ -321,7 +321,7 @@ struct AdminSelectionDetailSheet: View {
                     }
                     .padding(10)
                     .frame(maxWidth: .infinity, alignment: .leading)
-                    .background(AVIATheme.teal.opacity(0.06))
+                    .background(AVIATheme.timelessBrown.opacity(0.06))
                     .clipShape(.rect(cornerRadius: 8))
                 }
 
@@ -344,7 +344,7 @@ struct AdminSelectionDetailSheet: View {
                         .foregroundStyle(.white)
                         .padding(.horizontal, 14)
                         .padding(.vertical, 7)
-                        .background(AVIATheme.tealGradient)
+                        .background(AVIATheme.primaryGradient)
                         .clipShape(Capsule())
                     }
                 }
@@ -398,7 +398,7 @@ struct AdminSelectionDetailSheet: View {
                         .foregroundStyle(.white)
                         .padding(.horizontal, 14)
                         .padding(.vertical, 7)
-                        .background(AVIATheme.tealGradient)
+                        .background(AVIATheme.primaryGradient)
                         .clipShape(Capsule())
                     }
                 }

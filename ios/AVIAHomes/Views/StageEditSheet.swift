@@ -36,7 +36,7 @@ struct StageEditSheet: View {
                                     Spacer()
                                     Text("\(Int(progress * 100))%")
                                         .font(.neueCaptionMedium)
-                                        .foregroundStyle(AVIATheme.teal)
+                                        .foregroundStyle(AVIATheme.timelessBrown)
                                     Spacer()
                                     Text("100%")
                                         .font(.neueCaption2)
@@ -44,12 +44,12 @@ struct StageEditSheet: View {
                                 }
 
                                 Slider(value: $progress, in: 0...1, step: 0.05)
-                                    .tint(AVIATheme.teal)
+                                    .tint(AVIATheme.timelessBrown)
 
                                 GeometryReader { geo in
                                     ZStack(alignment: .leading) {
-                                        Capsule().fill(AVIATheme.teal.opacity(0.1)).frame(height: 8)
-                                        Capsule().fill(AVIATheme.tealGradient).frame(width: max(0, geo.size.width * progress), height: 8)
+                                        Capsule().fill(AVIATheme.timelessBrown.opacity(0.1)).frame(height: 8)
+                                        Capsule().fill(AVIATheme.primaryGradient).frame(width: max(0, geo.size.width * progress), height: 8)
                                     }
                                 }
                                 .frame(height: 8)
@@ -136,7 +136,7 @@ struct StageEditSheet: View {
                         .frame(maxWidth: .infinity)
                         .frame(height: 52)
                         .foregroundStyle(.white)
-                        .background(AVIATheme.tealGradient)
+                        .background(AVIATheme.primaryGradient)
                         .clipShape(.rect(cornerRadius: 14))
                     }
                     .disabled(isSaving)
@@ -151,7 +151,7 @@ struct StageEditSheet: View {
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
                     Button("Cancel") { dismiss() }
-                        .tint(AVIATheme.teal)
+                        .tint(AVIATheme.timelessBrown)
                 }
             }
         }
@@ -190,7 +190,7 @@ struct StageEditSheet: View {
                 .foregroundStyle(abs(progress - value) < 0.01 ? .white : AVIATheme.textSecondary)
                 .frame(maxWidth: .infinity)
                 .padding(.vertical, 8)
-                .background(abs(progress - value) < 0.01 ? AVIATheme.teal : AVIATheme.cardBackgroundAlt)
+                .background(abs(progress - value) < 0.01 ? AVIATheme.timelessBrown : AVIATheme.cardBackgroundAlt)
                 .clipShape(.rect(cornerRadius: 8))
         }
     }

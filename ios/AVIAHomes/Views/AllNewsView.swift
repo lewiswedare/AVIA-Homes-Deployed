@@ -159,7 +159,7 @@ struct AllNewsView: View {
                             .foregroundStyle(.white)
                             .padding(.horizontal, 10)
                             .padding(.vertical, 5)
-                            .background(AVIATheme.teal.opacity(0.8))
+                            .background(AVIATheme.timelessBrown.opacity(0.8))
                             .clipShape(Capsule())
                     }
                     .padding(12)
@@ -184,7 +184,7 @@ struct AllNewsView: View {
                     Spacer()
                     Image(systemName: "arrow.right")
                         .font(.neueCaption2Medium)
-                        .foregroundStyle(AVIATheme.teal)
+                        .foregroundStyle(AVIATheme.timelessBrown)
                 }
                 .font(.neueCaption2)
                 .foregroundStyle(AVIATheme.textTertiary)
@@ -215,7 +215,7 @@ struct AllNewsView: View {
                     Text(post.category.uppercased())
                         .font(.neueCorpMedium(9))
                         .kerning(0.6)
-                        .foregroundStyle(AVIATheme.teal)
+                        .foregroundStyle(AVIATheme.timelessBrown)
 
                     Text(post.title)
                         .font(.neueSubheadlineMedium)

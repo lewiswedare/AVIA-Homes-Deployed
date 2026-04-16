@@ -37,7 +37,7 @@ struct AdminFacadeEditorView: View {
 
                 if viewModel.isLoading {
                     ProgressView()
-                        .tint(AVIATheme.teal)
+                        .tint(AVIATheme.timelessBrown)
                         .padding(.vertical, 60)
                 } else if filteredFacades.isEmpty {
                     AdminEmptyState(
@@ -64,7 +64,7 @@ struct AdminFacadeEditorView: View {
             ToolbarItem(placement: .primaryAction) {
                 Button { showingAddSheet = true } label: {
                     Image(systemName: "plus.circle.fill")
-                        .foregroundStyle(AVIATheme.teal)
+                        .foregroundStyle(AVIATheme.timelessBrown)
                 }
             }
         }
@@ -113,7 +113,7 @@ struct AdminFacadeEditorView: View {
                 .padding(.horizontal, 14)
                 .padding(.vertical, 7)
                 .foregroundStyle(filterPricing == value ? .white : AVIATheme.textSecondary)
-                .background(filterPricing == value ? AVIATheme.teal : AVIATheme.cardBackground)
+                .background(filterPricing == value ? AVIATheme.timelessBrown : AVIATheme.cardBackground)
                 .clipShape(Capsule())
                 .overlay {
                     if filterPricing != value {
@@ -125,7 +125,7 @@ struct AdminFacadeEditorView: View {
 
     private var statsBar: some View {
         HStack(spacing: 12) {
-            AdminMiniStat(value: "\(viewModel.facades.count)", label: "Total", color: AVIATheme.teal)
+            AdminMiniStat(value: "\(viewModel.facades.count)", label: "Total", color: AVIATheme.timelessBrown)
             AdminMiniStat(value: "\(viewModel.facades.filter { $0.pricing.isIncluded }.count)", label: "Included", color: AVIATheme.success)
             AdminMiniStat(value: "\(viewModel.facades.filter { !$0.pricing.isIncluded }.count)", label: "Upgrades", color: AVIATheme.warning)
         }
@@ -168,7 +168,7 @@ struct AdminFacadeEditorView: View {
 
                         Text(facade.style)
                             .font(.neueCaption2)
-                            .foregroundStyle(AVIATheme.teal)
+                            .foregroundStyle(AVIATheme.timelessBrown)
 
                         Text(facade.description)
                             .font(.neueCaption2)
@@ -200,7 +200,7 @@ struct AdminFacadeEditorView: View {
         HStack(spacing: 3) {
             Image(systemName: icon)
                 .font(.system(size: 9))
-                .foregroundStyle(AVIATheme.teal)
+                .foregroundStyle(AVIATheme.timelessBrown)
             Text(value)
                 .font(.neueCaption2Medium)
                 .foregroundStyle(AVIATheme.textSecondary)
@@ -405,7 +405,7 @@ struct FacadeEditSheet: View {
                     Text("Add Gallery Image")
                         .font(.neueCaptionMedium)
                 }
-                .foregroundStyle(AVIATheme.teal)
+                .foregroundStyle(AVIATheme.timelessBrown)
             }
             .padding(.horizontal, 14)
         }

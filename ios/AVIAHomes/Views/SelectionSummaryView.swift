@@ -44,7 +44,7 @@ struct SelectionSummaryView: View {
                 ToolbarItem(placement: .topBarTrailing) {
                     Button("Done") { dismiss() }
                         .font(.neueSubheadlineMedium)
-                        .tint(AVIATheme.teal)
+                        .tint(AVIATheme.timelessBrown)
                 }
             }
             .alert("Submit Selections?", isPresented: $showSubmitConfirmation) {
@@ -91,14 +91,14 @@ struct SelectionSummaryView: View {
             HStack(spacing: 14) {
                 ZStack {
                     Circle()
-                        .stroke(AVIATheme.teal.opacity(0.12), lineWidth: 4)
+                        .stroke(AVIATheme.timelessBrown.opacity(0.12), lineWidth: 4)
                     Circle()
                         .trim(from: 0, to: viewModel.completionProgress)
-                        .stroke(AVIATheme.teal, style: StrokeStyle(lineWidth: 4, lineCap: .round))
+                        .stroke(AVIATheme.timelessBrown, style: StrokeStyle(lineWidth: 4, lineCap: .round))
                         .rotationEffect(.degrees(-90))
                     Text("\(Int(viewModel.completionProgress * 100))%")
                         .font(.neueCaptionMedium)
-                        .foregroundStyle(AVIATheme.teal)
+                        .foregroundStyle(AVIATheme.timelessBrown)
                 }
                 .frame(width: 48, height: 48)
 
@@ -209,7 +209,7 @@ struct SelectionSummaryView: View {
             .frame(maxWidth: .infinity)
             .frame(height: 52)
             .foregroundStyle(.white)
-            .background(AVIATheme.tealGradient)
+            .background(AVIATheme.primaryGradient)
             .clipShape(.rect(cornerRadius: 14))
         }
         .disabled(viewModel.completedCount == 0 || isSubmitting)
@@ -237,7 +237,7 @@ struct SelectionSummaryView: View {
                 .font(.neueSubheadlineMedium)
                 .frame(width: 200, height: 50)
                 .foregroundStyle(.white)
-                .background(AVIATheme.tealGradient)
+                .background(AVIATheme.primaryGradient)
                 .clipShape(.rect(cornerRadius: 14))
 
             Spacer()

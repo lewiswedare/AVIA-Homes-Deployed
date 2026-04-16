@@ -53,13 +53,13 @@ struct AdminBuildTimelineEditor: View {
                     Spacer()
                     Text("\(Int(build.overallProgress * 100))%")
                         .font(.neueCorpMedium(16))
-                        .foregroundStyle(AVIATheme.teal)
+                        .foregroundStyle(AVIATheme.timelessBrown)
                 }
 
                 if let start = build.estimatedStartDate {
                     HStack(spacing: 8) {
                         Image(systemName: "play.circle.fill")
-                            .foregroundStyle(AVIATheme.teal)
+                            .foregroundStyle(AVIATheme.timelessBrown)
                         Text("Est. Start: \(start.formatted(.dateTime.month(.abbreviated).day().year()))")
                             .font(.neueCaption)
                             .foregroundStyle(AVIATheme.textSecondary)
@@ -77,7 +77,7 @@ struct AdminBuildTimelineEditor: View {
                 }
 
                 HStack(spacing: 16) {
-                    statItem(label: "Stages", value: "\(build.buildStages.count)", color: AVIATheme.teal)
+                    statItem(label: "Stages", value: "\(build.buildStages.count)", color: AVIATheme.timelessBrown)
                     statItem(label: "Milestones", value: "\(milestones.count)", color: AVIATheme.warning)
                     statItem(label: "Reminders", value: "\(reminders.count)", color: AVIATheme.success)
                 }
@@ -118,7 +118,7 @@ struct AdminBuildTimelineEditor: View {
                         Text("Add")
                     }
                     .font(.neueCaptionMedium)
-                    .foregroundStyle(AVIATheme.teal)
+                    .foregroundStyle(AVIATheme.timelessBrown)
                 }
             }
 
@@ -222,7 +222,7 @@ struct AdminBuildTimelineEditor: View {
                     } label: {
                         Image(systemName: "pencil")
                             .font(.neueCorp(12))
-                            .foregroundStyle(AVIATheme.teal)
+                            .foregroundStyle(AVIATheme.timelessBrown)
                     }
 
                     Button {
@@ -253,7 +253,7 @@ struct AdminBuildTimelineEditor: View {
                         Text("Add")
                     }
                     .font(.neueCaptionMedium)
-                    .foregroundStyle(AVIATheme.teal)
+                    .foregroundStyle(AVIATheme.timelessBrown)
                 }
             }
 
@@ -388,11 +388,11 @@ struct AddMilestoneSheet: View {
 
                             field(label: "Due Date") {
                                 Toggle("Set Due Date", isOn: $hasDueDate)
-                                    .tint(AVIATheme.teal)
+                                    .tint(AVIATheme.timelessBrown)
                                 if hasDueDate {
                                     DatePicker("", selection: $dueDate, displayedComponents: .date)
                                         .labelsHidden()
-                                        .tint(AVIATheme.teal)
+                                        .tint(AVIATheme.timelessBrown)
                                 }
                             }
 
@@ -436,7 +436,7 @@ struct AddMilestoneSheet: View {
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
                     Button("Cancel") { dismiss() }
-                        .tint(AVIATheme.teal)
+                        .tint(AVIATheme.timelessBrown)
                 }
             }
         }
@@ -510,11 +510,11 @@ struct EditMilestoneSheet: View {
 
                             field(label: "Due Date") {
                                 Toggle("Set Due Date", isOn: $hasDueDate)
-                                    .tint(AVIATheme.teal)
+                                    .tint(AVIATheme.timelessBrown)
                                 if hasDueDate {
                                     DatePicker("", selection: $dueDate, displayedComponents: .date)
                                         .labelsHidden()
-                                        .tint(AVIATheme.teal)
+                                        .tint(AVIATheme.timelessBrown)
                                 }
                             }
 
@@ -558,7 +558,7 @@ struct EditMilestoneSheet: View {
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
                     Button("Cancel") { dismiss() }
-                        .tint(AVIATheme.teal)
+                        .tint(AVIATheme.timelessBrown)
                 }
             }
         }
@@ -609,7 +609,7 @@ struct AddReminderSheet: View {
                             field(label: "Reminder Date") {
                                 DatePicker("", selection: $reminderDate, displayedComponents: .date)
                                     .labelsHidden()
-                                    .tint(AVIATheme.teal)
+                                    .tint(AVIATheme.timelessBrown)
                             }
 
                             if build.allClients.count > 1 {
@@ -624,7 +624,7 @@ struct AddReminderSheet: View {
                                                     .foregroundStyle(AVIATheme.textPrimary)
                                                 Spacer()
                                                 Image(systemName: selectedClientId == client.id ? "checkmark.circle.fill" : "circle")
-                                                    .foregroundStyle(selectedClientId == client.id ? AVIATheme.teal : AVIATheme.surfaceBorder)
+                                                    .foregroundStyle(selectedClientId == client.id ? AVIATheme.timelessBrown : AVIATheme.surfaceBorder)
                                             }
                                             .padding(.vertical, 4)
                                         }
@@ -662,7 +662,7 @@ struct AddReminderSheet: View {
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
                     Button("Cancel") { dismiss() }
-                        .tint(AVIATheme.teal)
+                        .tint(AVIATheme.timelessBrown)
                 }
             }
         }

@@ -17,7 +17,7 @@ struct ClientBuildCardView: View {
                         .font(.neueCaptionMedium)
                         .foregroundStyle(.white)
                         .frame(width: 42, height: 42)
-                        .background(AVIATheme.tealGradient)
+                        .background(AVIATheme.primaryGradient)
                         .clipShape(Circle())
 
                     VStack(alignment: .leading, spacing: 3) {
@@ -35,7 +35,7 @@ struct ClientBuildCardView: View {
                                     .foregroundStyle(.white)
                                     .padding(.horizontal, 5)
                                     .padding(.vertical, 1)
-                                    .background(AVIATheme.teal)
+                                    .background(AVIATheme.timelessBrown)
                                     .clipShape(Capsule())
                             }
                         }
@@ -87,10 +87,10 @@ struct ClientBuildCardView: View {
                     GeometryReader { geo in
                         ZStack(alignment: .leading) {
                             Capsule()
-                                .fill(AVIATheme.teal.opacity(0.1))
+                                .fill(AVIATheme.timelessBrown.opacity(0.1))
                                 .frame(height: 4)
                             Capsule()
-                                .fill(AVIATheme.tealGradient)
+                                .fill(AVIATheme.primaryGradient)
                                 .frame(width: max(0, geo.size.width * build.overallProgress), height: 4)
                         }
                     }

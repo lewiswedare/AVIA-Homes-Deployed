@@ -101,7 +101,7 @@ struct FilterChip: View {
                 .padding(.vertical, 9)
                 .background {
                     if isSelected {
-                        Capsule().fill(AVIATheme.teal)
+                        Capsule().fill(AVIATheme.timelessBrown)
                     } else {
                         Capsule().fill(AVIATheme.cardBackground)
                     }
@@ -136,7 +136,7 @@ struct DocumentRow: View {
 
     private var rowContent: some View {
         HStack(spacing: 14) {
-            BentoIconCircle(icon: document.category.icon, color: AVIATheme.teal)
+            BentoIconCircle(icon: document.category.icon, color: AVIATheme.timelessBrown)
 
             VStack(alignment: .leading, spacing: 3) {
                 HStack(spacing: 6) {
@@ -145,7 +145,7 @@ struct DocumentRow: View {
                         .foregroundStyle(AVIATheme.textPrimary)
                         .lineLimit(1)
                     if document.isNew {
-                        StatusBadge(title: "NEW", color: AVIATheme.teal)
+                        StatusBadge(title: "NEW", color: AVIATheme.timelessBrown)
                     }
                     if let stage = document.buildStageName {
                         StatusBadge(title: stage, color: AVIATheme.warning)
@@ -157,7 +157,7 @@ struct DocumentRow: View {
                     Text(document.fileSize)
                     if document.fileURL != nil {
                         Text("· Download")
-                            .foregroundStyle(AVIATheme.teal)
+                            .foregroundStyle(AVIATheme.timelessBrown)
                     } else {
                         Text("· No file attached")
                     }
@@ -169,7 +169,7 @@ struct DocumentRow: View {
             Spacer()
 
             Image(systemName: document.fileURL != nil ? "arrow.down.circle.fill" : "arrow.down.circle")
-                .foregroundStyle(document.fileURL != nil ? AVIATheme.teal : AVIATheme.textTertiary)
+                .foregroundStyle(document.fileURL != nil ? AVIATheme.timelessBrown : AVIATheme.textTertiary)
         }
         .padding(.horizontal, 16)
         .padding(.vertical, 12)

@@ -189,7 +189,7 @@ struct SpecRangeComparisonOverviewView: View {
                             Text("UPGRADEABLE")
                                 .font(.neueCorpMedium(8))
                                 .kerning(0.5)
-                                .foregroundStyle(AVIATheme.teal)
+                                .foregroundStyle(AVIATheme.timelessBrown)
                         }
                     }
 

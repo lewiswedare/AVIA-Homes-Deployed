@@ -59,7 +59,7 @@ struct AdminBuildManagementView: View {
                     showingAddBuild = true
                 } label: {
                     Image(systemName: "plus.circle.fill")
-                        .foregroundStyle(AVIATheme.teal)
+                        .foregroundStyle(AVIATheme.timelessBrown)
                 }
             }
         }
@@ -80,7 +80,7 @@ struct AdminBuildManagementView: View {
                 value: "\(viewModel.allClientBuilds.count)",
                 label: "Total Builds",
                 icon: "building.2.fill",
-                color: AVIATheme.teal
+                color: AVIATheme.timelessBrown
             )
             adminStatCard(
                 value: "\(viewModel.allClientBuilds.filter { $0.currentStage != nil }.count)",
@@ -122,7 +122,7 @@ struct AdminBuildManagementView: View {
                             .padding(.horizontal, 14)
                             .padding(.vertical, 8)
                             .foregroundStyle(selectedFilter == filter ? .white : AVIATheme.textSecondary)
-                            .background(selectedFilter == filter ? AVIATheme.teal : AVIATheme.cardBackground)
+                            .background(selectedFilter == filter ? AVIATheme.timelessBrown : AVIATheme.cardBackground)
                             .clipShape(Capsule())
                             .overlay {
                                 if selectedFilter != filter {
@@ -180,12 +180,12 @@ struct AdminBuildRow: View {
                             .font(.neueCaptionMedium)
                             .foregroundStyle(.white)
                             .frame(width: 42, height: 42)
-                            .background(AVIATheme.tealGradient)
+                            .background(AVIATheme.primaryGradient)
                             .clipShape(Circle())
 
                         if specReviewStatus != .none {
                             Circle()
-                                .fill(specReviewStatus == .upgradeRequested ? AVIATheme.warning : Color(hex: "E8A317"))
+                                .fill(specReviewStatus == .upgradeRequested ? AVIATheme.warning : AVIATheme.warning)
                                 .frame(width: 12, height: 12)
                                 .overlay { Circle().stroke(AVIATheme.cardBackground, lineWidth: 2) }
                                 .offset(x: 2, y: -2)
@@ -204,7 +204,7 @@ struct AdminBuildRow: View {
                                     .foregroundStyle(.white)
                                     .padding(.horizontal, 6)
                                     .padding(.vertical, 2)
-                                    .background(specReviewStatus == .upgradeRequested ? AVIATheme.warning : Color(hex: "E8A317"))
+                                    .background(specReviewStatus == .upgradeRequested ? AVIATheme.warning : AVIATheme.warning)
                                     .clipShape(Capsule())
                             }
                         }
@@ -218,7 +218,7 @@ struct AdminBuildRow: View {
                     VStack(alignment: .trailing, spacing: 3) {
                         Text("\(Int(build.overallProgress * 100))%")
                             .font(.neueCaptionMedium)
-                            .foregroundStyle(AVIATheme.teal)
+                            .foregroundStyle(AVIATheme.timelessBrown)
                         Text(build.statusLabel)
                             .font(.neueCaption2)
                             .foregroundStyle(AVIATheme.textTertiary)
@@ -226,14 +226,14 @@ struct AdminBuildRow: View {
 
                     Image(systemName: "pencil.circle.fill")
                         .font(.system(size: 22))
-                        .foregroundStyle(AVIATheme.teal)
+                        .foregroundStyle(AVIATheme.timelessBrown)
                 }
                 .padding(16)
 
                 GeometryReader { geo in
                     ZStack(alignment: .leading) {
-                        Capsule().fill(AVIATheme.teal.opacity(0.1)).frame(height: 4)
-                        Capsule().fill(AVIATheme.tealGradient).frame(width: max(0, geo.size.width * build.overallProgress), height: 4)
+                        Capsule().fill(AVIATheme.timelessBrown.opacity(0.1)).frame(height: 4)
+                        Capsule().fill(AVIATheme.primaryGradient).frame(width: max(0, geo.size.width * build.overallProgress), height: 4)
                     }
                 }
                 .frame(height: 4)

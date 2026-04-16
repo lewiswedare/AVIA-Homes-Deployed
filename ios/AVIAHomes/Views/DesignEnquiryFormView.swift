@@ -52,7 +52,7 @@ struct DesignEnquiryFormView: View {
         HStack(spacing: 10) {
             Image(systemName: "house.fill")
                 .font(.neueTitle3)
-                .foregroundStyle(AVIATheme.teal)
+                .foregroundStyle(AVIATheme.timelessBrown)
             VStack(alignment: .leading, spacing: 2) {
                 Text("Enquiring about")
                     .font(.neueCaption)
@@ -130,7 +130,7 @@ struct DesignEnquiryFormView: View {
             .frame(maxWidth: .infinity)
             .frame(height: 52)
             .foregroundStyle(.white)
-            .background(isFormValid ? AVIATheme.tealGradient : LinearGradient(colors: [AVIATheme.textTertiary, AVIATheme.textTertiary], startPoint: .topLeading, endPoint: .bottomTrailing))
+            .background(isFormValid ? AVIATheme.primaryGradient : LinearGradient(colors: [AVIATheme.textTertiary, AVIATheme.textTertiary], startPoint: .topLeading, endPoint: .bottomTrailing))
             .clipShape(.rect(cornerRadius: 14))
         }
         .disabled(!isFormValid || isSubmitting)

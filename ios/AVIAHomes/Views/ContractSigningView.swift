@@ -50,7 +50,7 @@ struct ContractSigningView: View {
             HStack(spacing: 12) {
                 Image(systemName: "doc.richtext.fill")
                     .font(.system(size: 24))
-                    .foregroundStyle(AVIATheme.teal)
+                    .foregroundStyle(AVIATheme.timelessBrown)
                 VStack(alignment: .leading, spacing: 3) {
                     Text("Contract for \(package.title)")
                         .font(.neueSubheadlineMedium)
@@ -72,10 +72,10 @@ struct ContractSigningView: View {
             HStack(spacing: 8) {
                 Image(systemName: "doc.text.fill")
                     .font(.neueCaption)
-                    .foregroundStyle(AVIATheme.teal)
+                    .foregroundStyle(AVIATheme.timelessBrown)
                 Text("Contract Document")
                     .font(.neueSubheadlineMedium)
-                    .foregroundStyle(AVIATheme.teal)
+                    .foregroundStyle(AVIATheme.timelessBrown)
             }
 
             if let urlString = contract.contract_document_url, let url = URL(string: urlString) {
@@ -111,10 +111,10 @@ struct ContractSigningView: View {
                 HStack(spacing: 8) {
                     Image(systemName: "signature")
                         .font(.neueCaption)
-                        .foregroundStyle(AVIATheme.teal)
+                        .foregroundStyle(AVIATheme.timelessBrown)
                     Text("Your Signature")
                         .font(.neueSubheadlineMedium)
-                        .foregroundStyle(AVIATheme.teal)
+                        .foregroundStyle(AVIATheme.timelessBrown)
                 }
                 Spacer()
                 Button {
@@ -190,7 +190,7 @@ struct ContractSigningView: View {
                 .frame(maxWidth: .infinity)
                 .frame(height: 52)
                 .foregroundStyle(.white)
-                .background(canSign ? AVIATheme.tealGradient : LinearGradient(colors: [.gray], startPoint: .leading, endPoint: .trailing))
+                .background(canSign ? AVIATheme.primaryGradient : LinearGradient(colors: [.gray], startPoint: .leading, endPoint: .trailing))
                 .clipShape(.rect(cornerRadius: 14))
             }
             .disabled(!canSign || isSigning)

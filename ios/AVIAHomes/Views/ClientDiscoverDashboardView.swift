@@ -175,7 +175,7 @@ struct ClientDiscoverDashboardView: View {
                 } label: {
                     Text("See All")
                         .font(.neueCaptionMedium)
-                        .foregroundStyle(AVIATheme.teal)
+                        .foregroundStyle(AVIATheme.timelessBrown)
                 }
             }
 
@@ -264,7 +264,7 @@ struct ClientDiscoverDashboardView: View {
                     Text(post.category.uppercased())
                         .font(.neueCorpMedium(9))
                         .kerning(0.6)
-                        .foregroundStyle(AVIATheme.teal)
+                        .foregroundStyle(AVIATheme.timelessBrown)
 
                     Text(post.title)
                         .font(.neueSubheadlineMedium)
@@ -302,7 +302,7 @@ struct ClientDiscoverDashboardView: View {
                 } label: {
                     Text("See All")
                         .font(.neueCaptionMedium)
-                        .foregroundStyle(AVIATheme.teal)
+                        .foregroundStyle(AVIATheme.timelessBrown)
                 }
             }
 
@@ -320,7 +320,7 @@ struct ClientDiscoverDashboardView: View {
                         VStack(spacing: 10) {
                             Image(systemName: "arrow.right.circle.fill")
                                 .font(.neueCorpMedium(28))
-                                .foregroundStyle(AVIATheme.teal)
+                                .foregroundStyle(AVIATheme.timelessBrown)
                             Text("View All\n\(viewModel.allHomeDesigns.count) Designs")
                                 .font(.neueCaptionMedium)
                                 .foregroundStyle(AVIATheme.textSecondary)
@@ -347,7 +347,7 @@ struct ClientDiscoverDashboardView: View {
                     } else if phase.error != nil {
                         Image(systemName: "house.fill")
                             .font(.neueCorpMedium(24))
-                            .foregroundStyle(AVIATheme.teal.opacity(0.25))
+                            .foregroundStyle(AVIATheme.timelessBrown.opacity(0.25))
                     } else {
                         ProgressView()
                     }
@@ -418,7 +418,7 @@ struct ClientDiscoverDashboardView: View {
                                 .foregroundStyle(.white)
                                 .padding(.horizontal, 6)
                                 .padding(.vertical, 3)
-                                .background(AVIATheme.teal)
+                                .background(AVIATheme.timelessBrown)
                                 .clipShape(Capsule())
                                 .padding(4)
                         }
@@ -433,7 +433,7 @@ struct ClientDiscoverDashboardView: View {
                     HStack(spacing: 6) {
                         Image(systemName: "mappin.circle.fill")
                             .font(.neueCorp(10))
-                            .foregroundStyle(AVIATheme.teal)
+                            .foregroundStyle(AVIATheme.timelessBrown)
                         Text(package.location)
                             .font(.neueCaption)
                             .foregroundStyle(AVIATheme.textSecondary)
@@ -450,7 +450,7 @@ struct ClientDiscoverDashboardView: View {
 
                     Text(package.price)
                         .font(.neueSubheadlineMedium)
-                        .foregroundStyle(AVIATheme.teal)
+                        .foregroundStyle(AVIATheme.timelessBrown)
                 }
 
                 Spacer(minLength: 0)
@@ -471,7 +471,7 @@ struct ClientDiscoverDashboardView: View {
                 } label: {
                     Text("Compare")
                         .font(.neueCaptionMedium)
-                        .foregroundStyle(AVIATheme.teal)
+                        .foregroundStyle(AVIATheme.timelessBrown)
                 }
             }
 
@@ -501,7 +501,7 @@ struct ClientDiscoverDashboardView: View {
                         } else if phase.error != nil {
                             Text(tier.displayName)
                                 .font(.neueCorpMedium(16))
-                                .foregroundStyle(AVIATheme.teal.opacity(0.25))
+                                .foregroundStyle(AVIATheme.timelessBrown.opacity(0.25))
                         } else {
                             ProgressView()
                         }
@@ -568,7 +568,7 @@ struct ClientDiscoverDashboardView: View {
                 } label: {
                     Text("See All")
                         .font(.neueCaptionMedium)
-                        .foregroundStyle(AVIATheme.teal)
+                        .foregroundStyle(AVIATheme.timelessBrown)
                 }
             }
 
@@ -598,7 +598,7 @@ struct ClientDiscoverDashboardView: View {
                         } else if phase.error != nil {
                             Image(systemName: "photo")
                                 .font(.neueCorpMedium(24))
-                                .foregroundStyle(AVIATheme.teal.opacity(0.25))
+                                .foregroundStyle(AVIATheme.timelessBrown.opacity(0.25))
                         } else {
                             ProgressView()
                         }
@@ -777,7 +777,7 @@ struct ClientDiscoverDashboardView: View {
                                 .foregroundStyle(.white)
                                 .padding(.horizontal, 10)
                                 .padding(.vertical, 4)
-                                .background(AVIATheme.teal)
+                                .background(AVIATheme.timelessBrown)
                                 .clipShape(Capsule())
                         }
                     }
@@ -794,10 +794,10 @@ struct ClientDiscoverDashboardView: View {
                             Spacer()
                             Text("View all \(sharedPackages.count) packages")
                                 .font(.neueCaptionMedium)
-                                .foregroundStyle(AVIATheme.teal)
+                                .foregroundStyle(AVIATheme.timelessBrown)
                             Image(systemName: "arrow.right")
                                 .font(.system(size: 10, weight: .semibold))
-                                .foregroundStyle(AVIATheme.teal)
+                                .foregroundStyle(AVIATheme.timelessBrown)
                             Spacer()
                         }
                         .padding(.top, 4)
@@ -834,7 +834,7 @@ struct ClientDiscoverDashboardView: View {
                     HStack(spacing: 6) {
                         Image(systemName: "mappin.circle.fill")
                             .font(.neueCorp(10))
-                            .foregroundStyle(AVIATheme.teal)
+                            .foregroundStyle(AVIATheme.timelessBrown)
                         Text(package.location)
                             .font(.neueCaption2)
                             .foregroundStyle(AVIATheme.textSecondary)
@@ -843,7 +843,7 @@ struct ClientDiscoverDashboardView: View {
 
                     Text(package.price)
                         .font(.neueCaptionMedium)
-                        .foregroundStyle(AVIATheme.teal)
+                        .foregroundStyle(AVIATheme.timelessBrown)
                 }
 
                 Spacer(minLength: 0)
@@ -856,7 +856,7 @@ struct ClientDiscoverDashboardView: View {
                             .foregroundStyle(.white)
                             .padding(.horizontal, 8)
                             .padding(.vertical, 4)
-                            .background(AVIATheme.teal)
+                            .background(AVIATheme.timelessBrown)
                             .clipShape(Capsule())
                     } else {
                         Image(systemName: response?.status.icon ?? "checkmark.circle.fill")

@@ -21,7 +21,7 @@ struct AdminRequestsSection: View {
         VStack(spacing: 12) {
             HStack(spacing: 12) {
                 requestMetric(label: "Open", count: viewModel.requests.filter { $0.status == .open }.count, color: AVIATheme.warning)
-                requestMetric(label: "In Progress", count: viewModel.requests.filter { $0.status == .inProgress }.count, color: Color(hex: "5B7DB1"))
+                requestMetric(label: "In Progress", count: viewModel.requests.filter { $0.status == .inProgress }.count, color: AVIATheme.timelessBrown)
                 requestMetric(label: "Resolved", count: viewModel.requests.filter { $0.status == .resolved }.count, color: AVIATheme.success)
             }
             .fixedSize(horizontal: false, vertical: true)
@@ -61,7 +61,7 @@ struct AdminRequestRow: View {
     private var statusColor: Color {
         switch request.status {
         case .open: AVIATheme.warning
-        case .inProgress: AVIATheme.teal
+        case .inProgress: AVIATheme.timelessBrown
         case .resolved: AVIATheme.success
         }
     }
@@ -149,7 +149,7 @@ struct AdminRequestDetailSheet: View {
                 ToolbarItem(placement: .topBarTrailing) {
                     Button("Done") { dismiss() }
                         .font(.neueSubheadlineMedium)
-                        .tint(AVIATheme.teal)
+                        .tint(AVIATheme.timelessBrown)
                 }
             }
         }
@@ -162,7 +162,7 @@ struct AdminRequestDetailSheet: View {
                 HStack {
                     Label(request.category.rawValue, systemImage: request.category.icon)
                         .font(.neueCaptionMedium)
-                        .foregroundStyle(AVIATheme.teal)
+                        .foregroundStyle(AVIATheme.timelessBrown)
                     Spacer()
                     StatusBadge(title: request.status.rawValue, color: statusColor(request.status))
                 }
@@ -227,7 +227,7 @@ struct AdminRequestDetailSheet: View {
                         .foregroundStyle(AVIATheme.textSecondary)
                 }
                 .padding(14)
-                .background(response.isFromClient ? AVIATheme.teal.opacity(0.06) : AVIATheme.cardBackground)
+                .background(response.isFromClient ? AVIATheme.timelessBrown.opacity(0.06) : AVIATheme.cardBackground)
                 .clipShape(.rect(cornerRadius: 12))
             }
         }
@@ -271,7 +271,7 @@ struct AdminRequestDetailSheet: View {
                     .frame(maxWidth: .infinity)
                     .frame(height: 48)
                     .foregroundStyle(.white)
-                    .background(AVIATheme.tealGradient)
+                    .background(AVIATheme.primaryGradient)
                     .clipShape(.rect(cornerRadius: 12))
                 }
                 .disabled(responseText.trimmingCharacters(in: .whitespaces).isEmpty)
@@ -283,7 +283,7 @@ struct AdminRequestDetailSheet: View {
     private func statusColor(_ status: RequestStatus) -> Color {
         switch status {
         case .open: AVIATheme.warning
-        case .inProgress: AVIATheme.teal
+        case .inProgress: AVIATheme.timelessBrown
         case .resolved: AVIATheme.success
         }
     }

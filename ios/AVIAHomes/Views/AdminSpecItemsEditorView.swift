@@ -41,7 +41,7 @@ struct AdminSpecItemsEditorView: View {
 
                 if viewModel.isLoading {
                     ProgressView()
-                        .tint(AVIATheme.teal)
+                        .tint(AVIATheme.timelessBrown)
                         .padding(.vertical, 60)
                 } else if groupedItems.isEmpty {
                     AdminEmptyState(
@@ -61,7 +61,7 @@ struct AdminSpecItemsEditorView: View {
                         .foregroundStyle(.white)
                         .frame(maxWidth: .infinity)
                         .frame(height: 48)
-                        .background(AVIATheme.tealGradient)
+                        .background(AVIATheme.primaryGradient)
                         .clipShape(.rect(cornerRadius: 14))
                     }
                     .disabled(viewModel.isLoading)
@@ -82,7 +82,7 @@ struct AdminSpecItemsEditorView: View {
             ToolbarItem(placement: .primaryAction) {
                 Button { showingAddSheet = true } label: {
                     Image(systemName: "plus.circle.fill")
-                        .foregroundStyle(AVIATheme.teal)
+                        .foregroundStyle(AVIATheme.timelessBrown)
                 }
             }
         }
@@ -135,7 +135,7 @@ struct AdminSpecItemsEditorView: View {
                 .padding(.horizontal, 12)
                 .padding(.vertical, 7)
                 .foregroundStyle(selectedCategory == id ? .white : AVIATheme.textSecondary)
-                .background(selectedCategory == id ? AVIATheme.teal : AVIATheme.cardBackground)
+                .background(selectedCategory == id ? AVIATheme.timelessBrown : AVIATheme.cardBackground)
                 .clipShape(Capsule())
                 .overlay {
                     if selectedCategory != id {
@@ -147,7 +147,7 @@ struct AdminSpecItemsEditorView: View {
 
     private var statsBar: some View {
         HStack(spacing: 12) {
-            AdminMiniStat(value: "\(viewModel.specItems.count)", label: "Total Items", color: AVIATheme.teal)
+            AdminMiniStat(value: "\(viewModel.specItems.count)", label: "Total Items", color: AVIATheme.timelessBrown)
             AdminMiniStat(value: "\(viewModel.specItems.filter { $0.is_upgradeable ?? false }.count)", label: "Upgradeable", color: AVIATheme.warning)
             AdminMiniStat(value: "\(Set(viewModel.specItems.map { $0.category_id }).count)", label: "Categories", color: AVIATheme.success)
         }
@@ -183,9 +183,9 @@ struct AdminSpecItemsEditorView: View {
             HStack(spacing: 12) {
                 Image(systemName: (item.is_upgradeable ?? false) ? "arrow.up.circle.fill" : "circle.fill")
                     .font(.neueCorp(12))
-                    .foregroundStyle((item.is_upgradeable ?? false) ? AVIATheme.warning : AVIATheme.teal)
+                    .foregroundStyle((item.is_upgradeable ?? false) ? AVIATheme.warning : AVIATheme.timelessBrown)
                     .frame(width: 32, height: 32)
-                    .background(((item.is_upgradeable ?? false) ? AVIATheme.warning : AVIATheme.teal).opacity(0.12))
+                    .background(((item.is_upgradeable ?? false) ? AVIATheme.warning : AVIATheme.timelessBrown).opacity(0.12))
                     .clipShape(Circle())
 
                 VStack(alignment: .leading, spacing: 3) {
@@ -305,7 +305,7 @@ struct SpecItemEditSheet: View {
                                     }
                                 }
                                 .pickerStyle(.menu)
-                                .tint(AVIATheme.teal)
+                                .tint(AVIATheme.timelessBrown)
                             }
                             fieldRow("Sort Order") {
                                 TextField("0", value: $sortOrder, format: .number)
@@ -326,7 +326,7 @@ struct SpecItemEditSheet: View {
                     BentoCard(cornerRadius: 14) {
                         VStack(alignment: .leading, spacing: 14) {
                             sectionHeader("Tier Descriptions")
-                            tierField("Volos", text: $volosDesc, color: AVIATheme.teal)
+                            tierField("Volos", text: $volosDesc, color: AVIATheme.timelessBrown)
                             tierField("Messina", text: $messinaDesc, color: AVIATheme.warning)
                             tierField("Portobello", text: $portobelloDesc, color: Color(hex: "8B5CF6"))
                         }
@@ -358,12 +358,12 @@ struct SpecItemEditSheet: View {
                                 HStack {
                                     Spacer()
                                     ProgressView()
-                                        .tint(AVIATheme.teal)
+                                        .tint(AVIATheme.timelessBrown)
                                     Spacer()
                                 }
                                 .padding(.vertical, 8)
                             } else {
-                                tierImageField("Volos", imageURL: $volosImageURL, color: AVIATheme.teal, tierKey: "volos")
+                                tierImageField("Volos", imageURL: $volosImageURL, color: AVIATheme.timelessBrown, tierKey: "volos")
                                 tierImageField("Messina", imageURL: $messinaImageURL, color: AVIATheme.warning, tierKey: "messina")
                                 tierImageField("Portobello", imageURL: $portobelloImageURL, color: Color(hex: "8B5CF6"), tierKey: "portobello")
                             }

@@ -43,7 +43,7 @@ struct ColourDetailView: View {
                 ToolbarItem(placement: .topBarTrailing) {
                     Button("Done") { dismiss() }
                         .font(.neueSubheadlineMedium)
-                        .tint(AVIATheme.teal)
+                        .tint(AVIATheme.timelessBrown)
                 }
             }
             .sensoryFeedback(.selection, trigger: animateTrigger)
@@ -121,14 +121,14 @@ struct ColourDetailView: View {
     private func noteCard(_ note: String) -> some View {
         HStack(spacing: 12) {
             Image(systemName: "info.circle.fill")
-                .foregroundStyle(AVIATheme.teal)
+                .foregroundStyle(AVIATheme.timelessBrown)
             Text(note)
                 .font(.neueCaption)
                 .foregroundStyle(AVIATheme.textSecondary)
         }
         .padding(14)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .background(AVIATheme.teal.opacity(0.08))
+        .background(AVIATheme.timelessBrown.opacity(0.08))
         .clipShape(.rect(cornerRadius: 14))
     }
 
@@ -193,7 +193,7 @@ struct ColourDetailView: View {
             .clipShape(.rect(cornerRadius: 14))
             .overlay {
                 RoundedRectangle(cornerRadius: 14)
-                    .stroke(AVIATheme.teal.opacity(0.2), lineWidth: 1)
+                    .stroke(AVIATheme.timelessBrown.opacity(0.2), lineWidth: 1)
             }
             .transition(.scale.combined(with: .opacity))
             .animation(.spring(response: 0.3), value: selection.optionId)
@@ -203,14 +203,14 @@ struct ColourDetailView: View {
     private var tierInfoBanner: some View {
         HStack(spacing: 8) {
             Image(systemName: viewModel.specTier.icon)
-                .foregroundStyle(AVIATheme.teal)
+                .foregroundStyle(AVIATheme.timelessBrown)
             Text("Showing options for your **\(viewModel.specTier.displayName)** spec range")
                 .font(.neueCaption)
                 .foregroundStyle(AVIATheme.textSecondary)
         }
         .padding(12)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .background(AVIATheme.teal.opacity(0.06))
+        .background(AVIATheme.timelessBrown.opacity(0.06))
         .clipShape(.rect(cornerRadius: 12))
     }
 
@@ -260,7 +260,7 @@ struct ColourSwatchView: View {
 
                 Text(option.name)
                     .font(isSelected ? .neueCaption2Medium : .neueCaption2)
-                    .foregroundStyle(isSelected ? AVIATheme.teal : AVIATheme.textPrimary)
+                    .foregroundStyle(isSelected ? AVIATheme.timelessBrown : AVIATheme.textPrimary)
                     .lineLimit(2)
                     .multilineTextAlignment(.center)
                     .frame(height: 28)
@@ -284,10 +284,10 @@ struct ColourSwatchView: View {
                 } else if option.isUpgrade {
                     Text("PREMIUM")
                         .font(.neueCorpMedium(7))
-                        .foregroundStyle(AVIATheme.teal)
+                        .foregroundStyle(AVIATheme.timelessBrown)
                         .padding(.horizontal, 6)
                         .padding(.vertical, 2)
-                        .background(AVIATheme.teal.opacity(0.1))
+                        .background(AVIATheme.timelessBrown.opacity(0.1))
                         .clipShape(Capsule())
                 } else if option.cost == nil || option.cost == 0 {
                     // Included option — no badge needed
@@ -314,7 +314,7 @@ struct ColourSwatchView: View {
                             .padding(8)
                     } else {
                         ProgressView()
-                            .tint(AVIATheme.teal)
+                            .tint(AVIATheme.timelessBrown)
                     }
                 }
                 .allowsHitTesting(false)
@@ -322,19 +322,19 @@ struct ColourSwatchView: View {
             .clipShape(.rect(cornerRadius: 10))
             .overlay {
                 RoundedRectangle(cornerRadius: 10)
-                    .stroke(isSelected ? AVIATheme.teal : AVIATheme.surfaceBorder, lineWidth: isSelected ? 2.5 : 1)
+                    .stroke(isSelected ? AVIATheme.timelessBrown : AVIATheme.surfaceBorder, lineWidth: isSelected ? 2.5 : 1)
             }
             .overlay(alignment: .bottomTrailing) {
                 if isSelected {
                     Image(systemName: "checkmark.circle.fill")
                         .font(.system(size: 18))
                         .symbolRenderingMode(.palette)
-                        .foregroundStyle(.white, AVIATheme.teal)
+                        .foregroundStyle(.white, AVIATheme.timelessBrown)
                         .offset(x: 4, y: 4)
                         .transition(.scale.combined(with: .opacity))
                 }
             }
-            .shadow(color: isSelected ? AVIATheme.teal.opacity(0.25) : .clear, radius: 6, y: 2)
+            .shadow(color: isSelected ? AVIATheme.timelessBrown.opacity(0.25) : .clear, radius: 6, y: 2)
             .animation(.spring(response: 0.3, dampingFraction: 0.7), value: isSelected)
     }
 
@@ -350,7 +350,7 @@ struct ColourSwatchView: View {
                 .overlay {
                     if isSelected {
                         Circle()
-                            .stroke(AVIATheme.teal, lineWidth: 3)
+                            .stroke(AVIATheme.timelessBrown, lineWidth: 3)
                             .frame(width: 62, height: 62)
                     }
                 }
@@ -359,7 +359,7 @@ struct ColourSwatchView: View {
                         Image(systemName: "checkmark.circle.fill")
                             .font(.neueBody)
                             .symbolRenderingMode(.palette)
-                            .foregroundStyle(.white, AVIATheme.teal)
+                            .foregroundStyle(.white, AVIATheme.timelessBrown)
                             .transition(.scale.combined(with: .opacity))
                     }
                 }

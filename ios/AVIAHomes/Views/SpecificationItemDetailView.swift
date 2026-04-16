@@ -129,7 +129,7 @@ struct SpecificationItemDetailView: View {
             HStack(spacing: 8) {
                 Image(systemName: activeTier == specVM.currentTier ? "checkmark.circle.fill" : "eye.fill")
                     .font(.neueSubheadlineMedium)
-                    .foregroundStyle(activeTier == specVM.currentTier ? AVIATheme.success : AVIATheme.teal)
+                    .foregroundStyle(activeTier == specVM.currentTier ? AVIATheme.success : AVIATheme.timelessBrown)
                 Text(activeTier == specVM.currentTier ? "Your Current Specification" : "Viewing \(activeTier.displayName) Specification")
                     .font(.neueSubheadlineMedium)
                     .foregroundStyle(AVIATheme.textPrimary)
@@ -247,7 +247,7 @@ struct SpecificationItemDetailView: View {
                     .foregroundStyle(.white)
                     .frame(maxWidth: .infinity)
                     .padding(.vertical, 10)
-                    .background(AVIATheme.tealGradient)
+                    .background(AVIATheme.primaryGradient)
                     .clipShape(.rect(cornerRadius: 10))
                 }
             }

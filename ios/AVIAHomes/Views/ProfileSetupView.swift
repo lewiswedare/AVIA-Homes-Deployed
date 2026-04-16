@@ -43,7 +43,7 @@ struct ProfileSetupView: View {
                         .resizable()
                         .aspectRatio(contentMode: .fit)
                         .frame(height: 20)
-                        .foregroundStyle(AVIATheme.teal)
+                        .foregroundStyle(AVIATheme.timelessBrown)
                     Text(stepTitle)
                         .font(.neueCorpMedium(24))
                         .foregroundStyle(AVIATheme.textPrimary)
@@ -60,7 +60,7 @@ struct ProfileSetupView: View {
                         .fill(AVIATheme.surfaceBorder)
                         .frame(height: 4)
                     Capsule()
-                        .fill(AVIATheme.tealGradient)
+                        .fill(AVIATheme.primaryGradient)
                         .frame(width: geo.size.width * stepProgress, height: 4)
                         .animation(.spring(response: 0.4), value: currentStep)
                 }
@@ -182,7 +182,7 @@ struct ProfileSetupView: View {
         HStack(spacing: 14) {
             Image(systemName: icon)
                 .font(.neueSubheadline)
-                .foregroundStyle(AVIATheme.teal)
+                .foregroundStyle(AVIATheme.timelessBrown)
                 .frame(width: 28)
             VStack(alignment: .leading, spacing: 2) {
                 Text(label)
@@ -226,7 +226,7 @@ struct ProfileSetupView: View {
                     .frame(maxWidth: .infinity)
                     .frame(height: 52)
                     .foregroundStyle(.white)
-                    .background(AVIATheme.tealGradient)
+                    .background(AVIATheme.primaryGradient)
                     .clipShape(.rect(cornerRadius: 14))
             }
             .disabled(currentStep == 0 && (firstName.isEmpty || lastName.isEmpty))

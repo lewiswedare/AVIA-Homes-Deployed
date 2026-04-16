@@ -38,8 +38,8 @@ struct AdminStaffSection: View {
             }
 
             HStack(spacing: 12) {
-                AdminMetricCard(value: "\(staffList.count)", label: "Staff Members", icon: "person.badge.shield.checkmark.fill", color: AVIATheme.teal)
-                AdminMetricCard(value: "\(partnerList.count)", label: "Partners", icon: "person.2.fill", color: Color(hex: "5B7DB1"))
+                AdminMetricCard(value: "\(staffList.count)", label: "Staff Members", icon: "person.badge.shield.checkmark.fill", color: AVIATheme.timelessBrown)
+                AdminMetricCard(value: "\(partnerList.count)", label: "Partners", icon: "person.2.fill", color: AVIATheme.timelessBrown)
             }
             .fixedSize(horizontal: false, vertical: true)
 
@@ -110,7 +110,7 @@ struct AdminStaffSection: View {
             NavigationLink { UserManagementView() } label: {
                 Text("Review")
                     .font(.neueCaptionMedium)
-                    .foregroundStyle(AVIATheme.teal)
+                    .foregroundStyle(AVIATheme.timelessBrown)
                     .padding(.horizontal, 14)
                     .padding(.vertical, 6)
                     .background(.white)
@@ -118,7 +118,7 @@ struct AdminStaffSection: View {
             }
         }
         .padding(14)
-        .background(AVIATheme.tealGradient)
+        .background(AVIATheme.primaryGradient)
         .clipShape(.rect(cornerRadius: 16))
     }
 }
@@ -136,7 +136,7 @@ struct AdminStaffUserRow: View {
                     if user.role.isPending {
                         AVIATheme.warning
                     } else {
-                        AVIATheme.tealGradient
+                        AVIATheme.primaryGradient
                     }
                 }
                 .clipShape(Circle())
@@ -155,10 +155,10 @@ struct AdminStaffUserRow: View {
 
             Text(user.role.rawValue)
                 .font(.neueCaption2Medium)
-                .foregroundStyle(user.role.isPending ? AVIATheme.warning : AVIATheme.teal)
+                .foregroundStyle(user.role.isPending ? AVIATheme.warning : AVIATheme.timelessBrown)
                 .padding(.horizontal, 8)
                 .padding(.vertical, 3)
-                .background(user.role.isPending ? AVIATheme.warning.opacity(0.12) : AVIATheme.teal.opacity(0.12))
+                .background(user.role.isPending ? AVIATheme.warning.opacity(0.12) : AVIATheme.timelessBrown.opacity(0.12))
                 .clipShape(.capsule)
 
             Image(systemName: "chevron.right")
@@ -191,7 +191,7 @@ struct AdminStaffWorkloadCard: View {
                         .font(.neueCaptionMedium)
                         .foregroundStyle(.white)
                         .frame(width: 40, height: 40)
-                        .background(AVIATheme.tealGradient)
+                        .background(AVIATheme.primaryGradient)
                         .clipShape(Circle())
 
                     VStack(alignment: .leading, spacing: 2) {
@@ -222,7 +222,7 @@ struct AdminStaffWorkloadCard: View {
 
                     Rectangle().fill(AVIATheme.surfaceBorder).frame(height: 1)
                     HStack(spacing: 14) {
-                        AdminWorkloadStat(label: "Assigned", value: "\(assignedBuilds.count)", color: AVIATheme.teal)
+                        AdminWorkloadStat(label: "Assigned", value: "\(assignedBuilds.count)", color: AVIATheme.timelessBrown)
                         AdminWorkloadStat(label: "Active", value: "\(activeCount)", color: AVIATheme.warning)
                         AdminWorkloadStat(label: "Avg Progress", value: "\(Int(avg * 100))%", color: AVIATheme.success)
                         Spacer()
@@ -250,7 +250,7 @@ struct AdminPartnerCard: View {
                         .font(.neueCaptionMedium)
                         .foregroundStyle(.white)
                         .frame(width: 40, height: 40)
-                        .background(Color(hex: "5B7DB1"))
+                        .background(AVIATheme.timelessBrown)
                         .clipShape(Circle())
 
                     VStack(alignment: .leading, spacing: 2) {
@@ -265,14 +265,14 @@ struct AdminPartnerCard: View {
 
                     Spacer()
 
-                    StatusBadge(title: "Partner", color: Color(hex: "5B7DB1"))
+                    StatusBadge(title: "Partner", color: AVIATheme.timelessBrown)
                 }
                 .padding(14)
 
                 Rectangle().fill(AVIATheme.surfaceBorder).frame(height: 1)
                 HStack(spacing: 14) {
-                    AdminWorkloadStat(label: "Packages", value: "\(assignedPackages.count)", color: Color(hex: "5B7DB1"))
-                    AdminWorkloadStat(label: "Clients", value: "\(partnerClients.count)", color: AVIATheme.teal)
+                    AdminWorkloadStat(label: "Packages", value: "\(assignedPackages.count)", color: AVIATheme.timelessBrown)
+                    AdminWorkloadStat(label: "Clients", value: "\(partnerClients.count)", color: AVIATheme.timelessBrown)
                     AdminWorkloadStat(label: "Exclusive", value: "\(assignedPackages.filter(\.isExclusive).count)", color: AVIATheme.warning)
                     Spacer()
                 }

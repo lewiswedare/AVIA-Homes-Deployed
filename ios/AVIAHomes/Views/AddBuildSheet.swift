@@ -83,7 +83,7 @@ struct AddBuildSheet: View {
                         .frame(maxWidth: .infinity)
                         .frame(height: 52)
                         .foregroundStyle(.white)
-                        .background(isFormValid ? AVIATheme.tealGradient : LinearGradient(colors: [AVIATheme.textTertiary], startPoint: .leading, endPoint: .trailing))
+                        .background(isFormValid ? AVIATheme.primaryGradient : LinearGradient(colors: [AVIATheme.textTertiary], startPoint: .leading, endPoint: .trailing))
                         .clipShape(.rect(cornerRadius: 14))
                     }
                     .disabled(!isFormValid || isSaving)
@@ -98,7 +98,7 @@ struct AddBuildSheet: View {
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
                     Button("Cancel") { dismiss() }
-                        .tint(AVIATheme.teal)
+                        .tint(AVIATheme.timelessBrown)
                 }
             }
         }
@@ -120,7 +120,7 @@ struct AddBuildSheet: View {
                 HStack(spacing: 8) {
                     Image(systemName: "pencil.and.ruler.fill")
                         .font(.neueCorp(12))
-                        .foregroundStyle(AVIATheme.teal)
+                        .foregroundStyle(AVIATheme.timelessBrown)
                     VStack(alignment: .leading, spacing: 1) {
                         Text("Custom Home")
                             .font(.neueCaptionMedium)
@@ -131,10 +131,10 @@ struct AddBuildSheet: View {
                     }
                 }
             }
-            .tint(AVIATheme.teal)
+            .tint(AVIATheme.timelessBrown)
         }
         .padding(16)
-        .background(isCustomHome ? AVIATheme.teal.opacity(0.06) : AVIATheme.cardBackground)
+        .background(isCustomHome ? AVIATheme.timelessBrown.opacity(0.06) : AVIATheme.cardBackground)
         .clipShape(.rect(cornerRadius: 16))
         .sensoryFeedback(.impact(weight: .light), trigger: isCustomHome)
     }
@@ -188,11 +188,11 @@ struct AddBuildSheet: View {
 
                                     Image(systemName: isSelected ? "checkmark.circle.fill" : "circle")
                                         .font(.system(size: 20))
-                                        .foregroundStyle(isSelected ? AVIATheme.teal : AVIATheme.surfaceBorder)
+                                        .foregroundStyle(isSelected ? AVIATheme.timelessBrown : AVIATheme.surfaceBorder)
                                 }
                                 .padding(.horizontal, 12)
                                 .padding(.vertical, 6)
-                                .background(isSelected ? AVIATheme.teal.opacity(0.06) : Color.clear)
+                                .background(isSelected ? AVIATheme.timelessBrown.opacity(0.06) : Color.clear)
                                 .clipShape(.rect(cornerRadius: 10))
                             }
                         }
@@ -209,7 +209,7 @@ struct AddBuildSheet: View {
             VStack(alignment: .leading, spacing: 16) {
                 HStack(spacing: 8) {
                     Image(systemName: "pencil.and.ruler.fill")
-                        .foregroundStyle(AVIATheme.teal)
+                        .foregroundStyle(AVIATheme.timelessBrown)
                     Text("Custom Design Details")
                         .font(.neueSubheadlineMedium)
                         .foregroundStyle(AVIATheme.textPrimary)
@@ -220,7 +220,7 @@ struct AddBuildSheet: View {
                         .foregroundStyle(.white)
                         .padding(.horizontal, 6)
                         .padding(.vertical, 2)
-                        .background(AVIATheme.teal)
+                        .background(AVIATheme.timelessBrown)
                         .clipShape(Capsule())
                 }
 
@@ -254,7 +254,7 @@ struct AddBuildSheet: View {
                         .foregroundStyle(AVIATheme.textTertiary)
                     DatePicker("", selection: $contractDate, displayedComponents: .date)
                         .labelsHidden()
-                        .tint(AVIATheme.teal)
+                        .tint(AVIATheme.timelessBrown)
                 }
             }
             .padding(16)
@@ -284,7 +284,7 @@ struct AddBuildSheet: View {
                             .frame(maxWidth: .infinity)
                             .padding(.vertical, 12)
                             .foregroundStyle(isSelected ? .white : AVIATheme.textPrimary)
-                            .background(isSelected ? AVIATheme.tealGradient : LinearGradient(colors: [AVIATheme.surfaceElevated], startPoint: .top, endPoint: .bottom))
+                            .background(isSelected ? AVIATheme.primaryGradient : LinearGradient(colors: [AVIATheme.surfaceElevated], startPoint: .top, endPoint: .bottom))
                             .clipShape(.rect(cornerRadius: 12))
                         }
                         .sensoryFeedback(.selection, trigger: selectedSpecTier)
@@ -354,11 +354,11 @@ struct AddBuildSheet: View {
 
                                     Image(systemName: isSelected ? "checkmark.circle.fill" : "circle")
                                         .font(.system(size: 20))
-                                        .foregroundStyle(isSelected ? AVIATheme.teal : AVIATheme.surfaceBorder)
+                                        .foregroundStyle(isSelected ? AVIATheme.timelessBrown : AVIATheme.surfaceBorder)
                                 }
                                 .padding(.horizontal, 12)
                                 .padding(.vertical, 6)
-                                .background(isSelected ? AVIATheme.teal.opacity(0.06) : Color.clear)
+                                .background(isSelected ? AVIATheme.timelessBrown.opacity(0.06) : Color.clear)
                                 .clipShape(.rect(cornerRadius: 10))
                             }
                             .sensoryFeedback(.selection, trigger: selectedFacadeId)
@@ -384,7 +384,7 @@ struct AddBuildSheet: View {
                     } label: {
                         Text(showTimelineConfig ? "Hide" : "Configure")
                             .font(.neueCaption2Medium)
-                            .foregroundStyle(AVIATheme.teal)
+                            .foregroundStyle(AVIATheme.timelessBrown)
                     }
                 }
 
@@ -396,7 +396,7 @@ struct AddBuildSheet: View {
                                 .foregroundStyle(AVIATheme.textTertiary)
                             DatePicker("", selection: $estimatedStartDate, displayedComponents: .date)
                                 .labelsHidden()
-                                .tint(AVIATheme.teal)
+                                .tint(AVIATheme.timelessBrown)
                         }
 
                         VStack(alignment: .leading, spacing: 6) {
@@ -405,7 +405,7 @@ struct AddBuildSheet: View {
                                 .foregroundStyle(AVIATheme.textTertiary)
                             DatePicker("", selection: $estimatedCompletionDate, displayedComponents: .date)
                                 .labelsHidden()
-                                .tint(AVIATheme.teal)
+                                .tint(AVIATheme.timelessBrown)
                         }
 
                         Divider().foregroundStyle(AVIATheme.surfaceBorder)
@@ -424,7 +424,7 @@ struct AddBuildSheet: View {
                                         .font(.neueCorpMedium(10))
                                         .foregroundStyle(.white)
                                         .frame(width: 22, height: 22)
-                                        .background(name == "Awaiting Registration" ? LinearGradient(colors: [AVIATheme.warning], startPoint: .leading, endPoint: .trailing) : AVIATheme.tealGradient)
+                                        .background(name == "Awaiting Registration" ? LinearGradient(colors: [AVIATheme.warning], startPoint: .leading, endPoint: .trailing) : AVIATheme.primaryGradient)
                                         .clipShape(Circle())
                                     Text(name)
                                         .font(.neueCaption)
@@ -464,7 +464,7 @@ struct AddBuildSheet: View {
                         Spacer()
                         Text(awaitingRegistration ? "11 stages" : "10 stages")
                             .font(.neueCaption2)
-                            .foregroundStyle(AVIATheme.teal)
+                            .foregroundStyle(AVIATheme.timelessBrown)
                     }
                 }
             }
@@ -500,7 +500,7 @@ struct AddBuildSheet: View {
                                 .foregroundStyle(AVIATheme.textTertiary)
                             DatePicker("", selection: $estimatedRegistrationDate, displayedComponents: .date)
                                 .labelsHidden()
-                                .tint(AVIATheme.teal)
+                                .tint(AVIATheme.timelessBrown)
                         }
 
                         VStack(alignment: .leading, spacing: 6) {
@@ -521,13 +521,13 @@ struct AddBuildSheet: View {
 
                         HStack(spacing: 8) {
                             Image(systemName: "info.circle")
-                                .foregroundStyle(AVIATheme.teal)
+                                .foregroundStyle(AVIATheme.timelessBrown)
                             Text("An \"Awaiting Registration\" stage will be added as the first stage of the build timeline.")
                                 .font(.neueCaption2)
                                 .foregroundStyle(AVIATheme.textSecondary)
                         }
                         .padding(10)
-                        .background(AVIATheme.teal.opacity(0.06))
+                        .background(AVIATheme.timelessBrown.opacity(0.06))
                         .clipShape(.rect(cornerRadius: 10))
                     }
                 }
@@ -597,7 +597,7 @@ struct AddBuildSheet: View {
                                         .font(.neueCorp(10))
                                         .foregroundStyle(.white)
                                         .frame(width: 30, height: 30)
-                                        .background(AVIATheme.tealGradient)
+                                        .background(AVIATheme.primaryGradient)
                                         .clipShape(Circle())
 
                                     Text(client.fullName.trimmingCharacters(in: .whitespaces).isEmpty ? client.email : client.fullName)
@@ -609,10 +609,10 @@ struct AddBuildSheet: View {
 
                                     Image(systemName: selectedClientId == client.id ? "checkmark.circle.fill" : "circle")
                                         .font(.system(size: 20))
-                                        .foregroundStyle(selectedClientId == client.id ? AVIATheme.teal : AVIATheme.surfaceBorder)
+                                        .foregroundStyle(selectedClientId == client.id ? AVIATheme.timelessBrown : AVIATheme.surfaceBorder)
                                 }
                                 .padding(10)
-                                .background(selectedClientId == client.id ? AVIATheme.teal.opacity(0.06) : Color.clear)
+                                .background(selectedClientId == client.id ? AVIATheme.timelessBrown.opacity(0.06) : Color.clear)
                                 .clipShape(.rect(cornerRadius: 10))
                             }
                         }
@@ -653,7 +653,7 @@ struct AddBuildSheet: View {
                                         .font(.neueCorp(10))
                                         .foregroundStyle(.white)
                                         .frame(width: 30, height: 30)
-                                        .background(AVIATheme.tealGradient)
+                                        .background(AVIATheme.primaryGradient)
                                         .clipShape(Circle())
 
                                     VStack(alignment: .leading, spacing: 1) {
@@ -669,10 +669,10 @@ struct AddBuildSheet: View {
 
                                     Image(systemName: selectedStaffId == member.id ? "checkmark.circle.fill" : "circle")
                                         .font(.system(size: 20))
-                                        .foregroundStyle(selectedStaffId == member.id ? AVIATheme.teal : AVIATheme.surfaceBorder)
+                                        .foregroundStyle(selectedStaffId == member.id ? AVIATheme.timelessBrown : AVIATheme.surfaceBorder)
                                 }
                                 .padding(10)
-                                .background(selectedStaffId == member.id ? AVIATheme.teal.opacity(0.06) : Color.clear)
+                                .background(selectedStaffId == member.id ? AVIATheme.timelessBrown.opacity(0.06) : Color.clear)
                                 .clipShape(.rect(cornerRadius: 10))
                             }
                         }
@@ -705,7 +705,7 @@ struct AddBuildSheet: View {
         HStack(spacing: 12) {
             Image(systemName: icon)
                 .font(.neueCorp(12))
-                .foregroundStyle(AVIATheme.teal)
+                .foregroundStyle(AVIATheme.timelessBrown)
                 .frame(width: 24)
             Text(label)
                 .font(.neueCaption)
@@ -717,7 +717,7 @@ struct AddBuildSheet: View {
                 } label: {
                     Image(systemName: "minus.circle.fill")
                         .font(.system(size: 22))
-                        .foregroundStyle(value.wrappedValue > range.lowerBound ? AVIATheme.teal : AVIATheme.surfaceBorder)
+                        .foregroundStyle(value.wrappedValue > range.lowerBound ? AVIATheme.timelessBrown : AVIATheme.surfaceBorder)
                 }
                 .disabled(value.wrappedValue <= range.lowerBound)
 
@@ -731,7 +731,7 @@ struct AddBuildSheet: View {
                 } label: {
                     Image(systemName: "plus.circle.fill")
                         .font(.system(size: 22))
-                        .foregroundStyle(value.wrappedValue < range.upperBound ? AVIATheme.teal : AVIATheme.surfaceBorder)
+                        .foregroundStyle(value.wrappedValue < range.upperBound ? AVIATheme.timelessBrown : AVIATheme.surfaceBorder)
                 }
                 .disabled(value.wrappedValue >= range.upperBound)
             }

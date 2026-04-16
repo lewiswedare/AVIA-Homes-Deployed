@@ -38,7 +38,7 @@ struct AdminImagePickerField: View {
                     .foregroundStyle(.white)
                     .padding(.horizontal, 14)
                     .padding(.vertical, 9)
-                    .background(isUploading ? AVIATheme.textTertiary : AVIATheme.teal)
+                    .background(isUploading ? AVIATheme.textTertiary : AVIATheme.timelessBrown)
                     .clipShape(Capsule())
                 }
                 .disabled(isUploading)
@@ -102,7 +102,7 @@ struct AdminImagePickerField: View {
                                     .foregroundStyle(AVIATheme.textTertiary)
                             } else {
                                 ProgressView()
-                                    .tint(AVIATheme.teal)
+                                    .tint(AVIATheme.timelessBrown)
                             }
                         }
                         .allowsHitTesting(false)
@@ -157,7 +157,7 @@ struct AdminCompactImagePicker: View {
                     if isUploading {
                         ProgressView()
                             .controlSize(.mini)
-                            .tint(AVIATheme.teal)
+                            .tint(AVIATheme.timelessBrown)
                     } else {
                         Image(systemName: "photo.badge.plus")
                             .font(.system(size: 10))
@@ -165,10 +165,10 @@ struct AdminCompactImagePicker: View {
                     Text(isUploading ? "..." : "Upload")
                         .font(.neueCaption2)
                 }
-                .foregroundStyle(AVIATheme.teal)
+                .foregroundStyle(AVIATheme.timelessBrown)
                 .padding(.horizontal, 8)
                 .padding(.vertical, 4)
-                .background(AVIATheme.teal.opacity(0.12))
+                .background(AVIATheme.timelessBrown.opacity(0.12))
                 .clipShape(Capsule())
             }
             .disabled(isUploading)

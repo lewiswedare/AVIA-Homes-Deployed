@@ -49,7 +49,7 @@ struct ClientBuildDetailView: View {
                         .font(.neueCorpMedium(20))
                         .foregroundStyle(.white)
                         .frame(width: 52, height: 52)
-                        .background(AVIATheme.tealGradient)
+                        .background(AVIATheme.primaryGradient)
                         .clipShape(Circle())
 
                     VStack(alignment: .leading, spacing: 3) {
@@ -63,7 +63,7 @@ struct ClientBuildDetailView: View {
                         } else {
                             Text("\(build.allClients.count) clients assigned")
                                 .font(.neueCaption)
-                                .foregroundStyle(AVIATheme.teal)
+                                .foregroundStyle(AVIATheme.timelessBrown)
                         }
                     }
                     Spacer()
@@ -85,8 +85,8 @@ struct ClientBuildDetailView: View {
 
                 GeometryReader { geo in
                     ZStack(alignment: .leading) {
-                        Capsule().fill(AVIATheme.teal.opacity(0.1)).frame(height: 6)
-                        Capsule().fill(AVIATheme.tealGradient).frame(width: max(0, geo.size.width * build.overallProgress), height: 6)
+                        Capsule().fill(AVIATheme.timelessBrown.opacity(0.1)).frame(height: 6)
+                        Capsule().fill(AVIATheme.primaryGradient).frame(width: max(0, geo.size.width * build.overallProgress), height: 6)
                     }
                 }
                 .frame(height: 6)
@@ -103,7 +103,7 @@ struct ClientBuildDetailView: View {
                             .foregroundStyle(.white)
                             .frame(maxWidth: .infinity)
                             .frame(height: 36)
-                            .background(AVIATheme.tealGradient)
+                            .background(AVIATheme.primaryGradient)
                             .clipShape(.rect(cornerRadius: 10))
                         }
                     }
@@ -208,7 +208,7 @@ struct ClientBuildDetailView: View {
                     HStack(spacing: 8) {
                         Image(systemName: "info.circle.fill")
                             .font(.neueSubheadlineMedium)
-                            .foregroundStyle(AVIATheme.teal)
+                            .foregroundStyle(AVIATheme.timelessBrown)
                         Text("Build Summary")
                             .font(.neueSubheadlineMedium)
                             .foregroundStyle(AVIATheme.textPrimary)
@@ -231,7 +231,7 @@ struct ClientBuildDetailView: View {
                     HStack(spacing: 8) {
                         Image(systemName: "person.fill")
                             .font(.neueSubheadlineMedium)
-                            .foregroundStyle(AVIATheme.teal)
+                            .foregroundStyle(AVIATheme.timelessBrown)
                         Text("Client Contact")
                             .font(.neueSubheadlineMedium)
                             .foregroundStyle(AVIATheme.textPrimary)
@@ -242,7 +242,7 @@ struct ClientBuildDetailView: View {
                             if build.allClients.count > 1 {
                                 Text(clientUser.fullName)
                                     .font(.neueCaptionMedium)
-                                    .foregroundStyle(AVIATheme.teal)
+                                    .foregroundStyle(AVIATheme.timelessBrown)
                                     .frame(maxWidth: .infinity, alignment: .leading)
                             }
                             infoRow(label: "Name", value: clientUser.fullName)

@@ -93,7 +93,7 @@ struct HomeDesignDirectoryView: View {
                             Text(isCompareMode ? "Cancel" : "Compare")
                                 .font(.neueCaptionMedium)
                         }
-                        .foregroundStyle(isCompareMode ? AVIATheme.destructive : AVIATheme.teal)
+                        .foregroundStyle(isCompareMode ? AVIATheme.destructive : AVIATheme.timelessBrown)
                     }
                 }
             }
@@ -202,7 +202,7 @@ struct HomeDesignDirectoryView: View {
                 .foregroundStyle(isActive ? .white : AVIATheme.textPrimary)
                 .padding(.horizontal, 14)
                 .padding(.vertical, 8)
-                .background(isActive ? AVIATheme.teal : AVIATheme.cardBackground)
+                .background(isActive ? AVIATheme.timelessBrown : AVIATheme.cardBackground)
                 .clipShape(Capsule())
                 .overlay {
                     if !isActive {
@@ -237,14 +237,14 @@ struct HomeDesignDirectoryView: View {
                                 let isSelected = compareSelections.contains(design)
                                 Image(systemName: isSelected ? "checkmark.circle.fill" : "circle")
                                     .font(.system(size: 22, weight: .medium))
-                                    .foregroundStyle(isSelected ? AVIATheme.teal : .white.opacity(0.8))
+                                    .foregroundStyle(isSelected ? AVIATheme.timelessBrown : .white.opacity(0.8))
                                     .shadow(color: .black.opacity(0.3), radius: 2, y: 1)
                                     .padding(8)
                             }
                             .overlay {
                                 let isSelected = compareSelections.contains(design)
                                 RoundedRectangle(cornerRadius: 14)
-                                    .stroke(isSelected ? AVIATheme.teal : .clear, lineWidth: 2)
+                                    .stroke(isSelected ? AVIATheme.timelessBrown : .clear, lineWidth: 2)
                             }
                     }
                     .sensoryFeedback(.selection, trigger: compareSelections.count)
@@ -262,7 +262,7 @@ struct HomeDesignDirectoryView: View {
         HStack(spacing: 8) {
             Image(systemName: "arrow.left.arrow.right")
                 .font(.system(size: 12, weight: .medium))
-                .foregroundStyle(AVIATheme.teal)
+                .foregroundStyle(AVIATheme.timelessBrown)
             Text(compareSelections.isEmpty ? "Select two designs to compare" : "Select \(2 - compareSelections.count) more design\(compareSelections.count == 0 ? "s" : "")")
                 .font(.neueCaptionMedium)
                 .foregroundStyle(AVIATheme.textSecondary)
@@ -281,7 +281,7 @@ struct HomeDesignDirectoryView: View {
         }
         .padding(.horizontal, 14)
         .padding(.vertical, 10)
-        .background(AVIATheme.teal.opacity(0.06))
+        .background(AVIATheme.timelessBrown.opacity(0.06))
         .clipShape(.rect(cornerRadius: 12))
         .padding(.horizontal, 16)
     }
@@ -299,9 +299,9 @@ struct HomeDesignDirectoryView: View {
             .frame(maxWidth: .infinity)
             .frame(height: 52)
             .foregroundStyle(.white)
-            .background(AVIATheme.tealGradient)
+            .background(AVIATheme.primaryGradient)
             .clipShape(.rect(cornerRadius: 14))
-            .shadow(color: AVIATheme.teal.opacity(0.3), radius: 12, y: 4)
+            .shadow(color: AVIATheme.timelessBrown.opacity(0.3), radius: 12, y: 4)
         }
         .padding(.horizontal, 20)
         .padding(.bottom, 16)
@@ -329,7 +329,7 @@ struct HomeDesignDirectoryView: View {
                     } else if phase.error != nil {
                         Image(systemName: "house.fill")
                             .font(.neueCorpMedium(28))
-                            .foregroundStyle(AVIATheme.teal.opacity(0.3))
+                            .foregroundStyle(AVIATheme.timelessBrown.opacity(0.3))
                     } else {
                         ProgressView()
                     }

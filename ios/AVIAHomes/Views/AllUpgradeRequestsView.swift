@@ -42,15 +42,15 @@ struct AllUpgradeRequestsView: View {
                         if let cost = request.upgradeCost, cost > 0 {
                             HStack(spacing: 4) {
                                 Image(systemName: "tag.fill")
-                                    .foregroundStyle(AVIATheme.teal)
+                                    .foregroundStyle(AVIATheme.timelessBrown)
                                     .font(.neueCaption2)
                                 Text(AVIATheme.formatCost(cost))
                                     .font(.neueCaptionMedium)
-                                    .foregroundStyle(AVIATheme.teal)
+                                    .foregroundStyle(AVIATheme.timelessBrown)
                             }
                             .padding(.horizontal, 10)
                             .padding(.vertical, 5)
-                            .background(AVIATheme.teal.opacity(0.08))
+                            .background(AVIATheme.timelessBrown.opacity(0.08))
                             .clipShape(Capsule())
                         }
 
@@ -89,7 +89,7 @@ struct AllUpgradeRequestsView: View {
             HStack(spacing: 12) {
                 Image(systemName: "dollarsign.circle.fill")
                     .font(.system(size: 28))
-                    .foregroundStyle(AVIATheme.teal)
+                    .foregroundStyle(AVIATheme.timelessBrown)
                 VStack(alignment: .leading, spacing: 2) {
                     Text("Upgrade Cost Summary")
                         .font(.neueCaptionMedium)
@@ -121,14 +121,14 @@ struct AllUpgradeRequestsView: View {
         .clipShape(.rect(cornerRadius: 16))
         .overlay {
             RoundedRectangle(cornerRadius: 16)
-                .stroke(AVIATheme.teal.opacity(0.15), lineWidth: 1)
+                .stroke(AVIATheme.timelessBrown.opacity(0.15), lineWidth: 1)
         }
     }
 
     private func upgradeStatusColor(_ status: UpgradeStatus) -> Color {
         switch status {
         case .pending: AVIATheme.warning
-        case .quoted: Color(hex: "5B7DB1")
+        case .quoted: AVIATheme.timelessBrown
         case .approved: AVIATheme.success
         case .declined: AVIATheme.destructive
         }

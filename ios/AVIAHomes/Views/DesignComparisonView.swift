@@ -58,7 +58,7 @@ struct DesignComparisonView: View {
                         } else if phase.error != nil {
                             Image(systemName: "house.fill")
                                 .font(.neueCorpMedium(28))
-                                .foregroundStyle(AVIATheme.teal.opacity(0.3))
+                                .foregroundStyle(AVIATheme.timelessBrown.opacity(0.3))
                         } else {
                             ProgressView()
                         }

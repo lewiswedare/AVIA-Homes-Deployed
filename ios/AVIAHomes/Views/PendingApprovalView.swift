@@ -12,18 +12,18 @@ struct PendingApprovalView: View {
             VStack(spacing: 32) {
                 ZStack {
                     Circle()
-                        .fill(AVIATheme.teal.opacity(0.08))
+                        .fill(AVIATheme.timelessBrown.opacity(0.08))
                         .frame(width: 140, height: 140)
                         .scaleEffect(animatePulse ? 1.1 : 1.0)
                         .animation(.easeInOut(duration: 2.0).repeatForever(autoreverses: true), value: animatePulse)
 
                     Circle()
-                        .fill(AVIATheme.teal.opacity(0.15))
+                        .fill(AVIATheme.timelessBrown.opacity(0.15))
                         .frame(width: 100, height: 100)
 
                     Image(systemName: "clock.badge.checkmark.fill")
                         .font(.system(size: 40))
-                        .foregroundStyle(AVIATheme.teal)
+                        .foregroundStyle(AVIATheme.timelessBrown)
                 }
 
                 VStack(spacing: 10) {
@@ -64,7 +64,7 @@ struct PendingApprovalView: View {
 
                         HStack(spacing: 12) {
                             ProgressView()
-                                .tint(AVIATheme.teal)
+                                .tint(AVIATheme.timelessBrown)
                             Text("Awaiting access setup")
                                 .font(.neueSubheadline)
                                 .foregroundStyle(AVIATheme.textSecondary)

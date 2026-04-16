@@ -151,7 +151,7 @@ struct AdminPackageEditorView: View {
                         .foregroundStyle(currentStep == step ? AVIATheme.textPrimary : AVIATheme.textTertiary)
 
                         Rectangle()
-                            .fill(currentStep == step ? AVIATheme.teal : AVIATheme.surfaceBorder)
+                            .fill(currentStep == step ? AVIATheme.timelessBrown : AVIATheme.surfaceBorder)
                             .frame(height: 2)
                     }
                 }
@@ -212,13 +212,13 @@ struct AdminPackageEditorView: View {
                     HStack(spacing: 8) {
                         Image(systemName: "sparkles")
                             .font(.neueCorp(12))
-                            .foregroundStyle(AVIATheme.teal)
+                            .foregroundStyle(AVIATheme.timelessBrown)
                         Text("Mark as New Listing")
                             .font(.neueCaptionMedium)
                             .foregroundStyle(AVIATheme.textPrimary)
                     }
                 }
-                .tint(AVIATheme.teal)
+                .tint(AVIATheme.timelessBrown)
             }
             .padding(16)
             .background(AVIATheme.cardBackground)
@@ -237,7 +237,7 @@ struct AdminPackageEditorView: View {
                     HStack(spacing: 8) {
                         Image(systemName: "pencil.and.ruler.fill")
                             .font(.neueCorp(12))
-                            .foregroundStyle(AVIATheme.teal)
+                            .foregroundStyle(AVIATheme.timelessBrown)
                         VStack(alignment: .leading, spacing: 1) {
                             Text("Custom Home")
                                 .font(.neueCaptionMedium)
@@ -248,10 +248,10 @@ struct AdminPackageEditorView: View {
                         }
                     }
                 }
-                .tint(AVIATheme.teal)
+                .tint(AVIATheme.timelessBrown)
             }
             .padding(16)
-            .background(isCustomHome ? AVIATheme.teal.opacity(0.06) : AVIATheme.cardBackground)
+            .background(isCustomHome ? AVIATheme.timelessBrown.opacity(0.06) : AVIATheme.cardBackground)
             .clipShape(.rect(cornerRadius: 16))
             .sensoryFeedback(.impact(weight: .light), trigger: isCustomHome)
 
@@ -343,11 +343,11 @@ struct AdminPackageEditorView: View {
 
                                         Image(systemName: isSelected ? "checkmark.circle.fill" : "circle")
                                             .font(.system(size: 20))
-                                            .foregroundStyle(isSelected ? AVIATheme.teal : AVIATheme.surfaceBorder)
+                                            .foregroundStyle(isSelected ? AVIATheme.timelessBrown : AVIATheme.surfaceBorder)
                                     }
                                     .padding(.horizontal, 16)
                                     .padding(.vertical, 8)
-                                    .background(isSelected ? AVIATheme.teal.opacity(0.06) : Color.clear)
+                                    .background(isSelected ? AVIATheme.timelessBrown.opacity(0.06) : Color.clear)
                                 }
                                 .sensoryFeedback(.selection, trigger: selectedDesignId)
                             }
@@ -399,9 +399,9 @@ struct AdminPackageEditorView: View {
                     HStack(spacing: 14) {
                         Image(systemName: "pencil.and.ruler.fill")
                             .font(.system(size: 22))
-                            .foregroundStyle(AVIATheme.teal)
+                            .foregroundStyle(AVIATheme.timelessBrown)
                             .frame(width: 48, height: 48)
-                            .background(AVIATheme.teal.opacity(0.1))
+                            .background(AVIATheme.timelessBrown.opacity(0.1))
                             .clipShape(.rect(cornerRadius: 10))
 
                         VStack(alignment: .leading, spacing: 4) {
@@ -415,7 +415,7 @@ struct AdminPackageEditorView: View {
                                     .foregroundStyle(.white)
                                     .padding(.horizontal, 6)
                                     .padding(.vertical, 2)
-                                    .background(AVIATheme.teal)
+                                    .background(AVIATheme.timelessBrown)
                                     .clipShape(Capsule())
                             }
                             HStack(spacing: 10) {
@@ -503,11 +503,11 @@ struct AdminPackageEditorView: View {
 
                                     Image(systemName: isSelected ? "checkmark.circle.fill" : "circle")
                                         .font(.system(size: 20))
-                                        .foregroundStyle(isSelected ? AVIATheme.teal : AVIATheme.surfaceBorder)
+                                        .foregroundStyle(isSelected ? AVIATheme.timelessBrown : AVIATheme.surfaceBorder)
                                 }
                                 .padding(.horizontal, 16)
                                 .padding(.vertical, 8)
-                                .background(isSelected ? AVIATheme.teal.opacity(0.06) : Color.clear)
+                                .background(isSelected ? AVIATheme.timelessBrown.opacity(0.06) : Color.clear)
                             }
                             .sensoryFeedback(.selection, trigger: selectedFacadeId)
                         }
@@ -548,7 +548,7 @@ struct AdminPackageEditorView: View {
                             .frame(maxWidth: .infinity)
                             .padding(.vertical, 12)
                             .foregroundStyle(isSelected ? .white : AVIATheme.textPrimary)
-                            .background(isSelected ? AVIATheme.tealGradient : LinearGradient(colors: [AVIATheme.surfaceElevated], startPoint: .top, endPoint: .bottom))
+                            .background(isSelected ? AVIATheme.primaryGradient : LinearGradient(colors: [AVIATheme.surfaceElevated], startPoint: .top, endPoint: .bottom))
                             .clipShape(.rect(cornerRadius: 12))
                         }
                         .sensoryFeedback(.selection, trigger: selectedSpecTier)
@@ -564,7 +564,7 @@ struct AdminPackageEditorView: View {
         HStack(spacing: 12) {
             Image(systemName: icon)
                 .font(.neueCorp(12))
-                .foregroundStyle(AVIATheme.teal)
+                .foregroundStyle(AVIATheme.timelessBrown)
                 .frame(width: 28)
             Text(label)
                 .font(.neueCaption)
@@ -578,7 +578,7 @@ struct AdminPackageEditorView: View {
                 } label: {
                     Image(systemName: "minus.circle.fill")
                         .font(.system(size: 24))
-                        .foregroundStyle(value.wrappedValue > range.lowerBound ? AVIATheme.teal : AVIATheme.surfaceBorder)
+                        .foregroundStyle(value.wrappedValue > range.lowerBound ? AVIATheme.timelessBrown : AVIATheme.surfaceBorder)
                 }
                 .disabled(value.wrappedValue <= range.lowerBound)
 
@@ -594,7 +594,7 @@ struct AdminPackageEditorView: View {
                 } label: {
                     Image(systemName: "plus.circle.fill")
                         .font(.system(size: 24))
-                        .foregroundStyle(value.wrappedValue < range.upperBound ? AVIATheme.teal : AVIATheme.surfaceBorder)
+                        .foregroundStyle(value.wrappedValue < range.upperBound ? AVIATheme.timelessBrown : AVIATheme.surfaceBorder)
                 }
                 .disabled(value.wrappedValue >= range.upperBound)
             }
@@ -628,7 +628,7 @@ struct AdminPackageEditorView: View {
                                 .foregroundStyle(.white)
                                 .padding(.horizontal, 6)
                                 .padding(.vertical, 2)
-                                .background(AVIATheme.teal)
+                                .background(AVIATheme.timelessBrown)
                                 .clipShape(Capsule())
                         }
                     }
@@ -688,7 +688,7 @@ struct AdminPackageEditorView: View {
                             HStack(spacing: 10) {
                                 Image(systemName: "checkmark.circle.fill")
                                     .font(.system(size: 14))
-                                    .foregroundStyle(AVIATheme.teal)
+                                    .foregroundStyle(AVIATheme.timelessBrown)
                                 Text(inclusion)
                                     .font(.neueCaption)
                                     .foregroundStyle(AVIATheme.textPrimary)
@@ -714,7 +714,7 @@ struct AdminPackageEditorView: View {
                         HStack(spacing: 10) {
                             Image(systemName: "plus.circle.fill")
                                 .font(.system(size: 14))
-                                .foregroundStyle(AVIATheme.teal.opacity(0.5))
+                                .foregroundStyle(AVIATheme.timelessBrown.opacity(0.5))
                             TextField("Add inclusion...", text: $newInclusion)
                                 .font(.neueCaption)
                                 .foregroundStyle(AVIATheme.textPrimary)
@@ -725,7 +725,7 @@ struct AdminPackageEditorView: View {
                                 } label: {
                                     Text("Add")
                                         .font(.neueCaptionMedium)
-                                        .foregroundStyle(AVIATheme.teal)
+                                        .foregroundStyle(AVIATheme.timelessBrown)
                                 }
                             }
                         }
@@ -771,7 +771,7 @@ struct AdminPackageEditorView: View {
                                     .font(.neueCaptionMedium)
                                     .foregroundStyle(.white)
                                     .frame(width: 34, height: 34)
-                                    .background(AVIATheme.tealGradient)
+                                    .background(AVIATheme.primaryGradient)
                                     .clipShape(Circle())
 
                                 VStack(alignment: .leading, spacing: 1) {
@@ -850,7 +850,7 @@ struct AdminPackageEditorView: View {
                                         .font(.neueCaptionMedium)
                                         .foregroundStyle(.white)
                                         .frame(width: 34, height: 34)
-                                        .background(AVIATheme.tealGradient)
+                                        .background(AVIATheme.primaryGradient)
                                         .clipShape(Circle())
 
                                     VStack(alignment: .leading, spacing: 1) {
@@ -866,7 +866,7 @@ struct AdminPackageEditorView: View {
 
                                     Image(systemName: "plus.circle.fill")
                                         .font(.system(size: 20))
-                                        .foregroundStyle(AVIATheme.teal)
+                                        .foregroundStyle(AVIATheme.timelessBrown)
                                 }
                                 .padding(.horizontal, 14)
                                 .padding(.vertical, 8)
@@ -881,13 +881,13 @@ struct AdminPackageEditorView: View {
                 HStack(spacing: 8) {
                     Image(systemName: "info.circle.fill")
                         .font(.neueCorp(12))
-                        .foregroundStyle(AVIATheme.teal)
+                        .foregroundStyle(AVIATheme.timelessBrown)
                     Text("Selected clients will be notified and can review the package in their app.")
                         .font(.neueCaption2)
                         .foregroundStyle(AVIATheme.textSecondary)
                 }
                 .padding(12)
-                .background(AVIATheme.teal.opacity(0.06))
+                .background(AVIATheme.timelessBrown.opacity(0.06))
                 .clipShape(.rect(cornerRadius: 12))
             }
         }
@@ -933,7 +933,7 @@ struct AdminPackageEditorView: View {
                         .foregroundStyle(.white)
                         .frame(height: 48)
                         .padding(.horizontal, 24)
-                        .background(AVIATheme.tealGradient)
+                        .background(AVIATheme.primaryGradient)
                         .clipShape(.rect(cornerRadius: 12))
                     }
                 } else {
@@ -955,7 +955,7 @@ struct AdminPackageEditorView: View {
                         .foregroundStyle(.white)
                         .frame(height: 48)
                         .padding(.horizontal, 24)
-                        .background(canSave ? AVIATheme.tealGradient : LinearGradient(colors: [AVIATheme.surfaceElevated], startPoint: .top, endPoint: .bottom))
+                        .background(canSave ? AVIATheme.primaryGradient : LinearGradient(colors: [AVIATheme.surfaceElevated], startPoint: .top, endPoint: .bottom))
                         .clipShape(.rect(cornerRadius: 12))
                     }
                     .disabled(!canSave || isSaving)
@@ -974,9 +974,9 @@ struct AdminPackageEditorView: View {
         HStack(spacing: 12) {
             Image(systemName: icon)
                 .font(.system(size: 18, weight: .semibold))
-                .foregroundStyle(AVIATheme.teal)
+                .foregroundStyle(AVIATheme.timelessBrown)
                 .frame(width: 40, height: 40)
-                .background(AVIATheme.teal.opacity(0.1))
+                .background(AVIATheme.timelessBrown.opacity(0.1))
                 .clipShape(Circle())
             VStack(alignment: .leading, spacing: 2) {
                 Text(title)
@@ -994,7 +994,7 @@ struct AdminPackageEditorView: View {
         HStack(spacing: 12) {
             Image(systemName: icon)
                 .font(.neueCorp(12))
-                .foregroundStyle(AVIATheme.teal)
+                .foregroundStyle(AVIATheme.timelessBrown)
                 .frame(width: 28)
 
             VStack(alignment: .leading, spacing: 3) {

@@ -32,7 +32,7 @@ struct ColourOverviewView: View {
                     Button("Summary", systemImage: "list.clipboard") {
                         viewModel.showSummary = true
                     }
-                    .tint(AVIATheme.teal)
+                    .tint(AVIATheme.timelessBrown)
                     .disabled(viewModel.completedCount == 0)
                 }
             }
@@ -92,16 +92,16 @@ struct ColourOverviewView: View {
             HStack(spacing: 16) {
                 ZStack {
                     Circle()
-                        .stroke(AVIATheme.teal.opacity(0.12), lineWidth: 5)
+                        .stroke(AVIATheme.timelessBrown.opacity(0.12), lineWidth: 5)
                     Circle()
                         .trim(from: 0, to: viewModel.completionProgress)
-                        .stroke(AVIATheme.teal, style: StrokeStyle(lineWidth: 5, lineCap: .round))
+                        .stroke(AVIATheme.timelessBrown, style: StrokeStyle(lineWidth: 5, lineCap: .round))
                         .rotationEffect(.degrees(-90))
                         .animation(.spring, value: viewModel.completionProgress)
                     VStack(spacing: 0) {
                         Text("\(viewModel.completedCount)")
                             .font(.neueCorpMedium(22))
-                            .foregroundStyle(AVIATheme.teal)
+                            .foregroundStyle(AVIATheme.timelessBrown)
                         Text("of \(viewModel.totalCount)")
                             .font(.neueCaption2)
                             .foregroundStyle(AVIATheme.textTertiary)
@@ -133,9 +133,9 @@ struct ColourOverviewView: View {
             HStack(spacing: 14) {
                 Image(systemName: "sparkles")
                     .font(.neueTitle3)
-                    .foregroundStyle(AVIATheme.teal)
+                    .foregroundStyle(AVIATheme.timelessBrown)
                     .frame(width: 44, height: 44)
-                    .background(AVIATheme.teal.opacity(0.1))
+                    .background(AVIATheme.timelessBrown.opacity(0.1))
                     .clipShape(.rect(cornerRadius: 12))
 
                 VStack(alignment: .leading, spacing: 3) {
@@ -201,7 +201,7 @@ struct ColourOverviewView: View {
                     .foregroundStyle(.white.opacity(0.5))
             }
             .padding(16)
-            .background(AVIATheme.tealGradient)
+            .background(AVIATheme.primaryGradient)
             .clipShape(.rect(cornerRadius: 18))
         }
     }
@@ -221,7 +221,7 @@ struct ColourOverviewView: View {
                         .foregroundStyle(selectedSection == section ? .white : AVIATheme.textSecondary)
                         .background {
                             if selectedSection == section {
-                                Capsule().fill(AVIATheme.teal)
+                                Capsule().fill(AVIATheme.timelessBrown)
                             } else {
                                 Capsule().fill(AVIATheme.surfaceElevated)
                             }
@@ -271,7 +271,7 @@ struct CategoryCard: View {
                             .frame(width: 50, height: 50)
                             .overlay {
                                 Circle()
-                                    .stroke(AVIATheme.teal, lineWidth: 2.5)
+                                    .stroke(AVIATheme.timelessBrown, lineWidth: 2.5)
                                     .frame(width: 60, height: 60)
                             }
                             .overlay(alignment: .topTrailing) {
@@ -279,7 +279,7 @@ struct CategoryCard: View {
                                     .font(.neueCorpMedium(8))
                                     .foregroundStyle(.white)
                                     .padding(5)
-                                    .background(AVIATheme.teal, in: Circle())
+                                    .background(AVIATheme.timelessBrown, in: Circle())
                                     .offset(x: 6, y: -6)
                             }
                     } else {
@@ -303,7 +303,7 @@ struct CategoryCard: View {
                     if let selection {
                         Text(selection.optionName)
                             .font(.neueCaption2)
-                            .foregroundStyle(AVIATheme.teal)
+                            .foregroundStyle(AVIATheme.timelessBrown)
                             .lineLimit(1)
                     } else {
                         Text("Not selected")
@@ -319,7 +319,7 @@ struct CategoryCard: View {
             .clipShape(.rect(cornerRadius: 16))
             .overlay {
                 RoundedRectangle(cornerRadius: 16)
-                    .stroke(selection != nil ? AVIATheme.teal.opacity(0.2) : Color.clear, lineWidth: 1)
+                    .stroke(selection != nil ? AVIATheme.timelessBrown.opacity(0.2) : Color.clear, lineWidth: 1)
             }
         }
         .buttonStyle(.plain)

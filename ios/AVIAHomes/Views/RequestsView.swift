@@ -55,7 +55,7 @@ struct RequestsView: View {
                 Button("New Request", systemImage: "plus.circle.fill") {
                     showNewRequest = true
                 }
-                .tint(AVIATheme.teal)
+                .tint(AVIATheme.timelessBrown)
             }
         }
         .sheet(isPresented: $showNewRequest) {
@@ -90,7 +90,7 @@ struct RequestRow: View {
     private var statusColor: Color {
         switch request.status {
         case .open: AVIATheme.warning
-        case .inProgress: AVIATheme.teal
+        case .inProgress: AVIATheme.timelessBrown
         case .resolved: AVIATheme.success
         }
     }
@@ -141,11 +141,11 @@ struct RequestDetailView: View {
                             HStack {
                                 Label(request.category.rawValue, systemImage: request.category.icon)
                                     .font(.neueCaptionMedium)
-                                    .foregroundStyle(AVIATheme.teal)
+                                    .foregroundStyle(AVIATheme.timelessBrown)
                                 Spacer()
                                 let color: Color = switch request.status {
                                 case .open: AVIATheme.warning
-                                case .inProgress: AVIATheme.teal
+                                case .inProgress: AVIATheme.timelessBrown
                                 case .resolved: AVIATheme.success
                                 }
                                 StatusBadge(title: request.status.rawValue, color: color)
@@ -226,7 +226,7 @@ struct RequestDetailView: View {
                                         .foregroundStyle(AVIATheme.textSecondary)
                                 }
                                 .padding(14)
-                                .background(response.isFromClient ? AVIATheme.teal.opacity(0.08) : AVIATheme.cardBackground)
+                                .background(response.isFromClient ? AVIATheme.timelessBrown.opacity(0.08) : AVIATheme.cardBackground)
                                 .clipShape(.rect(cornerRadius: 14))
                             }
                         }
@@ -241,7 +241,7 @@ struct RequestDetailView: View {
                 ToolbarItem(placement: .topBarTrailing) {
                     Button("Done") { dismiss() }
                         .font(.neueSubheadlineMedium)
-                        .tint(AVIATheme.teal)
+                        .tint(AVIATheme.timelessBrown)
                 }
             }
             .fullScreenCover(item: $selectedPhoto) { photo in
@@ -324,7 +324,7 @@ struct NewRequestView: View {
                         dismiss()
                     }
                     .font(.neueSubheadlineMedium)
-                    .tint(AVIATheme.teal)
+                    .tint(AVIATheme.timelessBrown)
                     .disabled(title.isEmpty || description.isEmpty)
                 }
             }
@@ -391,7 +391,7 @@ struct NewRequestView: View {
                             .padding(.vertical, 10)
                             .background {
                                 if category == cat {
-                                    Capsule().fill(AVIATheme.teal)
+                                    Capsule().fill(AVIATheme.timelessBrown)
                                 } else {
                                     Capsule().fill(AVIATheme.cardBackground)
                                 }
@@ -519,15 +519,15 @@ struct NewRequestView: View {
                 Text(attachedImages.isEmpty ? "Add Photos" : "Add More")
                     .font(.neueSubheadlineMedium)
             }
-            .foregroundStyle(AVIATheme.teal)
+            .foregroundStyle(AVIATheme.timelessBrown)
             .padding(.horizontal, 16)
             .padding(.vertical, 12)
             .frame(maxWidth: .infinity)
-            .background(AVIATheme.teal.opacity(0.08))
+            .background(AVIATheme.timelessBrown.opacity(0.08))
             .clipShape(.rect(cornerRadius: 12))
             .overlay {
                 RoundedRectangle(cornerRadius: 12)
-                    .stroke(AVIATheme.teal.opacity(0.25), lineWidth: 1)
+                    .stroke(AVIATheme.timelessBrown.opacity(0.25), lineWidth: 1)
             }
         }
     }

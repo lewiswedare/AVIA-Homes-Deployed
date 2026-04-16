@@ -94,9 +94,9 @@ struct SpecRangeDetailView: View {
             HStack(spacing: 12) {
                 Image(systemName: "rectangle.split.3x1.fill")
                     .font(.neueSubheadlineMedium)
-                    .foregroundStyle(AVIATheme.teal)
+                    .foregroundStyle(AVIATheme.timelessBrown)
                     .frame(width: 40, height: 40)
-                    .background(AVIATheme.teal.opacity(0.1))
+                    .background(AVIATheme.timelessBrown.opacity(0.1))
                     .clipShape(.rect(cornerRadius: 10))
 
                 VStack(alignment: .leading, spacing: 2) {
@@ -156,9 +156,9 @@ struct SpecRangeDetailView: View {
                     HStack(alignment: .top, spacing: 14) {
                         Image(systemName: highlight.icon)
                             .font(.neueCorpMedium(14))
-                            .foregroundStyle(AVIATheme.teal)
+                            .foregroundStyle(AVIATheme.timelessBrown)
                             .frame(width: 36, height: 36)
-                            .background(AVIATheme.teal.opacity(0.1))
+                            .background(AVIATheme.timelessBrown.opacity(0.1))
                             .clipShape(Circle())
 
                         VStack(alignment: .leading, spacing: 2) {
@@ -204,7 +204,7 @@ struct SpecRangeDetailView: View {
                                     } else if phase.error != nil {
                                         Image(systemName: "photo")
                                             .font(.neueCorpMedium(28))
-                                            .foregroundStyle(AVIATheme.teal.opacity(0.2))
+                                            .foregroundStyle(AVIATheme.timelessBrown.opacity(0.2))
                                     } else {
                                         ProgressView()
                                     }
@@ -246,9 +246,9 @@ struct SpecRangeDetailView: View {
                     HStack(spacing: 12) {
                         Image(systemName: category.icon)
                             .font(.neueCaptionMedium)
-                            .foregroundStyle(AVIATheme.teal)
+                            .foregroundStyle(AVIATheme.timelessBrown)
                             .frame(width: 32, height: 32)
-                            .background(AVIATheme.teal.opacity(0.08))
+                            .background(AVIATheme.timelessBrown.opacity(0.08))
                             .clipShape(.rect(cornerRadius: 8))
 
                         VStack(alignment: .leading, spacing: 2) {
@@ -290,7 +290,7 @@ struct SpecRangeDetailView: View {
                 .frame(maxWidth: .infinity)
                 .frame(height: 48)
                 .foregroundStyle(.white)
-                .background(AVIATheme.tealGradient)
+                .background(AVIATheme.primaryGradient)
                 .clipShape(.rect(cornerRadius: 14))
             }
         }
@@ -302,9 +302,9 @@ struct SpecRangeDetailView: View {
                 HStack(spacing: 14) {
                     Image(systemName: "doc.richtext")
                         .font(.neueCorpMedium(22))
-                        .foregroundStyle(AVIATheme.teal)
+                        .foregroundStyle(AVIATheme.timelessBrown)
                         .frame(width: 48, height: 48)
-                        .background(AVIATheme.teal.opacity(0.1))
+                        .background(AVIATheme.timelessBrown.opacity(0.1))
                         .clipShape(.rect(cornerRadius: 12))
 
                     VStack(alignment: .leading, spacing: 2) {
@@ -331,8 +331,8 @@ struct SpecRangeDetailView: View {
                 }
                 .frame(maxWidth: .infinity)
                 .frame(height: 48)
-                .foregroundStyle(AVIATheme.teal)
-                .background(AVIATheme.teal.opacity(0.1))
+                .foregroundStyle(AVIATheme.timelessBrown)
+                .background(AVIATheme.timelessBrown.opacity(0.1))
                 .clipShape(.rect(cornerRadius: 14))
             }
         }

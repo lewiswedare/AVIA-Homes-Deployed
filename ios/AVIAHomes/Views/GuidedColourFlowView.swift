@@ -36,7 +36,7 @@ struct GuidedColourFlowView: View {
             .toolbar {
                 ToolbarItem(placement: .topBarLeading) {
                     Button("Close") { dismiss() }
-                        .tint(AVIATheme.teal)
+                        .tint(AVIATheme.timelessBrown)
                 }
                 ToolbarItem(placement: .topBarTrailing) {
                     Text("\(currentIndex + 1) of \(categories.count)")
@@ -53,10 +53,10 @@ struct GuidedColourFlowView: View {
             GeometryReader { geo in
                 ZStack(alignment: .leading) {
                     Capsule()
-                        .fill(AVIATheme.teal.opacity(0.1))
+                        .fill(AVIATheme.timelessBrown.opacity(0.1))
                         .frame(height: 4)
                     Capsule()
-                        .fill(AVIATheme.tealGradient)
+                        .fill(AVIATheme.primaryGradient)
                         .frame(width: max(0, geo.size.width * progress), height: 4)
                         .animation(.spring(response: 0.3), value: progress)
                 }
@@ -68,7 +68,7 @@ struct GuidedColourFlowView: View {
                     Text(category.section.rawValue.uppercased())
                         .font(.neueCaption2Medium)
                         .kerning(1.5)
-                        .foregroundStyle(AVIATheme.teal)
+                        .foregroundStyle(AVIATheme.timelessBrown)
                     Spacer()
                     if viewModel.selection(for: category.id) != nil {
                         Label("Selected", systemImage: "checkmark.circle.fill")
@@ -189,8 +189,8 @@ struct GuidedColourFlowView: View {
                     .font(.neueSubheadlineMedium)
                     .frame(maxWidth: .infinity)
                     .frame(height: 50)
-                    .foregroundStyle(AVIATheme.teal)
-                    .background(AVIATheme.teal.opacity(0.1))
+                    .foregroundStyle(AVIATheme.timelessBrown)
+                    .background(AVIATheme.timelessBrown.opacity(0.1))
                     .clipShape(.rect(cornerRadius: 14))
                 }
             }
@@ -209,7 +209,7 @@ struct GuidedColourFlowView: View {
                     .frame(maxWidth: .infinity)
                     .frame(height: 50)
                     .foregroundStyle(.white)
-                    .background(AVIATheme.tealGradient)
+                    .background(AVIATheme.primaryGradient)
                     .clipShape(.rect(cornerRadius: 14))
                 }
             } else {
@@ -224,7 +224,7 @@ struct GuidedColourFlowView: View {
                         .frame(maxWidth: .infinity)
                         .frame(height: 50)
                         .foregroundStyle(.white)
-                        .background(AVIATheme.tealGradient)
+                        .background(AVIATheme.primaryGradient)
                         .clipShape(.rect(cornerRadius: 14))
                 }
             }

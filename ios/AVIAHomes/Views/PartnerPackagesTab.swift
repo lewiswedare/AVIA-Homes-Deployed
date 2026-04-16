@@ -45,7 +45,7 @@ struct PartnerPackagesTab: View {
                     } label: {
                         Image(systemName: "paperplane.fill")
                             .font(.neueSubheadline)
-                            .foregroundStyle(AVIATheme.teal)
+                            .foregroundStyle(AVIATheme.timelessBrown)
                     }
                 }
             }
@@ -68,7 +68,7 @@ struct PartnerPackagesTab: View {
         return HStack(spacing: 12) {
             BentoCard(cornerRadius: 16) {
                 VStack(alignment: .leading, spacing: 6) {
-                    BentoIconCircle(icon: "paperplane.fill", color: AVIATheme.teal)
+                    BentoIconCircle(icon: "paperplane.fill", color: AVIATheme.timelessBrown)
                     Text("\(sharedCount)")
                         .font(.neueCorpMedium(32))
                         .foregroundStyle(AVIATheme.textPrimary)

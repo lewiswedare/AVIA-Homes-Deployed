@@ -124,7 +124,7 @@ struct SignUpView: View {
 
                             Toggle("", isOn: $acceptedTerms)
                                 .labelsHidden()
-                                .tint(AVIATheme.teal)
+                                .tint(AVIATheme.timelessBrown)
                                 .toggleStyle(.switch)
                                 .fixedSize()
                         }
@@ -141,7 +141,7 @@ struct SignUpView: View {
                             .frame(maxWidth: .infinity)
                             .frame(height: 52)
                             .foregroundStyle(.white)
-                            .background(AVIATheme.tealGradient)
+                            .background(AVIATheme.primaryGradient)
                             .clipShape(.rect(cornerRadius: 14))
                         }
                         .disabled(!isFormValid || appViewModel.authService.isLoading)
@@ -156,7 +156,7 @@ struct SignUpView: View {
                                     .foregroundStyle(AVIATheme.textSecondary)
                                 Text("Sign In")
                                     .font(.neueSubheadlineMedium)
-                                    .foregroundStyle(AVIATheme.teal)
+                                    .foregroundStyle(AVIATheme.timelessBrown)
                             }
                         }
                     }
@@ -236,12 +236,12 @@ struct SignUpView: View {
         var full = AttributedString("I agree to the ")
         var terms = AttributedString("Terms of Service")
         terms.underlineStyle = .single
-        terms.foregroundColor = UIColor(AVIATheme.teal)
+        terms.foregroundColor = UIColor(AVIATheme.timelessBrown)
         terms.link = URL(string: "avia://terms")
         var and = AttributedString(" and ")
         var privacy = AttributedString("Privacy Policy")
         privacy.underlineStyle = .single
-        privacy.foregroundColor = UIColor(AVIATheme.teal)
+        privacy.foregroundColor = UIColor(AVIATheme.timelessBrown)
         privacy.link = URL(string: "avia://privacy")
         full.foregroundColor = UIColor(AVIATheme.textSecondary)
         and.foregroundColor = UIColor(AVIATheme.textSecondary)

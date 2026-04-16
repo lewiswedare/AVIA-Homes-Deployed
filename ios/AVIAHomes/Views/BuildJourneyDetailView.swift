@@ -29,7 +29,7 @@ struct BuildJourneyDetailView: View {
                 ToolbarItem(placement: .topBarTrailing) {
                     Button("Done") { dismiss() }
                         .font(.neueSubheadlineMedium)
-                        .foregroundStyle(AVIATheme.teal)
+                        .foregroundStyle(AVIATheme.timelessBrown)
                 }
             }
         }
@@ -41,10 +41,10 @@ struct BuildJourneyDetailView: View {
                 HStack(spacing: 16) {
                     ZStack {
                         Circle()
-                            .stroke(AVIATheme.teal.opacity(0.12), lineWidth: 6)
+                            .stroke(AVIATheme.timelessBrown.opacity(0.12), lineWidth: 6)
                         Circle()
                             .trim(from: 0, to: journeyVM.stageProgress)
-                            .stroke(AVIATheme.teal, style: StrokeStyle(lineWidth: 6, lineCap: .round))
+                            .stroke(AVIATheme.timelessBrown, style: StrokeStyle(lineWidth: 6, lineCap: .round))
                             .rotationEffect(.degrees(-90))
                             .animation(.spring(response: 0.6), value: journeyVM.stageProgress)
                         VStack(spacing: 0) {
@@ -113,17 +113,17 @@ struct BuildJourneyDetailView: View {
                         ZStack {
                             if isCompleted {
                                 Circle()
-                                    .fill(AVIATheme.teal)
+                                    .fill(AVIATheme.timelessBrown)
                                     .frame(width: 32, height: 32)
                                 Image(systemName: "checkmark")
                                     .font(.neueCorpMedium(12))
                                     .foregroundStyle(.white)
                             } else if isCurrent {
                                 Circle()
-                                    .fill(AVIATheme.teal.opacity(0.15))
+                                    .fill(AVIATheme.timelessBrown.opacity(0.15))
                                     .frame(width: 32, height: 32)
                                 Circle()
-                                    .fill(AVIATheme.teal)
+                                    .fill(AVIATheme.timelessBrown)
                                     .frame(width: 14, height: 14)
                             } else {
                                 Circle()
@@ -137,7 +137,7 @@ struct BuildJourneyDetailView: View {
 
                         if stage != JourneyStage.allCases.last {
                             Rectangle()
-                                .fill(isCompleted ? AVIATheme.teal : AVIATheme.surfaceBorder)
+                                .fill(isCompleted ? AVIATheme.timelessBrown : AVIATheme.surfaceBorder)
                                 .frame(width: 2)
                                 .frame(minHeight: 40)
                         }
@@ -155,7 +155,7 @@ struct BuildJourneyDetailView: View {
                                     .foregroundStyle(.white)
                                     .padding(.horizontal, 8)
                                     .padding(.vertical, 3)
-                                    .background(AVIATheme.teal)
+                                    .background(AVIATheme.timelessBrown)
                                     .clipShape(Capsule())
                             }
                         }
@@ -189,7 +189,7 @@ struct BuildJourneyDetailView: View {
             HStack(spacing: 8) {
                 Image(systemName: journeyVM.currentStage.icon)
                     .font(.neueSubheadlineMedium)
-                    .foregroundStyle(AVIATheme.teal)
+                    .foregroundStyle(AVIATheme.timelessBrown)
                 Text("What You Need To Do")
                     .font(.neueCorpMedium(18))
                     .foregroundStyle(AVIATheme.textPrimary)
@@ -234,7 +234,7 @@ struct BuildJourneyDetailView: View {
                     .foregroundStyle(.white)
                     .frame(maxWidth: .infinity)
                     .frame(height: 50)
-                    .background(AVIATheme.tealGradient)
+                    .background(AVIATheme.primaryGradient)
                     .clipShape(.rect(cornerRadius: 14))
                 }
                 .padding(.top, 4)

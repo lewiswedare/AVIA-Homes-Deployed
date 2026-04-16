@@ -40,10 +40,10 @@ struct ContentView: View {
                 .resizable()
                 .aspectRatio(contentMode: .fit)
                 .frame(width: 180)
-                .foregroundStyle(AVIATheme.teal)
+                .foregroundStyle(AVIATheme.timelessBrown)
             Spacer()
             ProgressView()
-                .tint(AVIATheme.teal)
+                .tint(AVIATheme.timelessBrown)
                 .padding(.bottom, 60)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
@@ -94,7 +94,7 @@ struct ClientTabView: View {
             }
             .badge(viewModel.notificationService.unreadCount)
         }
-        .tint(AVIATheme.teal)
+        .tint(AVIATheme.timelessBrown)
         .task { await viewModel.loadUserData() }
     }
 }
@@ -160,7 +160,7 @@ struct StaffTabView: View {
                 MoreView()
             }
         }
-        .tint(AVIATheme.teal)
+        .tint(AVIATheme.timelessBrown)
         .task { await viewModel.loadUserData() }
     }
 }
@@ -239,7 +239,7 @@ struct AdminTabView: View {
                 MoreView()
             }
         }
-        .tint(AVIATheme.teal)
+        .tint(AVIATheme.timelessBrown)
         .task { await viewModel.loadUserData() }
     }
 }
@@ -284,7 +284,7 @@ struct PartnerTabView: View {
                 MoreView()
             }
         }
-        .tint(AVIATheme.teal)
+        .tint(AVIATheme.timelessBrown)
         .task { await viewModel.loadUserData() }
     }
 }
@@ -328,7 +328,7 @@ struct ClientDiscoverTabView: View {
                 MoreView()
             }
         }
-        .tint(AVIATheme.teal)
+        .tint(AVIATheme.timelessBrown)
         .task { await viewModel.loadUserData() }
     }
 }
@@ -404,7 +404,7 @@ struct SuperAdminTabView: View {
                 MoreView()
             }
         }
-        .tint(AVIATheme.teal)
+        .tint(AVIATheme.timelessBrown)
         .task { await viewModel.loadUserData() }
     }
 }
@@ -433,9 +433,9 @@ struct StaffScheduleView: View {
                                 HStack(spacing: 14) {
                                     Image(systemName: item.icon)
                                         .font(.neueCorpMedium(14))
-                                        .foregroundStyle(AVIATheme.teal)
+                                        .foregroundStyle(AVIATheme.timelessBrown)
                                         .frame(width: 36, height: 36)
-                                        .background(AVIATheme.teal.opacity(0.12))
+                                        .background(AVIATheme.timelessBrown.opacity(0.12))
                                         .clipShape(Circle())
 
                                     VStack(alignment: .leading, spacing: 3) {
@@ -449,7 +449,7 @@ struct StaffScheduleView: View {
 
                                     Spacer()
 
-                                    StatusBadge(title: item.type.rawValue, color: AVIATheme.teal)
+                                    StatusBadge(title: item.type.rawValue, color: AVIATheme.timelessBrown)
                                 }
                                 .padding(14)
                             }
@@ -491,7 +491,7 @@ struct MoreView: View {
                                     ConversationsView()
                                 } label: {
                                     HStack(spacing: 14) {
-                                        BentoIconCircle(icon: "message.fill", color: AVIATheme.teal)
+                                        BentoIconCircle(icon: "message.fill", color: AVIATheme.timelessBrown)
                                         Text("Messages")
                                             .font(.neueSubheadlineMedium)
                                             .foregroundStyle(AVIATheme.textPrimary)
@@ -510,7 +510,7 @@ struct MoreView: View {
                                     ClientPackageReviewView()
                                 } label: {
                                     HStack(spacing: 14) {
-                                        BentoIconCircle(icon: "house.and.flag.fill", color: AVIATheme.teal)
+                                        BentoIconCircle(icon: "house.and.flag.fill", color: AVIATheme.timelessBrown)
                                         Text("My Package")
                                             .font(.neueSubheadlineMedium)
                                             .foregroundStyle(AVIATheme.textPrimary)
@@ -529,7 +529,7 @@ struct MoreView: View {
                                     ClientContractListView()
                                 } label: {
                                     HStack(spacing: 14) {
-                                        BentoIconCircle(icon: "doc.richtext.fill", color: AVIATheme.teal)
+                                        BentoIconCircle(icon: "doc.richtext.fill", color: AVIATheme.timelessBrown)
                                         Text("Contracts")
                                             .font(.neueSubheadlineMedium)
                                             .foregroundStyle(AVIATheme.textPrimary)
@@ -548,7 +548,7 @@ struct MoreView: View {
                                     ClientInvoiceListView()
                                 } label: {
                                     HStack(spacing: 14) {
-                                        BentoIconCircle(icon: "dollarsign.circle.fill", color: AVIATheme.teal)
+                                        BentoIconCircle(icon: "dollarsign.circle.fill", color: AVIATheme.timelessBrown)
                                         Text("Invoices")
                                             .font(.neueSubheadlineMedium)
                                             .foregroundStyle(AVIATheme.textPrimary)
@@ -567,7 +567,7 @@ struct MoreView: View {
                                     DocumentsView()
                                 } label: {
                                     HStack(spacing: 14) {
-                                        BentoIconCircle(icon: "doc.text.fill", color: AVIATheme.teal)
+                                        BentoIconCircle(icon: "doc.text.fill", color: AVIATheme.timelessBrown)
                                         Text("Documents")
                                             .font(.neueSubheadlineMedium)
                                             .foregroundStyle(AVIATheme.textPrimary)
@@ -586,7 +586,7 @@ struct MoreView: View {
                                     RequestsView()
                                 } label: {
                                     HStack(spacing: 14) {
-                                        BentoIconCircle(icon: "bubble.left.and.bubble.right.fill", color: AVIATheme.teal)
+                                        BentoIconCircle(icon: "bubble.left.and.bubble.right.fill", color: AVIATheme.timelessBrown)
                                         Text("Requests & Support")
                                             .font(.neueSubheadlineMedium)
                                             .foregroundStyle(AVIATheme.textPrimary)
@@ -605,7 +605,7 @@ struct MoreView: View {
                                     ProfileView()
                                 } label: {
                                     HStack(spacing: 14) {
-                                        BentoIconCircle(icon: "person.fill", color: AVIATheme.teal)
+                                        BentoIconCircle(icon: "person.fill", color: AVIATheme.timelessBrown)
                                         Text("Profile & Settings")
                                             .font(.neueSubheadlineMedium)
                                             .foregroundStyle(AVIATheme.textPrimary)
@@ -644,7 +644,7 @@ struct MoreView: View {
                                 if let webURL = URL(string: "https://www.aviahomes.com.au") {
                                     Link(destination: webURL) {
                                         HStack(spacing: 14) {
-                                            BentoIconCircle(icon: "safari.fill", color: Color(hex: "5B7DB1"))
+                                            BentoIconCircle(icon: "safari.fill", color: AVIATheme.timelessBrown)
                                             Text("Website")
                                                 .font(.neueSubheadlineMedium)
                                                 .foregroundStyle(AVIATheme.textPrimary)
@@ -671,7 +671,7 @@ struct MoreView: View {
                     .renderingMode(.template)
                     .resizable()
                     .aspectRatio(contentMode: .fit)
-                    .foregroundStyle(AVIATheme.teal.opacity(0.4))
+                    .foregroundStyle(AVIATheme.timelessBrown.opacity(0.4))
                     .padding(.horizontal, 0)
                     .padding(.bottom, 8)
             }

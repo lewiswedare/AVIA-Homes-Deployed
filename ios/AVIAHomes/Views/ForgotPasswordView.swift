@@ -17,9 +17,9 @@ struct ForgotPasswordView: View {
                         VStack(spacing: 16) {
                             Image(systemName: "lock.rotation")
                                 .font(.system(size: 48))
-                                .foregroundStyle(AVIATheme.teal)
+                                .foregroundStyle(AVIATheme.timelessBrown)
                                 .frame(width: 88, height: 88)
-                                .background(AVIATheme.teal.opacity(0.08))
+                                .background(AVIATheme.timelessBrown.opacity(0.08))
                                 .clipShape(Circle())
 
                             VStack(spacing: 6) {
@@ -79,7 +79,7 @@ struct ForgotPasswordView: View {
                             .frame(maxWidth: .infinity)
                             .frame(height: 52)
                             .foregroundStyle(.white)
-                            .background(AVIATheme.tealGradient)
+                            .background(AVIATheme.primaryGradient)
                             .clipShape(.rect(cornerRadius: 14))
                         }
                         .disabled(email.isEmpty || appViewModel.authService.isLoading)
@@ -95,7 +95,7 @@ struct ForgotPasswordView: View {
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
                     Button("Cancel") { dismiss() }
-                        .foregroundStyle(AVIATheme.teal)
+                        .foregroundStyle(AVIATheme.timelessBrown)
                 }
             }
         }

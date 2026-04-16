@@ -140,7 +140,7 @@ struct ChatView: View {
                     .foregroundStyle(isMine ? .white : AVIATheme.textPrimary)
                     .padding(.horizontal, 14)
                     .padding(.vertical, 10)
-                    .background(isMine ? AVIATheme.teal : AVIATheme.cardBackground)
+                    .background(isMine ? AVIATheme.timelessBrown : AVIATheme.cardBackground)
                     .clipShape(.rect(cornerRadius: 18, style: .continuous))
                 if !isMine { Spacer(minLength: 60) }
             }
@@ -171,7 +171,7 @@ struct ChatView: View {
             TextField("Message", text: $messageText, axis: .vertical)
                 .font(.neueSubheadline)
                 .foregroundStyle(AVIATheme.textPrimary)
-                .tint(AVIATheme.teal)
+                .tint(AVIATheme.timelessBrown)
                 .lineLimit(1...5)
                 .padding(.horizontal, 14)
                 .padding(.vertical, 10)
@@ -188,7 +188,7 @@ struct ChatView: View {
             } label: {
                 Image(systemName: "arrow.up.circle.fill")
                     .font(.system(size: 32))
-                    .foregroundStyle(messageText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty ? AVIATheme.surfaceBorder : AVIATheme.teal)
+                    .foregroundStyle(messageText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty ? AVIATheme.surfaceBorder : AVIATheme.timelessBrown)
             }
             .disabled(messageText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
             .sensoryFeedback(.impact(weight: .light), trigger: messages.count)

@@ -26,7 +26,7 @@ struct AdminBuildSpecReviewView: View {
         Group {
             if viewModel.isLoading {
                 ProgressView()
-                    .tint(AVIATheme.teal)
+                    .tint(AVIATheme.timelessBrown)
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
             } else if !viewModel.hasSelections {
                 emptyState
@@ -43,10 +43,10 @@ struct AdminBuildSpecReviewView: View {
                     exportCombinedPDF()
                 } label: {
                     if isExportingPDF {
-                        ProgressView().tint(AVIATheme.teal)
+                        ProgressView().tint(AVIATheme.timelessBrown)
                     } else {
                         Image(systemName: "square.and.arrow.up")
-                            .foregroundStyle(AVIATheme.teal)
+                            .foregroundStyle(AVIATheme.timelessBrown)
                     }
                 }
                 .disabled(isExportingPDF || !viewModel.hasSelections)
@@ -235,7 +235,7 @@ struct AdminBuildSpecReviewView: View {
                     if item.clientNotes != nil || item.adminNotes != nil {
                         Image(systemName: "text.bubble.fill")
                             .font(.neueCorp(8))
-                            .foregroundStyle(AVIATheme.teal.opacity(0.6))
+                            .foregroundStyle(AVIATheme.timelessBrown.opacity(0.6))
                     }
                 }
             }
@@ -478,7 +478,7 @@ struct AdminBuildSpecReviewView: View {
         } label: {
             HStack(spacing: 8) {
                 if isExportingPDF {
-                    ProgressView().tint(AVIATheme.teal)
+                    ProgressView().tint(AVIATheme.timelessBrown)
                 } else {
                     Image(systemName: "doc.richtext")
                     Text("Export All Selections to PDF")
@@ -487,8 +487,8 @@ struct AdminBuildSpecReviewView: View {
             .font(.neueSubheadlineMedium)
             .frame(maxWidth: .infinity)
             .frame(height: 48)
-            .foregroundStyle(AVIATheme.teal)
-            .background(AVIATheme.teal.opacity(0.1))
+            .foregroundStyle(AVIATheme.timelessBrown)
+            .background(AVIATheme.timelessBrown.opacity(0.1))
             .clipShape(.rect(cornerRadius: 14))
         }
         .disabled(isExportingPDF)
@@ -597,9 +597,9 @@ struct AdminBuildSpecReviewView: View {
         HStack(spacing: 10) {
             Image(systemName: "person.fill")
                 .font(.neueCorp(12))
-                .foregroundStyle(AVIATheme.teal)
+                .foregroundStyle(AVIATheme.timelessBrown)
                 .frame(width: 32, height: 32)
-                .background(AVIATheme.teal.opacity(0.12))
+                .background(AVIATheme.timelessBrown.opacity(0.12))
                 .clipShape(Circle())
 
             VStack(alignment: .leading, spacing: 2) {
@@ -683,7 +683,7 @@ struct AdminBuildSpecReviewView: View {
             ForEach(viewModel.documents) { doc in
                 HStack(spacing: 10) {
                     Image(systemName: "doc.text.fill")
-                        .foregroundStyle(AVIATheme.teal)
+                        .foregroundStyle(AVIATheme.timelessBrown)
 
                     VStack(alignment: .leading, spacing: 2) {
                         Text("Spec Summary v\(doc.version)")
@@ -702,7 +702,7 @@ struct AdminBuildSpecReviewView: View {
                         Link(destination: url) {
                             Image(systemName: "arrow.down.circle.fill")
                                 .font(.system(size: 22))
-                                .foregroundStyle(AVIATheme.teal)
+                                .foregroundStyle(AVIATheme.timelessBrown)
                         }
                     }
                 }

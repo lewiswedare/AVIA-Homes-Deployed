@@ -29,7 +29,7 @@ struct AdminSpecRangePricingView: View {
 
                 if isLoading {
                     ProgressView()
-                        .tint(AVIATheme.teal)
+                        .tint(AVIATheme.timelessBrown)
                         .padding(.vertical, 40)
                 } else {
                     singleStoreyPricingCard
@@ -54,7 +54,7 @@ struct AdminSpecRangePricingView: View {
                     .font(.neueCorpMedium(18))
                     .foregroundStyle(.white)
                     .frame(width: 44, height: 44)
-                    .background(AVIATheme.tealGradient)
+                    .background(AVIATheme.primaryGradient)
                     .clipShape(.rect(cornerRadius: 12))
 
                 VStack(alignment: .leading, spacing: 3) {
@@ -78,7 +78,7 @@ struct AdminSpecRangePricingView: View {
                 HStack(spacing: 8) {
                     Image(systemName: "building")
                         .font(.neueCorpMedium(12))
-                        .foregroundStyle(AVIATheme.teal)
+                        .foregroundStyle(AVIATheme.timelessBrown)
                     Text("SINGLE STOREY")
                         .font(.neueCorpMedium(9))
                         .kerning(0.5)
@@ -90,13 +90,13 @@ struct AdminSpecRangePricingView: View {
                     fullRangeCostField(
                         label: "Full upgrade Volos \u{2192} Messina",
                         text: $singleVolosToMessinaCost,
-                        fromColor: AVIATheme.teal,
+                        fromColor: AVIATheme.timelessBrown,
                         toColor: AVIATheme.warning
                     )
                     fullRangeCostField(
                         label: "Full upgrade Volos \u{2192} Portobello",
                         text: $singleVolosToPortobelloCost,
-                        fromColor: AVIATheme.teal,
+                        fromColor: AVIATheme.timelessBrown,
                         toColor: Color(hex: "8B5CF6")
                     )
                     fullRangeCostField(
@@ -130,13 +130,13 @@ struct AdminSpecRangePricingView: View {
                     fullRangeCostField(
                         label: "Full upgrade Volos \u{2192} Messina",
                         text: $doubleVolosToMessinaCost,
-                        fromColor: AVIATheme.teal,
+                        fromColor: AVIATheme.timelessBrown,
                         toColor: AVIATheme.warning
                     )
                     fullRangeCostField(
                         label: "Full upgrade Volos \u{2192} Portobello",
                         text: $doubleVolosToPortobelloCost,
-                        fromColor: AVIATheme.teal,
+                        fromColor: AVIATheme.timelessBrown,
                         toColor: Color(hex: "8B5CF6")
                     )
                     fullRangeCostField(
@@ -198,7 +198,7 @@ struct AdminSpecRangePricingView: View {
             .frame(maxWidth: .infinity)
             .frame(height: 52)
             .foregroundStyle(.white)
-            .background(AVIATheme.tealGradient)
+            .background(AVIATheme.primaryGradient)
             .clipShape(.rect(cornerRadius: 14))
         }
         .disabled(isSaving)

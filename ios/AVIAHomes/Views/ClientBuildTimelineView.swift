@@ -128,7 +128,7 @@ struct ClientBuildTimelineView: View {
                         HStack(spacing: 10) {
                             Image(systemName: "calendar.badge.clock")
                                 .font(.system(size: 16))
-                                .foregroundStyle(AVIATheme.teal)
+                                .foregroundStyle(AVIATheme.timelessBrown)
 
                             VStack(alignment: .leading, spacing: 2) {
                                 Text("ESTIMATED REGISTRATION DATE")

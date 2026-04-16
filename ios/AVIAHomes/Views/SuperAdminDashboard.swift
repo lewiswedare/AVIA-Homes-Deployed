@@ -163,7 +163,7 @@ struct SuperAdminDashboard: View {
             .font(.neueCorpMedium(14))
             .foregroundStyle(.white)
             .frame(width: 42, height: 42)
-            .background(AVIATheme.tealGradient)
+            .background(AVIATheme.primaryGradient)
             .clipShape(Circle())
     }
 
@@ -225,7 +225,7 @@ struct SuperAdminStaffDetailView: View {
                         ForEach(assignedBuilds, id: \.id) { build in
                             BentoCard(cornerRadius: 12) {
                                 HStack(spacing: 12) {
-                                    BentoIconCircle(icon: "building.2.fill", color: AVIATheme.teal)
+                                    BentoIconCircle(icon: "building.2.fill", color: AVIATheme.timelessBrown)
                                     VStack(alignment: .leading, spacing: 2) {
                                         Text(build.clientDisplayName)
                                             .font(.neueSubheadlineMedium)
@@ -235,7 +235,7 @@ struct SuperAdminStaffDetailView: View {
                                             .foregroundStyle(AVIATheme.textSecondary)
                                     }
                                     Spacer()
-                                    StatusBadge(title: build.statusLabel, color: AVIATheme.teal)
+                                    StatusBadge(title: build.statusLabel, color: AVIATheme.timelessBrown)
                                 }
                                 .padding(12)
                             }
@@ -252,7 +252,7 @@ struct SuperAdminStaffDetailView: View {
                         ForEach(assignedPackages, id: \.id) { assignment in
                             BentoCard(cornerRadius: 12) {
                                 HStack {
-                                    BentoIconCircle(icon: "house.and.flag.fill", color: AVIATheme.teal)
+                                    BentoIconCircle(icon: "house.and.flag.fill", color: AVIATheme.timelessBrown)
                                     Text("Package \(assignment.packageId.prefix(8))")
                                         .font(.neueCaption)
                                         .foregroundStyle(AVIATheme.textPrimary)
@@ -295,7 +295,7 @@ struct SuperAdminBuildListView: View {
                                 .foregroundStyle(AVIATheme.textSecondary)
                             HStack(spacing: 12) {
                                 if build.handoverTriggeredAt != nil {
-                                    StatusBadge(title: "Handed Over", color: AVIATheme.teal)
+                                    StatusBadge(title: "Handed Over", color: AVIATheme.timelessBrown)
                                 }
                                 Text("Stage: \(build.statusLabel)")
                                     .font(.neueCaption2)

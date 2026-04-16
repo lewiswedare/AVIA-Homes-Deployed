@@ -109,7 +109,7 @@ struct AdminStocklistEstateEditorSheet: View {
                             .font(.neueCaptionMedium)
                             .foregroundStyle(AVIATheme.textPrimary)
                     }
-                    .tint(AVIATheme.teal)
+                    .tint(AVIATheme.timelessBrown)
                     .padding(12)
                     .background(AVIATheme.cardBackground, in: RoundedRectangle(cornerRadius: 10))
 
@@ -128,7 +128,7 @@ struct AdminStocklistEstateEditorSheet: View {
                         .foregroundStyle(.white)
                         .frame(maxWidth: .infinity)
                         .padding(.vertical, 14)
-                        .background(AVIATheme.tealGradient, in: RoundedRectangle(cornerRadius: 12))
+                        .background(AVIATheme.primaryGradient, in: RoundedRectangle(cornerRadius: 12))
                     }
                     .disabled(name.isEmpty || isSaving)
 
@@ -159,7 +159,7 @@ struct AdminStocklistEstateEditorSheet: View {
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
                     Button("Cancel") { dismiss() }
-                        .tint(AVIATheme.teal)
+                        .tint(AVIATheme.timelessBrown)
                 }
             }
             .alert("Delete Estate", isPresented: $showDeleteConfirm) {

@@ -40,7 +40,7 @@ struct PackageManagementView: View {
                 Button { showCreatePackage = true } label: {
                     Image(systemName: "plus.circle.fill")
                         .font(.system(size: 20))
-                        .foregroundStyle(AVIATheme.teal)
+                        .foregroundStyle(AVIATheme.timelessBrown)
                 }
             }
         }
@@ -82,7 +82,7 @@ struct PackageManagementView: View {
                     .foregroundStyle(.white.opacity(0.5))
             }
             .padding(16)
-            .background(AVIATheme.tealGradient)
+            .background(AVIATheme.primaryGradient)
             .clipShape(.rect(cornerRadius: 16))
         }
         .sensoryFeedback(.impact(weight: .light), trigger: showCreatePackage)
@@ -98,7 +98,7 @@ struct PackageManagementView: View {
             HStack(spacing: 12) {
                 BentoCard(cornerRadius: 16) {
                     VStack(alignment: .leading, spacing: 6) {
-                        BentoIconCircle(icon: "square.grid.2x2.fill", color: AVIATheme.teal)
+                        BentoIconCircle(icon: "square.grid.2x2.fill", color: AVIATheme.timelessBrown)
                         Text("\(viewModel.allPackages.count)")
                             .font(.neueCorpMedium(32))
                             .foregroundStyle(AVIATheme.textPrimary)
@@ -184,7 +184,7 @@ struct PackageManagementView: View {
                 HStack(spacing: 12) {
                     Image(systemName: "doc.text.magnifyingglass")
                         .font(.system(size: 20))
-                        .foregroundStyle(AVIATheme.teal)
+                        .foregroundStyle(AVIATheme.timelessBrown)
                     VStack(alignment: .leading, spacing: 2) {
                         Text("EOI Submissions")
                             .font(.neueSubheadlineMedium)
@@ -245,7 +245,7 @@ struct PackageManagementView: View {
                         HStack(spacing: 6) {
                             Text(package.price)
                                 .font(.neueCaptionMedium)
-                                .foregroundStyle(AVIATheme.teal)
+                                .foregroundStyle(AVIATheme.timelessBrown)
                             Text("•")
                                 .foregroundStyle(AVIATheme.textTertiary)
                             Text(package.specTier.displayName)
@@ -277,7 +277,7 @@ struct PackageManagementView: View {
                             HStack(spacing: 4) {
                                 Image(systemName: "person.2.fill")
                                     .font(.system(size: 9))
-                                    .foregroundStyle(Color(hex: "5B7DB1"))
+                                    .foregroundStyle(AVIATheme.timelessBrown)
                                 Text("\(assignment.assignedPartnerIds.count) partner\(assignment.assignedPartnerIds.count == 1 ? "" : "s")")
                                     .font(.neueCaption2)
                                     .foregroundStyle(AVIATheme.textSecondary)
@@ -355,7 +355,7 @@ struct PackageManagementView: View {
                             Text("Assign")
                                 .font(.neueCaptionMedium)
                         }
-                        .foregroundStyle(AVIATheme.teal)
+                        .foregroundStyle(AVIATheme.timelessBrown)
                         .frame(maxWidth: .infinity)
                         .padding(.vertical, 11)
                     }
@@ -412,7 +412,7 @@ struct PackageManagementView: View {
         case "submitted", "resubmitted": AVIATheme.warning
         case "approved": AVIATheme.success
         case "declined": AVIATheme.destructive
-        case "changes_requested": Color(hex: "E8A317")
+        case "changes_requested": AVIATheme.warning
         default: AVIATheme.textTertiary
         }
     }
@@ -478,7 +478,7 @@ struct QuickAssignSheet: View {
                                         .font(.neueCaptionMedium)
                                         .foregroundStyle(.white)
                                         .frame(width: 38, height: 38)
-                                        .background(isShared ? AVIATheme.tealGradient : LinearGradient(colors: [AVIATheme.surfaceElevated], startPoint: .top, endPoint: .bottom))
+                                        .background(isShared ? AVIATheme.primaryGradient : LinearGradient(colors: [AVIATheme.surfaceElevated], startPoint: .top, endPoint: .bottom))
                                         .clipShape(Circle())
 
                                     VStack(alignment: .leading, spacing: 2) {
@@ -501,7 +501,7 @@ struct QuickAssignSheet: View {
                                     if isShared {
                                         Image(systemName: "checkmark.circle.fill")
                                             .font(.system(size: 22))
-                                            .foregroundStyle(AVIATheme.teal)
+                                            .foregroundStyle(AVIATheme.timelessBrown)
                                     } else {
                                         Image(systemName: "plus.circle")
                                             .font(.system(size: 22))
@@ -509,7 +509,7 @@ struct QuickAssignSheet: View {
                                     }
                                 }
                                 .padding(12)
-                                .background(isShared ? AVIATheme.teal.opacity(0.04) : Color.clear)
+                                .background(isShared ? AVIATheme.timelessBrown.opacity(0.04) : Color.clear)
                                 .clipShape(.rect(cornerRadius: 14))
                             }
                             .sensoryFeedback(.selection, trigger: isShared)
@@ -540,7 +540,7 @@ struct QuickAssignSheet: View {
                 ToolbarItem(placement: .topBarTrailing) {
                     Button("Done") { dismiss() }
                         .font(.neueSubheadlineMedium)
-                        .foregroundStyle(AVIATheme.teal)
+                        .foregroundStyle(AVIATheme.timelessBrown)
                 }
             }
         }
@@ -569,7 +569,7 @@ struct QuickAssignSheet: View {
                     .lineLimit(1)
                 Text(package.price)
                     .font(.neueCaption2)
-                    .foregroundStyle(AVIATheme.teal)
+                    .foregroundStyle(AVIATheme.timelessBrown)
             }
             Spacer()
         }
@@ -652,7 +652,7 @@ struct PackageAssignmentSheet: View {
                 ToolbarItem(placement: .topBarTrailing) {
                     Button("Done") { dismiss() }
                         .font(.neueSubheadlineMedium)
-                        .foregroundStyle(AVIATheme.teal)
+                        .foregroundStyle(AVIATheme.timelessBrown)
                 }
             }
         }
@@ -681,7 +681,7 @@ struct PackageAssignmentSheet: View {
                 HStack(spacing: 8) {
                     Text(package.price)
                         .font(.neueCaptionMedium)
-                        .foregroundStyle(AVIATheme.teal)
+                        .foregroundStyle(AVIATheme.timelessBrown)
                     Text("•")
                         .foregroundStyle(AVIATheme.textTertiary)
                     Text(package.estate)
@@ -742,7 +742,7 @@ struct PackageAssignmentSheet: View {
                                 .font(.neueCaptionMedium)
                                 .foregroundStyle(.white)
                                 .frame(width: 38, height: 38)
-                                .background(Color(hex: "5B7DB1"))
+                                .background(AVIATheme.timelessBrown)
                                 .clipShape(Circle())
 
                             VStack(alignment: .leading, spacing: 2) {
@@ -758,7 +758,7 @@ struct PackageAssignmentSheet: View {
 
                             Image(systemName: isAssigned ? "checkmark.circle.fill" : "circle")
                                 .font(.system(size: 22))
-                                .foregroundStyle(isAssigned ? AVIATheme.teal : AVIATheme.surfaceBorder)
+                                .foregroundStyle(isAssigned ? AVIATheme.timelessBrown : AVIATheme.surfaceBorder)
                         }
                         .padding(12)
                     }
@@ -809,7 +809,7 @@ struct PackageAssignmentSheet: View {
                                 .font(.neueCaptionMedium)
                                 .foregroundStyle(.white)
                                 .frame(width: 38, height: 38)
-                                .background(AVIATheme.tealGradient)
+                                .background(AVIATheme.primaryGradient)
                                 .clipShape(Circle())
 
                             VStack(alignment: .leading, spacing: 2) {
@@ -833,7 +833,7 @@ struct PackageAssignmentSheet: View {
                             if isShared {
                                 Image(systemName: "paperplane.fill")
                                     .font(.system(size: 14))
-                                    .foregroundStyle(AVIATheme.teal)
+                                    .foregroundStyle(AVIATheme.timelessBrown)
                             } else {
                                 Image(systemName: "circle")
                                     .font(.system(size: 22))

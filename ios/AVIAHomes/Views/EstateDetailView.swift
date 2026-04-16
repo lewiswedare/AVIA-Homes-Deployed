@@ -75,7 +75,7 @@ struct EstateDetailView: View {
                         } else if phase.error != nil {
                             Image(systemName: "map.fill")
                                 .font(.neueCorpMedium(56))
-                                .foregroundStyle(AVIATheme.teal.opacity(0.2))
+                                .foregroundStyle(AVIATheme.timelessBrown.opacity(0.2))
                         } else {
                             ProgressView()
                         }
@@ -166,7 +166,7 @@ struct EstateDetailView: View {
 
             HStack(spacing: 6) {
                 Image(systemName: "mappin.circle.fill")
-                    .foregroundStyle(AVIATheme.teal)
+                    .foregroundStyle(AVIATheme.timelessBrown)
                 Text(estate.location)
                     .foregroundStyle(AVIATheme.textSecondary)
             }
@@ -273,12 +273,12 @@ struct EstateDetailView: View {
                         } label: {
                             HStack(spacing: 14) {
                                 RoundedRectangle(cornerRadius: 10)
-                                    .fill(AVIATheme.teal.opacity(0.1))
+                                    .fill(AVIATheme.timelessBrown.opacity(0.1))
                                     .frame(width: 56, height: 56)
                                     .overlay {
                                         Image(systemName: "doc.richtext.fill")
                                             .font(.system(size: 20, weight: .medium))
-                                            .foregroundStyle(AVIATheme.teal)
+                                            .foregroundStyle(AVIATheme.timelessBrown)
                                     }
 
                                 VStack(alignment: .leading, spacing: 3) {
@@ -294,7 +294,7 @@ struct EstateDetailView: View {
 
                                 Image(systemName: "arrow.up.right")
                                     .font(.system(size: 13, weight: .medium))
-                                    .foregroundStyle(AVIATheme.teal)
+                                    .foregroundStyle(AVIATheme.timelessBrown)
                             }
                             .padding(16)
                         }
@@ -347,9 +347,9 @@ struct EstateDetailView: View {
                             HStack(spacing: 10) {
                                 Image(systemName: "map.fill")
                                     .font(.system(size: 12, weight: .medium))
-                                    .foregroundStyle(AVIATheme.teal)
+                                    .foregroundStyle(AVIATheme.timelessBrown)
                                     .frame(width: 28, height: 28)
-                                    .background(AVIATheme.teal.opacity(0.08))
+                                    .background(AVIATheme.timelessBrown.opacity(0.08))
                                     .clipShape(Circle())
 
                                 VStack(alignment: .leading, spacing: 2) {
@@ -365,7 +365,7 @@ struct EstateDetailView: View {
 
                                 Image(systemName: "arrow.up.left.and.arrow.down.right")
                                     .font(.system(size: 13, weight: .medium))
-                                    .foregroundStyle(AVIATheme.teal)
+                                    .foregroundStyle(AVIATheme.timelessBrown)
                             }
                             .padding(14)
                         }
@@ -391,9 +391,9 @@ struct EstateDetailView: View {
             VStack(spacing: 6) {
                 Image(systemName: icon)
                     .font(.neueCorp(14))
-                    .foregroundStyle(AVIATheme.teal)
+                    .foregroundStyle(AVIATheme.timelessBrown)
                     .frame(width: 30, height: 30)
-                    .background(AVIATheme.teal.opacity(0.1))
+                    .background(AVIATheme.timelessBrown.opacity(0.1))
                     .clipShape(Circle())
 
                 Text(value)
@@ -446,7 +446,7 @@ struct EstateDetailView: View {
         HStack(spacing: 5) {
             Image(systemName: icon)
                 .font(.system(size: 9, weight: .medium))
-                .foregroundStyle(AVIATheme.teal)
+                .foregroundStyle(AVIATheme.timelessBrown)
             Text(text)
                 .font(.neueCaption2)
                 .foregroundStyle(AVIATheme.textSecondary)
@@ -454,7 +454,7 @@ struct EstateDetailView: View {
         }
         .padding(.horizontal, 10)
         .padding(.vertical, 6)
-        .background(AVIATheme.teal.opacity(0.06))
+        .background(AVIATheme.timelessBrown.opacity(0.06))
         .clipShape(Capsule())
     }
 
@@ -473,9 +473,9 @@ struct EstateDetailView: View {
                         HStack(spacing: 12) {
                             Image(systemName: featureIcon(for: feature))
                                 .font(.system(size: 12, weight: .medium))
-                                .foregroundStyle(AVIATheme.teal)
+                                .foregroundStyle(AVIATheme.timelessBrown)
                                 .frame(width: 28, height: 28)
-                                .background(AVIATheme.teal.opacity(0.08))
+                                .background(AVIATheme.timelessBrown.opacity(0.08))
                                 .clipShape(Circle())
                             Text(feature)
                                 .font(.neueSubheadline)
@@ -541,7 +541,7 @@ struct EstateDetailView: View {
                         if estate.availableLots > 0 {
                             Text(estate.priceFrom)
                                 .font(.neueCorpMedium(20))
-                                .foregroundStyle(AVIATheme.teal)
+                                .foregroundStyle(AVIATheme.timelessBrown)
                         }
                     }
                     .padding(16)
@@ -567,7 +567,7 @@ struct EstateDetailView: View {
                                         .fill(AVIATheme.surfaceElevated)
                                         .frame(height: 8)
                                     RoundedRectangle(cornerRadius: 4)
-                                        .fill(AVIATheme.teal)
+                                        .fill(AVIATheme.timelessBrown)
                                         .frame(width: geo.size.width * progress, height: 8)
                                 }
                             }
@@ -593,7 +593,7 @@ struct EstateDetailView: View {
                 if availablePackageCount > 0 {
                     Text("\(availablePackageCount) available")
                         .font(.neueCaption2)
-                        .foregroundStyle(AVIATheme.teal)
+                        .foregroundStyle(AVIATheme.timelessBrown)
                 }
             }
 
@@ -641,7 +641,7 @@ struct EstateDetailView: View {
                     HStack {
                         Text(package.price)
                             .font(.neueCorpMedium(16))
-                            .foregroundStyle(AVIATheme.teal)
+                            .foregroundStyle(AVIATheme.timelessBrown)
                         Spacer()
                         Image(systemName: "chevron.right")
                             .font(.neueCaption2)
@@ -687,7 +687,7 @@ struct EstateDetailView: View {
                     .frame(maxWidth: .infinity)
                     .frame(height: 52)
                     .foregroundStyle(.white)
-                    .background(AVIATheme.tealGradient)
+                    .background(AVIATheme.primaryGradient)
                     .clipShape(.rect(cornerRadius: 14))
                 }
             }
@@ -702,8 +702,8 @@ struct EstateDetailView: View {
                     }
                     .frame(maxWidth: .infinity)
                     .frame(height: 52)
-                    .foregroundStyle(AVIATheme.teal)
-                    .background(AVIATheme.teal.opacity(0.1))
+                    .foregroundStyle(AVIATheme.timelessBrown)
+                    .background(AVIATheme.timelessBrown.opacity(0.1))
                     .clipShape(.rect(cornerRadius: 14))
                 }
             }

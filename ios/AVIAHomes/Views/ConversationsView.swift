@@ -35,7 +35,7 @@ struct ConversationsView: View {
                     Image(systemName: "square.and.pencil")
                         .font(.neueSubheadline)
                 }
-                .tint(AVIATheme.teal)
+                .tint(AVIATheme.timelessBrown)
             }
         }
         .navigationDestination(for: Conversation.self) { conversation in
@@ -59,7 +59,7 @@ struct ConversationsView: View {
                 .font(.neueCorpMedium(14))
                 .foregroundStyle(.white)
                 .frame(width: 48, height: 48)
-                .background(AVIATheme.tealGradient)
+                .background(AVIATheme.primaryGradient)
                 .clipShape(Circle())
 
             VStack(alignment: .leading, spacing: 4) {
@@ -73,7 +73,7 @@ struct ConversationsView: View {
                     Spacer()
                     Text(formatDate(conversation.lastMessageDate))
                         .font(.neueCaption2)
-                        .foregroundStyle(hasUnread ? AVIATheme.teal : AVIATheme.textTertiary)
+                        .foregroundStyle(hasUnread ? AVIATheme.timelessBrown : AVIATheme.textTertiary)
                 }
 
                 HStack(spacing: 6) {
@@ -92,7 +92,7 @@ struct ConversationsView: View {
                             .font(.neueCorpMedium(10))
                             .foregroundStyle(.white)
                             .frame(minWidth: 20, minHeight: 20)
-                            .background(AVIATheme.teal)
+                            .background(AVIATheme.timelessBrown)
                             .clipShape(Circle())
                     }
                 }
@@ -100,7 +100,7 @@ struct ConversationsView: View {
         }
         .padding(.horizontal, 20)
         .padding(.vertical, 12)
-        .background(hasUnread ? AVIATheme.teal.opacity(0.03) : Color.clear)
+        .background(hasUnread ? AVIATheme.timelessBrown.opacity(0.03) : Color.clear)
     }
 
     private var emptyState: some View {
@@ -126,7 +126,7 @@ struct ConversationsView: View {
                 .foregroundStyle(.white)
                 .padding(.horizontal, 24)
                 .padding(.vertical, 14)
-                .background(AVIATheme.tealGradient)
+                .background(AVIATheme.primaryGradient)
                 .clipShape(.rect(cornerRadius: 14))
             }
             .padding(.top, 8)
@@ -208,7 +208,7 @@ struct NewConversationSheet: View {
                                 .font(.neueCaptionMedium)
                                 .foregroundStyle(.white)
                                 .frame(width: 40, height: 40)
-                                .background(AVIATheme.tealGradient)
+                                .background(AVIATheme.primaryGradient)
                                 .clipShape(Circle())
 
                             VStack(alignment: .leading, spacing: 2) {
@@ -230,7 +230,7 @@ struct NewConversationSheet: View {
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
                     Button("Cancel") { dismiss() }
-                        .tint(AVIATheme.teal)
+                        .tint(AVIATheme.timelessBrown)
                 }
             }
         }

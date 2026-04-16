@@ -63,7 +63,7 @@ struct StaffPackageSharingView: View {
                 ToolbarItem(placement: .topBarTrailing) {
                     Button("Done") { dismiss() }
                         .font(.neueSubheadlineMedium)
-                        .foregroundStyle(AVIATheme.teal)
+                        .foregroundStyle(AVIATheme.timelessBrown)
                 }
             }
         }
@@ -114,7 +114,7 @@ struct StaffPackageSharingView: View {
                 HStack(spacing: 8) {
                     Text(package.price)
                         .font(.neueCaptionMedium)
-                        .foregroundStyle(AVIATheme.teal)
+                        .foregroundStyle(AVIATheme.timelessBrown)
                     Text("•")
                         .foregroundStyle(AVIATheme.textTertiary)
                     Text(package.estate)
@@ -136,9 +136,9 @@ struct StaffPackageSharingView: View {
             } label: {
                 Image(systemName: "link")
                     .font(.neueSubheadlineMedium)
-                    .foregroundStyle(AVIATheme.teal)
+                    .foregroundStyle(AVIATheme.timelessBrown)
                     .frame(width: 36, height: 36)
-                    .background(AVIATheme.teal.opacity(0.1))
+                    .background(AVIATheme.timelessBrown.opacity(0.1))
                     .clipShape(Circle())
             }
             .sensoryFeedback(.impact(weight: .light), trigger: showCopiedLink)
@@ -188,7 +188,7 @@ struct StaffPackageSharingView: View {
                     if sharedInGroup > 0 {
                         Text("\(sharedInGroup) shared")
                             .font(.neueCaption2Medium)
-                            .foregroundStyle(AVIATheme.teal)
+                            .foregroundStyle(AVIATheme.timelessBrown)
                     }
                 }
                 Text(subtitle)
@@ -214,7 +214,7 @@ struct StaffPackageSharingView: View {
                                 .font(.neueCaptionMedium)
                                 .foregroundStyle(.white)
                                 .frame(width: 38, height: 38)
-                                .background(AVIATheme.tealGradient)
+                                .background(AVIATheme.primaryGradient)
                                 .clipShape(Circle())
 
                             VStack(alignment: .leading, spacing: 2) {
@@ -242,7 +242,7 @@ struct StaffPackageSharingView: View {
                             if isShared {
                                 Image(systemName: "checkmark.circle.fill")
                                     .font(.system(size: 22))
-                                    .foregroundStyle(AVIATheme.teal)
+                                    .foregroundStyle(AVIATheme.timelessBrown)
                             } else {
                                 Image(systemName: "paperplane.circle")
                                     .font(.system(size: 22))
@@ -335,9 +335,9 @@ struct StaffPackageSharingView: View {
         .foregroundStyle(.white)
         .padding(.horizontal, 20)
         .padding(.vertical, 12)
-        .background(AVIATheme.tealGradient)
+        .background(AVIATheme.primaryGradient)
         .clipShape(Capsule())
-        .shadow(color: AVIATheme.teal.opacity(0.3), radius: 8, y: 4)
+        .shadow(color: AVIATheme.timelessBrown.opacity(0.3), radius: 8, y: 4)
         .padding(.bottom, 20)
     }
 
@@ -346,7 +346,7 @@ struct StaffPackageSharingView: View {
         case .pending: AVIATheme.warning
         case .accepted: AVIATheme.success
         case .declined: AVIATheme.destructive
-        case nil: AVIATheme.teal
+        case nil: AVIATheme.timelessBrown
         }
     }
 }

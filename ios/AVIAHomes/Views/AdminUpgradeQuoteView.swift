@@ -90,7 +90,7 @@ struct AdminUpgradeQuoteView: View {
                     .font(.neueCorpMedium(18))
                     .foregroundStyle(.white)
                     .frame(width: 44, height: 44)
-                    .background(AVIATheme.tealGradient)
+                    .background(AVIATheme.primaryGradient)
                     .clipShape(.rect(cornerRadius: 12))
 
                 VStack(alignment: .leading, spacing: 3) {
@@ -146,7 +146,7 @@ struct AdminUpgradeQuoteView: View {
                         Text("Auto-calculated: \(formatAUD(auto))")
                             .font(.neueCaption2)
                     }
-                    .foregroundStyle(AVIATheme.teal)
+                    .foregroundStyle(AVIATheme.timelessBrown)
                 }
 
                 HStack(spacing: 10) {
@@ -307,7 +307,7 @@ struct AdminUpgradeQuoteView: View {
                     Spacer()
                     Text(formatAUD(grandTotal))
                         .font(.neueCorpMedium(20))
-                        .foregroundStyle(AVIATheme.teal)
+                        .foregroundStyle(AVIATheme.timelessBrown)
                 }
             }
             .padding(16)
@@ -326,7 +326,7 @@ struct AdminUpgradeQuoteView: View {
             .frame(maxWidth: .infinity)
             .frame(height: 52)
             .foregroundStyle(.white)
-            .background(AVIATheme.tealGradient)
+            .background(AVIATheme.primaryGradient)
             .clipShape(.rect(cornerRadius: 14))
         }
     }

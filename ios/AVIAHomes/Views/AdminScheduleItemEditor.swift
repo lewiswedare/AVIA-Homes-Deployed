@@ -40,7 +40,7 @@ struct AdminScheduleItemEditor: View {
                             field(label: "Date & Time") {
                                 DatePicker("", selection: $date)
                                     .labelsHidden()
-                                    .tint(AVIATheme.teal)
+                                    .tint(AVIATheme.timelessBrown)
                             }
 
                             Rectangle().fill(AVIATheme.surfaceBorder).frame(height: 1)
@@ -52,7 +52,7 @@ struct AdminScheduleItemEditor: View {
                                     }
                                 }
                                 .pickerStyle(.menu)
-                                .tint(AVIATheme.teal)
+                                .tint(AVIATheme.timelessBrown)
                             }
                         }
                         .padding(16)
@@ -136,7 +136,7 @@ struct AdminScheduleItemList: View {
                     showAddSheet = true
                 } label: {
                     Image(systemName: "plus.circle.fill")
-                        .foregroundStyle(AVIATheme.teal)
+                        .foregroundStyle(AVIATheme.timelessBrown)
                 }
             }
 
@@ -151,9 +151,9 @@ struct AdminScheduleItemList: View {
                         HStack(spacing: 12) {
                             Image(systemName: item.iconColor)
                                 .font(.neueCorpMedium(14))
-                                .foregroundStyle(AVIATheme.teal)
+                                .foregroundStyle(AVIATheme.timelessBrown)
                                 .frame(width: 32, height: 32)
-                                .background(AVIATheme.teal.opacity(0.1))
+                                .background(AVIATheme.timelessBrown.opacity(0.1))
                                 .clipShape(Circle())
                             VStack(alignment: .leading, spacing: 2) {
                                 Text(item.title)
@@ -164,7 +164,7 @@ struct AdminScheduleItemList: View {
                                     .foregroundStyle(AVIATheme.textSecondary)
                             }
                             Spacer()
-                            StatusBadge(title: item.type.rawValue, color: AVIATheme.teal)
+                            StatusBadge(title: item.type.rawValue, color: AVIATheme.timelessBrown)
                         }
                         .padding(10)
                     }

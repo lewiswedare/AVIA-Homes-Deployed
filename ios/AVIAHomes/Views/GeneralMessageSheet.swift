@@ -12,7 +12,7 @@ struct GeneralMessageSheet: View {
             Spacer()
             Image(systemName: "message.fill")
                 .font(.system(size: 48))
-                .foregroundStyle(AVIATheme.teal)
+                .foregroundStyle(AVIATheme.timelessBrown)
             Text("General Message")
                 .font(.neueCorpMedium(22))
                 .foregroundStyle(AVIATheme.textPrimary)

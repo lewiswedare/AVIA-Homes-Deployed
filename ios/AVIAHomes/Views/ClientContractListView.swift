@@ -40,7 +40,7 @@ struct ClientContractListView: View {
                 HStack(spacing: 12) {
                     Image(systemName: "doc.richtext.fill")
                         .font(.system(size: 20))
-                        .foregroundStyle(AVIATheme.teal)
+                        .foregroundStyle(AVIATheme.timelessBrown)
                     VStack(alignment: .leading, spacing: 3) {
                         Text("Contract")
                             .font(.neueSubheadlineMedium)
@@ -64,15 +64,15 @@ struct ClientContractListView: View {
                     HStack(spacing: 6) {
                         Image(systemName: "signature")
                             .font(.system(size: 10))
-                            .foregroundStyle(AVIATheme.teal)
+                            .foregroundStyle(AVIATheme.timelessBrown)
                         Text("Ready for your signature")
                             .font(.neueCaption2)
-                            .foregroundStyle(AVIATheme.teal)
+                            .foregroundStyle(AVIATheme.timelessBrown)
                         Spacer()
                     }
                     .padding(.horizontal, 16)
                     .padding(.vertical, 8)
-                    .background(AVIATheme.teal.opacity(0.05))
+                    .background(AVIATheme.timelessBrown.opacity(0.05))
                 }
             }
         }
@@ -157,10 +157,10 @@ struct ClientContractDetailSheet: View {
                                 HStack(spacing: 8) {
                                     Image(systemName: "doc.text.fill")
                                         .font(.neueCaption)
-                                        .foregroundStyle(AVIATheme.teal)
+                                        .foregroundStyle(AVIATheme.timelessBrown)
                                     Text("Contract Document")
                                         .font(.neueSubheadlineMedium)
-                                        .foregroundStyle(AVIATheme.teal)
+                                        .foregroundStyle(AVIATheme.timelessBrown)
                                 }
 
                                 Link(destination: pdfURL) {
@@ -172,8 +172,8 @@ struct ClientContractDetailSheet: View {
                                     }
                                     .frame(maxWidth: .infinity)
                                     .padding(12)
-                                    .foregroundStyle(AVIATheme.teal)
-                                    .background(AVIATheme.teal.opacity(0.1))
+                                    .foregroundStyle(AVIATheme.timelessBrown)
+                                    .background(AVIATheme.timelessBrown.opacity(0.1))
                                     .clipShape(.rect(cornerRadius: 10))
                                 }
                             }
@@ -188,10 +188,10 @@ struct ClientContractDetailSheet: View {
                                 HStack(spacing: 8) {
                                     Image(systemName: "note.text")
                                         .font(.neueCaption)
-                                        .foregroundStyle(AVIATheme.teal)
+                                        .foregroundStyle(AVIATheme.timelessBrown)
                                     Text("Notes")
                                         .font(.neueSubheadlineMedium)
-                                        .foregroundStyle(AVIATheme.teal)
+                                        .foregroundStyle(AVIATheme.timelessBrown)
                                 }
                                 Text(notes)
                                     .font(.neueSubheadline)

@@ -70,7 +70,7 @@ struct AdminPipelineView: View {
             HStack(spacing: 12) {
                 Image(systemName: "arrow.triangle.branch")
                     .font(.system(size: 24))
-                    .foregroundStyle(AVIATheme.teal)
+                    .foregroundStyle(AVIATheme.timelessBrown)
                 VStack(alignment: .leading, spacing: 3) {
                     Text("EOI → Build Pipeline")
                         .font(.neueSubheadlineMedium)
@@ -147,7 +147,7 @@ struct AdminPipelineView: View {
                             Text("View PDF")
                                 .font(.neueCaptionMedium)
                         }
-                        .foregroundStyle(AVIATheme.teal)
+                        .foregroundStyle(AVIATheme.timelessBrown)
                     }
                 }
             }
@@ -320,7 +320,7 @@ struct AdminPipelineView: View {
             VStack(spacing: 0) {
                 ZStack {
                     Circle()
-                        .fill(isComplete ? AVIATheme.success : (isActive ? AVIATheme.teal : AVIATheme.cardBackground))
+                        .fill(isComplete ? AVIATheme.success : (isActive ? AVIATheme.timelessBrown : AVIATheme.cardBackground))
                         .frame(width: 36, height: 36)
                     if isComplete {
                         Image(systemName: "checkmark")
@@ -346,7 +346,7 @@ struct AdminPipelineView: View {
                 HStack(spacing: 8) {
                     Image(systemName: icon)
                         .font(.neueCaption)
-                        .foregroundStyle(isEnabled ? AVIATheme.teal : AVIATheme.textTertiary)
+                        .foregroundStyle(isEnabled ? AVIATheme.timelessBrown : AVIATheme.textTertiary)
                     Text(title)
                         .font(.neueSubheadlineMedium)
                         .foregroundStyle(isEnabled ? AVIATheme.textPrimary : AVIATheme.textTertiary)
@@ -364,7 +364,7 @@ struct AdminPipelineView: View {
         .overlay {
             if isActive {
                 RoundedRectangle(cornerRadius: 14)
-                    .stroke(AVIATheme.teal.opacity(0.3), lineWidth: 1)
+                    .stroke(AVIATheme.timelessBrown.opacity(0.3), lineWidth: 1)
             }
         }
     }
@@ -456,16 +456,16 @@ struct RaiseContractSheet: View {
                             HStack(spacing: 8) {
                                 Image(systemName: "doc.richtext.fill")
                                     .font(.neueCaption)
-                                    .foregroundStyle(AVIATheme.teal)
+                                    .foregroundStyle(AVIATheme.timelessBrown)
                                 Text("Upload Contract PDF")
                                     .font(.neueSubheadlineMedium)
-                                    .foregroundStyle(AVIATheme.teal)
+                                    .foregroundStyle(AVIATheme.timelessBrown)
                             }
 
                             if let name = selectedFileName {
                                 HStack(spacing: 8) {
                                     Image(systemName: "doc.fill")
-                                        .foregroundStyle(AVIATheme.teal)
+                                        .foregroundStyle(AVIATheme.timelessBrown)
                                     Text(name)
                                         .font(.neueCaptionMedium)
                                         .foregroundStyle(AVIATheme.textPrimary)
@@ -488,10 +488,10 @@ struct RaiseContractSheet: View {
                                     VStack(spacing: 8) {
                                         Image(systemName: "arrow.up.doc.fill")
                                             .font(.system(size: 28))
-                                            .foregroundStyle(AVIATheme.teal)
+                                            .foregroundStyle(AVIATheme.timelessBrown)
                                         Text("Select PDF")
                                             .font(.neueCaptionMedium)
-                                            .foregroundStyle(AVIATheme.teal)
+                                            .foregroundStyle(AVIATheme.timelessBrown)
                                     }
                                     .frame(maxWidth: .infinity)
                                     .frame(height: 100)
@@ -626,10 +626,10 @@ struct RaiseInvoiceSheet: View {
                             HStack(spacing: 8) {
                                 Image(systemName: "dollarsign.circle.fill")
                                     .font(.neueCaption)
-                                    .foregroundStyle(AVIATheme.teal)
+                                    .foregroundStyle(AVIATheme.timelessBrown)
                                 Text("Invoice Details")
                                     .font(.neueSubheadlineMedium)
-                                    .foregroundStyle(AVIATheme.teal)
+                                    .foregroundStyle(AVIATheme.timelessBrown)
                             }
 
                             VStack(alignment: .leading, spacing: 6) {
@@ -648,7 +648,7 @@ struct RaiseInvoiceSheet: View {
                                     } label: {
                                         Text("Suggest 5% deposit: $\(String(format: "%.2f", suggested))")
                                             .font(.neueCaption)
-                                            .foregroundStyle(AVIATheme.teal)
+                                            .foregroundStyle(AVIATheme.timelessBrown)
                                     }
                                 }
                             }

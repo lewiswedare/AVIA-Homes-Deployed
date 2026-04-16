@@ -45,7 +45,7 @@ struct AdminDepositConfirmSheet: View {
                                     .kerning(0.5)
                                 DatePicker("", selection: $dueDate, displayedComponents: .date)
                                     .labelsHidden()
-                                    .tint(AVIATheme.teal)
+                                    .tint(AVIATheme.timelessBrown)
                             }
 
                             Rectangle().fill(AVIATheme.surfaceBorder).frame(height: 1)

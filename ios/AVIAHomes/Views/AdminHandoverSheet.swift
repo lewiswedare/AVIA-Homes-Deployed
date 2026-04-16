@@ -41,7 +41,7 @@ struct AdminHandoverSheet: View {
                                                 .font(.neueCorpMedium(12))
                                                 .foregroundStyle(.white)
                                                 .frame(width: 40, height: 40)
-                                                .background(AVIATheme.tealGradient)
+                                                .background(AVIATheme.primaryGradient)
                                                 .clipShape(Circle())
                                             VStack(alignment: .leading, spacing: 2) {
                                                 Text(staff.fullName)
@@ -193,7 +193,7 @@ struct AdminBuildHandoverSection: View {
                 .font(.neueCorpMedium(10))
                 .foregroundStyle(.white)
                 .frame(width: 30, height: 30)
-                .background(AVIATheme.tealGradient)
+                .background(AVIATheme.primaryGradient)
                 .clipShape(Circle())
             VStack(alignment: .leading, spacing: 1) {
                 Text(label)

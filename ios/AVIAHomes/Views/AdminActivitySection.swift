@@ -14,7 +14,7 @@ struct AdminActivitySection: View {
                 title: "\(build.clientDisplayName) — \(build.homeDesign)",
                 subtitle: "Current: \(build.statusLabel) · \(Int(build.overallProgress * 100))%",
                 date: build.contractDate,
-                color: AVIATheme.teal
+                color: AVIATheme.timelessBrown
             ))
 
             for stage in build.buildStages where stage.status == .completed {
@@ -34,7 +34,7 @@ struct AdminActivitySection: View {
         for request in viewModel.requests {
             let color: Color = switch request.status {
             case .open: AVIATheme.warning
-            case .inProgress: AVIATheme.teal
+            case .inProgress: AVIATheme.timelessBrown
             case .resolved: AVIATheme.success
             }
             items.append(ActivityItem(
@@ -57,7 +57,7 @@ struct AdminActivitySection: View {
                     HStack(spacing: 8) {
                         Image(systemName: "clock.arrow.circlepath")
                             .font(.neueSubheadlineMedium)
-                            .foregroundStyle(AVIATheme.teal)
+                            .foregroundStyle(AVIATheme.timelessBrown)
                         Text("Recent Activity")
                             .font(.neueSubheadlineMedium)
                             .foregroundStyle(AVIATheme.textPrimary)

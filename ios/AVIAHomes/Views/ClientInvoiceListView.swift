@@ -40,7 +40,7 @@ struct ClientInvoiceListView: View {
                 HStack(spacing: 12) {
                     Image(systemName: "dollarsign.circle.fill")
                         .font(.system(size: 20))
-                        .foregroundStyle(AVIATheme.teal)
+                        .foregroundStyle(AVIATheme.timelessBrown)
                     VStack(alignment: .leading, spacing: 3) {
                         Text(invoice.invoice_number ?? "Invoice")
                             .font(.neueSubheadlineMedium)
@@ -154,10 +154,10 @@ struct ClientInvoiceDetailSheet: View {
                             HStack(spacing: 8) {
                                 Image(systemName: "dollarsign.circle.fill")
                                     .font(.neueCaption)
-                                    .foregroundStyle(AVIATheme.teal)
+                                    .foregroundStyle(AVIATheme.timelessBrown)
                                 Text("Invoice Details")
                                     .font(.neueSubheadlineMedium)
-                                    .foregroundStyle(AVIATheme.teal)
+                                    .foregroundStyle(AVIATheme.timelessBrown)
                             }
 
                             detailRow("Amount", invoice.formattedAmount)
@@ -192,10 +192,10 @@ struct ClientInvoiceDetailSheet: View {
                                 HStack(spacing: 8) {
                                     Image(systemName: "note.text")
                                         .font(.neueCaption)
-                                        .foregroundStyle(AVIATheme.teal)
+                                        .foregroundStyle(AVIATheme.timelessBrown)
                                     Text("Notes")
                                         .font(.neueSubheadlineMedium)
-                                        .foregroundStyle(AVIATheme.teal)
+                                        .foregroundStyle(AVIATheme.timelessBrown)
                                 }
                                 Text(notes)
                                     .font(.neueSubheadline)

@@ -100,7 +100,7 @@ struct ProfileView: View {
                 .font(.neueCorpMedium(22))
                 .foregroundStyle(.white)
                 .frame(width: 56, height: 56)
-                .background(AVIATheme.tealGradient)
+                .background(AVIATheme.primaryGradient)
                 .clipShape(Circle())
 
             VStack(alignment: .leading, spacing: 4) {
@@ -123,9 +123,9 @@ struct ProfileView: View {
             } label: {
                 Image(systemName: "pencil")
                     .font(.neueSubheadlineMedium)
-                    .foregroundStyle(AVIATheme.teal)
+                    .foregroundStyle(AVIATheme.timelessBrown)
                     .frame(width: 36, height: 36)
-                    .background(AVIATheme.teal.opacity(0.1))
+                    .background(AVIATheme.timelessBrown.opacity(0.1))
                     .clipShape(Circle())
             }
         }
@@ -161,7 +161,7 @@ struct DetailRow: View {
         HStack(spacing: 14) {
             Image(systemName: icon)
                 .font(.neueSubheadline)
-                .foregroundStyle(AVIATheme.teal)
+                .foregroundStyle(AVIATheme.timelessBrown)
                 .frame(width: 28)
             VStack(alignment: .leading, spacing: 2) {
                 Text(title)
@@ -188,14 +188,14 @@ struct ToggleRow: View {
             HStack(spacing: 12) {
                 Image(systemName: icon)
                     .font(.neueSubheadline)
-                    .foregroundStyle(AVIATheme.teal)
+                    .foregroundStyle(AVIATheme.timelessBrown)
                     .frame(width: 28)
                 Text(title)
                     .font(.neueSubheadline)
                     .foregroundStyle(AVIATheme.textPrimary)
             }
         }
-        .tint(AVIATheme.teal)
+        .tint(AVIATheme.timelessBrown)
         .padding(.horizontal, 16)
         .padding(.vertical, 10)
     }
@@ -212,7 +212,7 @@ struct LinkRow: View {
                 HStack(spacing: 14) {
                     Image(systemName: icon)
                         .font(.neueSubheadline)
-                        .foregroundStyle(AVIATheme.teal)
+                        .foregroundStyle(AVIATheme.timelessBrown)
                         .frame(width: 28)
                     Text(title)
                         .font(.neueSubheadline)

@@ -109,7 +109,7 @@ struct PackageDetailView: View {
                         } else if phase.error != nil {
                             Image(systemName: "house.and.flag.fill")
                                 .font(.neueCorpMedium(56))
-                                .foregroundStyle(AVIATheme.teal.opacity(0.2))
+                                .foregroundStyle(AVIATheme.timelessBrown.opacity(0.2))
                         } else {
                             ProgressView()
                         }
@@ -204,15 +204,15 @@ struct PackageDetailView: View {
                     HStack {
                         Text(package.price)
                             .font(.neueCorpMedium(32))
-                            .foregroundStyle(AVIATheme.teal)
+                            .foregroundStyle(AVIATheme.timelessBrown)
                         Spacer()
                         Text("TURNKEY")
                             .font(.neueCorpMedium(9))
                             .kerning(0.8)
-                            .foregroundStyle(AVIATheme.teal)
+                            .foregroundStyle(AVIATheme.timelessBrown)
                             .padding(.horizontal, 10)
                             .padding(.vertical, 5)
-                            .background(AVIATheme.teal.opacity(0.08))
+                            .background(AVIATheme.timelessBrown.opacity(0.08))
                             .clipShape(Capsule())
                     }
                     .padding(16)
@@ -340,7 +340,7 @@ struct PackageDetailView: View {
                                         .foregroundStyle(.white)
                                         .padding(.horizontal, 8)
                                         .padding(.vertical, 4)
-                                        .background(AVIATheme.teal)
+                                        .background(AVIATheme.timelessBrown)
                                         .clipShape(Capsule())
                                 }
                             }
@@ -397,10 +397,10 @@ struct PackageDetailView: View {
                         Image(systemName: "chevron.right")
                             .font(.neueCaption2)
                     }
-                    .foregroundStyle(AVIATheme.teal)
+                    .foregroundStyle(AVIATheme.timelessBrown)
                     .padding(.horizontal, 16)
                     .padding(.vertical, 12)
-                    .background(AVIATheme.teal.opacity(0.06))
+                    .background(AVIATheme.timelessBrown.opacity(0.06))
                     .clipShape(.rect(cornerRadius: 12))
                 }
             } else {
@@ -504,10 +504,10 @@ struct PackageDetailView: View {
                     Image(systemName: "chevron.right")
                         .font(.neueCaption2)
                 }
-                .foregroundStyle(AVIATheme.teal)
+                .foregroundStyle(AVIATheme.timelessBrown)
                 .padding(.horizontal, 16)
                 .padding(.vertical, 12)
-                .background(AVIATheme.teal.opacity(0.06))
+                .background(AVIATheme.timelessBrown.opacity(0.06))
                 .clipShape(.rect(cornerRadius: 12))
             }
             }
@@ -606,7 +606,7 @@ struct PackageDetailView: View {
                 .foregroundStyle(.white)
                 .padding(.horizontal, 20)
                 .padding(.vertical, 16)
-                .background(AVIATheme.tealGradient)
+                .background(AVIATheme.primaryGradient)
                 .clipShape(.rect(cornerRadius: 14))
             }
         }
@@ -745,10 +745,10 @@ struct PackageDetailView: View {
                             Image(systemName: "chevron.right")
                                 .font(.neueCaption2)
                         }
-                        .foregroundStyle(AVIATheme.teal)
+                        .foregroundStyle(AVIATheme.timelessBrown)
                         .padding(.horizontal, 16)
                         .padding(.vertical, 12)
-                        .background(AVIATheme.teal.opacity(0.06))
+                        .background(AVIATheme.timelessBrown.opacity(0.06))
                         .clipShape(.rect(cornerRadius: 12))
                     }
                 }
@@ -764,7 +764,7 @@ struct PackageDetailView: View {
                 HStack(spacing: 10) {
                     Image(systemName: "clock.fill")
                         .font(.neueCorp(12))
-                        .foregroundStyle(AVIATheme.teal)
+                        .foregroundStyle(AVIATheme.timelessBrown)
                     Text("Estimated Build Time")
                         .font(.neueCaptionMedium)
                         .foregroundStyle(AVIATheme.textSecondary)
@@ -804,7 +804,7 @@ struct PackageDetailView: View {
                         .frame(maxWidth: .infinity)
                         .frame(height: 52)
                         .foregroundStyle(.white)
-                        .background(AVIATheme.tealGradient)
+                        .background(AVIATheme.primaryGradient)
                         .clipShape(.rect(cornerRadius: 14))
                     }
                 }
@@ -819,8 +819,8 @@ struct PackageDetailView: View {
                         }
                         .frame(maxWidth: .infinity)
                         .frame(height: 52)
-                        .foregroundStyle(AVIATheme.teal)
-                        .background(AVIATheme.teal.opacity(0.1))
+                        .foregroundStyle(AVIATheme.timelessBrown)
+                        .background(AVIATheme.timelessBrown.opacity(0.1))
                         .clipShape(.rect(cornerRadius: 14))
                     }
                 }
@@ -851,7 +851,7 @@ struct PackageDetailView: View {
                 .foregroundStyle(.white)
                 .padding(.horizontal, 20)
                 .padding(.vertical, 16)
-                .background(AVIATheme.tealGradient)
+                .background(AVIATheme.primaryGradient)
                 .clipShape(.rect(cornerRadius: 14))
             }
             .sensoryFeedback(.impact(weight: .medium), trigger: showPackageSharing)
@@ -865,8 +865,8 @@ struct PackageDetailView: View {
                 }
                 .frame(maxWidth: .infinity)
                 .frame(height: 52)
-                .foregroundStyle(AVIATheme.teal)
-                .background(AVIATheme.teal.opacity(0.1))
+                .foregroundStyle(AVIATheme.timelessBrown)
+                .background(AVIATheme.timelessBrown.opacity(0.1))
                 .clipShape(.rect(cornerRadius: 14))
             }
         }
@@ -878,7 +878,7 @@ struct PackageDetailView: View {
                 HStack(spacing: 10) {
                     Image(systemName: "chart.bar.doc.horizontal.fill")
                         .font(.neueCorp(14))
-                        .foregroundStyle(AVIATheme.teal)
+                        .foregroundStyle(AVIATheme.timelessBrown)
                     Text("ASSIGNMENT STATUS")
                         .font(.neueCaption2Medium)
                         .kerning(1.0)
@@ -998,7 +998,7 @@ struct PackageDetailView: View {
                         .frame(maxWidth: .infinity)
                         .frame(height: 52)
                         .foregroundStyle(.white)
-                        .background(AVIATheme.tealGradient)
+                        .background(AVIATheme.primaryGradient)
                         .clipShape(.rect(cornerRadius: 14))
                     }
                 } else if assign.contractStatus == "signed" {
@@ -1086,7 +1086,7 @@ struct PackageDetailView: View {
                         .frame(maxWidth: .infinity)
                         .frame(height: 52)
                         .foregroundStyle(.white)
-                        .background(AVIATheme.tealGradient)
+                        .background(AVIATheme.primaryGradient)
                         .clipShape(.rect(cornerRadius: 14))
                     }
                 } else if currentResponse?.status == .accepted {
@@ -1144,7 +1144,7 @@ struct PackageDetailView: View {
                     .frame(maxWidth: .infinity)
                     .frame(height: 52)
                     .foregroundStyle(.white)
-                    .background(AVIATheme.tealGradient)
+                    .background(AVIATheme.primaryGradient)
                     .clipShape(.rect(cornerRadius: 14))
                 }
                 .sensoryFeedback(.impact(weight: .medium), trigger: showEOIForm)

@@ -81,7 +81,7 @@ struct EOIFormView: View {
                 VStack(spacing: 6) {
                     ZStack {
                         Circle()
-                            .fill(step <= currentStep ? AVIATheme.teal : AVIATheme.surfaceBorder)
+                            .fill(step <= currentStep ? AVIATheme.timelessBrown : AVIATheme.surfaceBorder)
                             .frame(width: 28, height: 28)
                         if step < currentStep {
                             Image(systemName: "checkmark")
@@ -100,7 +100,7 @@ struct EOIFormView: View {
                 .frame(maxWidth: .infinity)
                 if step < 3 {
                     Rectangle()
-                        .fill(step < currentStep ? AVIATheme.teal : AVIATheme.surfaceBorder)
+                        .fill(step < currentStep ? AVIATheme.timelessBrown : AVIATheme.surfaceBorder)
                         .frame(height: 2)
                         .frame(maxWidth: .infinity)
                         .padding(.bottom, 18)
@@ -158,13 +158,13 @@ struct EOIFormView: View {
                 HStack(spacing: 8) {
                     Image(systemName: "person.2.fill")
                         .font(.neueCaption)
-                        .foregroundStyle(AVIATheme.teal)
+                        .foregroundStyle(AVIATheme.timelessBrown)
                     Text("Add Second Buyer")
                         .font(.neueSubheadlineMedium)
                         .foregroundStyle(AVIATheme.textPrimary)
                 }
             }
-            .tint(AVIATheme.teal)
+            .tint(AVIATheme.timelessBrown)
 
             if hasSecondBuyer {
                 sectionHeader("Buyer Two", icon: "person.fill")
@@ -278,8 +278,8 @@ struct EOIFormView: View {
                     }
                     .frame(maxWidth: .infinity)
                     .frame(height: 52)
-                    .foregroundStyle(AVIATheme.teal)
-                    .background(AVIATheme.teal.opacity(0.1))
+                    .foregroundStyle(AVIATheme.timelessBrown)
+                    .background(AVIATheme.timelessBrown.opacity(0.1))
                     .clipShape(.rect(cornerRadius: 14))
                 }
             }
@@ -299,7 +299,7 @@ struct EOIFormView: View {
                     .frame(maxWidth: .infinity)
                     .frame(height: 52)
                     .foregroundStyle(.white)
-                    .background(AVIATheme.tealGradient)
+                    .background(AVIATheme.primaryGradient)
                     .clipShape(.rect(cornerRadius: 14))
                 }
             } else {
@@ -320,7 +320,7 @@ struct EOIFormView: View {
                     .frame(maxWidth: .infinity)
                     .frame(height: 52)
                     .foregroundStyle(.white)
-                    .background(AVIATheme.tealGradient)
+                    .background(AVIATheme.primaryGradient)
                     .clipShape(.rect(cornerRadius: 14))
                 }
                 .disabled(isSubmitting)
@@ -456,7 +456,7 @@ struct EOIFormView: View {
         HStack(spacing: 10) {
             Image(systemName: icon)
                 .font(.neueSubheadlineMedium)
-                .foregroundStyle(AVIATheme.teal)
+                .foregroundStyle(AVIATheme.timelessBrown)
             Text(title)
                 .font(.neueCorpMedium(18))
                 .foregroundStyle(AVIATheme.textPrimary)
@@ -512,7 +512,7 @@ struct EOIFormView: View {
     private func reviewSectionTitle(_ title: String) -> some View {
         Text(title)
             .font(.neueSubheadlineMedium)
-            .foregroundStyle(AVIATheme.teal)
+            .foregroundStyle(AVIATheme.timelessBrown)
     }
 
     private func reviewRow(_ label: String, _ value: String) -> some View {

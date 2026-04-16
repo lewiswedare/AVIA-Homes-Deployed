@@ -56,7 +56,7 @@ struct AdminOverviewSection: View {
                             }
                         }
                         if openRequests > 0 {
-                            alertNavRow(icon: "bubble.left.fill", text: "\(openRequests) open client request\(openRequests == 1 ? "" : "s")", color: Color(hex: "5B7DB1")) {
+                            alertNavRow(icon: "bubble.left.fill", text: "\(openRequests) open client request\(openRequests == 1 ? "" : "s")", color: AVIATheme.timelessBrown) {
                                 RequestsView()
                             }
                         }
@@ -77,7 +77,7 @@ struct AdminOverviewSection: View {
                             }
                         }
                         if pendingSpecCount > 0 {
-                            alertNavRow(icon: "checklist.checked", text: "\(pendingSpecCount) build\(pendingSpecCount == 1 ? "" : "s") awaiting spec review" + (upgradeRequestCount > 0 ? " (\(upgradeRequestCount) upgrade req\(upgradeRequestCount == 1 ? "" : "s"))" : ""), color: Color(hex: "E8A317")) {
+                            alertNavRow(icon: "checklist.checked", text: "\(pendingSpecCount) build\(pendingSpecCount == 1 ? "" : "s") awaiting spec review" + (upgradeRequestCount > 0 ? " (\(upgradeRequestCount) upgrade req\(upgradeRequestCount == 1 ? "" : "s"))" : ""), color: AVIATheme.warning) {
                                 AdminBuildManagementView()
                             }
                         }
@@ -117,11 +117,11 @@ struct AdminOverviewSection: View {
     private var metricsGrid: some View {
         VStack(spacing: 12) {
             HStack(spacing: 12) {
-                AdminMetricCard(value: "\(viewModel.allClientBuilds.count)", label: "Total Builds", icon: "building.2.fill", color: AVIATheme.teal)
+                AdminMetricCard(value: "\(viewModel.allClientBuilds.count)", label: "Total Builds", icon: "building.2.fill", color: AVIATheme.timelessBrown)
                 AdminMetricCard(value: "\(viewModel.allClientBuilds.filter { $0.currentStage != nil }.count)", label: "Active", icon: "hammer.fill", color: AVIATheme.warning)
             }
             HStack(spacing: 12) {
-                AdminMetricCard(value: "\(viewModel.allRegisteredUsers.filter { $0.role == .client }.count + 1)", label: "Clients", icon: "person.2.fill", color: Color(hex: "5B7DB1"))
+                AdminMetricCard(value: "\(viewModel.allRegisteredUsers.filter { $0.role == .client }.count + 1)", label: "Clients", icon: "person.2.fill", color: AVIATheme.timelessBrown)
                 AdminMetricCard(value: "\(viewModel.allRegisteredUsers.filter { $0.role.isAnyStaffRole }.count + 1)", label: "Staff", icon: "person.badge.shield.checkmark.fill", color: AVIATheme.success)
             }
             portfolioProgress
@@ -141,18 +141,18 @@ struct AdminOverviewSection: View {
                     Spacer()
                     Text("\(Int(avg * 100))% avg")
                         .font(.neueCaptionMedium)
-                        .foregroundStyle(AVIATheme.teal)
+                        .foregroundStyle(AVIATheme.timelessBrown)
                 }
                 GeometryReader { geo in
                     ZStack(alignment: .leading) {
-                        Capsule().fill(AVIATheme.teal.opacity(0.1)).frame(height: 8)
-                        Capsule().fill(AVIATheme.tealGradient).frame(width: max(0, geo.size.width * avg), height: 8)
+                        Capsule().fill(AVIATheme.timelessBrown.opacity(0.1)).frame(height: 8)
+                        Capsule().fill(AVIATheme.primaryGradient).frame(width: max(0, geo.size.width * avg), height: 8)
                     }
                 }
                 .frame(height: 8)
                 HStack(spacing: 16) {
                     AdminProgressLabel(count: builds.filter { $0.overallProgress < 0.3 }.count, label: "Early", color: AVIATheme.warning)
-                    AdminProgressLabel(count: builds.filter { $0.overallProgress >= 0.3 && $0.overallProgress < 0.7 }.count, label: "Mid", color: Color(hex: "5B7DB1"))
+                    AdminProgressLabel(count: builds.filter { $0.overallProgress >= 0.3 && $0.overallProgress < 0.7 }.count, label: "Mid", color: AVIATheme.timelessBrown)
                     AdminProgressLabel(count: builds.filter { $0.overallProgress >= 0.7 }.count, label: "Late", color: AVIATheme.success)
                 }
             }
@@ -168,16 +168,16 @@ struct AdminOverviewSection: View {
                 .foregroundStyle(AVIATheme.textTertiary)
             LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 10) {
                 Button { showingAddBuild = true } label: {
-                    AdminQuickActionContent(icon: "plus.circle.fill", label: "New Build", color: AVIATheme.teal)
+                    AdminQuickActionContent(icon: "plus.circle.fill", label: "New Build", color: AVIATheme.timelessBrown)
                 }
                 NavigationLink { UserManagementView() } label: {
                     AdminQuickActionContent(icon: "person.badge.key.fill", label: "User Roles", color: AVIATheme.warning)
                 }
                 NavigationLink { PackageManagementView() } label: {
-                    AdminQuickActionContent(icon: "house.and.flag.fill", label: "Packages", color: Color(hex: "5B7DB1"))
+                    AdminQuickActionContent(icon: "house.and.flag.fill", label: "Packages", color: AVIATheme.timelessBrown)
                 }
                 NavigationLink { AdminEOIReviewView() } label: {
-                    AdminQuickActionContent(icon: "doc.text.magnifyingglass", label: "EOI Reviews", color: Color(hex: "E8A317"))
+                    AdminQuickActionContent(icon: "doc.text.magnifyingglass", label: "EOI Reviews", color: AVIATheme.warning)
                 }
                 NavigationLink { AdminBuildManagementView() } label: {
                     AdminQuickActionContent(icon: "slider.horizontal.3", label: "Build Mgmt", color: AVIATheme.success)
@@ -197,7 +197,7 @@ struct AdminOverviewSection: View {
                 Button { withAnimation { selectedSection = .builds } } label: {
                     Text("View All")
                         .font(.neueCaptionMedium)
-                        .foregroundStyle(AVIATheme.teal)
+                        .foregroundStyle(AVIATheme.timelessBrown)
                 }
             }
             let pendingBuildIds = Set(viewModel.pendingSpecReviews.map(\.buildId))
@@ -234,7 +234,7 @@ struct AdminOverviewSection: View {
                         NavigationLink { PackageManagementView() } label: {
                             Text("View All")
                                 .font(.neueCaptionMedium)
-                                .foregroundStyle(AVIATheme.teal)
+                                .foregroundStyle(AVIATheme.timelessBrown)
                         }
                     }
                     ForEach(Array(recent.enumerated()), id: \.offset) { _, item in
@@ -295,15 +295,15 @@ struct AdminOverviewSection: View {
                 VStack(spacing: 0) {
                     AdminPendingRow(icon: "person.badge.clock.fill", label: "Pending Users", count: viewModel.allRegisteredUsers.filter { $0.role == .pending }.count, color: AVIATheme.warning)
                     Rectangle().fill(AVIATheme.surfaceBorder).frame(height: 1).padding(.leading, 52)
-                    AdminPendingRow(icon: "bubble.left.fill", label: "Open Requests", count: viewModel.requests.filter { $0.status == .open }.count, color: Color(hex: "5B7DB1"))
+                    AdminPendingRow(icon: "bubble.left.fill", label: "Open Requests", count: viewModel.requests.filter { $0.status == .open }.count, color: AVIATheme.timelessBrown)
                     Rectangle().fill(AVIATheme.surfaceBorder).frame(height: 1).padding(.leading, 52)
-                    AdminPendingRow(icon: "clock.fill", label: "In-Progress Requests", count: viewModel.requests.filter { $0.status == .inProgress }.count, color: AVIATheme.teal)
+                    AdminPendingRow(icon: "clock.fill", label: "In-Progress Requests", count: viewModel.requests.filter { $0.status == .inProgress }.count, color: AVIATheme.timelessBrown)
                     Rectangle().fill(AVIATheme.surfaceBorder).frame(height: 1).padding(.leading, 52)
                     AdminPendingRow(icon: "square.grid.2x2.fill", label: "Pending Pkg Responses", count: viewModel.packageAssignments.flatMap(\.clientResponses).filter { $0.status == .pending }.count, color: AVIATheme.success)
                     Rectangle().fill(AVIATheme.surfaceBorder).frame(height: 1).padding(.leading, 52)
                     AdminPendingRow(icon: "doc.text.magnifyingglass", label: "EOIs Awaiting Review", count: viewModel.packageAssignments.filter { $0.eoiStatus == "submitted" || $0.eoiStatus == "resubmitted" }.count, color: AVIATheme.warning)
                     Rectangle().fill(AVIATheme.surfaceBorder).frame(height: 1).padding(.leading, 52)
-                    AdminPendingRow(icon: "checklist.checked", label: "Spec Reviews Pending", count: Set(viewModel.pendingSpecReviews.map(\.buildId)).count, color: Color(hex: "E8A317"))
+                    AdminPendingRow(icon: "checklist.checked", label: "Spec Reviews Pending", count: Set(viewModel.pendingSpecReviews.map(\.buildId)).count, color: AVIATheme.warning)
                     if !viewModel.pendingSpecReviews.filter({ $0.selectionType == .upgradeRequested || $0.selectionType == .upgradeAccepted }).isEmpty {
                         Rectangle().fill(AVIATheme.surfaceBorder).frame(height: 1).padding(.leading, 52)
                         AdminPendingRow(icon: "arrow.up.circle.fill", label: "Upgrade Requests", count: viewModel.pendingSpecReviews.filter { $0.selectionType == .upgradeRequested || $0.selectionType == .upgradeAccepted }.count, color: AVIATheme.warning)

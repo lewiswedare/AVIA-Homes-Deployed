@@ -112,20 +112,20 @@ struct SalesAdminDashboardView: View {
                         Spacer()
                         Text("\(Int(averageProgress * 100))% avg")
                             .font(.neueCaptionMedium)
-                            .foregroundStyle(AVIATheme.teal)
+                            .foregroundStyle(AVIATheme.timelessBrown)
                     }
 
                     GeometryReader { geo in
                         ZStack(alignment: .leading) {
-                            Capsule().fill(AVIATheme.teal.opacity(0.1)).frame(height: 8)
-                            Capsule().fill(AVIATheme.tealGradient).frame(width: max(0, geo.size.width * averageProgress), height: 8)
+                            Capsule().fill(AVIATheme.timelessBrown.opacity(0.1)).frame(height: 8)
+                            Capsule().fill(AVIATheme.primaryGradient).frame(width: max(0, geo.size.width * averageProgress), height: 8)
                         }
                     }
                     .frame(height: 8)
 
                     HStack(spacing: 16) {
                         progressLabel(count: viewModel.allClientBuilds.filter { $0.overallProgress < 0.3 }.count, label: "Early", color: AVIATheme.warning)
-                        progressLabel(count: viewModel.allClientBuilds.filter { $0.overallProgress >= 0.3 && $0.overallProgress < 0.7 }.count, label: "Mid", color: Color(hex: "5B7DB1"))
+                        progressLabel(count: viewModel.allClientBuilds.filter { $0.overallProgress >= 0.3 && $0.overallProgress < 0.7 }.count, label: "Mid", color: AVIATheme.timelessBrown)
                         progressLabel(count: viewModel.allClientBuilds.filter { $0.overallProgress >= 0.7 }.count, label: "Late", color: AVIATheme.success)
                     }
                 }

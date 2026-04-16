@@ -53,7 +53,7 @@ struct SpecificationCompareView: View {
                         .clipShape(Circle())
                         .overlay {
                             Circle()
-                                .stroke(isCurrent ? AVIATheme.aviaBlack : AVIATheme.teal.opacity(0.2), lineWidth: 2)
+                                .stroke(isCurrent ? AVIATheme.aviaBlack : AVIATheme.timelessBrown.opacity(0.2), lineWidth: 2)
                         }
 
                     VStack(alignment: .leading, spacing: 2) {
@@ -88,7 +88,7 @@ struct SpecificationCompareView: View {
                                 .foregroundStyle(.white)
                                 .padding(.horizontal, 14)
                                 .padding(.vertical, 7)
-                                .background(AVIATheme.tealGradient)
+                                .background(AVIATheme.primaryGradient)
                                 .clipShape(Capsule())
                         }
                     } else if isCurrent {
@@ -103,7 +103,7 @@ struct SpecificationCompareView: View {
                 .overlay {
                     if isCurrent {
                         RoundedRectangle(cornerRadius: 14)
-                            .stroke(AVIATheme.teal.opacity(0.3), lineWidth: 1.5)
+                            .stroke(AVIATheme.timelessBrown.opacity(0.3), lineWidth: 1.5)
                     }
                 }
             }
@@ -202,7 +202,7 @@ struct SpecificationCompareView: View {
                 }
                 .padding(8)
                 .frame(maxWidth: .infinity, alignment: .leading)
-                .background(isCurrent ? AVIATheme.teal.opacity(0.04) : Color.clear)
+                .background(isCurrent ? AVIATheme.timelessBrown.opacity(0.04) : Color.clear)
             }
         }
         .padding(.vertical, 4)

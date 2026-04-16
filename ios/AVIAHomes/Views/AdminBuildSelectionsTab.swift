@@ -22,7 +22,7 @@ struct AdminBuildSelectionsTab: View {
         VStack(spacing: 12) {
             if !isLoaded {
                 ProgressView()
-                    .tint(AVIATheme.teal)
+                    .tint(AVIATheme.timelessBrown)
                     .frame(maxWidth: .infinity)
                     .padding(.vertical, 40)
             } else if !specViewModel.hasSelections && specViewModel.colourSelections.isEmpty {
@@ -60,7 +60,7 @@ struct AdminBuildSelectionsTab: View {
                     .frame(maxWidth: .infinity)
                     .frame(height: 48)
                     .foregroundStyle(.white)
-                    .background(AVIATheme.tealGradient)
+                    .background(AVIATheme.primaryGradient)
                     .clipShape(.rect(cornerRadius: 14))
                 }
             }
@@ -116,7 +116,7 @@ struct AdminBuildSelectionsTab: View {
                     summaryMetric(
                         value: "\(specViewModel.selections.count)",
                         label: "Spec Items",
-                        color: AVIATheme.teal
+                        color: AVIATheme.timelessBrown
                     )
                     summaryMetric(
                         value: "\(specViewModel.selections.filter(\.adminConfirmed).count)",
@@ -155,7 +155,7 @@ struct AdminBuildSelectionsTab: View {
         switch status {
         case .draft, .clientReviewing: AVIATheme.textTertiary
         case .awaitingAdmin: AVIATheme.warning
-        case .awaitingClient: AVIATheme.teal
+        case .awaitingClient: AVIATheme.timelessBrown
         case .reopenedByAdmin, .amendedByAdmin: Color(hex: "8B5CF6")
         case .approved: AVIATheme.success
         }
@@ -287,7 +287,7 @@ struct AdminBuildSelectionsTab: View {
         let (label, color): (String, Color) = switch type {
         case .included: ("STD", AVIATheme.textTertiary)
         case .upgradeRequested: ("UPG", AVIATheme.warning)
-        case .upgradeCosted: ("UPG $", AVIATheme.teal)
+        case .upgradeCosted: ("UPG $", AVIATheme.timelessBrown)
         case .upgradeAccepted: ("UPG ✓", AVIATheme.success)
         case .upgradeDeclined: ("UPG ✗", AVIATheme.destructive)
         case .upgradeApproved: ("UPG ✓", AVIATheme.success)
@@ -475,7 +475,7 @@ struct AdminBuildSelectionsTab: View {
         } label: {
             HStack(spacing: 8) {
                 if isExportingPDF {
-                    ProgressView().tint(AVIATheme.teal)
+                    ProgressView().tint(AVIATheme.timelessBrown)
                 } else {
                     Image(systemName: "doc.richtext")
                     Text("Export All Selections to PDF")
@@ -484,8 +484,8 @@ struct AdminBuildSelectionsTab: View {
             .font(.neueSubheadlineMedium)
             .frame(maxWidth: .infinity)
             .frame(height: 44)
-            .foregroundStyle(AVIATheme.teal)
-            .background(AVIATheme.teal.opacity(0.1))
+            .foregroundStyle(AVIATheme.timelessBrown)
+            .background(AVIATheme.timelessBrown.opacity(0.1))
             .clipShape(.rect(cornerRadius: 14))
         }
         .disabled(isExportingPDF || (!specViewModel.hasSelections && specViewModel.colourSelections.isEmpty))

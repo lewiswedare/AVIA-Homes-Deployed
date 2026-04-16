@@ -5,11 +5,8 @@ enum AVIATheme {
     static let aviaWhite = Color(hex: "E1DDDC")
     static let timelessBrown = Color(hex: "37332B")
 
-    static let teal = Color(hex: "37332B")
-    static let tealLight = Color(hex: "4A453B")
-    static let tealDark = Color(hex: "2A261F")
-    static let tealBright = Color(hex: "37332B")
-    static let tealSubtle = Color(hex: "37332B").opacity(0.08)
+    static let timelessBrownLight = Color(hex: "4A453B")
+    static let timelessBrownDark = Color(hex: "2A261F")
 
     static let background = Color(hex: "E1DDDC")
     static let cardBackground = Color(hex: "EBE8E7")
@@ -26,7 +23,7 @@ enum AVIATheme {
     static let warning = Color(hex: "C67A1A")
     static let destructive = Color(hex: "C93B3B")
 
-    static let tealGradient = LinearGradient(
+    static let primaryGradient = LinearGradient(
         colors: [Color(hex: "1A1A1A"), Color(hex: "37332B")],
         startPoint: .topLeading,
         endPoint: .bottomTrailing
@@ -212,7 +209,7 @@ struct PremiumButton: View {
             .overlay {
                 if style == .outlined {
                     RoundedRectangle(cornerRadius: 14)
-                        .stroke(AVIATheme.teal.opacity(0.3), lineWidth: 1.5)
+                        .stroke(AVIATheme.timelessBrown.opacity(0.3), lineWidth: 1.5)
                 } else if style == .destructive {
                     RoundedRectangle(cornerRadius: 14)
                         .stroke(AVIATheme.destructive.opacity(0.3), lineWidth: 1.5)
@@ -224,8 +221,8 @@ struct PremiumButton: View {
     private var foregroundColor: Color {
         switch style {
         case .primary: .white
-        case .secondary: AVIATheme.teal
-        case .outlined: AVIATheme.teal
+        case .secondary: AVIATheme.timelessBrown
+        case .outlined: AVIATheme.timelessBrown
         case .destructive: AVIATheme.destructive
         }
     }
@@ -234,9 +231,9 @@ struct PremiumButton: View {
     private var backgroundView: some View {
         switch style {
         case .primary:
-            AVIATheme.tealGradient
+            AVIATheme.primaryGradient
         case .secondary:
-            AVIATheme.teal.opacity(0.1)
+            AVIATheme.timelessBrown.opacity(0.1)
         case .outlined:
             Color.clear
         case .destructive:

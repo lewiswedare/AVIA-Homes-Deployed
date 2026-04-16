@@ -57,7 +57,7 @@ struct MyDesignPlanView: View {
     }
 
     private var floorplanHero: some View {
-        Color(red: 0.22, green: 0.21, blue: 0.20)
+        AVIATheme.timelessBrown
             .frame(height: 280)
             .overlay {
                 AsyncImage(url: URL(string: viewModel.floorplanImageURL)) { phase in
@@ -86,7 +86,7 @@ struct MyDesignPlanView: View {
                     .foregroundStyle(.white)
                     .padding(.horizontal, 14)
                     .padding(.vertical, 8)
-                    .background(AVIATheme.tealGradient)
+                    .background(AVIATheme.primaryGradient)
                     .clipShape(Capsule())
                 }
                 .padding(16)
@@ -151,7 +151,7 @@ struct MyDesignPlanView: View {
                             .foregroundStyle(.white)
                             .frame(maxWidth: .infinity)
                             .frame(height: 40)
-                            .background(AVIATheme.tealGradient)
+                            .background(AVIATheme.primaryGradient)
                             .clipShape(.rect(cornerRadius: 10))
                         }
                     }
@@ -203,10 +203,10 @@ struct MyDesignPlanView: View {
     private var statusColor: Color {
         switch viewModel.planStatus {
         case .draft: AVIATheme.textTertiary
-        case .inReview: Color(hex: "5B7DB1")
+        case .inReview: AVIATheme.timelessBrownLight
         case .changesRequested: AVIATheme.warning
         case .approved: AVIATheme.success
-        case .finalised: AVIATheme.teal
+        case .finalised: AVIATheme.timelessBrown
         }
     }
 
@@ -270,10 +270,10 @@ struct MyDesignPlanView: View {
                         Spacer()
                         Text("v3")
                             .font(.neueCaption2Medium)
-                            .foregroundStyle(AVIATheme.teal)
+                            .foregroundStyle(AVIATheme.timelessBrown)
                             .padding(.horizontal, 10)
                             .padding(.vertical, 4)
-                            .background(AVIATheme.teal.opacity(0.08))
+                            .background(AVIATheme.timelessBrown.opacity(0.08))
                             .clipShape(Capsule())
                     }
 
@@ -312,7 +312,7 @@ struct MyDesignPlanView: View {
                         } label: {
                             Text("Edit")
                                 .font(.neueCaptionMedium)
-                                .foregroundStyle(AVIATheme.teal)
+                                .foregroundStyle(AVIATheme.timelessBrown)
                         }
                     }
                     .padding(14)
@@ -374,7 +374,7 @@ struct MyDesignPlanView: View {
                     .lineSpacing(3)
                     .multilineTextAlignment(isClient ? .trailing : .leading)
                     .padding(12)
-                    .background(isClient ? AVIATheme.teal : AVIATheme.cardBackground)
+                    .background(isClient ? AVIATheme.timelessBrown : AVIATheme.cardBackground)
                     .clipShape(.rect(cornerRadius: 14))
 
                 if let attachment = msg.attachmentName {
@@ -384,10 +384,10 @@ struct MyDesignPlanView: View {
                         Text(attachment)
                             .font(.neueCaption2)
                     }
-                    .foregroundStyle(AVIATheme.teal)
+                    .foregroundStyle(AVIATheme.timelessBrown)
                     .padding(.horizontal, 10)
                     .padding(.vertical, 5)
-                    .background(AVIATheme.teal.opacity(0.06))
+                    .background(AVIATheme.timelessBrown.opacity(0.06))
                     .clipShape(Capsule())
                 }
             }
@@ -402,7 +402,7 @@ struct MyDesignPlanView: View {
             .font(.neueCaption2Medium)
             .foregroundStyle(.white)
             .frame(width: 28, height: 28)
-            .background(isAvia ? AVIATheme.tealGradient : LinearGradient(colors: [Color(hex: "5B7DB1"), Color(hex: "4A6A9D")], startPoint: .topLeading, endPoint: .bottomTrailing))
+            .background(isAvia ? AVIATheme.primaryGradient : LinearGradient(colors: [AVIATheme.timelessBrownLight, AVIATheme.timelessBrownDark], startPoint: .topLeading, endPoint: .bottomTrailing))
             .clipShape(Circle())
     }
 
@@ -412,7 +412,7 @@ struct MyDesignPlanView: View {
                 HStack(spacing: 6) {
                     Image(systemName: "text.bubble.fill")
                         .font(.neueCorp(12))
-                        .foregroundStyle(AVIATheme.teal)
+                        .foregroundStyle(AVIATheme.timelessBrown)
                     Text("Send a Message")
                         .font(.neueCaptionMedium)
                         .foregroundStyle(AVIATheme.textPrimary)
@@ -442,7 +442,7 @@ struct MyDesignPlanView: View {
                         .foregroundStyle(.white)
                         .padding(.horizontal, 20)
                         .padding(.vertical, 9)
-                        .background(viewModel.newMessageText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty ? LinearGradient(colors: [AVIATheme.textTertiary], startPoint: .leading, endPoint: .trailing) : AVIATheme.tealGradient)
+                        .background(viewModel.newMessageText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty ? LinearGradient(colors: [AVIATheme.textTertiary], startPoint: .leading, endPoint: .trailing) : AVIATheme.primaryGradient)
                         .clipShape(Capsule())
                     }
                     .disabled(viewModel.newMessageText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
@@ -461,7 +461,7 @@ struct MyDesignPlanView: View {
                     HStack(spacing: 8) {
                         Image(systemName: "flag.checkered")
                             .font(.neueSubheadlineMedium)
-                            .foregroundStyle(AVIATheme.teal)
+                            .foregroundStyle(AVIATheme.timelessBrown)
                         Text("Final Documents")
                             .font(.neueCorpMedium(18))
                             .foregroundStyle(AVIATheme.textPrimary)
@@ -484,7 +484,7 @@ struct MyDesignPlanView: View {
                 HStack(spacing: 8) {
                     Image(systemName: "doc.text.fill")
                         .font(.neueSubheadlineMedium)
-                        .foregroundStyle(viewModel.isFinalised ? AVIATheme.textTertiary : AVIATheme.teal)
+                        .foregroundStyle(viewModel.isFinalised ? AVIATheme.textTertiary : AVIATheme.timelessBrown)
                     Text(viewModel.isFinalised ? "Working Documents" : "Plan Documents")
                         .font(.neueCorpMedium(18))
                         .foregroundStyle(AVIATheme.textPrimary)
@@ -508,9 +508,9 @@ struct MyDesignPlanView: View {
         HStack(spacing: 14) {
             Image(systemName: doc.type.icon)
                 .font(.neueCorpMedium(14))
-                .foregroundStyle(doc.isFinal ? AVIATheme.teal : Color(hex: "5B7DB1"))
+                .foregroundStyle(doc.isFinal ? AVIATheme.timelessBrown : AVIATheme.timelessBrownLight)
                 .frame(width: 36, height: 36)
-                .background((doc.isFinal ? AVIATheme.teal : Color(hex: "5B7DB1")).opacity(0.12))
+                .background((doc.isFinal ? AVIATheme.timelessBrown : AVIATheme.timelessBrownLight).opacity(0.12))
                 .clipShape(Circle())
 
             VStack(alignment: .leading, spacing: 3) {
@@ -533,7 +533,7 @@ struct MyDesignPlanView: View {
                 HStack(spacing: 6) {
                     Text(doc.version)
                         .font(.neueCaption2Medium)
-                        .foregroundStyle(AVIATheme.teal)
+                        .foregroundStyle(AVIATheme.timelessBrown)
                     Text("·")
                         .foregroundStyle(AVIATheme.textTertiary)
                     Text(doc.dateAdded.formatted(date: .abbreviated, time: .omitted))

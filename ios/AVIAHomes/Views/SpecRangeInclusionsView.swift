@@ -65,9 +65,9 @@ struct SpecRangeInclusionsView: View {
                 HStack(spacing: 12) {
                     Image(systemName: category.icon)
                         .font(.neueCaptionMedium)
-                        .foregroundStyle(AVIATheme.teal)
+                        .foregroundStyle(AVIATheme.timelessBrown)
                         .frame(width: 32, height: 32)
-                        .background(AVIATheme.teal.opacity(0.08))
+                        .background(AVIATheme.timelessBrown.opacity(0.08))
                         .clipShape(.rect(cornerRadius: 8))
 
                     Text(category.name)
@@ -123,10 +123,10 @@ struct SpecRangeInclusionsView: View {
                     Text("UPGRADEABLE")
                         .font(.neueCorpMedium(8))
                         .kerning(0.5)
-                        .foregroundStyle(AVIATheme.teal)
+                        .foregroundStyle(AVIATheme.timelessBrown)
                         .padding(.horizontal, 6)
                         .padding(.vertical, 3)
-                        .background(AVIATheme.teal.opacity(0.1))
+                        .background(AVIATheme.timelessBrown.opacity(0.1))
                         .clipShape(Capsule())
                 }
             }

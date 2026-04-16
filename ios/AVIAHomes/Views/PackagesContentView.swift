@@ -45,7 +45,7 @@ struct PackagesContentView: View {
         HStack(spacing: 12) {
             BentoCard(cornerRadius: 16) {
                 VStack(alignment: .leading, spacing: 6) {
-                    BentoIconCircle(icon: "house.and.flag.fill", color: AVIATheme.teal)
+                    BentoIconCircle(icon: "house.and.flag.fill", color: AVIATheme.timelessBrown)
                     Text("\(basePackages.count)")
                         .font(.neueCorpMedium(32))
                         .foregroundStyle(AVIATheme.textPrimary)
@@ -106,7 +106,7 @@ struct PackagesContentView: View {
                     .foregroundStyle(selectedEstate != nil ? .white : AVIATheme.textPrimary)
                     .padding(.horizontal, 14)
                     .padding(.vertical, 8)
-                    .background(selectedEstate != nil ? AVIATheme.teal : AVIATheme.cardBackground)
+                    .background(selectedEstate != nil ? AVIATheme.timelessBrown : AVIATheme.cardBackground)
                     .clipShape(Capsule())
                     .overlay {
                         if selectedEstate == nil {
@@ -126,7 +126,7 @@ struct PackagesContentView: View {
                             .foregroundStyle(selectedStatus == status ? .white : AVIATheme.textPrimary)
                             .padding(.horizontal, 14)
                             .padding(.vertical, 8)
-                            .background(selectedStatus == status ? AVIATheme.teal : AVIATheme.cardBackground)
+                            .background(selectedStatus == status ? AVIATheme.timelessBrown : AVIATheme.cardBackground)
                             .clipShape(Capsule())
                             .overlay {
                                 if selectedStatus != status {
@@ -202,7 +202,7 @@ struct PackagesContentView: View {
                                     .foregroundStyle(.white)
                                     .padding(.horizontal, 8)
                                     .padding(.vertical, 4)
-                                    .background(AVIATheme.teal)
+                                    .background(AVIATheme.timelessBrown)
                                     .clipShape(Capsule())
                             }
                             statusBadge(package.status)
@@ -220,7 +220,7 @@ struct PackagesContentView: View {
                     HStack(spacing: 6) {
                         Image(systemName: "mappin.circle.fill")
                             .font(.neueCorp(10))
-                            .foregroundStyle(AVIATheme.teal)
+                            .foregroundStyle(AVIATheme.timelessBrown)
                         Text(package.location)
                             .font(.neueCaption)
                             .foregroundStyle(AVIATheme.textSecondary)
@@ -239,7 +239,7 @@ struct PackagesContentView: View {
                     HStack {
                         Text(package.price)
                             .font(.neueCorpMedium(18))
-                            .foregroundStyle(AVIATheme.teal)
+                            .foregroundStyle(AVIATheme.timelessBrown)
                         Spacer()
                         Text(package.homeDesign)
                             .font(.neueCaption2Medium)

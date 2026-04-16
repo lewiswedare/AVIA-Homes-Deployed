@@ -74,7 +74,7 @@ struct SpecificationsOverviewView: View {
                 .foregroundStyle(.white)
                 .frame(maxWidth: .infinity)
                 .frame(height: 52)
-                .background(AVIATheme.tealGradient)
+                .background(AVIATheme.primaryGradient)
                 .clipShape(.rect(cornerRadius: 14))
             }
             .disabled(pendingCount > 0)
@@ -387,7 +387,7 @@ struct SpecificationsOverviewView: View {
                 } label: {
                     Text("View all \(specVM.upgradeRequests.count) requests")
                         .font(.neueCaptionMedium)
-                        .foregroundStyle(AVIATheme.teal)
+                        .foregroundStyle(AVIATheme.timelessBrown)
                         .frame(maxWidth: .infinity)
                         .padding(.vertical, 12)
                         .background(AVIATheme.cardBackground)
@@ -457,7 +457,7 @@ struct SpecificationsOverviewView: View {
     private func upgradeStatusColor(_ status: UpgradeStatus) -> Color {
         switch status {
         case .pending: AVIATheme.warning
-        case .quoted: Color(hex: "5B7DB1")
+        case .quoted: AVIATheme.timelessBrown
         case .approved: AVIATheme.success
         case .declined: AVIATheme.destructive
         }

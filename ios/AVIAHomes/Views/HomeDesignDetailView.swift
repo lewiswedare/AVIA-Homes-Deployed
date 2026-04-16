@@ -46,10 +46,10 @@ struct HomeDesignDetailView: View {
                             VStack(spacing: 12) {
                                 Image(systemName: "house.fill")
                                     .font(.neueCorpMedium(56))
-                                    .foregroundStyle(AVIATheme.teal.opacity(0.2))
+                                    .foregroundStyle(AVIATheme.timelessBrown.opacity(0.2))
                                 Text(design.name)
                                     .font(.neueCorpMedium(24))
-                                    .foregroundStyle(AVIATheme.teal.opacity(0.15))
+                                    .foregroundStyle(AVIATheme.timelessBrown.opacity(0.15))
                             }
                         } else {
                             ProgressView()
@@ -200,7 +200,7 @@ struct HomeDesignDetailView: View {
                 showingFloorplan = true
             } label: {
                 VStack(spacing: 0) {
-                    Color(red: 0.22, green: 0.21, blue: 0.20)
+                    AVIATheme.timelessBrown
                         .frame(height: 360)
                         .overlay {
                             AsyncImage(url: URL(string: design.floorplanImageURL)) { phase in
@@ -229,7 +229,7 @@ struct HomeDesignDetailView: View {
                             Text("Tap to expand")
                                 .font(.neueCaption2)
                         }
-                        .foregroundStyle(AVIATheme.teal)
+                        .foregroundStyle(AVIATheme.timelessBrown)
                     }
                     .padding(.horizontal, 16)
                     .padding(.vertical, 12)
@@ -249,7 +249,7 @@ struct HomeDesignDetailView: View {
         HStack(spacing: 6) {
             Image(systemName: icon)
                 .font(.system(size: 12, weight: .medium))
-                .foregroundStyle(AVIATheme.teal)
+                .foregroundStyle(AVIATheme.timelessBrown)
             Text(value)
                 .font(.neueCorpMedium(16))
                 .foregroundStyle(AVIATheme.textPrimary)
@@ -467,7 +467,7 @@ struct HomeDesignDetailView: View {
                 .frame(maxWidth: .infinity)
                 .frame(height: 52)
                 .foregroundStyle(.white)
-                .background(AVIATheme.tealGradient)
+                .background(AVIATheme.primaryGradient)
                 .clipShape(.rect(cornerRadius: 14))
             }
             .sheet(isPresented: $showingEnquiryForm) {
@@ -484,8 +484,8 @@ struct HomeDesignDetailView: View {
                     }
                     .frame(maxWidth: .infinity)
                     .frame(height: 52)
-                    .foregroundStyle(AVIATheme.teal)
-                    .background(AVIATheme.teal.opacity(0.1))
+                    .foregroundStyle(AVIATheme.timelessBrown)
+                    .background(AVIATheme.timelessBrown.opacity(0.1))
                     .clipShape(.rect(cornerRadius: 14))
                 }
             }
@@ -503,7 +503,7 @@ struct FloorplanFullscreenView: View {
     @State private var lastOffset: CGSize = .zero
     @State private var loadedImage: Image?
 
-    private let floorplanBackground = Color(red: 0.22, green: 0.21, blue: 0.20)
+    private let floorplanBackground = AVIATheme.timelessBrown
 
     var body: some View {
         NavigationStack {

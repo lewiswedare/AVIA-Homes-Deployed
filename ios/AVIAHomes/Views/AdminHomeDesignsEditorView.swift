@@ -31,7 +31,7 @@ struct AdminHomeDesignsEditorView: View {
 
                 if viewModel.isLoading {
                     ProgressView()
-                        .tint(AVIATheme.teal)
+                        .tint(AVIATheme.timelessBrown)
                         .padding(.vertical, 60)
                 } else if filteredDesigns.isEmpty {
                     AdminEmptyState(
@@ -58,7 +58,7 @@ struct AdminHomeDesignsEditorView: View {
             ToolbarItem(placement: .primaryAction) {
                 Button { showingAddSheet = true } label: {
                     Image(systemName: "plus.circle.fill")
-                        .foregroundStyle(AVIATheme.teal)
+                        .foregroundStyle(AVIATheme.timelessBrown)
                 }
             }
         }
@@ -107,7 +107,7 @@ struct AdminHomeDesignsEditorView: View {
                 .padding(.horizontal, 14)
                 .padding(.vertical, 7)
                 .foregroundStyle(filterStoreys == value ? .white : AVIATheme.textSecondary)
-                .background(filterStoreys == value ? AVIATheme.teal : AVIATheme.cardBackground)
+                .background(filterStoreys == value ? AVIATheme.timelessBrown : AVIATheme.cardBackground)
                 .clipShape(Capsule())
                 .overlay {
                     if filterStoreys != value {
@@ -119,7 +119,7 @@ struct AdminHomeDesignsEditorView: View {
 
     private var statsBar: some View {
         HStack(spacing: 12) {
-            AdminMiniStat(value: "\(viewModel.homeDesigns.count)", label: "Total", color: AVIATheme.teal)
+            AdminMiniStat(value: "\(viewModel.homeDesigns.count)", label: "Total", color: AVIATheme.timelessBrown)
             AdminMiniStat(value: "\(viewModel.homeDesigns.filter { $0.storeys == 1 }.count)", label: "Single", color: AVIATheme.success)
             AdminMiniStat(value: "\(viewModel.homeDesigns.filter { $0.storeys == 2 }.count)", label: "Double", color: AVIATheme.warning)
         }
@@ -191,7 +191,7 @@ struct AdminHomeDesignsEditorView: View {
         HStack(spacing: 3) {
             Image(systemName: icon)
                 .font(.system(size: 9))
-                .foregroundStyle(AVIATheme.teal)
+                .foregroundStyle(AVIATheme.timelessBrown)
             Text(value)
                 .font(.neueCaption2Medium)
                 .foregroundStyle(AVIATheme.textSecondary)
@@ -430,7 +430,7 @@ struct HomeDesignEditSheet: View {
         VStack(spacing: 6) {
             Image(systemName: icon)
                 .font(.system(size: 14))
-                .foregroundStyle(AVIATheme.teal)
+                .foregroundStyle(AVIATheme.timelessBrown)
             HStack(spacing: 8) {
                 Button { if value.wrappedValue > 0 { value.wrappedValue -= 1 } } label: {
                     Image(systemName: "minus.circle.fill")
@@ -442,7 +442,7 @@ struct HomeDesignEditSheet: View {
                     .frame(minWidth: 16)
                 Button { value.wrappedValue += 1 } label: {
                     Image(systemName: "plus.circle.fill")
-                        .foregroundStyle(AVIATheme.teal)
+                        .foregroundStyle(AVIATheme.timelessBrown)
                 }
             }
             Text(label)

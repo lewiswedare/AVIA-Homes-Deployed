@@ -21,7 +21,7 @@ struct AdminBuildsSection: View {
     var body: some View {
         VStack(spacing: 12) {
             HStack(spacing: 12) {
-                AdminMetricCard(value: "\(viewModel.allClientBuilds.count)", label: "Total", icon: "building.2.fill", color: AVIATheme.teal)
+                AdminMetricCard(value: "\(viewModel.allClientBuilds.count)", label: "Total", icon: "building.2.fill", color: AVIATheme.timelessBrown)
                 AdminMetricCard(value: "\(viewModel.allClientBuilds.filter { $0.currentStage != nil }.count)", label: "Active", icon: "hammer.fill", color: AVIATheme.warning)
             }
             .fixedSize(horizontal: false, vertical: true)

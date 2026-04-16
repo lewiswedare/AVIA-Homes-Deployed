@@ -121,7 +121,7 @@ struct LoginView: View {
                             .frame(maxWidth: .infinity)
                             .frame(height: 52)
                             .foregroundStyle(.white)
-                            .background(AVIATheme.tealGradient)
+                            .background(AVIATheme.primaryGradient)
                             .clipShape(.rect(cornerRadius: 14))
                         }
                         .disabled(email.isEmpty || password.isEmpty || appViewModel.authService.isLoading)
@@ -131,7 +131,7 @@ struct LoginView: View {
                             showForgotPassword = true
                         }
                         .font(.neueSubheadlineMedium)
-                        .foregroundStyle(AVIATheme.teal)
+                        .foregroundStyle(AVIATheme.timelessBrown)
 
                         dividerRow
 
@@ -142,12 +142,12 @@ struct LoginView: View {
                                 .font(.neueSubheadlineMedium)
                                 .frame(maxWidth: .infinity)
                                 .frame(height: 52)
-                                .foregroundStyle(AVIATheme.teal)
-                                .background(AVIATheme.teal.opacity(0.08))
+                                .foregroundStyle(AVIATheme.timelessBrown)
+                                .background(AVIATheme.timelessBrown.opacity(0.08))
                                 .clipShape(.rect(cornerRadius: 14))
                                 .overlay {
                                     RoundedRectangle(cornerRadius: 14)
-                                        .stroke(AVIATheme.teal.opacity(0.2), lineWidth: 1)
+                                        .stroke(AVIATheme.timelessBrown.opacity(0.2), lineWidth: 1)
                                 }
                         }
                     }

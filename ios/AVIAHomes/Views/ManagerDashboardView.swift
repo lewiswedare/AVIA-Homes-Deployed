@@ -47,7 +47,7 @@ struct AdminDashboardView: View {
                         }
                     } label: {
                         Image(systemName: "ellipsis.circle.fill")
-                            .foregroundStyle(AVIATheme.teal)
+                            .foregroundStyle(AVIATheme.timelessBrown)
                     }
                 }
             }
@@ -120,7 +120,7 @@ struct AdminDashboardView: View {
                         .padding(.horizontal, 12)
                         .padding(.vertical, 8)
                         .foregroundStyle(selectedSection == section ? .white : AVIATheme.textSecondary)
-                        .background(selectedSection == section ? AVIATheme.teal : AVIATheme.cardBackground)
+                        .background(selectedSection == section ? AVIATheme.timelessBrown : AVIATheme.cardBackground)
                         .clipShape(Capsule())
                         .overlay {
                             if selectedSection != section {

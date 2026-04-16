@@ -85,7 +85,7 @@ struct UserManagementView: View {
             } label: {
                 Text("View")
                     .font(.neueCaptionMedium)
-                    .foregroundStyle(AVIATheme.teal)
+                    .foregroundStyle(AVIATheme.timelessBrown)
                     .padding(.horizontal, 14)
                     .padding(.vertical, 6)
                     .background(.white)
@@ -93,7 +93,7 @@ struct UserManagementView: View {
             }
         }
         .padding(14)
-        .background(AVIATheme.tealGradient)
+        .background(AVIATheme.primaryGradient)
         .clipShape(.rect(cornerRadius: 16))
     }
 
@@ -122,7 +122,7 @@ struct UserManagementView: View {
                 .foregroundStyle(isSelected ? .white : AVIATheme.textSecondary)
                 .padding(.horizontal, 14)
                 .padding(.vertical, 8)
-                .background(isSelected ? AVIATheme.teal : AVIATheme.cardBackground)
+                .background(isSelected ? AVIATheme.timelessBrown : AVIATheme.cardBackground)
                 .clipShape(.capsule)
                 .overlay {
                     Capsule().stroke(isSelected ? Color.clear : AVIATheme.surfaceBorder, lineWidth: 1)
@@ -141,7 +141,7 @@ struct UserManagementView: View {
                         if user.role.isPending {
                             AVIATheme.warning
                         } else {
-                            AVIATheme.tealGradient
+                            AVIATheme.primaryGradient
                         }
                     }
                 }
@@ -178,10 +178,10 @@ struct UserManagementView: View {
     private func roleBadge(_ role: UserRole) -> some View {
         Text(role.rawValue)
             .font(.neueCaption2Medium)
-            .foregroundStyle(role.isPending ? AVIATheme.warning : AVIATheme.teal)
+            .foregroundStyle(role.isPending ? AVIATheme.warning : AVIATheme.timelessBrown)
             .padding(.horizontal, 10)
             .padding(.vertical, 4)
-            .background(role.isPending ? AVIATheme.warning.opacity(0.12) : AVIATheme.teal.opacity(0.12))
+            .background(role.isPending ? AVIATheme.warning.opacity(0.12) : AVIATheme.timelessBrown.opacity(0.12))
             .clipShape(.capsule)
     }
 
@@ -235,7 +235,7 @@ struct UserRoleAssignmentSheet: View {
                                     HStack(spacing: 14) {
                                         Image(systemName: role.icon)
                                             .font(.neueSubheadline)
-                                            .foregroundStyle(selectedRole == role ? AVIATheme.teal : AVIATheme.textTertiary)
+                                            .foregroundStyle(selectedRole == role ? AVIATheme.timelessBrown : AVIATheme.textTertiary)
                                             .frame(width: 28)
 
                                         VStack(alignment: .leading, spacing: 2) {
@@ -251,14 +251,14 @@ struct UserRoleAssignmentSheet: View {
 
                                         Image(systemName: selectedRole == role ? "checkmark.circle.fill" : "circle")
                                             .font(.system(size: 22))
-                                            .foregroundStyle(selectedRole == role ? AVIATheme.teal : AVIATheme.surfaceBorder)
+                                            .foregroundStyle(selectedRole == role ? AVIATheme.timelessBrown : AVIATheme.surfaceBorder)
                                     }
                                     .padding(14)
-                                    .background(selectedRole == role ? AVIATheme.teal.opacity(0.06) : AVIATheme.cardBackground)
+                                    .background(selectedRole == role ? AVIATheme.timelessBrown.opacity(0.06) : AVIATheme.cardBackground)
                                     .clipShape(.rect(cornerRadius: 14))
                                     .overlay {
                                         RoundedRectangle(cornerRadius: 14)
-                                            .stroke(selectedRole == role ? AVIATheme.teal.opacity(0.4) : AVIATheme.surfaceBorder, lineWidth: selectedRole == role ? 1.5 : 1)
+                                            .stroke(selectedRole == role ? AVIATheme.timelessBrown.opacity(0.4) : AVIATheme.surfaceBorder, lineWidth: selectedRole == role ? 1.5 : 1)
                                     }
                                 }
                             }
@@ -278,7 +278,7 @@ struct UserRoleAssignmentSheet: View {
                         .frame(maxWidth: .infinity)
                         .frame(height: 52)
                         .foregroundStyle(.white)
-                        .background(AVIATheme.tealGradient)
+                        .background(AVIATheme.primaryGradient)
                         .clipShape(.rect(cornerRadius: 14))
                     }
                     .disabled(isSaving)
@@ -293,7 +293,7 @@ struct UserRoleAssignmentSheet: View {
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
                     Button("Cancel") { dismiss() }
-                        .tint(AVIATheme.teal)
+                        .tint(AVIATheme.timelessBrown)
                 }
             }
         }
@@ -313,7 +313,7 @@ struct UserRoleAssignmentSheet: View {
                         if user.role.isPending {
                             AVIATheme.warning
                         } else {
-                            AVIATheme.tealGradient
+                            AVIATheme.primaryGradient
                         }
                     }
                 }

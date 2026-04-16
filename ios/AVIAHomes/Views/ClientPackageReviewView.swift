@@ -136,7 +136,7 @@ struct ClientPackageReviewView: View {
                     HStack(spacing: 6) {
                         Image(systemName: "mappin.circle.fill")
                             .font(.neueCorp(10))
-                            .foregroundStyle(AVIATheme.teal)
+                            .foregroundStyle(AVIATheme.timelessBrown)
                         Text(package.location)
                             .font(.neueCaption)
                             .foregroundStyle(AVIATheme.textSecondary)
@@ -146,12 +146,12 @@ struct ClientPackageReviewView: View {
                     HStack {
                         Text(package.price)
                             .font(.neueCorpMedium(18))
-                            .foregroundStyle(AVIATheme.teal)
+                            .foregroundStyle(AVIATheme.timelessBrown)
                         Spacer()
                         if response?.status == .pending || response == nil {
                             Text("Tap to review")
                                 .font(.neueCaption2Medium)
-                                .foregroundStyle(AVIATheme.teal)
+                                .foregroundStyle(AVIATheme.timelessBrown)
                         }
                     }
                 }

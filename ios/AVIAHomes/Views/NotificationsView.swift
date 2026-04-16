@@ -50,7 +50,7 @@ struct NotificationsView: View {
                         }
                     }
                     .font(.neueCaptionMedium)
-                    .foregroundStyle(AVIATheme.teal)
+                    .foregroundStyle(AVIATheme.timelessBrown)
                 }
             }
         }
@@ -237,13 +237,13 @@ struct NotificationsView: View {
 
             if !notification.isRead {
                 Circle()
-                    .fill(AVIATheme.teal)
+                    .fill(AVIATheme.timelessBrown)
                     .frame(width: 8, height: 8)
             }
         }
         .padding(.horizontal, 20)
         .padding(.vertical, 12)
-        .background(notification.isRead ? Color.clear : AVIATheme.teal.opacity(0.03))
+        .background(notification.isRead ? Color.clear : AVIATheme.timelessBrown.opacity(0.03))
     }
 
     private var emptyState: some View {
@@ -268,7 +268,7 @@ struct NotificationsView: View {
         case "success": AVIATheme.success
         case "destructive": AVIATheme.destructive
         case "warning": AVIATheme.warning
-        default: AVIATheme.teal
+        default: AVIATheme.timelessBrown
         }
     }
 

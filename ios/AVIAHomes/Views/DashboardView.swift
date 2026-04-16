@@ -442,7 +442,7 @@ struct DashboardView: View {
                                 Text("NEXT UP")
                                     .font(.neueCaption2Medium)
                                     .kerning(1.2)
-                                    .foregroundStyle(AVIATheme.teal)
+                                    .foregroundStyle(AVIATheme.timelessBrown)
                                 Text(next.title)
                                     .font(.neueSubheadlineMedium)
                                     .foregroundStyle(AVIATheme.textPrimary)
@@ -453,9 +453,9 @@ struct DashboardView: View {
                             Spacer()
                             Image(systemName: next.icon)
                                 .font(.neueCorpMedium(20))
-                                .foregroundStyle(AVIATheme.teal)
+                                .foregroundStyle(AVIATheme.timelessBrown)
                                 .frame(width: 44, height: 44)
-                                .background(AVIATheme.teal.opacity(0.1))
+                                .background(AVIATheme.timelessBrown.opacity(0.1))
                                 .clipShape(Circle())
                         }
 
@@ -489,7 +489,7 @@ struct DashboardView: View {
                                 .foregroundStyle(.white)
                                 .frame(maxWidth: .infinity)
                                 .frame(height: 38)
-                                .background(AVIATheme.tealGradient)
+                                .background(AVIATheme.primaryGradient)
                                 .clipShape(.rect(cornerRadius: 10))
                             }
                             .sensoryFeedback(.impact(flexibility: .soft), trigger: showScheduleSheet)
@@ -544,14 +544,14 @@ struct DashboardView: View {
                             HStack(spacing: 6) {
                                 Image(systemName: first.icon)
                                     .font(.neueCorp(10))
-                                    .foregroundStyle(AVIATheme.teal)
+                                    .foregroundStyle(AVIATheme.timelessBrown)
                                 Text(first.type.rawValue)
                                     .font(.neueCaptionMedium)
                                     .foregroundStyle(AVIATheme.textPrimary)
                                     .lineLimit(1)
                             }
                             Spacer()
-                            StatusBadge(title: daysAwayLabel(first.date), color: AVIATheme.teal)
+                            StatusBadge(title: daysAwayLabel(first.date), color: AVIATheme.timelessBrown)
                         }
                         .padding(12)
                     }
@@ -611,7 +611,7 @@ struct DashboardView: View {
                                 .foregroundStyle(AVIATheme.textPrimary)
                             Image(systemName: "chevron.right")
                                 .font(.system(size: 9, weight: .semibold))
-                                .foregroundStyle(AVIATheme.teal)
+                                .foregroundStyle(AVIATheme.timelessBrown)
                         }
                         Text(viewModel.currentUser.homeDesign)
                             .font(.neueCaptionMedium)
@@ -687,12 +687,12 @@ struct DashboardView: View {
                                 .foregroundStyle(AVIATheme.textPrimary)
                         }
 
-                        GaugeArc(progress: viewModel.overallProgress, color: AVIATheme.teal)
+                        GaugeArc(progress: viewModel.overallProgress, color: AVIATheme.timelessBrown)
                             .frame(height: 100)
 
                         HStack(spacing: 12) {
                             HStack(spacing: 4) {
-                                Circle().fill(AVIATheme.teal).frame(width: 6, height: 6)
+                                Circle().fill(AVIATheme.timelessBrown).frame(width: 6, height: 6)
                                 Text("Complete")
                                     .font(.neueCaption2)
                                     .foregroundStyle(AVIATheme.textTertiary)
@@ -710,7 +710,7 @@ struct DashboardView: View {
                             HStack(spacing: 8) {
                                 Image(systemName: "flag.fill")
                                     .font(.system(size: 12))
-                                    .foregroundStyle(AVIATheme.teal)
+                                    .foregroundStyle(AVIATheme.timelessBrown)
                                 VStack(alignment: .leading, spacing: 2) {
                                     Text("Next Milestone")
                                         .font(.neueCaption2)
@@ -740,7 +740,7 @@ struct DashboardView: View {
             VStack(alignment: .leading, spacing: 10) {
                 HStack(spacing: 6) {
                     Image(systemName: "bell.fill")
-                        .foregroundStyle(AVIATheme.teal)
+                        .foregroundStyle(AVIATheme.timelessBrown)
                     Text("Upcoming Reminders")
                         .font(.neueSubheadlineMedium)
                         .foregroundStyle(AVIATheme.textPrimary)
@@ -755,7 +755,7 @@ struct DashboardView: View {
                         HStack(spacing: 12) {
                             Image(systemName: reminder.isRead ? "bell" : "bell.badge.fill")
                                 .font(.system(size: 16))
-                                .foregroundStyle(reminder.isRead ? AVIATheme.textTertiary : AVIATheme.teal)
+                                .foregroundStyle(reminder.isRead ? AVIATheme.textTertiary : AVIATheme.timelessBrown)
 
                             VStack(alignment: .leading, spacing: 3) {
                                 Text(reminder.title)
@@ -782,7 +782,7 @@ struct DashboardView: View {
                                 } label: {
                                     Image(systemName: "checkmark.circle")
                                         .font(.system(size: 20))
-                                        .foregroundStyle(AVIATheme.teal)
+                                        .foregroundStyle(AVIATheme.timelessBrown)
                                 }
                             }
                         }
@@ -842,7 +842,7 @@ struct DashboardView: View {
             HStack(spacing: 8) {
                 Image(systemName: "calendar")
                     .font(.neueSubheadlineMedium)
-                    .foregroundStyle(AVIATheme.teal)
+                    .foregroundStyle(AVIATheme.timelessBrown)
                 Text("Upcoming Schedule")
                     .font(.neueCorpMedium(20))
                     .foregroundStyle(AVIATheme.textPrimary)
@@ -909,10 +909,10 @@ struct DashboardView: View {
                             Text("Calendar")
                                 .font(.neueCaption2Medium)
                         }
-                        .foregroundStyle(AVIATheme.teal)
+                        .foregroundStyle(AVIATheme.timelessBrown)
                         .padding(.horizontal, 12)
                         .padding(.vertical, 7)
-                        .background(AVIATheme.teal.opacity(0.08))
+                        .background(AVIATheme.timelessBrown.opacity(0.08))
                         .clipShape(Capsule())
                     }
 
@@ -942,12 +942,12 @@ struct DashboardView: View {
 
     private func colorForType(_ type: ScheduleItem.ItemType) -> Color {
         switch type {
-        case .siteVisit: return AVIATheme.teal
-        case .walkthrough: return Color(hex: "5B7DB1")
+        case .siteVisit: return AVIATheme.timelessBrown
+        case .walkthrough: return AVIATheme.timelessBrown
         case .colourDue: return AVIATheme.warning
         case .inspection: return AVIATheme.success
         case .meeting: return Color(hex: "8B6BA8")
-        case .handover: return AVIATheme.teal
+        case .handover: return AVIATheme.timelessBrown
         }
     }
 
@@ -1033,7 +1033,7 @@ struct DashboardView: View {
                             .foregroundStyle(.white)
                             .padding(.horizontal, 16)
                             .padding(.vertical, 12)
-                            .background(AVIATheme.tealGradient)
+                            .background(AVIATheme.primaryGradient)
                             .clipShape(.rect(cornerRadius: 12))
                         }
                     }
@@ -1049,7 +1049,7 @@ struct DashboardView: View {
         VStack(spacing: 2) {
             Text(value)
                 .font(.neueCorpMedium(18))
-                .foregroundStyle(AVIATheme.teal)
+                .foregroundStyle(AVIATheme.timelessBrown)
             Text(label)
                 .font(.neueCaption2)
                 .foregroundStyle(AVIATheme.textTertiary)
@@ -1093,7 +1093,7 @@ struct DashboardView: View {
                         } else if phase.error != nil {
                             Image(systemName: "photo")
                                 .font(.neueCorpMedium(24))
-                                .foregroundStyle(AVIATheme.teal.opacity(0.25))
+                                .foregroundStyle(AVIATheme.timelessBrown.opacity(0.25))
                         } else {
                             ProgressView()
                         }
@@ -1163,7 +1163,7 @@ struct DashboardView: View {
                         } else if phase.error != nil {
                             Text(tier.displayName)
                                 .font(.neueCorpMedium(16))
-                                .foregroundStyle(AVIATheme.teal.opacity(0.25))
+                                .foregroundStyle(AVIATheme.timelessBrown.opacity(0.25))
                         } else {
                             ProgressView()
                         }
@@ -1306,7 +1306,7 @@ struct DashboardView: View {
                     Text(post.category.uppercased())
                         .font(.neueCorpMedium(9))
                         .kerning(0.6)
-                        .foregroundStyle(AVIATheme.teal)
+                        .foregroundStyle(AVIATheme.timelessBrown)
 
                     Text(post.title)
                         .font(.neueSubheadlineMedium)
@@ -1344,7 +1344,7 @@ struct DashboardView: View {
                 } label: {
                     Text("See All")
                         .font(.neueCaptionMedium)
-                        .foregroundStyle(AVIATheme.teal)
+                        .foregroundStyle(AVIATheme.timelessBrown)
                 }
             }
 
@@ -1362,7 +1362,7 @@ struct DashboardView: View {
                         VStack(spacing: 10) {
                             Image(systemName: "arrow.right.circle.fill")
                                 .font(.neueCorpMedium(28))
-                                .foregroundStyle(AVIATheme.teal)
+                                .foregroundStyle(AVIATheme.timelessBrown)
                             Text("View All\n\(viewModel.allHomeDesigns.count) Designs")
                                 .font(.neueCaptionMedium)
                                 .foregroundStyle(AVIATheme.textSecondary)
@@ -1389,7 +1389,7 @@ struct DashboardView: View {
                     } else if phase.error != nil {
                         Image(systemName: "house.fill")
                             .font(.neueCorpMedium(24))
-                            .foregroundStyle(AVIATheme.teal.opacity(0.25))
+                            .foregroundStyle(AVIATheme.timelessBrown.opacity(0.25))
                     } else {
                         ProgressView()
                     }
@@ -1458,7 +1458,7 @@ struct DashboardView: View {
                                 .foregroundStyle(.white)
                                 .padding(.horizontal, 6)
                                 .padding(.vertical, 3)
-                                .background(AVIATheme.teal)
+                                .background(AVIATheme.timelessBrown)
                                 .clipShape(Capsule())
                                 .padding(4)
                         }
@@ -1473,7 +1473,7 @@ struct DashboardView: View {
                     HStack(spacing: 6) {
                         Image(systemName: "mappin.circle.fill")
                             .font(.neueCorp(10))
-                            .foregroundStyle(AVIATheme.teal)
+                            .foregroundStyle(AVIATheme.timelessBrown)
                         Text(package.location)
                             .font(.neueCaption)
                             .foregroundStyle(AVIATheme.textSecondary)
@@ -1490,7 +1490,7 @@ struct DashboardView: View {
 
                     Text(package.price)
                         .font(.neueSubheadlineMedium)
-                        .foregroundStyle(AVIATheme.teal)
+                        .foregroundStyle(AVIATheme.timelessBrown)
                 }
 
                 Spacer(minLength: 0)
@@ -1700,7 +1700,7 @@ struct SegmentedProgressBar: View {
             HStack(spacing: spacing) {
                 ForEach(0..<totalSegments, id: \.self) { index in
                     RoundedRectangle(cornerRadius: 2)
-                        .fill(index < filledCount ? AVIATheme.teal : AVIATheme.surfaceBorder)
+                        .fill(index < filledCount ? AVIATheme.timelessBrown : AVIATheme.surfaceBorder)
                         .frame(width: segmentWidth)
                 }
             }

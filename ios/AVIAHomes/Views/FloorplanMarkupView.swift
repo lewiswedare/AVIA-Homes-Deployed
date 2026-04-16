@@ -30,7 +30,7 @@ struct FloorplanMarkupView: View {
     var body: some View {
         NavigationStack {
             ZStack(alignment: .bottom) {
-                Color(red: 0.22, green: 0.21, blue: 0.20)
+                AVIATheme.timelessBrown
                     .ignoresSafeArea()
 
                 VStack(spacing: 0) {
@@ -41,7 +41,7 @@ struct FloorplanMarkupView: View {
                 }
             }
             .navigationBarTitleDisplayMode(.inline)
-            .toolbarBackground(Color(red: 0.22, green: 0.21, blue: 0.20), for: .navigationBar)
+            .toolbarBackground(AVIATheme.timelessBrown, for: .navigationBar)
             .toolbarBackground(.visible, for: .navigationBar)
             .toolbar {
                 ToolbarItem(placement: .topBarLeading) {
@@ -80,7 +80,7 @@ struct FloorplanMarkupView: View {
                                 .foregroundStyle(.white)
                                 .padding(.horizontal, 14)
                                 .padding(.vertical, 7)
-                                .background(hasDrawn ? AVIATheme.tealGradient : LinearGradient(colors: [.gray], startPoint: .leading, endPoint: .trailing))
+                                .background(hasDrawn ? AVIATheme.primaryGradient : LinearGradient(colors: [.gray], startPoint: .leading, endPoint: .trailing))
                                 .clipShape(Capsule())
                         }
                         .disabled(!hasDrawn)
@@ -94,7 +94,7 @@ struct FloorplanMarkupView: View {
         HStack(spacing: 8) {
             Image(systemName: "hand.draw.fill")
                 .font(.neueCorp(12))
-                .foregroundStyle(AVIATheme.teal)
+                .foregroundStyle(AVIATheme.timelessBrown)
             Text("Draw on the floor plan to indicate changes you'd like made")
                 .font(.neueCaption)
                 .foregroundStyle(.white.opacity(0.8))

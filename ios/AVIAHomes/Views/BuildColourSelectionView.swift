@@ -47,7 +47,7 @@ struct BuildColourSelectionView: View {
     var body: some View {
         Group {
             if viewModel.isLoading {
-                ProgressView().tint(AVIATheme.teal)
+                ProgressView().tint(AVIATheme.timelessBrown)
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
             } else if viewModel.overallStatus != .approved {
                 specNotApprovedState
@@ -445,7 +445,7 @@ struct BuildColourPickerSheet: View {
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
                     Button("Cancel") { dismiss() }
-                        .tint(AVIATheme.teal)
+                        .tint(AVIATheme.timelessBrown)
                 }
             }
         }

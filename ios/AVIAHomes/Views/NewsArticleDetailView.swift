@@ -47,7 +47,7 @@ struct NewsArticleDetailView: View {
             Text(post.category.uppercased())
                 .font(.neueCorpMedium(11))
                 .kerning(1.0)
-                .foregroundStyle(AVIATheme.teal)
+                .foregroundStyle(AVIATheme.timelessBrown)
 
             Text(post.title)
                 .font(.neueCorpMedium(26))

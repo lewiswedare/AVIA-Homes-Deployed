@@ -51,7 +51,7 @@ struct HomeFastSchemeView: View {
                 ToolbarItem(placement: .topBarTrailing) {
                     Button("Done") { dismiss() }
                         .font(.neueSubheadlineMedium)
-                        .tint(AVIATheme.teal)
+                        .tint(AVIATheme.timelessBrown)
                 }
             }
             .sensoryFeedback(.selection, trigger: animateTrigger)
@@ -78,9 +78,9 @@ struct HomeFastSchemeView: View {
             HStack(spacing: 12) {
                 Image(systemName: "sparkles")
                     .font(.neueTitle3)
-                    .foregroundStyle(AVIATheme.teal)
+                    .foregroundStyle(AVIATheme.timelessBrown)
                     .frame(width: 44, height: 44)
-                    .background(AVIATheme.teal.opacity(0.1))
+                    .background(AVIATheme.timelessBrown.opacity(0.1))
                     .clipShape(.rect(cornerRadius: 12))
 
                 VStack(alignment: .leading, spacing: 2) {
@@ -217,7 +217,7 @@ struct HomeFastSchemeView: View {
             .frame(maxWidth: .infinity)
             .frame(height: 52)
             .foregroundStyle(.white)
-            .background(AVIATheme.tealGradient)
+            .background(AVIATheme.primaryGradient)
             .clipShape(.rect(cornerRadius: 16))
         }
         .transition(.move(edge: .bottom).combined(with: .opacity))
@@ -293,11 +293,11 @@ struct SchemeCard: View {
             .overlay {
                 RoundedRectangle(cornerRadius: 18)
                     .stroke(
-                        isSelected ? AVIATheme.teal : (isApplied ? AVIATheme.success.opacity(0.3) : Color.clear),
+                        isSelected ? AVIATheme.timelessBrown : (isApplied ? AVIATheme.success.opacity(0.3) : Color.clear),
                         lineWidth: isSelected ? 2.5 : 1
                     )
             }
-            .shadow(color: isSelected ? AVIATheme.teal.opacity(0.12) : .clear, radius: 8, y: 4)
+            .shadow(color: isSelected ? AVIATheme.timelessBrown.opacity(0.12) : .clear, radius: 8, y: 4)
         }
         .buttonStyle(.plain)
     }

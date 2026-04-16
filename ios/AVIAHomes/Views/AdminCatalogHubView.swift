@@ -21,7 +21,7 @@ struct AdminCatalogHubView: View {
                             subtitle: "Manage specification items across Volos, Messina & Portobello tiers",
                             count: specCount,
                             countLabel: "items",
-                            color: AVIATheme.teal
+                            color: AVIATheme.timelessBrown
                         )
                     }
 
@@ -73,9 +73,9 @@ struct AdminCatalogHubView: View {
                         HStack(spacing: 14) {
                             Image(systemName: "dollarsign.arrow.trianglehead.counterclockwise.rotate.90")
                                 .font(.neueCorpMedium(16))
-                                .foregroundStyle(AVIATheme.teal)
+                                .foregroundStyle(AVIATheme.timelessBrown)
                                 .frame(width: 44, height: 44)
-                                .background(AVIATheme.teal.opacity(0.12))
+                                .background(AVIATheme.timelessBrown.opacity(0.12))
                                 .clipShape(.rect(cornerRadius: 12))
 
                             VStack(alignment: .leading, spacing: 3) {
@@ -117,7 +117,7 @@ struct AdminCatalogHubView: View {
                     .font(.neueCorpMedium(18))
                     .foregroundStyle(.white)
                     .frame(width: 44, height: 44)
-                    .background(AVIATheme.tealGradient)
+                    .background(AVIATheme.primaryGradient)
                     .clipShape(.rect(cornerRadius: 12))
 
                 VStack(alignment: .leading, spacing: 3) {
@@ -180,7 +180,7 @@ struct AdminCatalogHubView: View {
             HStack(spacing: 12) {
                 Image(systemName: "info.circle.fill")
                     .font(.neueCorp(14))
-                    .foregroundStyle(AVIATheme.teal)
+                    .foregroundStyle(AVIATheme.timelessBrown)
                 VStack(alignment: .leading, spacing: 2) {
                     Text("Changes sync instantly")
                         .font(.neueCaptionMedium)

@@ -69,7 +69,7 @@ struct FacadeDetailView: View {
                             .foregroundStyle(.white)
                             .padding(.horizontal, 10)
                             .padding(.vertical, 5)
-                            .background(AVIATheme.teal)
+                            .background(AVIATheme.timelessBrown)
                             .clipShape(Capsule())
                     } else {
                         Text("SINGLE STOREY")
@@ -137,7 +137,7 @@ struct FacadeDetailView: View {
                             .font(.neueCaption2Medium)
                             .foregroundStyle(.white)
                             .frame(width: 28, height: 28)
-                            .background(AVIATheme.teal)
+                            .background(AVIATheme.timelessBrown)
                             .clipShape(Circle())
 
                         Text(feature)
@@ -177,7 +177,7 @@ struct FacadeDetailView: View {
                                 } else if phase.error != nil {
                                     Image(systemName: "photo")
                                         .font(.neueCorpMedium(28))
-                                        .foregroundStyle(AVIATheme.teal.opacity(0.2))
+                                        .foregroundStyle(AVIATheme.timelessBrown.opacity(0.2))
                                 } else {
                                     ProgressView()
                                 }
@@ -206,9 +206,9 @@ struct FacadeDetailView: View {
                 HStack(spacing: 14) {
                     Image(systemName: "questionmark.bubble")
                         .font(.neueCorpMedium(22))
-                        .foregroundStyle(AVIATheme.teal)
+                        .foregroundStyle(AVIATheme.timelessBrown)
                         .frame(width: 48, height: 48)
-                        .background(AVIATheme.teal.opacity(0.1))
+                        .background(AVIATheme.timelessBrown.opacity(0.1))
                         .clipShape(.rect(cornerRadius: 12))
 
                     VStack(alignment: .leading, spacing: 2) {
@@ -236,7 +236,7 @@ struct FacadeDetailView: View {
                     .frame(maxWidth: .infinity)
                     .frame(height: 48)
                     .foregroundStyle(.white)
-                    .background(AVIATheme.tealGradient)
+                    .background(AVIATheme.primaryGradient)
                     .clipShape(.rect(cornerRadius: 14))
                 }
             }

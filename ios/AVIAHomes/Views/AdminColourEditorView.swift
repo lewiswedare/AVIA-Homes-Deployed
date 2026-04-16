@@ -34,7 +34,7 @@ struct AdminColourEditorView: View {
 
                 if viewModel.isLoading {
                     ProgressView()
-                        .tint(AVIATheme.teal)
+                        .tint(AVIATheme.timelessBrown)
                         .padding(.vertical, 60)
                 } else if filteredCategories.isEmpty {
                     AdminEmptyState(
@@ -62,7 +62,7 @@ struct AdminColourEditorView: View {
             ToolbarItem(placement: .primaryAction) {
                 Button { showingAddSheet = true } label: {
                     Image(systemName: "plus.circle.fill")
-                        .foregroundStyle(AVIATheme.teal)
+                        .foregroundStyle(AVIATheme.timelessBrown)
                 }
             }
         }
@@ -113,7 +113,7 @@ struct AdminColourEditorView: View {
                 .padding(.horizontal, 14)
                 .padding(.vertical, 7)
                 .foregroundStyle(selectedSection == section ? .white : AVIATheme.textSecondary)
-                .background(selectedSection == section ? AVIATheme.teal : AVIATheme.cardBackground)
+                .background(selectedSection == section ? AVIATheme.timelessBrown : AVIATheme.cardBackground)
                 .clipShape(Capsule())
                 .overlay {
                     if selectedSection != section {
@@ -125,7 +125,7 @@ struct AdminColourEditorView: View {
 
     private var statsBar: some View {
         HStack(spacing: 12) {
-            AdminMiniStat(value: "\(viewModel.colourCategories.count)", label: "Categories", color: AVIATheme.teal)
+            AdminMiniStat(value: "\(viewModel.colourCategories.count)", label: "Categories", color: AVIATheme.timelessBrown)
             AdminMiniStat(value: "\(viewModel.colourCategories.flatMap(\.options).count)", label: "Options", color: AVIATheme.warning)
             AdminMiniStat(value: "\(viewModel.colourCategories.flatMap(\.options).filter(\.isUpgrade).count)", label: "Upgrades", color: Color(hex: "8B5CF6"))
         }
@@ -156,9 +156,9 @@ struct AdminColourEditorView: View {
                     HStack(spacing: 12) {
                         Image(systemName: category.icon)
                             .font(.neueCorp(12))
-                            .foregroundStyle(AVIATheme.teal)
+                            .foregroundStyle(AVIATheme.timelessBrown)
                             .frame(width: 32, height: 32)
-                            .background(AVIATheme.teal.opacity(0.12))
+                            .background(AVIATheme.timelessBrown.opacity(0.12))
                             .clipShape(Circle())
 
                         VStack(alignment: .leading, spacing: 2) {
@@ -182,7 +182,7 @@ struct AdminColourEditorView: View {
                                         .font(.neueCorpMedium(8))
                                         .foregroundStyle(.white)
                                         .frame(width: 16, height: 16)
-                                        .background(AVIATheme.teal)
+                                        .background(AVIATheme.timelessBrown)
                                         .clipShape(Circle())
                                 }
                             }
@@ -376,7 +376,7 @@ struct ColourCategoryEditSheet: View {
                                                 .padding(.horizontal, 12)
                                                 .padding(.vertical, 6)
                                                 .foregroundStyle(isActive ? .white : AVIATheme.textSecondary)
-                                                .background(isActive ? AVIATheme.teal : AVIATheme.surfaceElevated)
+                                                .background(isActive ? AVIATheme.timelessBrown : AVIATheme.surfaceElevated)
                                                 .clipShape(Capsule())
                                                 .overlay {
                                                     if !isActive {
@@ -399,7 +399,7 @@ struct ColourCategoryEditSheet: View {
                                     } label: {
                                         Text(applicableTiers.count == SpecTier.allCases.count ? "Clear" : "All")
                                             .font(.neueCaption2Medium)
-                                            .foregroundStyle(AVIATheme.teal)
+                                            .foregroundStyle(AVIATheme.timelessBrown)
                                     }
                                 }
                             }
@@ -425,7 +425,7 @@ struct ColourCategoryEditSheet: View {
                                 Spacer()
                                 Button { addNewOption() } label: {
                                     Image(systemName: "plus.circle.fill")
-                                        .foregroundStyle(AVIATheme.teal)
+                                        .foregroundStyle(AVIATheme.timelessBrown)
                                 }
                                 .padding(.trailing, 14)
                             }
@@ -653,11 +653,11 @@ struct ColourCategoryEditSheet: View {
                         .font(.neueCorpMedium(10))
                         .frame(width: 26, height: 22)
                         .foregroundStyle(isActive ? .white : AVIATheme.textTertiary)
-                        .background(isActive ? AVIATheme.teal : Color.clear)
+                        .background(isActive ? AVIATheme.timelessBrown : Color.clear)
                         .clipShape(.rect(cornerRadius: 5))
                         .overlay {
                             RoundedRectangle(cornerRadius: 5)
-                                .stroke(isActive ? AVIATheme.teal : AVIATheme.surfaceBorder, lineWidth: 1)
+                                .stroke(isActive ? AVIATheme.timelessBrown : AVIATheme.surfaceBorder, lineWidth: 1)
                         }
                 }
             }
@@ -676,7 +676,7 @@ struct ColourCategoryEditSheet: View {
             } label: {
                 Text("All")
                     .font(.neueCaption2Medium)
-                    .foregroundStyle(AVIATheme.teal)
+                    .foregroundStyle(AVIATheme.timelessBrown)
             }
         }
         .padding(8)
