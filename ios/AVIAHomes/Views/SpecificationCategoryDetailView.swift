@@ -4,7 +4,6 @@ struct SpecificationCategoryDetailView: View {
     @Environment(\.dismiss) private var dismiss
     @Environment(SpecificationViewModel.self) private var specVM
     let category: SpecCategory
-    @State private var previewTiers: [String: SpecTier] = [:]
 
     var body: some View {
         NavigationStack {
@@ -68,7 +67,7 @@ struct SpecificationCategoryDetailView: View {
     private func itemCard(_ item: SpecItem) -> some View {
         let hasPending = specVM.pendingUpgradeCount(for: item.id)
         let canUpgrade = specVM.hasUpgrade(for: item)
-        let selectedTier = previewTiers[item.id] ?? specVM.currentTier
+        let selectedTier = specVM.currentTier
 
         return NavigationLink {
             SpecificationItemDetailView(item: item, categoryName: category.name)
@@ -91,15 +90,15 @@ struct SpecificationCategoryDetailView: View {
                     HStack(spacing: 8) {
                         Text(selectedTier.displayName)
                             .font(.neueCaption2Medium)
-                            .foregroundStyle(AVIATheme.aviaWhite)
+                            .foregroundStyle(AVIATheme.timelessBrown)
                             .padding(.horizontal, 8)
                             .padding(.vertical, 3)
-                            .background(AVIATheme.aviaBlack)
+                            .background(AVIATheme.aviaWhite.opacity(0.95))
                             .clipShape(Capsule())
 
                         Text(item.description(for: selectedTier))
                             .font(.neueCaption)
-                            .foregroundStyle(AVIATheme.textSecondary)
+                            .foregroundStyle(AVIATheme.aviaWhite.opacity(0.85))
                             .lineLimit(2)
                             .multilineTextAlignment(.leading)
 
@@ -108,19 +107,19 @@ struct SpecificationCategoryDetailView: View {
 
                     if canUpgrade {
                         Rectangle()
-                            .fill(AVIATheme.surfaceBorder)
+                            .fill(AVIATheme.aviaWhite.opacity(0.2))
                             .frame(height: 1)
 
                         HStack(spacing: 6) {
                             Image(systemName: "sparkles")
                                 .font(.neueCorp(10))
-                                .foregroundStyle(AVIATheme.timelessBrown)
+                                .foregroundStyle(AVIATheme.aviaWhite.opacity(0.85))
 
                             let nextTier = specVM.upgradeTiers.first { item.description(for: $0) != item.description(for: specVM.currentTier) }
                             if let nextTier {
                                 Text("\(nextTier.displayName): \(item.description(for: nextTier))")
                                     .font(.neueCaption2)
-                                    .foregroundStyle(AVIATheme.textTertiary)
+                                    .foregroundStyle(AVIATheme.aviaWhite.opacity(0.75))
                                     .lineLimit(1)
                             }
 
@@ -128,22 +127,23 @@ struct SpecificationCategoryDetailView: View {
 
                             Image(systemName: "chevron.right")
                                 .font(.neueCaption2)
-                                .foregroundStyle(AVIATheme.textTertiary)
+                                .foregroundStyle(AVIATheme.aviaWhite.opacity(0.75))
                         }
                     } else {
                         HStack {
                             Spacer()
                             Image(systemName: "chevron.right")
                                 .font(.neueCaption2)
-                                .foregroundStyle(AVIATheme.textTertiary)
+                                .foregroundStyle(AVIATheme.aviaWhite.opacity(0.75))
                         }
                     }
                 }
                 .padding(14)
             }
-            .background(AVIATheme.cardBackground)
+            .background(AVIATheme.timelessBrown)
             .clipShape(.rect(cornerRadius: 16))
         }
+        .buttonStyle(.plain)
     }
 
     private func specImageSection(item: SpecItem, selectedTier: SpecTier, hasPending: Bool, canUpgrade: Bool) -> some View {
@@ -219,36 +219,6 @@ struct SpecificationCategoryDetailView: View {
                 }
                 .padding(10)
             }
-            .overlay(alignment: .bottomTrailing) {
-                if item.hasTierSpecificImages {
-                    tierToggle(for: item)
-                        .padding(10)
-                }
-            }
             .clipped()
-    }
-
-    private func tierToggle(for item: SpecItem) -> some View {
-        let selectedTier = previewTiers[item.id] ?? specVM.currentTier
-
-        return HStack(spacing: 2) {
-            ForEach(SpecTier.allCases) { tier in
-                Button {
-                    withAnimation(.spring(duration: 0.3)) {
-                        previewTiers[item.id] = tier
-                    }
-                } label: {
-                    Text(String(tier.displayName.prefix(1)))
-                        .font(.neueCorpMedium(11))
-                        .foregroundStyle(selectedTier == tier ? AVIATheme.aviaBlack : AVIATheme.aviaWhite)
-                        .frame(width: 28, height: 24)
-                        .background(selectedTier == tier ? AVIATheme.aviaWhite : AVIATheme.aviaWhite.opacity(0.25))
-                        .clipShape(.rect(cornerRadius: 6))
-                }
-            }
-        }
-        .padding(3)
-        .background(.ultraThinMaterial)
-        .clipShape(.rect(cornerRadius: 9))
     }
 }
