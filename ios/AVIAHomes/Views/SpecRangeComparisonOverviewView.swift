@@ -1,7 +1,6 @@
 import SwiftUI
 
 struct SpecRangeComparisonOverviewView: View {
-    @State private var selectedCategoryIndex: Int = 0
     @State private var expandedItemId: String?
     @State private var highlightedTier: SpecTier?
 
@@ -10,23 +9,77 @@ struct SpecRangeComparisonOverviewView: View {
 
     var body: some View {
         ScrollView {
-            VStack(spacing: 0) {
+            VStack(spacing: 16) {
                 tierSelector
-                    .padding(.horizontal, 16)
-                    .padding(.top, 8)
 
-                categoryPicker
-                    .padding(.top, 16)
-
-                itemsList
-                    .padding(.top, 12)
-                    .padding(.horizontal, 16)
-                    .padding(.bottom, 40)
+                if categories.isEmpty {
+                    emptyState
+                } else {
+                    ForEach(categories) { category in
+                        categorySection(category)
+                    }
+                }
             }
+            .padding(.horizontal, 16)
+            .padding(.top, 8)
+            .padding(.bottom, 40)
         }
         .background(AVIATheme.background)
         .navigationTitle("Compare Spec Ranges")
         .navigationBarTitleDisplayMode(.large)
+    }
+
+    private var emptyState: some View {
+        VStack(spacing: 12) {
+            Image(systemName: "tray")
+                .font(.system(size: 32))
+                .foregroundStyle(AVIATheme.textTertiary)
+            Text("No spec items available")
+                .font(.neueSubheadlineMedium)
+                .foregroundStyle(AVIATheme.textSecondary)
+            Text("Spec range data is managed by your admin team.")
+                .font(.neueCaption)
+                .foregroundStyle(AVIATheme.textTertiary)
+        }
+        .frame(maxWidth: .infinity)
+        .padding(.vertical, 40)
+    }
+
+    private func categorySection(_ category: SpecCategory) -> some View {
+        VStack(alignment: .leading, spacing: 8) {
+            HStack(spacing: 10) {
+                Image(systemName: category.icon)
+                    .font(.neueCaptionMedium)
+                    .foregroundStyle(AVIATheme.timelessBrown)
+                    .frame(width: 28, height: 28)
+                    .background(AVIATheme.timelessBrown.opacity(0.08))
+                    .clipShape(.rect(cornerRadius: 8))
+
+                Text(category.name)
+                    .font(.neueHeadline)
+                    .foregroundStyle(AVIATheme.textPrimary)
+
+                Spacer(minLength: 0)
+
+                Text("\(category.items.count)")
+                    .font(.neueCaption2Medium)
+                    .foregroundStyle(AVIATheme.textTertiary)
+            }
+            .padding(.horizontal, 4)
+
+            VStack(spacing: 0) {
+                ForEach(Array(category.items.enumerated()), id: \.element.id) { index, item in
+                    comparisonItemCard(item: item)
+
+                    if index < category.items.count - 1 {
+                        Divider()
+                            .padding(.leading, 14)
+                    }
+                }
+            }
+            .background(AVIATheme.cardBackground)
+            .clipShape(.rect(cornerRadius: 16))
+        }
     }
 
     private var tierSelector: some View {
@@ -70,7 +123,7 @@ struct SpecRangeComparisonOverviewView: View {
         .padding(12)
         .background(AVIATheme.cardBackground)
         .clipShape(.rect(cornerRadius: 16))
-        .overlay {
+        .overlay(alignment: .bottom) {
             if highlightedTier != nil {
                 selectedTierIndicator
             }
@@ -80,79 +133,18 @@ struct SpecRangeComparisonOverviewView: View {
     @ViewBuilder
     private var selectedTierIndicator: some View {
         if let tier = highlightedTier {
-            VStack {
-                Spacer()
-                HStack(spacing: 6) {
-                    Image(systemName: "checkmark.circle.fill")
-                        .font(.neueCorp(11))
-                    Text("Viewing \(tier.displayName)")
-                        .font(.neueCaption2Medium)
-                }
-                .foregroundStyle(AVIATheme.aviaWhite)
-                .padding(.horizontal, 12)
-                .padding(.vertical, 6)
-                .background(AVIATheme.aviaBlack)
-                .clipShape(Capsule())
-                .offset(y: 14)
+            HStack(spacing: 6) {
+                Image(systemName: "checkmark.circle.fill")
+                    .font(.neueCorp(11))
+                Text("Viewing \(tier.displayName)")
+                    .font(.neueCaption2Medium)
             }
-        }
-    }
-
-    private var categoryPicker: some View {
-        ScrollView(.horizontal) {
-            HStack(spacing: 8) {
-                ForEach(Array(categories.enumerated()), id: \.element.id) { index, category in
-                    let isSelected = index == selectedCategoryIndex
-                    Button {
-                        withAnimation(.spring(response: 0.3)) {
-                            selectedCategoryIndex = index
-                            expandedItemId = nil
-                        }
-                    } label: {
-                        HStack(spacing: 6) {
-                            Image(systemName: category.icon)
-                                .font(.neueCorp(10))
-                            Text(category.name)
-                                .font(.neueCaption2Medium)
-                        }
-                        .foregroundStyle(isSelected ? AVIATheme.aviaWhite : AVIATheme.textSecondary)
-                        .padding(.horizontal, 14)
-                        .padding(.vertical, 8)
-                        .background(isSelected ? AVIATheme.aviaBlack : AVIATheme.cardBackground)
-                        .clipShape(Capsule())
-                    }
-                }
-            }
-            .padding(.horizontal, 16)
-        }
-        .contentMargins(.horizontal, 0)
-        .scrollIndicators(.hidden)
-        .padding(.top, highlightedTier != nil ? 8 : 0)
-    }
-
-    private var itemsList: some View {
-        let safeIndex = min(selectedCategoryIndex, max(categories.count - 1, 0))
-
-        return VStack(spacing: 12) {
-            if categories.isEmpty {
-                VStack(spacing: 12) {
-                    Image(systemName: "tray")
-                        .font(.system(size: 32))
-                        .foregroundStyle(AVIATheme.textTertiary)
-                    Text("No spec items available")
-                        .font(.neueSubheadlineMedium)
-                        .foregroundStyle(AVIATheme.textSecondary)
-                    Text("Spec range data is managed by your admin team.")
-                        .font(.neueCaption)
-                        .foregroundStyle(AVIATheme.textTertiary)
-                }
-                .frame(maxWidth: .infinity)
-                .padding(.vertical, 40)
-            } else {
-                ForEach(categories[safeIndex].items) { item in
-                    comparisonItemCard(item: item)
-                }
-            }
+            .foregroundStyle(AVIATheme.aviaWhite)
+            .padding(.horizontal, 12)
+            .padding(.vertical, 6)
+            .background(AVIATheme.aviaBlack)
+            .clipShape(Capsule())
+            .offset(y: 14)
         }
     }
 
@@ -221,8 +213,6 @@ struct SpecRangeComparisonOverviewView: View {
                     .transition(.opacity.combined(with: .move(edge: .top)))
             }
         }
-        .background(AVIATheme.cardBackground)
-        .clipShape(.rect(cornerRadius: 16))
     }
 
     private func tierComparisonGrid(item: SpecItem) -> some View {
