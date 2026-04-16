@@ -12,7 +12,6 @@ struct SpecificationsOverviewView: View {
                     heroImage
 
                     VStack(spacing: 14) {
-                        headerRow
                         currentTierHeader
                         tierSelector
                         categoriesList
@@ -118,33 +117,15 @@ struct SpecificationsOverviewView: View {
                     .allowsHitTesting(false)
             }
             .overlay(alignment: .bottom) {
-                LinearGradient(
-                    stops: [
-                        .init(color: Color.clear, location: 0.0),
-                        .init(color: AVIATheme.background.opacity(0.15), location: 0.25),
-                        .init(color: AVIATheme.background.opacity(0.4), location: 0.45),
-                        .init(color: AVIATheme.background.opacity(0.7), location: 0.65),
-                        .init(color: AVIATheme.background.opacity(0.9), location: 0.8),
-                        .init(color: AVIATheme.background, location: 1.0)
-                    ],
-                    startPoint: .top,
-                    endPoint: .bottom
-                )
-                .frame(height: 200)
+                Text("Fittings & Fixtures")
+                    .font(.neueCorpMedium(28))
+                    .foregroundStyle(.white)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .padding(.horizontal, 20)
+                    .padding(.vertical, 16)
+                    .background(.ultraThinMaterial)
             }
             .clipped()
-    }
-
-    private var headerRow: some View {
-        HStack(spacing: 8) {
-            Image(systemName: "square.grid.2x2.fill")
-                .font(.neueSubheadlineMedium)
-                .foregroundStyle(AVIATheme.teal)
-            Text("Fittings & Fixtures")
-                .font(.neueCorpMedium(24))
-                .foregroundStyle(AVIATheme.textPrimary)
-            Spacer()
-        }
     }
 
     private var currentTierHeader: some View {
@@ -332,7 +313,11 @@ struct SpecificationsOverviewView: View {
         return BentoCard(cornerRadius: 16) {
             VStack(alignment: .leading, spacing: 10) {
                 HStack {
-                    BentoIconCircle(icon: category.icon, color: AVIATheme.teal)
+                    Text(category.name)
+                        .font(.neueSubheadlineMedium)
+                        .foregroundStyle(AVIATheme.textPrimary)
+                        .lineLimit(2)
+                        .multilineTextAlignment(.leading)
                     Spacer()
                     if pendingCount > 0 {
                         Text("\(pendingCount)")
@@ -344,12 +329,6 @@ struct SpecificationsOverviewView: View {
                     }
                 }
 
-                Text(category.name)
-                    .font(.neueSubheadlineMedium)
-                    .foregroundStyle(AVIATheme.textPrimary)
-                    .lineLimit(2)
-                    .multilineTextAlignment(.leading)
-
                 HStack(alignment: .firstTextBaseline, spacing: 4) {
                     Text("\(category.items.count)")
                         .font(.neueCorpMedium(28))
@@ -360,13 +339,9 @@ struct SpecificationsOverviewView: View {
                 }
 
                 if upgradeCount > 0 {
-                    HStack(spacing: 4) {
-                        Image(systemName: "arrow.up.circle.fill")
-                            .font(.neueCorp(10))
-                        Text("\(upgradeCount) upgradeable")
-                            .font(.neueCaption2Medium)
-                    }
-                    .foregroundStyle(AVIATheme.teal)
+                    Text("\(upgradeCount) upgradeable")
+                        .font(.neueCaption2Medium)
+                        .foregroundStyle(AVIATheme.timelessBrown)
                 }
             }
             .padding(16)
@@ -381,20 +356,23 @@ struct SpecificationsOverviewView: View {
     private var upgradeRequestsSection: some View {
         VStack(alignment: .leading, spacing: 10) {
             HStack(spacing: 8) {
-                Image(systemName: "arrow.up.circle.fill")
-                    .font(.neueSubheadlineMedium)
-                    .foregroundStyle(AVIATheme.teal)
                 Text("Upgrade Requests")
                     .font(.neueCorpMedium(18))
                     .foregroundStyle(AVIATheme.textPrimary)
+                    .padding(.leading, 12)
+                    .overlay(alignment: .leading) {
+                        Rectangle()
+                            .fill(AVIATheme.timelessBrown)
+                            .frame(width: 3)
+                    }
                 Spacer()
                 if upgradeTotalCost > 0 {
                     Text(AVIATheme.formatCost(upgradeTotalCost))
                         .font(.neueCorpMedium(14))
-                        .foregroundStyle(AVIATheme.teal)
+                        .foregroundStyle(AVIATheme.timelessBrown)
                         .padding(.horizontal, 10)
                         .padding(.vertical, 5)
-                        .background(AVIATheme.teal.opacity(0.08))
+                        .background(AVIATheme.timelessBrown.opacity(0.08))
                         .clipShape(Capsule())
                 }
             }
@@ -436,36 +414,28 @@ struct SpecificationsOverviewView: View {
 
             if let cost = request.upgradeCost, cost > 0 {
                 HStack(spacing: 4) {
-                    Image(systemName: "tag.fill")
-                        .foregroundStyle(AVIATheme.teal)
-                        .font(.neueCaption2)
                     Text(AVIATheme.formatCost(cost))
                         .font(.neueCaptionMedium)
-                        .foregroundStyle(AVIATheme.teal)
+                        .foregroundStyle(AVIATheme.timelessBrown)
                     Text("upgrade cost")
                         .font(.neueCaption2)
                         .foregroundStyle(AVIATheme.textSecondary)
                 }
                 .padding(.horizontal, 10)
                 .padding(.vertical, 5)
-                .background(AVIATheme.teal.opacity(0.08))
+                .background(AVIATheme.timelessBrown.opacity(0.08))
                 .clipShape(Capsule())
             }
 
             if let notes = request.adminNotes, !notes.isEmpty {
-                HStack(alignment: .top, spacing: 8) {
-                    Image(systemName: "note.text")
-                        .font(.neueCaption2)
-                        .foregroundStyle(AVIATheme.textTertiary)
-                    Text(notes)
-                        .font(.neueCaption2)
-                        .foregroundStyle(AVIATheme.textSecondary)
-                        .fixedSize(horizontal: false, vertical: true)
-                }
-                .padding(10)
-                .frame(maxWidth: .infinity, alignment: .leading)
-                .background(AVIATheme.surfaceElevated)
-                .clipShape(.rect(cornerRadius: 10))
+                Text(notes)
+                    .font(.neueCaption2)
+                    .foregroundStyle(AVIATheme.textSecondary)
+                    .fixedSize(horizontal: false, vertical: true)
+                    .padding(10)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .background(AVIATheme.surfaceElevated)
+                    .clipShape(.rect(cornerRadius: 10))
             }
 
             if request.status == .pending {

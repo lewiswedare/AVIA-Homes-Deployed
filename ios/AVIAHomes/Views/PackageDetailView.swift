@@ -117,17 +117,23 @@ struct PackageDetailView: View {
                     .allowsHitTesting(false)
                 }
                 .overlay(alignment: .bottom) {
-                    LinearGradient(
-                        stops: [
-                            .init(color: AVIATheme.background.opacity(0), location: 0.0),
-                            .init(color: AVIATheme.background.opacity(0.6), location: 0.4),
-                            .init(color: AVIATheme.background, location: 0.75),
-                            .init(color: AVIATheme.background, location: 1.0)
-                        ],
-                        startPoint: .top,
-                        endPoint: .bottom
-                    )
-                    .frame(height: geo.size.height * 0.55)
+                    VStack(alignment: .leading, spacing: 6) {
+                        Text(package.title)
+                            .font(.neueCorpMedium(26))
+                            .foregroundStyle(.white)
+                        HStack(spacing: 12) {
+                            Text(package.price)
+                                .font(.neueCorpMedium(18))
+                                .foregroundStyle(.white.opacity(0.95))
+                            Text(package.location)
+                                .font(.neueCaption)
+                                .foregroundStyle(.white.opacity(0.8))
+                        }
+                    }
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .padding(.horizontal, 20)
+                    .padding(.vertical, 16)
+                    .background(.ultraThinMaterial)
                 }
                 .clipped()
         }
@@ -158,20 +164,9 @@ struct PackageDetailView: View {
     private var titleBlock: some View {
         VStack(alignment: .leading, spacing: 8) {
             HStack(alignment: .firstTextBaseline) {
-                Text(package.title)
-                    .font(.neueCorpMedium(28))
-                    .foregroundStyle(AVIATheme.textPrimary)
                 Spacer()
                 statusBadge(package.status)
             }
-
-            HStack(spacing: 6) {
-                Image(systemName: "mappin.circle.fill")
-                    .foregroundStyle(AVIATheme.teal)
-                Text(package.location)
-                    .foregroundStyle(AVIATheme.textSecondary)
-            }
-            .font(.neueCaption)
 
             if package.isNew {
                 Text("NEW LISTING")
@@ -180,7 +175,7 @@ struct PackageDetailView: View {
                     .foregroundStyle(.white)
                     .padding(.horizontal, 10)
                     .padding(.vertical, 5)
-                    .background(AVIATheme.teal)
+                    .background(AVIATheme.timelessBrown)
                     .clipShape(Capsule())
             }
         }
@@ -194,7 +189,13 @@ struct PackageDetailView: View {
                 Text("PACKAGE PRICE")
                     .font(.neueCaption2Medium)
                     .kerning(1.0)
-                    .foregroundStyle(AVIATheme.textTertiary)
+                    .foregroundStyle(AVIATheme.timelessBrown)
+                    .padding(.leading, 12)
+                    .overlay(alignment: .leading) {
+                        Rectangle()
+                            .fill(AVIATheme.timelessBrown)
+                            .frame(width: 3)
+                    }
                 Spacer()
             }
 
@@ -266,7 +267,13 @@ struct PackageDetailView: View {
             Text("LAND DETAILS")
                 .font(.neueCaption2Medium)
                 .kerning(1.0)
-                .foregroundStyle(AVIATheme.textTertiary)
+                .foregroundStyle(AVIATheme.timelessBrown)
+                .padding(.leading, 12)
+                .overlay(alignment: .leading) {
+                    Rectangle()
+                        .fill(AVIATheme.timelessBrown)
+                        .frame(width: 3)
+                }
 
             BentoCard(cornerRadius: 16) {
                 VStack(spacing: 0) {
@@ -297,7 +304,13 @@ struct PackageDetailView: View {
             Text("HOME DESIGN")
                 .font(.neueCaption2Medium)
                 .kerning(1.0)
-                .foregroundStyle(AVIATheme.textTertiary)
+                .foregroundStyle(AVIATheme.timelessBrown)
+                .padding(.leading, 12)
+                .overlay(alignment: .leading) {
+                    Rectangle()
+                        .fill(AVIATheme.timelessBrown)
+                        .frame(width: 3)
+                }
 
             if let design = package.matchedDesign {
                 BentoCard(cornerRadius: 16) {
@@ -363,17 +376,9 @@ struct PackageDetailView: View {
                                         .padding(.top, 4)
 
                                     ForEach(design.roomHighlights.prefix(5), id: \.self) { highlight in
-                                        HStack(spacing: 8) {
-                                            Image(systemName: "checkmark")
-                                                .font(.system(size: 8, weight: .bold))
-                                                .foregroundStyle(AVIATheme.teal)
-                                                .frame(width: 16, height: 16)
-                                                .background(AVIATheme.teal.opacity(0.08))
-                                                .clipShape(Circle())
-                                            Text(highlight)
-                                                .font(.neueCaption2)
-                                                .foregroundStyle(AVIATheme.textSecondary)
-                                        }
+                                        Text(highlight)
+                                            .font(.neueCaption2)
+                                            .foregroundStyle(AVIATheme.textSecondary)
                                     }
                                 }
                             }
@@ -421,7 +426,13 @@ struct PackageDetailView: View {
             Text("INCLUDED FACADE")
                 .font(.neueCaption2Medium)
                 .kerning(1.0)
-                .foregroundStyle(AVIATheme.textTertiary)
+                .foregroundStyle(AVIATheme.timelessBrown)
+                .padding(.leading, 12)
+                .overlay(alignment: .leading) {
+                    Rectangle()
+                        .fill(AVIATheme.timelessBrown)
+                        .frame(width: 3)
+                }
 
             if let facade = package.matchedFacade {
 
@@ -473,17 +484,9 @@ struct PackageDetailView: View {
 
                         VStack(alignment: .leading, spacing: 5) {
                             ForEach(facade.features.prefix(4), id: \.self) { feature in
-                                HStack(spacing: 8) {
-                                    Image(systemName: "checkmark")
-                                        .font(.system(size: 9, weight: .bold))
-                                        .foregroundStyle(AVIATheme.teal)
-                                        .frame(width: 18, height: 18)
-                                        .background(AVIATheme.teal.opacity(0.08))
-                                        .clipShape(Circle())
-                                    Text(feature)
-                                        .font(.neueCaption2)
-                                        .foregroundStyle(AVIATheme.textPrimary)
-                                }
+                                Text(feature)
+                                    .font(.neueCaption2)
+                                    .foregroundStyle(AVIATheme.textPrimary)
                             }
                         }
                     }
@@ -518,7 +521,13 @@ struct PackageDetailView: View {
             Text("SPECIFICATION RANGE")
                 .font(.neueCaption2Medium)
                 .kerning(1.0)
-                .foregroundStyle(AVIATheme.textTertiary)
+                .foregroundStyle(AVIATheme.timelessBrown)
+                .padding(.leading, 12)
+                .overlay(alignment: .leading) {
+                    Rectangle()
+                        .fill(AVIATheme.timelessBrown)
+                        .frame(width: 3)
+                }
 
             let tier = package.specTier
 
@@ -615,17 +624,9 @@ struct PackageDetailView: View {
 
         return VStack(alignment: .leading, spacing: 5) {
             ForEach(highlights, id: \.self) { item in
-                HStack(spacing: 8) {
-                    Image(systemName: "checkmark")
-                        .font(.system(size: 9, weight: .bold))
-                        .foregroundStyle(AVIATheme.teal)
-                        .frame(width: 18, height: 18)
-                        .background(AVIATheme.teal.opacity(0.08))
-                        .clipShape(Circle())
-                    Text(item)
-                        .font(.neueCaption2)
-                        .foregroundStyle(AVIATheme.textPrimary)
-                }
+                Text(item)
+                    .font(.neueCaption2)
+                    .foregroundStyle(AVIATheme.textPrimary)
             }
         }
     }
@@ -639,28 +640,31 @@ struct PackageDetailView: View {
             Text("PACKAGE INCLUSIONS")
                 .font(.neueCaption2Medium)
                 .kerning(1.0)
-                .foregroundStyle(AVIATheme.textTertiary)
+                .foregroundStyle(AVIATheme.timelessBrown)
+                .padding(.leading, 12)
+                .overlay(alignment: .leading) {
+                    Rectangle()
+                        .fill(AVIATheme.timelessBrown)
+                        .frame(width: 3)
+                }
 
             BentoCard(cornerRadius: 16) {
                 VStack(spacing: 0) {
                     ForEach(Array(package.inclusions.enumerated()), id: \.offset) { index, inclusion in
                         HStack(spacing: 12) {
-                            Image(systemName: "checkmark.circle.fill")
-                                .font(.system(size: 14))
-                                .foregroundStyle(AVIATheme.teal)
                             Text(inclusion)
                                 .font(.neueSubheadline)
                                 .foregroundStyle(AVIATheme.textPrimary)
                             Spacer()
                         }
                         .padding(.horizontal, 16)
-                        .padding(.vertical, 11)
+                        .padding(.vertical, 13)
 
                         if index < package.inclusions.count - 1 {
                             Rectangle()
                                 .fill(AVIATheme.surfaceBorder)
                                 .frame(height: 1)
-                                .padding(.leading, 42)
+                                .padding(.leading, 16)
                         }
                     }
                 }
@@ -677,7 +681,13 @@ struct PackageDetailView: View {
                     Text("ESTATE")
                         .font(.neueCaption2Medium)
                         .kerning(1.0)
-                        .foregroundStyle(AVIATheme.textTertiary)
+                        .foregroundStyle(AVIATheme.timelessBrown)
+                        .padding(.leading, 12)
+                        .overlay(alignment: .leading) {
+                            Rectangle()
+                                .fill(AVIATheme.timelessBrown)
+                                .frame(width: 3)
+                        }
 
                     BentoCard(cornerRadius: 16) {
                         VStack(spacing: 0) {
@@ -1183,11 +1193,7 @@ struct PackageDetailView: View {
     }
 
     private func detailRow(icon: String, label: String, value: String) -> some View {
-        HStack(spacing: 12) {
-            Image(systemName: icon)
-                .font(.neueCorp(14))
-                .foregroundStyle(AVIATheme.teal)
-                .frame(width: 24)
+        HStack {
             Text(label)
                 .font(.neueSubheadline)
                 .foregroundStyle(AVIATheme.textSecondary)
@@ -1205,14 +1211,11 @@ struct PackageDetailView: View {
         Rectangle()
             .fill(AVIATheme.surfaceBorder)
             .frame(height: 1)
-            .padding(.leading, 52)
+            .padding(.leading, 16)
     }
 
     private func houseStatPill(value: String, label: String, icon: String) -> some View {
         VStack(spacing: 4) {
-            Image(systemName: icon)
-                .font(.neueCorpMedium(12))
-                .foregroundStyle(AVIATheme.teal)
             Text(value)
                 .font(.neueCorpMedium(18))
                 .foregroundStyle(AVIATheme.textPrimary)
@@ -1230,17 +1233,12 @@ struct PackageDetailView: View {
     }
 
     private func dimensionTag(icon: String, value: String) -> some View {
-        HStack(spacing: 4) {
-            Image(systemName: icon)
-                .font(.system(size: 9, weight: .medium))
-                .foregroundStyle(AVIATheme.teal)
-            Text(value)
-                .font(.neueCaption2)
-                .foregroundStyle(AVIATheme.textSecondary)
-        }
-        .padding(.horizontal, 8)
-        .padding(.vertical, 5)
-        .background(AVIATheme.teal.opacity(0.06))
-        .clipShape(Capsule())
+        Text(value)
+            .font(.neueCaption2)
+            .foregroundStyle(AVIATheme.textSecondary)
+            .padding(.horizontal, 8)
+            .padding(.vertical, 5)
+            .background(AVIATheme.timelessBrown.opacity(0.06))
+            .clipShape(Capsule())
     }
 }

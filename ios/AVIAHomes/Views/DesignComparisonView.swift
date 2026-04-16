@@ -49,57 +49,37 @@ struct DesignComparisonView: View {
 
     private func designImageCard(design: HomeDesign) -> some View {
         NavigationLink(value: design) {
-            VStack(spacing: 0) {
-                Color(AVIATheme.surfaceElevated)
-                    .aspectRatio(4 / 3, contentMode: .fit)
-                    .overlay {
-                        AsyncImage(url: URL(string: design.imageURL)) { phase in
-                            if let image = phase.image {
-                                image.resizable().aspectRatio(contentMode: .fill)
-                            } else if phase.error != nil {
-                                Image(systemName: "house.fill")
-                                    .font(.neueCorpMedium(28))
-                                    .foregroundStyle(AVIATheme.teal.opacity(0.3))
-                            } else {
-                                ProgressView()
-                            }
-                        }
-                        .allowsHitTesting(false)
-                    }
-                    .overlay(alignment: .topTrailing) {
-                        if design.storeys == 2 {
-                            Text("2 STOREY")
-                                .font(.neueCorpMedium(8))
-                                .kerning(0.5)
-                                .foregroundStyle(.white)
-                                .padding(.horizontal, 7)
-                                .padding(.vertical, 3)
-                                .background(AVIATheme.teal)
-                                .clipShape(Capsule())
-                                .padding(6)
+            Color(AVIATheme.surfaceElevated)
+                .aspectRatio(4 / 3, contentMode: .fit)
+                .overlay {
+                    AsyncImage(url: URL(string: design.imageURL)) { phase in
+                        if let image = phase.image {
+                            image.resizable().aspectRatio(contentMode: .fill)
+                        } else if phase.error != nil {
+                            Image(systemName: "house.fill")
+                                .font(.neueCorpMedium(28))
+                                .foregroundStyle(AVIATheme.teal.opacity(0.3))
+                        } else {
+                            ProgressView()
                         }
                     }
-                    .clipShape(.rect(cornerRadii: .init(topLeading: 14, topTrailing: 14)))
-
-                VStack(spacing: 2) {
-                    Text(design.name)
-                        .font(.neueCaptionMedium)
-                        .foregroundStyle(AVIATheme.textPrimary)
-                        .lineLimit(1)
-                    Text(String(format: "%.0fm²", design.squareMeters))
-                        .font(.neueCaption2)
-                        .foregroundStyle(AVIATheme.teal)
+                    .allowsHitTesting(false)
                 }
-                .padding(.vertical, 8)
-                .padding(.horizontal, 6)
-                .frame(maxWidth: .infinity)
-                .background(AVIATheme.cardBackground)
-                .clipShape(.rect(cornerRadii: .init(bottomLeading: 14, bottomTrailing: 14)))
-            }
-            .overlay {
-                RoundedRectangle(cornerRadius: 14)
-                    .stroke(AVIATheme.surfaceBorder, lineWidth: 1)
-            }
+                .overlay(alignment: .bottom) {
+                    VStack(spacing: 2) {
+                        Text(design.name)
+                            .font(.neueCaptionMedium)
+                            .foregroundStyle(.white)
+                            .lineLimit(1)
+                        Text(String(format: "%.0fm²", design.squareMeters))
+                            .font(.neueCaption2)
+                            .foregroundStyle(.white.opacity(0.85))
+                    }
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, 10)
+                    .background(.ultraThinMaterial)
+                }
+                .clipShape(.rect(cornerRadius: 14))
         }
     }
 
@@ -169,7 +149,13 @@ struct DesignComparisonView: View {
         Text(title)
             .font(.neueCaption2Medium)
             .kerning(1.0)
-            .foregroundStyle(AVIATheme.textTertiary)
+            .foregroundStyle(AVIATheme.timelessBrown)
+            .padding(.leading, 12)
+            .overlay(alignment: .leading) {
+                Rectangle()
+                    .fill(AVIATheme.timelessBrown)
+                    .frame(width: 3)
+            }
     }
 
     private func comparisonRow(label: String, icon: String, valueA: String, valueB: String) -> some View {
@@ -179,23 +165,18 @@ struct DesignComparisonView: View {
                 .foregroundStyle(AVIATheme.textPrimary)
                 .frame(maxWidth: .infinity)
 
-            VStack(spacing: 2) {
-                Image(systemName: icon)
-                    .font(.system(size: 11, weight: .medium))
-                    .foregroundStyle(AVIATheme.teal)
-                Text(label)
-                    .font(.system(size: 9, weight: .medium))
-                    .foregroundStyle(AVIATheme.textTertiary)
-            }
-            .frame(width: 80)
+            Text(label)
+                .font(.system(size: 10, weight: .medium))
+                .foregroundStyle(AVIATheme.textTertiary)
+                .frame(width: 80)
 
             Text(valueB)
                 .font(.neueSubheadlineMedium)
                 .foregroundStyle(AVIATheme.textPrimary)
                 .frame(maxWidth: .infinity)
         }
-        .padding(.vertical, 12)
-        .padding(.horizontal, 8)
+        .padding(.vertical, 14)
+        .padding(.horizontal, 12)
     }
 
     private var rowDivider: some View {

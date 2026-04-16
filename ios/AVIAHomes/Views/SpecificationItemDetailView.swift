@@ -155,14 +155,15 @@ struct SpecificationItemDetailView: View {
 
     private var upgradeOptionsSection: some View {
         VStack(alignment: .leading, spacing: 10) {
-            HStack(spacing: 8) {
-                Image(systemName: "arrow.up.circle.fill")
-                    .font(.neueSubheadlineMedium)
-                    .foregroundStyle(AVIATheme.teal)
-                Text("Upgrade Options")
-                    .font(.neueCorpMedium(18))
-                    .foregroundStyle(AVIATheme.textPrimary)
-            }
+            Text("Upgrade Options")
+                .font(.neueCorpMedium(18))
+                .foregroundStyle(AVIATheme.textPrimary)
+                .padding(.leading, 12)
+                .overlay(alignment: .leading) {
+                    Rectangle()
+                        .fill(AVIATheme.timelessBrown)
+                        .frame(width: 3)
+                }
 
             ForEach(specVM.upgradeTiers) { tier in
                 let tierDesc = item.description(for: tier)
@@ -204,10 +205,10 @@ struct SpecificationItemDetailView: View {
                 if let cost, cost > 0 {
                     Text("+\(AVIATheme.formatCost(cost))")
                         .font(.neueCorpMedium(14))
-                        .foregroundStyle(AVIATheme.teal)
+                        .foregroundStyle(AVIATheme.timelessBrown)
                         .padding(.horizontal, 10)
                         .padding(.vertical, 5)
-                        .background(AVIATheme.teal.opacity(0.1))
+                        .background(AVIATheme.timelessBrown.opacity(0.1))
                         .clipShape(Capsule())
                 } else if cost == nil {
                     Text("Contact for pricing")
@@ -258,14 +259,15 @@ struct SpecificationItemDetailView: View {
 
     private var allTiersComparison: some View {
         VStack(alignment: .leading, spacing: 10) {
-            HStack(spacing: 8) {
-                Image(systemName: "list.bullet.rectangle.fill")
-                    .font(.neueSubheadlineMedium)
-                    .foregroundStyle(AVIATheme.teal)
-                Text("All Ranges")
-                    .font(.neueCorpMedium(18))
-                    .foregroundStyle(AVIATheme.textPrimary)
-            }
+            Text("All Ranges")
+                .font(.neueCorpMedium(18))
+                .foregroundStyle(AVIATheme.textPrimary)
+                .padding(.leading, 12)
+                .overlay(alignment: .leading) {
+                    Rectangle()
+                        .fill(AVIATheme.timelessBrown)
+                        .frame(width: 3)
+                }
 
             ForEach(SpecTier.allCases) { tier in
                 let isCurrent = tier == specVM.currentTier
@@ -281,7 +283,7 @@ struct SpecificationItemDetailView: View {
                     HStack(alignment: .top, spacing: 12) {
                         VStack(spacing: 4) {
                             Circle()
-                                .fill(isViewing ? AVIATheme.teal : (isCurrent ? AVIATheme.teal.opacity(0.4) : AVIATheme.surfaceBorder))
+                                .fill(isViewing ? AVIATheme.timelessBrown : (isCurrent ? AVIATheme.timelessBrown.opacity(0.4) : AVIATheme.surfaceBorder))
                                 .frame(width: 10, height: 10)
                             if tier != .portobello {
                                 Rectangle()
@@ -295,29 +297,24 @@ struct SpecificationItemDetailView: View {
                             HStack(spacing: 6) {
                                 Text(tier.displayName)
                                     .font(.neueCaptionMedium)
-                                    .foregroundStyle(isViewing ? AVIATheme.teal : AVIATheme.textSecondary)
+                                    .foregroundStyle(isViewing ? AVIATheme.timelessBrown : AVIATheme.textSecondary)
                                 if isCurrent {
                                     Text("YOURS")
                                         .font(.neueCorpMedium(8))
-                                        .foregroundStyle(AVIATheme.teal)
+                                        .foregroundStyle(AVIATheme.timelessBrown)
                                         .padding(.horizontal, 6)
                                         .padding(.vertical, 2)
-                                        .background(AVIATheme.teal.opacity(0.12))
+                                        .background(AVIATheme.timelessBrown.opacity(0.12))
                                         .clipShape(Capsule())
                                 }
                                 if !isCurrent, let cost = item.upgradeCost(from: specVM.currentTier, to: tier), cost > 0 {
                                     Text("+\(AVIATheme.formatCost(cost))")
                                         .font(.neueCorpMedium(9))
-                                        .foregroundStyle(AVIATheme.teal)
+                                        .foregroundStyle(AVIATheme.timelessBrown)
                                         .padding(.horizontal, 6)
                                         .padding(.vertical, 2)
-                                        .background(AVIATheme.teal.opacity(0.08))
+                                        .background(AVIATheme.timelessBrown.opacity(0.08))
                                         .clipShape(Capsule())
-                                }
-                                if isViewing && item.hasTierSpecificImages {
-                                    Image(systemName: "eye.fill")
-                                        .font(.neueCorp(9))
-                                        .foregroundStyle(AVIATheme.teal)
                                 }
                             }
                             Text(item.description(for: tier))

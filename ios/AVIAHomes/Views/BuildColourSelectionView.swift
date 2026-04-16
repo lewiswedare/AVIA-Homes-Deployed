@@ -106,8 +106,13 @@ struct BuildColourSelectionView: View {
                             Text(group.category.uppercased())
                                 .font(.neueCaption2Medium)
                                 .kerning(1.0)
-                                .foregroundStyle(AVIATheme.textTertiary)
-                                .padding(.horizontal, 4)
+                                .foregroundStyle(AVIATheme.timelessBrown)
+                                .padding(.leading, 12)
+                                .overlay(alignment: .leading) {
+                                    Rectangle()
+                                        .fill(AVIATheme.timelessBrown)
+                                        .frame(width: 3)
+                                }
 
                             ForEach(group.items) { item in
                                 colourItemCard(item)
@@ -163,14 +168,14 @@ struct BuildColourSelectionView: View {
             let progress = approvedItemsNeedingColour.isEmpty ? 0 : Double(completedCount) / Double(approvedItemsNeedingColour.count)
             ZStack {
                 Circle()
-                    .stroke(AVIATheme.teal.opacity(0.15), lineWidth: 4)
+                    .stroke(AVIATheme.timelessBrown.opacity(0.15), lineWidth: 4)
                 Circle()
                     .trim(from: 0, to: progress)
-                    .stroke(AVIATheme.teal, style: StrokeStyle(lineWidth: 4, lineCap: .round))
+                    .stroke(AVIATheme.timelessBrown, style: StrokeStyle(lineWidth: 4, lineCap: .round))
                     .rotationEffect(.degrees(-90))
                 Text("\(Int(progress * 100))%")
                     .font(.neueCorpMedium(11))
-                    .foregroundStyle(AVIATheme.teal)
+                    .foregroundStyle(AVIATheme.timelessBrown)
             }
             .frame(width: 44, height: 44)
         }
@@ -180,17 +185,13 @@ struct BuildColourSelectionView: View {
     }
 
     private var tierInfoBanner: some View {
-        HStack(spacing: 8) {
-            Image(systemName: "paintpalette.fill")
-                .foregroundStyle(AVIATheme.teal)
-            Text("Showing colour options for your approved **\(viewModel.specTier.capitalized)** specification items only.")
-                .font(.neueCaption)
-                .foregroundStyle(AVIATheme.textSecondary)
-        }
-        .padding(12)
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .background(AVIATheme.teal.opacity(0.06))
-        .clipShape(.rect(cornerRadius: 12))
+        Text("Showing colour options for your approved **\(viewModel.specTier.capitalized)** specification items only.")
+            .font(.neueCaption)
+            .foregroundStyle(AVIATheme.textSecondary)
+            .padding(12)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .background(AVIATheme.timelessBrown.opacity(0.06))
+            .clipShape(.rect(cornerRadius: 12))
     }
 
     private func colourItemCard(_ item: BuildSpecSelection) -> some View {
@@ -226,13 +227,8 @@ struct BuildColourSelectionView: View {
                     }
                 } else {
                     RoundedRectangle(cornerRadius: 8)
-                        .fill(AVIATheme.surfaceElevated)
+                        .fill(AVIATheme.timelessBrown.opacity(0.08))
                         .frame(width: 44, height: 44)
-                        .overlay {
-                            Image(systemName: "paintpalette")
-                                .font(.neueCorp(14))
-                                .foregroundStyle(AVIATheme.textTertiary)
-                        }
                 }
 
                 VStack(alignment: .leading, spacing: 3) {
@@ -370,34 +366,26 @@ struct BuildColourPickerSheet: View {
             ScrollView {
                 VStack(alignment: .leading, spacing: 20) {
                     VStack(alignment: .leading, spacing: 10) {
-                        HStack(spacing: 10) {
-                            Image(systemName: "cube.box.fill")
-                                .foregroundStyle(AVIATheme.teal)
-                            VStack(alignment: .leading, spacing: 2) {
-                                Text(specItem.snapshotName)
-                                    .font(.neueSubheadlineMedium)
-                                    .foregroundStyle(AVIATheme.textPrimary)
-                                Text(specItem.snapshotDescription)
-                                    .font(.neueCaption2)
-                                    .foregroundStyle(AVIATheme.textSecondary)
-                                    .lineLimit(2)
-                            }
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text(specItem.snapshotName)
+                                .font(.neueSubheadlineMedium)
+                                .foregroundStyle(AVIATheme.textPrimary)
+                            Text(specItem.snapshotDescription)
+                                .font(.neueCaption2)
+                                .foregroundStyle(AVIATheme.textSecondary)
+                                .lineLimit(2)
                         }
 
                         if let specItemModel = linkedSpecItem {
                             let tierDesc = specItemModel.description(for: resolvedTier)
                             if !tierDesc.isEmpty {
-                                HStack(spacing: 8) {
-                                    Image(systemName: "info.circle.fill")
-                                        .foregroundStyle(AVIATheme.teal.opacity(0.7))
-                                        .font(.system(size: 12))
-                                    Text("Your \(resolvedTier.displayName) spec: \(tierDesc)")
-                                        .font(.neueCaption2)
-                                        .foregroundStyle(AVIATheme.textSecondary)
-                                }
-                                .padding(10)
-                                .background(AVIATheme.teal.opacity(0.06))
-                                .clipShape(.rect(cornerRadius: 8))
+                                Text("Your \(resolvedTier.displayName) spec: \(tierDesc)")
+                                    .font(.neueCaption2)
+                                    .foregroundStyle(AVIATheme.textSecondary)
+                                    .padding(10)
+                                    .frame(maxWidth: .infinity, alignment: .leading)
+                                    .background(AVIATheme.timelessBrown.opacity(0.06))
+                                    .clipShape(.rect(cornerRadius: 8))
                             }
                         }
                     }

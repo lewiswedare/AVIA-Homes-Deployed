@@ -58,17 +58,23 @@ struct HomeDesignDetailView: View {
                     .allowsHitTesting(false)
                 }
                 .overlay(alignment: .bottom) {
-                    LinearGradient(
-                        stops: [
-                            .init(color: AVIATheme.background.opacity(0), location: 0.0),
-                            .init(color: AVIATheme.background.opacity(0.6), location: 0.4),
-                            .init(color: AVIATheme.background, location: 0.75),
-                            .init(color: AVIATheme.background, location: 1.0)
-                        ],
-                        startPoint: .top,
-                        endPoint: .bottom
-                    )
-                    .frame(height: geo.size.height * 0.55)
+                    VStack(alignment: .leading, spacing: 6) {
+                        Text(design.name)
+                            .font(.neueCorpMedium(28))
+                            .foregroundStyle(.white)
+                        HStack(spacing: 16) {
+                            Text("\(design.bedrooms) Bed")
+                            Text("\(design.bathrooms) Bath")
+                            Text("\(design.garages) Car")
+                            Text(String(format: "%.0fm²", design.squareMeters))
+                        }
+                        .font(.neueCaption)
+                        .foregroundStyle(.white.opacity(0.85))
+                    }
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .padding(.horizontal, 20)
+                    .padding(.vertical, 16)
+                    .background(.ultraThinMaterial)
                 }
                 .clipped()
         }
@@ -77,7 +83,6 @@ struct HomeDesignDetailView: View {
 
     private var contentSection: some View {
         VStack(spacing: 32) {
-            titleBlock
             descriptionBlock
             quickStats
             dimensionsBar
@@ -97,40 +102,6 @@ struct HomeDesignDetailView: View {
         .padding(.bottom, 48)
     }
 
-    private var titleBlock: some View {
-        VStack(alignment: .leading, spacing: 6) {
-            HStack(alignment: .firstTextBaseline) {
-                Text(design.name)
-                    .font(.neueCorpMedium(32))
-                    .foregroundStyle(AVIATheme.textPrimary)
-                Spacer()
-                if design.storeys == 2 {
-                    Text("DOUBLE STOREY")
-                        .font(.neueCorpMedium(9))
-                        .kerning(0.8)
-                        .foregroundStyle(.white)
-                        .padding(.horizontal, 10)
-                        .padding(.vertical, 5)
-                        .background(AVIATheme.teal)
-                        .clipShape(Capsule())
-                } else {
-                    Text("SINGLE STOREY")
-                        .font(.neueCorpMedium(9))
-                        .kerning(0.8)
-                        .foregroundStyle(AVIATheme.textSecondary)
-                        .padding(.horizontal, 10)
-                        .padding(.vertical, 5)
-                        .background(AVIATheme.surfaceElevated)
-                        .clipShape(Capsule())
-                }
-            }
-
-            Text(String(format: "%.0f m² of thoughtfully designed living", design.squareMeters))
-                .font(.neueCaption)
-                .foregroundStyle(AVIATheme.textSecondary)
-        }
-    }
-
     private var quickStats: some View {
         HStack(spacing: 0) {
             statPill(value: "\(design.bedrooms)", label: "Bed", icon: "bed.double.fill")
@@ -148,9 +119,6 @@ struct HomeDesignDetailView: View {
 
     private func statPill(value: String, label: String, icon: String) -> some View {
         VStack(spacing: 6) {
-            Image(systemName: icon)
-                .font(.neueCorpMedium(14))
-                .foregroundStyle(AVIATheme.teal)
             Text(value)
                 .font(.neueCorpMedium(22))
                 .foregroundStyle(AVIATheme.textPrimary)
@@ -178,9 +146,6 @@ struct HomeDesignDetailView: View {
 
     private func dimensionChip(icon: String, label: String, value: String) -> some View {
         VStack(spacing: 4) {
-            Image(systemName: icon)
-                .font(.system(size: 11, weight: .medium))
-                .foregroundStyle(AVIATheme.teal)
             Text(value)
                 .font(.neueCorpMedium(13))
                 .foregroundStyle(AVIATheme.textPrimary)
@@ -190,7 +155,7 @@ struct HomeDesignDetailView: View {
         }
         .frame(maxWidth: .infinity)
         .padding(.vertical, 10)
-        .background(AVIATheme.teal.opacity(0.06))
+        .background(AVIATheme.timelessBrown.opacity(0.06))
         .clipShape(.rect(cornerRadius: 12))
     }
 
@@ -199,7 +164,13 @@ struct HomeDesignDetailView: View {
             Text("ABOUT THIS DESIGN")
                 .font(.neueCaption2Medium)
                 .kerning(1.0)
-                .foregroundStyle(AVIATheme.textTertiary)
+                .foregroundStyle(AVIATheme.timelessBrown)
+                .padding(.leading, 12)
+                .overlay(alignment: .leading) {
+                    Rectangle()
+                        .fill(AVIATheme.timelessBrown)
+                        .frame(width: 3)
+                }
 
             BentoCard(cornerRadius: 16) {
                 Text(design.description)
@@ -217,7 +188,13 @@ struct HomeDesignDetailView: View {
             Text("FLOOR PLAN")
                 .font(.neueCaption2Medium)
                 .kerning(1.0)
-                .foregroundStyle(AVIATheme.textTertiary)
+                .foregroundStyle(AVIATheme.timelessBrown)
+                .padding(.leading, 12)
+                .overlay(alignment: .leading) {
+                    Rectangle()
+                        .fill(AVIATheme.timelessBrown)
+                        .frame(width: 3)
+                }
 
             Button {
                 showingFloorplan = true
@@ -307,31 +284,31 @@ struct HomeDesignDetailView: View {
             Text("ROOM HIGHLIGHTS")
                 .font(.neueCaption2Medium)
                 .kerning(1.0)
-                .foregroundStyle(AVIATheme.textTertiary)
+                .foregroundStyle(AVIATheme.timelessBrown)
+                .padding(.leading, 12)
+                .overlay(alignment: .leading) {
+                    Rectangle()
+                        .fill(AVIATheme.timelessBrown)
+                        .frame(width: 3)
+                }
 
             BentoCard(cornerRadius: 16) {
                 VStack(spacing: 0) {
                     ForEach(Array(design.roomHighlights.enumerated()), id: \.offset) { index, highlight in
                         HStack(spacing: 12) {
-                            Image(systemName: iconForHighlight(highlight))
-                                .font(.system(size: 13, weight: .medium))
-                                .foregroundStyle(AVIATheme.teal)
-                                .frame(width: 28, height: 28)
-                                .background(AVIATheme.teal.opacity(0.08))
-                                .clipShape(Circle())
                             Text(highlight)
                                 .font(.neueSubheadline)
                                 .foregroundStyle(AVIATheme.textPrimary)
                             Spacer()
                         }
                         .padding(.horizontal, 16)
-                        .padding(.vertical, 11)
+                        .padding(.vertical, 13)
 
                         if index < design.roomHighlights.count - 1 {
                             Rectangle()
                                 .fill(AVIATheme.surfaceBorder)
                                 .frame(height: 1)
-                                .padding(.leading, 56)
+                                .padding(.leading, 16)
                         }
                     }
                 }
@@ -344,7 +321,13 @@ struct HomeDesignDetailView: View {
             Text("SPECIFICATIONS")
                 .font(.neueCaption2Medium)
                 .kerning(1.0)
-                .foregroundStyle(AVIATheme.textTertiary)
+                .foregroundStyle(AVIATheme.timelessBrown)
+                .padding(.leading, 12)
+                .overlay(alignment: .leading) {
+                    Rectangle()
+                        .fill(AVIATheme.timelessBrown)
+                        .frame(width: 3)
+                }
 
             BentoCard(cornerRadius: 16) {
                 VStack(spacing: 0) {
@@ -371,11 +354,7 @@ struct HomeDesignDetailView: View {
     }
 
     private func specRow(label: String, value: String, icon: String) -> some View {
-        HStack(spacing: 12) {
-            Image(systemName: icon)
-                .font(.neueCorp(14))
-                .foregroundStyle(AVIATheme.teal)
-                .frame(width: 24)
+        HStack {
             Text(label)
                 .font(.neueSubheadline)
                 .foregroundStyle(AVIATheme.textSecondary)
@@ -392,7 +371,7 @@ struct HomeDesignDetailView: View {
         Rectangle()
             .fill(AVIATheme.surfaceBorder)
             .frame(height: 1)
-            .padding(.leading, 52)
+            .padding(.leading, 16)
     }
 
     private var inclusionsSection: some View {
@@ -400,28 +379,31 @@ struct HomeDesignDetailView: View {
             Text("STANDARD INCLUSIONS")
                 .font(.neueCaption2Medium)
                 .kerning(1.0)
-                .foregroundStyle(AVIATheme.textTertiary)
+                .foregroundStyle(AVIATheme.timelessBrown)
+                .padding(.leading, 12)
+                .overlay(alignment: .leading) {
+                    Rectangle()
+                        .fill(AVIATheme.timelessBrown)
+                        .frame(width: 3)
+                }
 
             BentoCard(cornerRadius: 16) {
                 VStack(spacing: 0) {
                     ForEach(Array(design.inclusions.enumerated()), id: \.offset) { index, inclusion in
                         HStack(spacing: 12) {
-                            Image(systemName: "checkmark.circle.fill")
-                                .font(.system(size: 14))
-                                .foregroundStyle(AVIATheme.teal)
                             Text(inclusion)
                                 .font(.neueSubheadline)
                                 .foregroundStyle(AVIATheme.textPrimary)
                             Spacer()
                         }
                         .padding(.horizontal, 16)
-                        .padding(.vertical, 11)
+                        .padding(.vertical, 13)
 
                         if index < design.inclusions.count - 1 {
                             Rectangle()
                                 .fill(AVIATheme.surfaceBorder)
                                 .frame(height: 1)
-                                .padding(.leading, 42)
+                                .padding(.leading, 16)
                         }
                     }
                 }
@@ -434,7 +416,13 @@ struct HomeDesignDetailView: View {
             Text("KEY FEATURES")
                 .font(.neueCaption2Medium)
                 .kerning(1.0)
-                .foregroundStyle(AVIATheme.textTertiary)
+                .foregroundStyle(AVIATheme.timelessBrown)
+                .padding(.leading, 12)
+                .overlay(alignment: .leading) {
+                    Rectangle()
+                        .fill(AVIATheme.timelessBrown)
+                        .frame(width: 3)
+                }
 
             HStack(spacing: 12) {
                 featureCard(icon: "paintpalette.fill", title: "Multiple Facades", subtitle: "Choose your style")
@@ -452,24 +440,16 @@ struct HomeDesignDetailView: View {
 
     private func featureCard(icon: String, title: String, subtitle: String) -> some View {
         BentoCard(cornerRadius: 14) {
-            HStack(spacing: 10) {
-                Image(systemName: icon)
-                    .font(.neueCorpMedium(14))
-                    .foregroundStyle(AVIATheme.teal)
-                    .frame(width: 32, height: 32)
-                    .background(AVIATheme.teal.opacity(0.1))
-                    .clipShape(Circle())
-                VStack(alignment: .leading, spacing: 1) {
-                    Text(title)
-                        .font(.neueCaptionMedium)
-                        .foregroundStyle(AVIATheme.textPrimary)
-                    Text(subtitle)
-                        .font(.neueCaption2)
-                        .foregroundStyle(AVIATheme.textTertiary)
-                }
-                Spacer(minLength: 0)
+            VStack(alignment: .leading, spacing: 4) {
+                Text(title)
+                    .font(.neueCaptionMedium)
+                    .foregroundStyle(AVIATheme.textPrimary)
+                Text(subtitle)
+                    .font(.neueCaption2)
+                    .foregroundStyle(AVIATheme.textTertiary)
             }
-            .padding(12)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .padding(14)
         }
     }
 
@@ -512,22 +492,6 @@ struct HomeDesignDetailView: View {
         }
     }
 
-    private func iconForHighlight(_ highlight: String) -> String {
-        let lower = highlight.lowercased()
-        if lower.contains("master") { return "bed.double.fill" }
-        if lower.contains("kitchen") || lower.contains("pantry") { return "fork.knife" }
-        if lower.contains("theatre") || lower.contains("media") || lower.contains("lounge") || lower.contains("multi-purpose") { return "tv.fill" }
-        if lower.contains("alfresco") || lower.contains("outdoor") { return "sun.max.fill" }
-        if lower.contains("garage") { return "car.fill" }
-        if lower.contains("laundry") || lower.contains("linen") { return "washer.fill" }
-        if lower.contains("bedroom") { return "bed.double" }
-        if lower.contains("rumpus") || lower.contains("sitting") || lower.contains("retreat") || lower.contains("activity") { return "figure.play" }
-        if lower.contains("study") || lower.contains("office") { return "desktopcomputer" }
-        if lower.contains("bathroom") || lower.contains("powder") { return "shower.fill" }
-        if lower.contains("narrow") || lower.contains("compact") { return "arrow.left.and.right" }
-        if lower.contains("living") { return "sofa.fill" }
-        return "checkmark"
-    }
 }
 
 struct FloorplanFullscreenView: View {

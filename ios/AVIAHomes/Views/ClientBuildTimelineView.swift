@@ -34,75 +34,77 @@ struct ClientBuildTimelineView: View {
     // MARK: - Progress Header
 
     private var progressHeader: some View {
-        BentoCard(cornerRadius: 18) {
-            VStack(spacing: 16) {
-                HStack {
-                    VStack(alignment: .leading, spacing: 4) {
-                        Text("\(Int(progress * 100))%")
-                            .font(.neueCorpMedium(38))
-                            .foregroundStyle(AVIATheme.textPrimary)
-                        Text("Overall Completion")
-                            .font(.neueSubheadline)
-                            .foregroundStyle(AVIATheme.textSecondary)
-                    }
-                    Spacer()
-                    VStack(alignment: .trailing, spacing: 4) {
-                        if build.isAwaitingRegistration {
-                            Text("STATUS")
-                                .font(.neueCorpMedium(9))
-                                .kerning(1.5)
-                                .foregroundStyle(AVIATheme.textTertiary)
-                            Text("Awaiting Registration")
-                                .font(.neueHeadline)
-                                .foregroundStyle(AVIATheme.warning)
-                        } else if let stage = build.currentStage {
-                            Text("CURRENT STAGE")
-                                .font(.neueCorpMedium(9))
-                                .kerning(1.5)
-                                .foregroundStyle(AVIATheme.textTertiary)
-                            Text(stage.name)
-                                .font(.neueHeadline)
-                                .foregroundStyle(AVIATheme.teal)
-                        }
-                    }
+        VStack(spacing: 16) {
+            HStack {
+                VStack(alignment: .leading, spacing: 4) {
+                    Text("\(Int(progress * 100))%")
+                        .font(.neueCorpMedium(38))
+                        .foregroundStyle(.white)
+                    Text("Overall Completion")
+                        .font(.neueSubheadline)
+                        .foregroundStyle(.white.opacity(0.7))
                 }
-
-                GeometryReader { geo in
-                    ZStack(alignment: .leading) {
-                        Capsule().fill(AVIATheme.teal.opacity(0.1)).frame(height: 8)
-                        Capsule().fill(AVIATheme.tealGradient).frame(width: max(0, geo.size.width * progress), height: 8)
-                    }
-                }
-                .frame(height: 8)
-
-                if let start = build.estimatedStartDate, let end = build.estimatedCompletionDate {
-                    HStack {
-                        VStack(alignment: .leading, spacing: 2) {
-                            Text("Est. Start")
-                                .font(.neueCaption2)
-                                .foregroundStyle(AVIATheme.textTertiary)
-                            Text(start.formatted(.dateTime.month(.abbreviated).day().year()))
-                                .font(.neueCaptionMedium)
-                                .foregroundStyle(AVIATheme.textSecondary)
-                        }
-                        Spacer()
-                        Image(systemName: "arrow.right")
-                            .font(.neueCaption2)
-                            .foregroundStyle(AVIATheme.textTertiary)
-                        Spacer()
-                        VStack(alignment: .trailing, spacing: 2) {
-                            Text("Est. Completion")
-                                .font(.neueCaption2)
-                                .foregroundStyle(AVIATheme.textTertiary)
-                            Text(end.formatted(.dateTime.month(.abbreviated).day().year()))
-                                .font(.neueCaptionMedium)
-                                .foregroundStyle(AVIATheme.textSecondary)
-                        }
+                Spacer()
+                VStack(alignment: .trailing, spacing: 4) {
+                    if build.isAwaitingRegistration {
+                        Text("STATUS")
+                            .font(.neueCorpMedium(9))
+                            .kerning(1.5)
+                            .foregroundStyle(.white.opacity(0.6))
+                        Text("Awaiting Registration")
+                            .font(.neueHeadline)
+                            .foregroundStyle(AVIATheme.warning)
+                    } else if let stage = build.currentStage {
+                        Text("CURRENT STAGE")
+                            .font(.neueCorpMedium(9))
+                            .kerning(1.5)
+                            .foregroundStyle(.white.opacity(0.6))
+                        Text(stage.name)
+                            .font(.neueHeadline)
+                            .foregroundStyle(.white)
                     }
                 }
             }
-            .padding(20)
+
+            GeometryReader { geo in
+                ZStack(alignment: .leading) {
+                    Capsule().fill(.white.opacity(0.15)).frame(height: 8)
+                    Capsule().fill(
+                        LinearGradient(
+                            colors: [AVIATheme.timelessBrown, Color(hex: "5C5856")],
+                            startPoint: .leading,
+                            endPoint: .trailing
+                        )
+                    ).frame(width: max(0, geo.size.width * progress), height: 8)
+                }
+            }
+            .frame(height: 8)
+
+            if let start = build.estimatedStartDate, let end = build.estimatedCompletionDate {
+                HStack {
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text("Est. Start")
+                            .font(.neueCaption2)
+                            .foregroundStyle(.white.opacity(0.5))
+                        Text(start.formatted(.dateTime.month(.abbreviated).day().year()))
+                            .font(.neueCaptionMedium)
+                            .foregroundStyle(.white.opacity(0.8))
+                    }
+                    Spacer()
+                    VStack(alignment: .trailing, spacing: 2) {
+                        Text("Est. Completion")
+                            .font(.neueCaption2)
+                            .foregroundStyle(.white.opacity(0.5))
+                        Text(end.formatted(.dateTime.month(.abbreviated).day().year()))
+                            .font(.neueCaptionMedium)
+                            .foregroundStyle(.white.opacity(0.8))
+                    }
+                }
+            }
         }
+        .padding(20)
+        .background(AVIATheme.timelessBrown)
+        .clipShape(.rect(cornerRadius: 18))
     }
 
     // MARK: - Awaiting Registration Card
@@ -112,25 +114,14 @@ struct ClientBuildTimelineView: View {
         if let regStage = build.awaitingRegistrationStage, regStage.status != .completed {
             BentoCard(cornerRadius: 16) {
                 VStack(spacing: 14) {
-                    HStack(spacing: 14) {
-                        Image(systemName: "clock.badge.questionmark")
-                            .font(.system(size: 28))
+                    VStack(alignment: .leading, spacing: 4) {
+                        Text("AWAITING SITE REGISTRATION")
+                            .font(.neueCorpMedium(10))
+                            .kerning(1.0)
                             .foregroundStyle(AVIATheme.warning)
-                            .frame(width: 52, height: 52)
-                            .background(AVIATheme.warning.opacity(0.1))
-                            .clipShape(Circle())
-
-                        VStack(alignment: .leading, spacing: 4) {
-                            Text("AWAITING SITE REGISTRATION")
-                                .font(.neueCorpMedium(10))
-                                .kerning(1.0)
-                                .foregroundStyle(AVIATheme.warning)
-                            Text("Your site needs to be registered before construction can begin.")
-                                .font(.neueCaption)
-                                .foregroundStyle(AVIATheme.textSecondary)
-                        }
-
-                        Spacer()
+                        Text("Your site needs to be registered before construction can begin.")
+                            .font(.neueCaption)
+                            .foregroundStyle(AVIATheme.textSecondary)
                     }
 
                     if let estDate = regStage.estimatedEndDate {
@@ -184,18 +175,11 @@ struct ClientBuildTimelineView: View {
         if let next = upcoming {
             BentoCard(cornerRadius: 16) {
                 HStack(spacing: 14) {
-                    Image(systemName: "flag.fill")
-                        .font(.system(size: 22))
-                        .foregroundStyle(AVIATheme.teal)
-                        .frame(width: 44, height: 44)
-                        .background(AVIATheme.teal.opacity(0.1))
-                        .clipShape(Circle())
-
                     VStack(alignment: .leading, spacing: 3) {
                         Text("NEXT MILESTONE")
                             .font(.neueCorpMedium(9))
                             .kerning(1.0)
-                            .foregroundStyle(AVIATheme.textTertiary)
+                            .foregroundStyle(AVIATheme.timelessBrown)
                         Text(next.title)
                             .font(.neueSubheadlineMedium)
                             .foregroundStyle(AVIATheme.textPrimary)
@@ -318,7 +302,7 @@ struct ClientTimelineStageRow: View {
         }
         switch stage.status {
         case .completed: return AVIATheme.success
-        case .inProgress: return AVIATheme.teal
+        case .inProgress: return AVIATheme.timelessBrown
         case .upcoming: return AVIATheme.textTertiary
         case .delayed: return AVIATheme.destructive
         }
@@ -334,7 +318,7 @@ struct ClientTimelineStageRow: View {
             VStack(spacing: 0) {
                 if !isFirst {
                     Rectangle()
-                        .fill(stage.status == .upcoming ? AVIATheme.surfaceBorder : AVIATheme.teal.opacity(0.3))
+                        .fill(stage.status == .upcoming ? AVIATheme.surfaceBorder : AVIATheme.timelessBrown.opacity(0.3))
                         .frame(width: 2, height: 16)
                 } else {
                     Color.clear.frame(width: 2, height: 16)
@@ -345,31 +329,25 @@ struct ClientTimelineStageRow: View {
                         .fill(statusColor)
                         .frame(width: 28, height: 28)
 
-                    if isRegistrationStage && stage.status != .completed {
-                        Image(systemName: "clock")
+                    switch stage.status {
+                    case .completed:
+                        Image(systemName: "checkmark")
                             .font(.neueCaptionMedium)
                             .foregroundStyle(.white)
-                    } else {
-                        switch stage.status {
-                        case .completed:
-                            Image(systemName: "checkmark")
-                                .font(.neueCaptionMedium)
-                                .foregroundStyle(.white)
-                        case .inProgress:
-                            Circle().fill(.white).frame(width: 10, height: 10)
-                        case .upcoming:
-                            Circle().fill(.white.opacity(0.5)).frame(width: 10, height: 10)
-                        case .delayed:
-                            Image(systemName: "exclamationmark")
-                                .font(.neueCaptionMedium)
-                                .foregroundStyle(.white)
-                        }
+                    case .inProgress:
+                        Circle().fill(.white).frame(width: 10, height: 10)
+                    case .upcoming:
+                        Circle().fill(.white.opacity(0.5)).frame(width: 10, height: 10)
+                    case .delayed:
+                        Image(systemName: "exclamationmark")
+                            .font(.neueCaptionMedium)
+                            .foregroundStyle(.white)
                     }
                 }
 
                 if !isLast {
                     Rectangle()
-                        .fill(stage.status == .completed ? AVIATheme.teal.opacity(0.3) : AVIATheme.surfaceBorder)
+                        .fill(stage.status == .completed ? AVIATheme.timelessBrown.opacity(0.3) : AVIATheme.surfaceBorder)
                         .frame(width: 2)
                         .frame(minHeight: isExpanded ? 160 : 40)
                 }
@@ -386,11 +364,6 @@ struct ClientTimelineStageRow: View {
                                     Text(stage.name)
                                         .font(.neueSubheadlineMedium)
                                         .foregroundStyle(isRegistrationStage && stage.status != .completed ? AVIATheme.warning : (stage.status == .upcoming ? AVIATheme.textTertiary : AVIATheme.textPrimary))
-                                    if isRegistrationStage && stage.status != .completed {
-                                        Image(systemName: "clock.badge.questionmark")
-                                            .font(.system(size: 12))
-                                            .foregroundStyle(AVIATheme.warning)
-                                    }
                                     if actionCount > 0 {
                                         Text("\(actionCount)")
                                             .font(.neueCorpMedium(8))
@@ -406,7 +379,7 @@ struct ClientTimelineStageRow: View {
                             }
                             Spacer()
                             if stage.status == .inProgress {
-                                StatusBadge(title: "\(Int(stage.progress * 100))%", color: AVIATheme.teal)
+                                StatusBadge(title: "\(Int(stage.progress * 100))%", color: AVIATheme.timelessBrown)
                             } else if stage.status == .delayed {
                                 StatusBadge(title: "Delayed", color: AVIATheme.destructive)
                             }
@@ -447,43 +420,37 @@ struct ClientTimelineStageRow: View {
             if stage.status == .inProgress {
                 GeometryReader { geo in
                     ZStack(alignment: .leading) {
-                        Capsule().fill(AVIATheme.teal.opacity(0.1)).frame(height: 4)
-                        Capsule().fill(AVIATheme.tealGradient).frame(width: max(0, geo.size.width * stage.progress), height: 4)
+                        Capsule().fill(AVIATheme.timelessBrown.opacity(0.1)).frame(height: 4)
+                        Capsule().fill(
+                            LinearGradient(
+                                colors: [AVIATheme.timelessBrown, Color(hex: "5C5856")],
+                                startPoint: .leading,
+                                endPoint: .trailing
+                            )
+                        ).frame(width: max(0, geo.size.width * stage.progress), height: 4)
                     }
                 }
                 .frame(height: 4)
             }
 
             if let start = stage.estimatedStartDate {
-                HStack(spacing: 8) {
-                    Image(systemName: "calendar").font(.neueCaption).foregroundStyle(AVIATheme.textTertiary)
-                    Text("Est. Start: \(start.formatted(date: .abbreviated, time: .omitted))")
-                        .font(.neueCaption).foregroundStyle(AVIATheme.textSecondary)
-                }
+                Text("Est. Start: \(start.formatted(date: .abbreviated, time: .omitted))")
+                    .font(.neueCaption).foregroundStyle(AVIATheme.textSecondary)
             }
 
             if let end = stage.estimatedEndDate {
-                HStack(spacing: 8) {
-                    Image(systemName: "calendar.badge.clock").font(.neueCaption).foregroundStyle(AVIATheme.textTertiary)
-                    Text("Est. End: \(end.formatted(date: .abbreviated, time: .omitted))")
-                        .font(.neueCaption).foregroundStyle(AVIATheme.textSecondary)
-                }
+                Text("Est. End: \(end.formatted(date: .abbreviated, time: .omitted))")
+                    .font(.neueCaption).foregroundStyle(AVIATheme.textSecondary)
             }
 
             if let start = stage.actualStartDate {
-                HStack(spacing: 8) {
-                    Image(systemName: "play.circle").font(.neueCaption).foregroundStyle(AVIATheme.teal)
-                    Text("Started: \(start.formatted(date: .abbreviated, time: .omitted))")
-                        .font(.neueCaption).foregroundStyle(AVIATheme.textSecondary)
-                }
+                Text("Started: \(start.formatted(date: .abbreviated, time: .omitted))")
+                    .font(.neueCaption).foregroundStyle(AVIATheme.textSecondary)
             }
 
             if let end = stage.actualEndDate {
-                HStack(spacing: 8) {
-                    Image(systemName: "checkmark.circle").font(.neueCaption).foregroundStyle(AVIATheme.success)
-                    Text("Completed: \(end.formatted(date: .abbreviated, time: .omitted))")
-                        .font(.neueCaption).foregroundStyle(AVIATheme.textSecondary)
-                }
+                Text("Completed: \(end.formatted(date: .abbreviated, time: .omitted))")
+                    .font(.neueCaption).foregroundStyle(AVIATheme.success)
             }
 
             if let notes = stage.notes {
