@@ -57,7 +57,9 @@ nonisolated enum SpecTier: String, CaseIterable, Sendable, Identifiable, Hashabl
     }
 }
 
-nonisolated struct SpecCategory: Identifiable, Sendable {
+nonisolated struct SpecCategory: Identifiable, Sendable, Hashable {
+    static func == (lhs: SpecCategory, rhs: SpecCategory) -> Bool { lhs.id == rhs.id }
+    func hash(into hasher: inout Hasher) { hasher.combine(id) }
     let id: String
     let name: String
     let icon: String

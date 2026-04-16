@@ -1,25 +1,36 @@
 import SwiftUI
 
 struct SpecificationCategoryDetailView: View {
+    @Environment(\.dismiss) private var dismiss
     @Environment(SpecificationViewModel.self) private var specVM
     let category: SpecCategory
     @State private var previewTiers: [String: SpecTier] = [:]
 
     var body: some View {
-        ScrollView {
-            VStack(spacing: 12) {
-                categoryHeader
-                ForEach(category.items) { item in
-                    itemCard(item)
+        NavigationStack {
+            ScrollView {
+                VStack(spacing: 12) {
+                    categoryHeader
+                    ForEach(category.items) { item in
+                        itemCard(item)
+                    }
+                }
+                .padding(.horizontal, 16)
+                .padding(.top, 8)
+                .padding(.bottom, 40)
+            }
+            .background(AVIATheme.background)
+            .navigationTitle(category.name)
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .topBarTrailing) {
+                    Button("Done") { dismiss() }
+                        .font(.neueSubheadlineMedium)
+                        .tint(AVIATheme.timelessBrown)
                 }
             }
-            .padding(.horizontal, 16)
-            .padding(.top, 8)
-            .padding(.bottom, 40)
         }
-        .background(AVIATheme.background)
-        .navigationTitle(category.name)
-        .navigationBarTitleDisplayMode(.large)
+        .presentationBackground(AVIATheme.background)
     }
 
     private var categoryHeader: some View {

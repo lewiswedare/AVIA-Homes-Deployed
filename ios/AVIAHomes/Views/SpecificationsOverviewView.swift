@@ -4,6 +4,7 @@ struct SpecificationsOverviewView: View {
     @Environment(SpecificationViewModel.self) private var specVM
     @Environment(CustomerJourneyViewModel.self) private var journeyVM
     @State private var showConfirmAlert = false
+    @State private var selectedCategory: SpecCategory?
 
     var body: some View {
         NavigationStack {
@@ -30,6 +31,9 @@ struct SpecificationsOverviewView: View {
             }
             .ignoresSafeArea(edges: .top)
             .background(AVIATheme.background)
+            .sheet(item: $selectedCategory) { category in
+                SpecificationCategoryDetailView(category: category)
+            }
             .alert("Confirm Specifications", isPresented: $showConfirmAlert) {
                 Button("Confirm") {
                     withAnimation(.spring(response: 0.4)) {
@@ -278,75 +282,76 @@ struct SpecificationsOverviewView: View {
     }
 
     private var categoriesList: some View {
-        let cats = specVM.categories
-        return VStack(spacing: 12) {
-            ForEach(0..<cats.count / 2 + cats.count % 2, id: \.self) { rowIndex in
-                let firstIndex = rowIndex * 2
-                let secondIndex = firstIndex + 1
-                HStack(spacing: 12) {
-                    NavigationLink {
-                        SpecificationCategoryDetailView(category: cats[firstIndex])
-                    } label: {
-                        bentoCategoryCard(cats[firstIndex])
-                    }
-                    if secondIndex < cats.count {
-                        NavigationLink {
-                            SpecificationCategoryDetailView(category: cats[secondIndex])
-                        } label: {
-                            bentoCategoryCard(cats[secondIndex])
-                        }
-                    } else {
-                        Color.clear
-                    }
+        VStack(spacing: 0) {
+            ForEach(Array(specVM.categories.enumerated()), id: \.element.id) { index, category in
+                Button {
+                    selectedCategory = category
+                } label: {
+                    categoryRow(category)
                 }
-                .fixedSize(horizontal: false, vertical: true)
+                .buttonStyle(.plain)
+
+                if index < specVM.categories.count - 1 {
+                    Divider()
+                        .padding(.leading, 62)
+                }
             }
         }
+        .background(AVIATheme.cardBackground)
+        .clipShape(.rect(cornerRadius: 16))
     }
 
-    private func bentoCategoryCard(_ category: SpecCategory) -> some View {
+    private func categoryRow(_ category: SpecCategory) -> some View {
         let upgradeCount = specVM.upgradeableItems(in: category).count
         let pendingCount = specVM.upgradeRequests.filter { req in
             category.items.contains { $0.id == req.itemId } && req.status == .pending
         }.count
 
-        return BentoCard(cornerRadius: 16) {
-            VStack(alignment: .leading, spacing: 10) {
-                HStack {
+        return HStack(spacing: 14) {
+            Image(systemName: category.icon)
+                .font(.neueCorpMedium(14))
+                .foregroundStyle(AVIATheme.timelessBrown)
+                .frame(width: 36, height: 36)
+                .background(AVIATheme.timelessBrown.opacity(0.1))
+                .clipShape(.rect(cornerRadius: 10))
+
+            VStack(alignment: .leading, spacing: 3) {
+                HStack(spacing: 8) {
                     Text(category.name)
                         .font(.neueSubheadlineMedium)
                         .foregroundStyle(AVIATheme.textPrimary)
-                        .lineLimit(2)
-                        .multilineTextAlignment(.leading)
-                    Spacer()
+
                     if pendingCount > 0 {
                         Text("\(pendingCount)")
-                            .font(.neueCaption2Medium)
+                            .font(.neueCorpMedium(9))
                             .foregroundStyle(AVIATheme.aviaWhite)
-                            .frame(width: 22, height: 22)
+                            .frame(width: 20, height: 20)
                             .background(AVIATheme.warning)
                             .clipShape(Circle())
                     }
                 }
 
-                HStack(alignment: .firstTextBaseline, spacing: 4) {
-                    Text("\(category.items.count)")
-                        .font(.neueCorpMedium(28))
-                        .foregroundStyle(AVIATheme.textPrimary)
-                    Text("items")
+                HStack(spacing: 8) {
+                    Text("\(category.items.count) items")
                         .font(.neueCaption)
                         .foregroundStyle(AVIATheme.textSecondary)
-                }
 
-                if upgradeCount > 0 {
-                    Text("\(upgradeCount) upgradeable")
-                        .font(.neueCaption2Medium)
-                        .foregroundStyle(AVIATheme.timelessBrown)
+                    if upgradeCount > 0 {
+                        Text("\(upgradeCount) upgradeable")
+                            .font(.neueCaption2Medium)
+                            .foregroundStyle(AVIATheme.timelessBrown)
+                    }
                 }
             }
-            .padding(16)
-            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
+
+            Spacer(minLength: 0)
+
+            Image(systemName: "chevron.right")
+                .font(.neueCaption2Medium)
+                .foregroundStyle(AVIATheme.textTertiary)
         }
+        .padding(.horizontal, 14)
+        .padding(.vertical, 12)
     }
 
     private var upgradeTotalCost: Double {
