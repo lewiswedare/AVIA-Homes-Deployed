@@ -244,7 +244,7 @@ struct SpecificationsOverviewView: View {
 
             if specVM.upgradeTiers.count > 0 {
                 NavigationLink {
-                    SpecificationCompareView()
+                    SpecRangeComparisonOverviewView()
                 } label: {
                     HStack(spacing: 12) {
                         Image(systemName: "arrow.up.circle.fill")
