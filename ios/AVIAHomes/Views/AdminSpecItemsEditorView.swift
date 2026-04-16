@@ -272,6 +272,14 @@ struct SpecItemEditSheet: View {
     @State private var portobelloImageURL: String = ""
     @State private var isLoadingTierImages: Bool = false
 
+    // Pricing fields
+    @State private var volosCost: String = ""
+    @State private var messinaCost: String = ""
+    @State private var portobelloCost: String = ""
+    @State private var volosToMessinaCost: String = ""
+    @State private var volosToPortobelloCost: String = ""
+    @State private var messinaToPortobelloCost: String = ""
+
     private var isNew: Bool { item == nil }
 
     var body: some View {
@@ -365,6 +373,45 @@ struct SpecItemEditSheet: View {
                         }
                         .padding(.vertical, 14)
                     }
+
+                    BentoCard(cornerRadius: 14) {
+                        VStack(alignment: .leading, spacing: 14) {
+                            sectionHeader("Pricing")
+                            Text("Set base costs per tier and upgrade costs between tiers. All prices in AUD.")
+                                .font(.neueCaption2)
+                                .foregroundStyle(AVIATheme.textTertiary)
+                                .padding(.horizontal, 14)
+
+                            Text("BASE COSTS")
+                                .font(.neueCorpMedium(9))
+                                .kerning(0.5)
+                                .foregroundStyle(AVIATheme.textTertiary)
+                                .padding(.horizontal, 14)
+
+                            HStack(spacing: 8) {
+                                costField("Volos", text: $volosCost, color: AVIATheme.teal)
+                                costField("Messina", text: $messinaCost, color: AVIATheme.warning)
+                                costField("Portobello", text: $portobelloCost, color: Color(hex: "8B5CF6"))
+                            }
+                            .padding(.horizontal, 14)
+
+                            if isUpgradeable {
+                                Text("UPGRADE COSTS")
+                                    .font(.neueCorpMedium(9))
+                                    .kerning(0.5)
+                                    .foregroundStyle(AVIATheme.textTertiary)
+                                    .padding(.horizontal, 14)
+
+                                VStack(spacing: 6) {
+                                    upgradeCostField("Volos \u{2192} Messina", text: $volosToMessinaCost)
+                                    upgradeCostField("Volos \u{2192} Portobello", text: $volosToPortobelloCost)
+                                    upgradeCostField("Messina \u{2192} Portobello", text: $messinaToPortobelloCost)
+                                }
+                                .padding(.horizontal, 14)
+                            }
+                        }
+                        .padding(.vertical, 14)
+                    }
                 }
                 .padding(.horizontal, 16)
                 .padding(.vertical, 12)
@@ -446,6 +493,57 @@ struct SpecItemEditSheet: View {
         }
     }
 
+    private func costField(_ tier: String, text: Binding<String>, color: Color) -> some View {
+        VStack(spacing: 4) {
+            HStack(spacing: 4) {
+                Circle().fill(color).frame(width: 6, height: 6)
+                Text(tier)
+                    .font(.neueCorpMedium(9))
+                    .foregroundStyle(AVIATheme.textSecondary)
+            }
+            HStack(spacing: 2) {
+                Text("$")
+                    .font(.neueCaption2)
+                    .foregroundStyle(AVIATheme.textTertiary)
+                TextField("0.00", text: text)
+                    .font(.neueCaption)
+                    .keyboardType(.decimalPad)
+            }
+            .padding(.horizontal, 8)
+            .padding(.vertical, 6)
+            .background(AVIATheme.surfaceElevated)
+            .clipShape(.rect(cornerRadius: 6))
+        }
+        .frame(maxWidth: .infinity)
+    }
+
+    private func upgradeCostField(_ label: String, text: Binding<String>) -> some View {
+        HStack(spacing: 8) {
+            Text(label)
+                .font(.neueCaption2)
+                .foregroundStyle(AVIATheme.textSecondary)
+                .frame(maxWidth: .infinity, alignment: .leading)
+
+            HStack(spacing: 2) {
+                Text("$")
+                    .font(.neueCaption2)
+                    .foregroundStyle(AVIATheme.textTertiary)
+                TextField("0.00", text: text)
+                    .font(.neueCaption)
+                    .keyboardType(.decimalPad)
+                    .frame(width: 80)
+            }
+            .padding(.horizontal, 8)
+            .padding(.vertical, 6)
+            .background(AVIATheme.surfaceElevated)
+            .clipShape(.rect(cornerRadius: 6))
+        }
+    }
+
+    private func formatCost(_ value: Double) -> String {
+        String(format: "%.2f", value)
+    }
+
     private func populateFields() {
         guard let item else { return }
         itemId = item.id
@@ -457,6 +555,12 @@ struct SpecItemEditSheet: View {
         isUpgradeable = item.is_upgradeable ?? false
         imageURL = item.image_url ?? ""
         sortOrder = item.sort_order ?? 0
+        volosCost = item.volos_cost.map { formatCost($0) } ?? ""
+        messinaCost = item.messina_cost.map { formatCost($0) } ?? ""
+        portobelloCost = item.portobello_cost.map { formatCost($0) } ?? ""
+        volosToMessinaCost = item.volos_to_messina_cost.map { formatCost($0) } ?? ""
+        volosToPortobelloCost = item.volos_to_portobello_cost.map { formatCost($0) } ?? ""
+        messinaToPortobelloCost = item.messina_to_portobello_cost.map { formatCost($0) } ?? ""
         loadTierImages()
     }
 
@@ -485,12 +589,12 @@ struct SpecItemEditSheet: View {
             is_upgradeable: isUpgradeable,
             image_url: imageURL.isEmpty ? nil : imageURL,
             sort_order: sortOrder,
-            volos_cost: item?.volos_cost,
-            messina_cost: item?.messina_cost,
-            portobello_cost: item?.portobello_cost,
-            volos_to_messina_cost: item?.volos_to_messina_cost,
-            volos_to_portobello_cost: item?.volos_to_portobello_cost,
-            messina_to_portobello_cost: item?.messina_to_portobello_cost
+            volos_cost: Double(volosCost),
+            messina_cost: Double(messinaCost),
+            portobello_cost: Double(portobelloCost),
+            volos_to_messina_cost: Double(volosToMessinaCost),
+            volos_to_portobello_cost: Double(volosToPortobelloCost),
+            messina_to_portobello_cost: Double(messinaToPortobelloCost)
         )
         var tierImages: [String: String] = [:]
         if !volosImageURL.isEmpty { tierImages["volos"] = volosImageURL }
