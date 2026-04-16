@@ -121,13 +121,24 @@ struct SpecificationsOverviewView: View {
                     .allowsHitTesting(false)
             }
             .overlay(alignment: .bottom) {
+                LinearGradient(
+                    stops: [
+                        .init(color: .clear, location: 0.0),
+                        .init(color: AVIATheme.background.opacity(0.4), location: 0.35),
+                        .init(color: AVIATheme.background.opacity(0.8), location: 0.65),
+                        .init(color: AVIATheme.background, location: 1.0)
+                    ],
+                    startPoint: .top,
+                    endPoint: .bottom
+                )
+                .frame(height: 200)
+            }
+            .overlay(alignment: .bottomLeading) {
                 Text("Fittings & Fixtures")
                     .font(.neueCorpMedium(28))
-                    .foregroundStyle(AVIATheme.aviaWhite)
-                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .foregroundStyle(AVIATheme.textPrimary)
                     .padding(.horizontal, 20)
-                    .padding(.vertical, 16)
-                    .background(.ultraThinMaterial)
+                    .padding(.bottom, 12)
             }
             .clipped()
     }
