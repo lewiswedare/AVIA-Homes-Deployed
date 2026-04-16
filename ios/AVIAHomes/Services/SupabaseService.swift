@@ -1125,6 +1125,57 @@ class SupabaseService {
         }
     }
 
+    // MARK: - Cost Management
+
+    func updateSpecItemCosts(_ row: SpecItemFlatRow) async -> Bool {
+        guard isConfigured else { return false }
+        do {
+            try await client.from("spec_items").upsert(row).execute()
+            return true
+        } catch {
+            print("[SupabaseService] updateSpecItemCosts FAILED: \(error)")
+            return false
+        }
+    }
+
+    func fetchUpgradePricing() async -> [UpgradePricing] {
+        guard isConfigured else { return [] }
+        do {
+            let rows: [UpgradePricingRow] = try await client
+                .from("upgrade_pricing")
+                .select()
+                .order("created_at", ascending: false)
+                .execute()
+                .value
+            return rows.map { $0.toModel() }
+        } catch {
+            print("[SupabaseService] fetchUpgradePricing FAILED: \(error)")
+            return []
+        }
+    }
+
+    func upsertUpgradePricing(_ row: UpgradePricingRow) async -> Bool {
+        guard isConfigured else { return false }
+        do {
+            try await client.from("upgrade_pricing").upsert(row).execute()
+            return true
+        } catch {
+            print("[SupabaseService] upsertUpgradePricing FAILED: \(error)")
+            return false
+        }
+    }
+
+    func deleteUpgradePricing(id: String) async -> Bool {
+        guard isConfigured else { return false }
+        do {
+            try await client.from("upgrade_pricing").delete().eq("id", value: id).execute()
+            return true
+        } catch {
+            print("[SupabaseService] deleteUpgradePricing FAILED: \(error)")
+            return false
+        }
+    }
+
     func upsertHomeDesign(_ row: HomeDesignRow) async -> Bool {
         guard isConfigured else { return false }
         do {

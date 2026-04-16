@@ -484,7 +484,13 @@ struct SpecItemEditSheet: View {
             portobello_description: portobelloDesc,
             is_upgradeable: isUpgradeable,
             image_url: imageURL.isEmpty ? nil : imageURL,
-            sort_order: sortOrder
+            sort_order: sortOrder,
+            volos_cost: item?.volos_cost,
+            messina_cost: item?.messina_cost,
+            portobello_cost: item?.portobello_cost,
+            volos_to_messina_cost: item?.volos_to_messina_cost,
+            volos_to_portobello_cost: item?.volos_to_portobello_cost,
+            messina_to_portobello_cost: item?.messina_to_portobello_cost
         )
         var tierImages: [String: String] = [:]
         if !volosImageURL.isEmpty { tierImages["volos"] = volosImageURL }

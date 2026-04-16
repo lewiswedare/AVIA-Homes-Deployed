@@ -19,6 +19,7 @@ struct AdminBuildSpecReviewView: View {
     enum SelectionsTab: String, CaseIterable {
         case specRange = "Spec Range"
         case colours = "Colours"
+        case quote = "Quote"
     }
 
     var body: some View {
@@ -112,8 +113,18 @@ struct AdminBuildSpecReviewView: View {
 
                 if activeTab == .specRange {
                     specRangeTable
-                } else {
+                } else if activeTab == .colours {
                     colourSelectionsTable
+                } else {
+                    AdminUpgradeQuoteView(
+                        buildId: buildId,
+                        clientName: clientName,
+                        selections: viewModel.selections,
+                        colourSelections: viewModel.colourSelections,
+                        onUpdateCost: { id, cost, note in
+                            viewModel.adminSetUpgradeCost(selectionId: id, cost: cost, note: note)
+                        }
+                    )
                 }
 
                 adminActionButtons

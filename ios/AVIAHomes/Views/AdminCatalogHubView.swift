@@ -5,6 +5,7 @@ struct AdminCatalogHubView: View {
     @State private var colourCount: Int = 0
     @State private var designCount: Int = 0
     @State private var facadeCount: Int = 0
+    @State private var pricedCount: Int = 0
 
     var body: some View {
         ScrollView {
@@ -61,6 +62,19 @@ struct AdminCatalogHubView: View {
                             count: facadeCount,
                             countLabel: "facades",
                             color: Color(hex: "8B5CF6")
+                        )
+                    }
+
+                    NavigationLink {
+                        AdminSpecCostEditorView()
+                    } label: {
+                        catalogCard(
+                            icon: "dollarsign.circle.fill",
+                            title: "Cost Library",
+                            subtitle: "Set base costs and upgrade pricing for spec items across all tiers",
+                            count: pricedCount,
+                            countLabel: "priced",
+                            color: Color(hex: "10B981")
                         )
                     }
                 }
@@ -170,5 +184,8 @@ struct AdminCatalogHubView: View {
         designCount = designs.count
         let facades = await SupabaseService.shared.fetchFacades()
         facadeCount = facades.count
+
+        let specItems = await SupabaseService.shared.fetchSpecItemsFlat()
+        pricedCount = specItems.filter { $0.volos_cost != nil || $0.messina_cost != nil || $0.portobello_cost != nil }.count
     }
 }

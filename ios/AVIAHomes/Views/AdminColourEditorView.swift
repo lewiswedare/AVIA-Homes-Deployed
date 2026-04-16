@@ -269,6 +269,7 @@ struct ColourCategoryEditSheet: View {
     @State private var note: String = ""
     @State private var imageURL: String = ""
     @State private var options: [EditableColourOption] = []
+    @State private var defaultCostText: String = ""
     @State private var showingAddOption = false
 
     private var isNew: Bool { category == nil }
@@ -308,6 +309,16 @@ struct ColourCategoryEditSheet: View {
                             editFieldRow("Note (Optional)") {
                                 TextField("e.g. Colorbond steel roofing", text: $note)
                                     .font(.neueCaption)
+                            }
+                            editFieldRow("Default Option Cost (AUD)") {
+                                HStack(spacing: 4) {
+                                    Text("$")
+                                        .font(.neueCaptionMedium)
+                                        .foregroundStyle(AVIATheme.textSecondary)
+                                    TextField("0.00", text: $defaultCostText)
+                                        .font(.neueCaption)
+                                        .keyboardType(.decimalPad)
+                                }
                             }
                             AdminImagePickerField(
                                 label: "Category Image (Optional)",
@@ -439,6 +450,18 @@ struct ColourCategoryEditSheet: View {
                             .font(.neueCaption2)
                             .foregroundStyle(AVIATheme.textTertiary)
                     }
+                    HStack(spacing: 4) {
+                        Text("$")
+                            .font(.neueCaption2Medium)
+                            .foregroundStyle(AVIATheme.textTertiary)
+                        TextField("Cost", text: option.cost)
+                            .font(.neueCaption2)
+                            .keyboardType(.decimalPad)
+                            .frame(maxWidth: 80)
+                        Text("AUD")
+                            .font(.neueCaption2)
+                            .foregroundStyle(AVIATheme.textTertiary)
+                    }
                 }
 
                 Spacer(minLength: 0)
@@ -522,7 +545,7 @@ struct ColourCategoryEditSheet: View {
 
     private func addNewOption() {
         let newId = "\(catId.isEmpty ? "opt" : catId)\(options.count + 1)"
-        options.append(EditableColourOption(id: newId, name: "", hexColor: "CCCCCC", brand: "", isUpgrade: false, imageURL: "", availableTiers: []))
+        options.append(EditableColourOption(id: newId, name: "", hexColor: "CCCCCC", brand: "", isUpgrade: false, imageURL: "", availableTiers: [], cost: ""))
     }
 
     private func populateFields() {
@@ -533,14 +556,15 @@ struct ColourCategoryEditSheet: View {
         section = category.section
         note = category.note ?? ""
         imageURL = category.imageURL ?? ""
+        defaultCostText = category.defaultOptionCost.map { String(format: "%.2f", $0) } ?? ""
         options = category.options.map {
-            EditableColourOption(id: $0.id, name: $0.name, hexColor: $0.hexColor, brand: $0.brand ?? "", isUpgrade: $0.isUpgrade, imageURL: $0.imageURL ?? "", availableTiers: $0.availableTiers)
+            EditableColourOption(id: $0.id, name: $0.name, hexColor: $0.hexColor, brand: $0.brand ?? "", isUpgrade: $0.isUpgrade, imageURL: $0.imageURL ?? "", availableTiers: $0.availableTiers, cost: $0.cost.map { String(format: "%.2f", $0) } ?? "")
         }
     }
 
     private func save() {
         let colourOptions = options.filter { !$0.name.isEmpty }.map {
-            ColourOption(id: $0.id, name: $0.name, hexColor: $0.hexColor, brand: $0.brand.isEmpty ? nil : $0.brand, isUpgrade: $0.isUpgrade, imageURL: $0.imageURL.isEmpty ? nil : $0.imageURL, availableTiers: $0.availableTiers)
+            ColourOption(id: $0.id, name: $0.name, hexColor: $0.hexColor, brand: $0.brand.isEmpty ? nil : $0.brand, isUpgrade: $0.isUpgrade, imageURL: $0.imageURL.isEmpty ? nil : $0.imageURL, availableTiers: $0.availableTiers, cost: Double($0.cost))
         }
         let result = ColourCategory(
             id: isNew ? catId : (category?.id ?? catId),
@@ -549,7 +573,8 @@ struct ColourCategoryEditSheet: View {
             section: section,
             options: colourOptions,
             note: note.isEmpty ? nil : note,
-            imageURL: imageURL.isEmpty ? nil : imageURL
+            imageURL: imageURL.isEmpty ? nil : imageURL,
+            defaultOptionCost: Double(defaultCostText)
         )
         onSave(result)
         dismiss()
@@ -564,4 +589,5 @@ struct EditableColourOption: Identifiable {
     var isUpgrade: Bool
     var imageURL: String
     var availableTiers: Set<String>
+    var cost: String
 }

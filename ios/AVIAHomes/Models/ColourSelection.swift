@@ -13,8 +13,9 @@ nonisolated struct ColourCategory: Identifiable, Sendable {
     let options: [ColourOption]
     let note: String?
     let imageURL: String?
+    let defaultOptionCost: Double?
 
-    init(id: String, name: String, icon: String, section: SelectionSection, options: [ColourOption], note: String? = nil, imageURL: String? = nil) {
+    init(id: String, name: String, icon: String, section: SelectionSection, options: [ColourOption], note: String? = nil, imageURL: String? = nil, defaultOptionCost: Double? = nil) {
         self.id = id
         self.name = name
         self.icon = icon
@@ -22,6 +23,7 @@ nonisolated struct ColourCategory: Identifiable, Sendable {
         self.options = options
         self.note = note
         self.imageURL = imageURL
+        self.defaultOptionCost = defaultOptionCost
     }
 }
 

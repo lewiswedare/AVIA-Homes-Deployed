@@ -9,6 +9,7 @@ nonisolated struct ColourCategoryRow: Codable, Sendable {
     let image_url: String?
     let sort_order: Int
     let options: [ColourOptionRow]
+    let default_option_cost: Double?
 
     struct ColourOptionRow: Codable, Sendable {
         let id: String
@@ -31,7 +32,8 @@ nonisolated struct ColourCategoryRow: Codable, Sendable {
                 ColourOption(id: $0.id, name: $0.name, hexColor: $0.hex_color ?? "CCCCCC", brand: $0.brand, isUpgrade: $0.is_upgrade ?? false, imageURL: $0.image_url, availableTiers: Set($0.available_tiers ?? []), cost: $0.cost)
             },
             note: note,
-            imageURL: image_url
+            imageURL: image_url,
+            defaultOptionCost: default_option_cost
         )
     }
 }
@@ -50,6 +52,12 @@ nonisolated struct SpecCategoryRow: Codable, Sendable {
         let messina_description: String
         let portobello_description: String
         let is_upgradeable: Bool
+        let volos_cost: Double?
+        let messina_cost: Double?
+        let portobello_cost: Double?
+        let volos_to_messina_cost: Double?
+        let volos_to_portobello_cost: Double?
+        let messina_to_portobello_cost: Double?
     }
 
     func toSpecCategory() -> SpecCategory {
@@ -64,7 +72,13 @@ nonisolated struct SpecCategoryRow: Codable, Sendable {
                     volosDescription: $0.volos_description,
                     messinaDescription: $0.messina_description,
                     portobelloDescription: $0.portobello_description,
-                    isUpgradeable: $0.is_upgradeable
+                    isUpgradeable: $0.is_upgradeable,
+                    volosCost: $0.volos_cost,
+                    messinaCost: $0.messina_cost,
+                    portobelloCost: $0.portobello_cost,
+                    volosToMessinaCost: $0.volos_to_messina_cost,
+                    volosToPortobelloCost: $0.volos_to_portobello_cost,
+                    messinaToPortobelloCost: $0.messina_to_portobello_cost
                 )
             }
         )
@@ -158,6 +172,24 @@ nonisolated struct SpecItemFlatRow: Codable, Sendable {
     let volos_to_portobello_cost: Double?
     let messina_to_portobello_cost: Double?
 
+    init(id: String, category_id: String, name: String, volos_description: String, messina_description: String, portobello_description: String, is_upgradeable: Bool?, image_url: String?, sort_order: Int?, volos_cost: Double? = nil, messina_cost: Double? = nil, portobello_cost: Double? = nil, volos_to_messina_cost: Double? = nil, volos_to_portobello_cost: Double? = nil, messina_to_portobello_cost: Double? = nil) {
+        self.id = id
+        self.category_id = category_id
+        self.name = name
+        self.volos_description = volos_description
+        self.messina_description = messina_description
+        self.portobello_description = portobello_description
+        self.is_upgradeable = is_upgradeable
+        self.image_url = image_url
+        self.sort_order = sort_order
+        self.volos_cost = volos_cost
+        self.messina_cost = messina_cost
+        self.portobello_cost = portobello_cost
+        self.volos_to_messina_cost = volos_to_messina_cost
+        self.volos_to_portobello_cost = volos_to_portobello_cost
+        self.messina_to_portobello_cost = messina_to_portobello_cost
+    }
+
     func toSpecItem() -> SpecItem {
         SpecItem(
             id: id,
@@ -169,7 +201,7 @@ nonisolated struct SpecItemFlatRow: Codable, Sendable {
             customImageURL: image_url,
             volosCost: volos_cost,
             messinaCost: messina_cost,
-            portobeloCost: portobello_cost,
+            portobelloCost: portobello_cost,
             volosToMessinaCost: volos_to_messina_cost,
             volosToPortobelloCost: volos_to_portobello_cost,
             messinaToPortobelloCost: messina_to_portobello_cost
@@ -197,6 +229,7 @@ nonisolated struct ColourCategoryUpsertRow: Codable, Sendable {
     let image_url: String?
     let sort_order: Int
     let options: [ColourCategoryRow.ColourOptionRow]
+    let default_option_cost: Double?
 
     init(from category: ColourCategory, sortOrder: Int) {
         id = category.id
@@ -206,6 +239,7 @@ nonisolated struct ColourCategoryUpsertRow: Codable, Sendable {
         note = category.note
         image_url = category.imageURL
         sort_order = sortOrder
+        default_option_cost = category.defaultOptionCost
         options = category.options.map {
             ColourCategoryRow.ColourOptionRow(
                 id: $0.id, name: $0.name, hex_color: $0.hexColor,

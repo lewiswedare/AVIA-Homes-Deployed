@@ -110,7 +110,8 @@ class CatalogDataManager {
                 section: category.section,
                 options: visibleOptions,
                 note: category.note,
-                imageURL: category.imageURL
+                imageURL: category.imageURL,
+                defaultOptionCost: category.defaultOptionCost
             )
         }
     }
