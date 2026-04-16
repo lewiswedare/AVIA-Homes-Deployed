@@ -72,8 +72,14 @@ nonisolated struct SpecItem: Identifiable, Sendable {
     let portobelloDescription: String
     let isUpgradeable: Bool
     let customImageURL: String?
+    let volosCost: Double?
+    let messinaCost: Double?
+    let portobeloCost: Double?
+    let volosToMessinaCost: Double?
+    let volosToPortobelloCost: Double?
+    let messinaToPortobelloCost: Double?
 
-    init(id: String, name: String, volosDescription: String, messinaDescription: String, portobelloDescription: String, isUpgradeable: Bool, customImageURL: String? = nil) {
+    init(id: String, name: String, volosDescription: String, messinaDescription: String, portobelloDescription: String, isUpgradeable: Bool, customImageURL: String? = nil, volosCost: Double? = nil, messinaCost: Double? = nil, portobeloCost: Double? = nil, volosToMessinaCost: Double? = nil, volosToPortobelloCost: Double? = nil, messinaToPortobelloCost: Double? = nil) {
         self.id = id
         self.name = name
         self.volosDescription = volosDescription
@@ -81,6 +87,21 @@ nonisolated struct SpecItem: Identifiable, Sendable {
         self.portobelloDescription = portobelloDescription
         self.isUpgradeable = isUpgradeable
         self.customImageURL = customImageURL
+        self.volosCost = volosCost
+        self.messinaCost = messinaCost
+        self.portobeloCost = portobeloCost
+        self.volosToMessinaCost = volosToMessinaCost
+        self.volosToPortobelloCost = volosToPortobelloCost
+        self.messinaToPortobelloCost = messinaToPortobelloCost
+    }
+
+    func upgradeCost(from fromTier: SpecTier, to toTier: SpecTier) -> Double? {
+        switch (fromTier, toTier) {
+        case (.volos, .messina): return volosToMessinaCost
+        case (.volos, .portobello): return volosToPortobelloCost
+        case (.messina, .portobello): return messinaToPortobelloCost
+        default: return nil
+        }
     }
 
     func description(for tier: SpecTier) -> String {

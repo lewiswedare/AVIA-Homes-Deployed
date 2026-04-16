@@ -44,7 +44,11 @@ struct SpecificationItemDetailView: View {
             }
             Button("Cancel", role: .cancel) {}
         } message: {
-            Text("Request an upgrade to the \(selectedUpgradeTier.displayName) specification for \(item.name)? Our team will provide a quote.")
+            if let cost = item.upgradeCost(from: specVM.currentTier, to: selectedUpgradeTier), cost > 0 {
+                Text("Request an upgrade to \(selectedUpgradeTier.displayName) for \(item.name)?\n\nEstimated cost: \(AVIATheme.formatCost(cost))")
+            } else {
+                Text("Request an upgrade to the \(selectedUpgradeTier.displayName) specification for \(item.name)? Our team will provide a quote.")
+            }
         }
     }
 
@@ -172,6 +176,7 @@ struct SpecificationItemDetailView: View {
 
     private func upgradeOptionCard(tier: SpecTier, description: String) -> some View {
         let hasPending = specVM.upgradeRequests.contains { $0.itemId == item.id && $0.toTier == tier && $0.status == .pending }
+        let cost = item.upgradeCost(from: specVM.currentTier, to: tier)
 
         return VStack(alignment: .leading, spacing: 12) {
             HStack {
@@ -195,6 +200,20 @@ struct SpecificationItemDetailView: View {
                 }
 
                 Spacer()
+
+                if let cost, cost > 0 {
+                    Text("+\(AVIATheme.formatCost(cost))")
+                        .font(.neueCorpMedium(14))
+                        .foregroundStyle(AVIATheme.teal)
+                        .padding(.horizontal, 10)
+                        .padding(.vertical, 5)
+                        .background(AVIATheme.teal.opacity(0.1))
+                        .clipShape(Capsule())
+                } else if cost == nil {
+                    Text("Contact for pricing")
+                        .font(.neueCaption2)
+                        .foregroundStyle(AVIATheme.textTertiary)
+                }
             }
 
             Text(description)
@@ -221,7 +240,7 @@ struct SpecificationItemDetailView: View {
                     HStack(spacing: 6) {
                         Image(systemName: "arrow.up.circle.fill")
                             .font(.neueCaptionMedium)
-                        Text("Request Upgrade")
+                        Text(cost != nil && cost! > 0 ? "Request Upgrade · \(AVIATheme.formatCost(cost!))" : "Request Upgrade")
                             .font(.neueCaptionMedium)
                     }
                     .foregroundStyle(.white)
@@ -284,6 +303,15 @@ struct SpecificationItemDetailView: View {
                                         .padding(.horizontal, 6)
                                         .padding(.vertical, 2)
                                         .background(AVIATheme.teal.opacity(0.12))
+                                        .clipShape(Capsule())
+                                }
+                                if !isCurrent, let cost = item.upgradeCost(from: specVM.currentTier, to: tier), cost > 0 {
+                                    Text("+\(AVIATheme.formatCost(cost))")
+                                        .font(.neueCorpMedium(9))
+                                        .foregroundStyle(AVIATheme.teal)
+                                        .padding(.horizontal, 6)
+                                        .padding(.vertical, 2)
+                                        .background(AVIATheme.teal.opacity(0.08))
                                         .clipShape(Capsule())
                                 }
                                 if isViewing && item.hasTierSpecificImages {

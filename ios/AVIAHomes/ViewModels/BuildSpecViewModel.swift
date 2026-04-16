@@ -71,6 +71,18 @@ class BuildSpecViewModel {
         selections.filter { $0.status == .approved && $0.selectionType != .removed }
     }
 
+    var totalUpgradeCost: Double {
+        let specUpgrades = selections
+            .filter { $0.upgradeCost != nil && ($0.selectionType == .upgradeCosted || $0.selectionType == .upgradeAccepted || $0.selectionType == .upgradeApproved) }
+            .compactMap(\.upgradeCost)
+            .reduce(0, +)
+        let colourUpgrades = colourSelections
+            .filter { $0.isUpgrade && $0.cost != nil }
+            .compactMap(\.cost)
+            .reduce(0, +)
+        return specUpgrades + colourUpgrades
+    }
+
     func load(buildId: String) async {
         self.buildId = buildId
         isLoading = true
@@ -581,7 +593,7 @@ class BuildSpecViewModel {
         }
     }
 
-    func saveColourSelection(buildSpecSelectionId: String, specItemId: String, colourCategoryId: String, colourOptionId: String) async {
+    func saveColourSelection(buildSpecSelectionId: String, specItemId: String, colourCategoryId: String, colourOptionId: String, cost: Double? = nil, isUpgrade: Bool = false) async {
         if let idx = colourSelections.firstIndex(where: { $0.buildSpecSelectionId == buildSpecSelectionId && $0.colourCategoryId == colourCategoryId }) {
             var updated = colourSelections[idx]
             updated = BuildColourSelection(
@@ -593,7 +605,9 @@ class BuildSpecViewModel {
                 colourOptionId: colourOptionId,
                 selectionStatus: .draft,
                 clientNotes: nil,
-                adminNotes: nil
+                adminNotes: nil,
+                cost: cost,
+                isUpgrade: isUpgrade
             )
             colourSelections[idx] = updated
             _ = await SupabaseService.shared.upsertBuildColourSelection(updated)
@@ -607,7 +621,9 @@ class BuildSpecViewModel {
                 colourOptionId: colourOptionId,
                 selectionStatus: .draft,
                 clientNotes: nil,
-                adminNotes: nil
+                adminNotes: nil,
+                cost: cost,
+                isUpgrade: isUpgrade
             )
             colourSelections.append(new)
             _ = await SupabaseService.shared.upsertBuildColourSelection(new)

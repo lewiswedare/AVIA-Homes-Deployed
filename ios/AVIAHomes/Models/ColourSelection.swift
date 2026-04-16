@@ -33,8 +33,9 @@ nonisolated struct ColourOption: Identifiable, Sendable {
     let isUpgrade: Bool
     let imageURL: String?
     let availableTiers: Set<String>
+    let cost: Double?
 
-    init(id: String, name: String, hexColor: String, brand: String? = nil, isUpgrade: Bool = false, imageURL: String? = nil, availableTiers: Set<String> = []) {
+    init(id: String, name: String, hexColor: String, brand: String? = nil, isUpgrade: Bool = false, imageURL: String? = nil, availableTiers: Set<String> = [], cost: Double? = nil) {
         self.id = id
         self.name = name
         self.hexColor = hexColor
@@ -42,6 +43,7 @@ nonisolated struct ColourOption: Identifiable, Sendable {
         self.isUpgrade = isUpgrade
         self.imageURL = imageURL
         self.availableTiers = availableTiers
+        self.cost = cost
     }
 
     func isAvailable(for tier: SpecTier) -> Bool {

@@ -120,6 +120,8 @@ class SpecificationViewModel {
     }
 
     func requestUpgrade(item: SpecItem, categoryName: String, toTier: SpecTier) {
+        let estimatedCost = item.upgradeCost(from: currentTier, to: toTier)
+
         let request = UpgradeRequest(
             id: UUID().uuidString,
             itemId: item.id,
@@ -129,7 +131,7 @@ class SpecificationViewModel {
             toTier: toTier,
             dateRequested: .now,
             status: .pending,
-            upgradeCost: nil,
+            upgradeCost: estimatedCost,
             adminNotes: nil
         )
         upgradeRequests.insert(request, at: 0)
@@ -140,6 +142,7 @@ class SpecificationViewModel {
                 sel.selectionType = .upgradeRequested
                 sel.status = .awaitingAdmin
                 sel.clientNotes = nil
+                sel.upgradeCost = estimatedCost
                 cachedSelections[idx] = sel
                 _ = await SupabaseService.shared.upsertBuildSpecSelection(sel)
             } else if !buildId.isEmpty {
@@ -163,8 +166,8 @@ class SpecificationViewModel {
                     snapshotImageURL: nil,
                     snapshotCategoryName: categoryName,
                     sortOrder: cachedSelections.count,
-                    upgradeCost: nil,
-                    upgradeCostNote: nil
+                    upgradeCost: estimatedCost,
+                    upgradeCostNote: estimatedCost != nil ? "Auto-calculated from spec pricing" : nil
                 )
                 cachedSelections.append(sel)
                 _ = await SupabaseService.shared.upsertBuildSpecSelection(sel)

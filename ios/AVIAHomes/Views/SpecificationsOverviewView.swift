@@ -374,6 +374,10 @@ struct SpecificationsOverviewView: View {
         }
     }
 
+    private var upgradeTotalCost: Double {
+        specVM.upgradeRequests.compactMap(\.upgradeCost).reduce(0, +)
+    }
+
     private var upgradeRequestsSection: some View {
         VStack(alignment: .leading, spacing: 10) {
             HStack(spacing: 8) {
@@ -384,6 +388,15 @@ struct SpecificationsOverviewView: View {
                     .font(.neueCorpMedium(18))
                     .foregroundStyle(AVIATheme.textPrimary)
                 Spacer()
+                if upgradeTotalCost > 0 {
+                    Text(AVIATheme.formatCost(upgradeTotalCost))
+                        .font(.neueCorpMedium(14))
+                        .foregroundStyle(AVIATheme.teal)
+                        .padding(.horizontal, 10)
+                        .padding(.vertical, 5)
+                        .background(AVIATheme.teal.opacity(0.08))
+                        .clipShape(Capsule())
+                }
             }
 
             ForEach(specVM.upgradeRequests.prefix(3)) { request in
@@ -421,12 +434,12 @@ struct SpecificationsOverviewView: View {
                 StatusBadge(title: request.status.rawValue, color: upgradeStatusColor(request.status))
             }
 
-            if let cost = request.upgradeCost {
+            if let cost = request.upgradeCost, cost > 0 {
                 HStack(spacing: 4) {
-                    Image(systemName: "dollarsign.circle.fill")
+                    Image(systemName: "tag.fill")
                         .foregroundStyle(AVIATheme.teal)
-                        .font(.neueCaption)
-                    Text(String(format: "$%.0f", cost))
+                        .font(.neueCaption2)
+                    Text(AVIATheme.formatCost(cost))
                         .font(.neueCaptionMedium)
                         .foregroundStyle(AVIATheme.teal)
                     Text("upgrade cost")

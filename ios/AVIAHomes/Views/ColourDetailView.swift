@@ -265,7 +265,15 @@ struct ColourSwatchView: View {
                     .multilineTextAlignment(.center)
                     .frame(height: 28)
 
-                if isTierUpgrade {
+                if let cost = option.cost, cost > 0 {
+                    Text(AVIATheme.formatCost(cost))
+                        .font(.neueCorpMedium(8))
+                        .foregroundStyle(AVIATheme.warning)
+                        .padding(.horizontal, 6)
+                        .padding(.vertical, 2)
+                        .background(AVIATheme.warning.opacity(0.1))
+                        .clipShape(Capsule())
+                } else if isTierUpgrade {
                     Text("UPGRADE")
                         .font(.neueCorpMedium(7))
                         .foregroundStyle(AVIATheme.warning)
@@ -281,6 +289,8 @@ struct ColourSwatchView: View {
                         .padding(.vertical, 2)
                         .background(AVIATheme.teal.opacity(0.1))
                         .clipShape(Capsule())
+                } else if option.cost == nil || option.cost == 0 {
+                    // Included option — no badge needed
                 }
             }
             .padding(.vertical, 8)

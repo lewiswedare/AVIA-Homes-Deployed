@@ -313,11 +313,14 @@ nonisolated struct BuildColourSelectionRow: Codable, Sendable, Identifiable {
     let admin_notes: String?
     let created_at: String?
     let updated_at: String?
+    let cost: Double?
+    let is_upgrade: Bool?
 
     nonisolated enum CodingKeys: String, CodingKey {
         case id, build_id, build_spec_selection_id, spec_item_id
         case colour_category_id, colour_option_id, selection_status
         case client_notes, admin_notes, created_at, updated_at
+        case cost, is_upgrade
     }
 
     func encode(to encoder: Encoder) throws {
@@ -332,6 +335,8 @@ nonisolated struct BuildColourSelectionRow: Codable, Sendable, Identifiable {
         try container.encodeIfPresent(client_notes, forKey: .client_notes)
         try container.encodeIfPresent(admin_notes, forKey: .admin_notes)
         try container.encodeIfPresent(updated_at, forKey: .updated_at)
+        try container.encodeIfPresent(cost, forKey: .cost)
+        try container.encodeIfPresent(is_upgrade, forKey: .is_upgrade)
     }
 }
 
@@ -345,6 +350,8 @@ struct BuildColourSelection: Identifiable, Sendable {
     var selectionStatus: ColourSelectionStatus
     var clientNotes: String?
     var adminNotes: String?
+    var cost: Double?
+    var isUpgrade: Bool
 }
 
 extension BuildColourSelectionRow {
@@ -358,7 +365,9 @@ extension BuildColourSelectionRow {
             colourOptionId: colour_option_id,
             selectionStatus: ColourSelectionStatus(rawValue: selection_status) ?? .draft,
             clientNotes: client_notes,
-            adminNotes: admin_notes
+            adminNotes: admin_notes,
+            cost: cost,
+            isUpgrade: is_upgrade ?? false
         )
     }
 }
@@ -377,7 +386,9 @@ extension BuildColourSelection {
             client_notes: clientNotes,
             admin_notes: adminNotes,
             created_at: nil,
-            updated_at: iso.string(from: .now)
+            updated_at: iso.string(from: .now),
+            cost: cost,
+            is_upgrade: isUpgrade
         )
     }
 }

@@ -18,6 +18,7 @@ nonisolated struct ColourCategoryRow: Codable, Sendable {
         let is_upgrade: Bool?
         let image_url: String?
         let available_tiers: [String]?
+        let cost: Double?
     }
 
     func toColourCategory() -> ColourCategory {
@@ -27,7 +28,7 @@ nonisolated struct ColourCategoryRow: Codable, Sendable {
             icon: icon,
             section: section == "exterior" ? .exterior : .interior,
             options: options.map {
-                ColourOption(id: $0.id, name: $0.name, hexColor: $0.hex_color ?? "CCCCCC", brand: $0.brand, isUpgrade: $0.is_upgrade ?? false, imageURL: $0.image_url, availableTiers: Set($0.available_tiers ?? []))
+                ColourOption(id: $0.id, name: $0.name, hexColor: $0.hex_color ?? "CCCCCC", brand: $0.brand, isUpgrade: $0.is_upgrade ?? false, imageURL: $0.image_url, availableTiers: Set($0.available_tiers ?? []), cost: $0.cost)
             },
             note: note,
             imageURL: image_url
@@ -150,6 +151,12 @@ nonisolated struct SpecItemFlatRow: Codable, Sendable {
     let is_upgradeable: Bool?
     let image_url: String?
     let sort_order: Int?
+    let volos_cost: Double?
+    let messina_cost: Double?
+    let portobello_cost: Double?
+    let volos_to_messina_cost: Double?
+    let volos_to_portobello_cost: Double?
+    let messina_to_portobello_cost: Double?
 
     func toSpecItem() -> SpecItem {
         SpecItem(
@@ -159,7 +166,13 @@ nonisolated struct SpecItemFlatRow: Codable, Sendable {
             messinaDescription: messina_description,
             portobelloDescription: portobello_description,
             isUpgradeable: is_upgradeable ?? false,
-            customImageURL: image_url
+            customImageURL: image_url,
+            volosCost: volos_cost,
+            messinaCost: messina_cost,
+            portobeloCost: portobello_cost,
+            volosToMessinaCost: volos_to_messina_cost,
+            volosToPortobelloCost: volos_to_portobello_cost,
+            messinaToPortobelloCost: messina_to_portobello_cost
         )
     }
 }
@@ -197,7 +210,8 @@ nonisolated struct ColourCategoryUpsertRow: Codable, Sendable {
             ColourCategoryRow.ColourOptionRow(
                 id: $0.id, name: $0.name, hex_color: $0.hexColor,
                 brand: $0.brand, is_upgrade: $0.isUpgrade, image_url: $0.imageURL,
-                available_tiers: Array($0.availableTiers).sorted()
+                available_tiers: Array($0.availableTiers).sorted(),
+                cost: $0.cost
             )
         }
     }

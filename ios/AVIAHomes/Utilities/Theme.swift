@@ -37,6 +37,15 @@ enum AVIATheme {
         startPoint: .top,
         endPoint: .bottom
     )
+
+    static func formatCost(_ amount: Double) -> String {
+        let formatter = NumberFormatter()
+        formatter.numberStyle = .currency
+        formatter.currencyCode = "AUD"
+        formatter.currencySymbol = "$"
+        formatter.maximumFractionDigits = amount.truncatingRemainder(dividingBy: 1) == 0 ? 0 : 2
+        return formatter.string(from: NSNumber(value: amount)) ?? "$\(Int(amount))"
+    }
 }
 
 extension Color {

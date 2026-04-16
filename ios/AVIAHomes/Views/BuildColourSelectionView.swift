@@ -61,13 +61,15 @@ struct BuildColourSelectionView: View {
                 specItem: specItem,
                 specTier: viewModel.specTier,
                 existingSelection: viewModel.colourSelections.first { $0.buildSpecSelectionId == specItem.id },
-                onSelect: { colourCatId, colourOptId in
+                onSelect: { colourCatId, colourOptId, cost, isUpgrade in
                     Task {
                         await viewModel.saveColourSelection(
                             buildSpecSelectionId: specItem.id,
                             specItemId: specItem.specItemId,
                             colourCategoryId: colourCatId,
-                            colourOptionId: colourOptId
+                            colourOptionId: colourOptId,
+                            cost: cost,
+                            isUpgrade: isUpgrade
                         )
                     }
                 }
@@ -75,29 +77,66 @@ struct BuildColourSelectionView: View {
         }
     }
 
+    private var colourUpgradeTotal: Double {
+        viewModel.colourSelections
+            .filter { $0.isUpgrade && $0.cost != nil }
+            .compactMap(\.cost)
+            .reduce(0, +)
+    }
+
     private var colourContent: some View {
-        ScrollView {
-            VStack(spacing: 16) {
-                progressCard
-                tierInfoBanner
+        ZStack(alignment: .bottom) {
+            ScrollView {
+                VStack(spacing: 16) {
+                    progressCard
+                    tierInfoBanner
 
-                ForEach(groupedItems, id: \.category) { group in
-                    VStack(alignment: .leading, spacing: 8) {
-                        Text(group.category.uppercased())
-                            .font(.neueCaption2Medium)
-                            .kerning(1.0)
-                            .foregroundStyle(AVIATheme.textTertiary)
-                            .padding(.horizontal, 4)
+                    ForEach(groupedItems, id: \.category) { group in
+                        VStack(alignment: .leading, spacing: 8) {
+                            Text(group.category.uppercased())
+                                .font(.neueCaption2Medium)
+                                .kerning(1.0)
+                                .foregroundStyle(AVIATheme.textTertiary)
+                                .padding(.horizontal, 4)
 
-                        ForEach(group.items) { item in
-                            colourItemCard(item)
+                            ForEach(group.items) { item in
+                                colourItemCard(item)
+                            }
                         }
                     }
                 }
+                .padding(.horizontal, 16)
+                .padding(.bottom, colourUpgradeTotal > 0 ? 80 : 40)
             }
-            .padding(.horizontal, 16)
-            .padding(.bottom, 40)
+
+            if colourUpgradeTotal > 0 {
+                upgradeTotalBar
+            }
         }
+    }
+
+    private var upgradeTotalBar: some View {
+        HStack(spacing: 10) {
+            Image(systemName: "tag.fill")
+                .font(.neueCaptionMedium)
+                .foregroundStyle(.white.opacity(0.8))
+            Text("Colour Upgrades")
+                .font(.neueCaptionMedium)
+                .foregroundStyle(.white.opacity(0.8))
+            Spacer()
+            Text(AVIATheme.formatCost(colourUpgradeTotal))
+                .font(.neueCorpMedium(18))
+                .foregroundStyle(.white)
+        }
+        .padding(.horizontal, 20)
+        .padding(.vertical, 14)
+        .background(AVIATheme.aviaBlack)
+        .clipShape(.rect(cornerRadius: 16))
+        .shadow(color: .black.opacity(0.15), radius: 10, y: -2)
+        .padding(.horizontal, 16)
+        .padding(.bottom, 8)
+        .transition(.move(edge: .bottom).combined(with: .opacity))
+        .animation(.spring(response: 0.4), value: colourUpgradeTotal)
     }
 
     private var progressCard: some View {
@@ -192,9 +231,20 @@ struct BuildColourSelectionView: View {
 
                     if let colourSel, let cat = matchedColourCats.first(where: { $0.id == colourSel.colourCategoryId }),
                        let opt = cat.options.first(where: { $0.id == colourSel.colourOptionId }) {
-                        Text(opt.name)
-                            .font(.neueCaption2)
-                            .foregroundStyle(AVIATheme.success)
+                        HStack(spacing: 6) {
+                            Text(opt.name)
+                                .font(.neueCaption2)
+                                .foregroundStyle(AVIATheme.success)
+                            if colourSel.isUpgrade, let cost = colourSel.cost, cost > 0 {
+                                Text(AVIATheme.formatCost(cost))
+                                    .font(.neueCorpMedium(9))
+                                    .foregroundStyle(AVIATheme.warning)
+                                    .padding(.horizontal, 5)
+                                    .padding(.vertical, 1)
+                                    .background(AVIATheme.warning.opacity(0.1))
+                                    .clipShape(Capsule())
+                            }
+                        }
                     } else {
                         Text("Tap to select colour")
                             .font(.neueCaption2)
@@ -269,7 +319,7 @@ struct BuildColourPickerSheet: View {
     let specItem: BuildSpecSelection
     let specTier: String
     let existingSelection: BuildColourSelection?
-    let onSelect: (String, String) -> Void
+    let onSelect: (String, String, Double?, Bool) -> Void
 
     private var catalog: CatalogDataManager { CatalogDataManager.shared }
 
@@ -341,12 +391,14 @@ struct BuildColourPickerSheet: View {
                             LazyVGrid(columns: columns, spacing: 14) {
                                 ForEach(cat.options) { option in
                                     let isSelected = existingSelection?.colourOptionId == option.id && existingSelection?.colourCategoryId == cat.id
+                                    let isOptionUpgrade = option.isUpgradeOption(for: tier)
+                                    let hasUpgradeCost = (option.cost ?? 0) > 0
                                     ColourSwatchView(
                                         option: option,
                                         isSelected: isSelected,
-                                        isTierUpgrade: option.isUpgradeOption(for: tier)
+                                        isTierUpgrade: isOptionUpgrade
                                     ) {
-                                        onSelect(cat.id, option.id)
+                                        onSelect(cat.id, option.id, option.cost, isOptionUpgrade || hasUpgradeCost)
                                         dismiss()
                                     }
                                 }
