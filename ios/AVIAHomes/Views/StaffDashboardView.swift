@@ -37,13 +37,12 @@ struct StaffDashboardView: View {
     var body: some View {
         NavigationStack {
             ScrollView {
-                VStack(spacing: 16) {
-                    welcomeHeader
+                VStack(spacing: 20) {
+                    heroHeader
                     statsRow
                     filterPicker
                     clientBuildsList
                 }
-                .padding(.horizontal, 16)
                 .padding(.bottom, 40)
             }
             .background(AVIATheme.background)
@@ -56,58 +55,48 @@ struct StaffDashboardView: View {
         }
     }
 
-    private var welcomeHeader: some View {
-        HStack(spacing: 14) {
-            Text(viewModel.currentUser.initials)
-                .font(.neueCaptionMedium)
-                .foregroundStyle(.white)
-                .frame(width: 44, height: 44)
-                .background(AVIATheme.tealGradient)
-                .clipShape(Circle())
+    private var heroHeader: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            HStack(spacing: 14) {
+                Text(viewModel.currentUser.initials)
+                    .font(.neueCaptionMedium)
+                    .foregroundStyle(.white)
+                    .frame(width: 44, height: 44)
+                    .background(AVIATheme.brownGradient)
+                    .clipShape(Circle())
 
-            VStack(alignment: .leading, spacing: 2) {
-                Text(viewModel.currentUser.firstName.isEmpty ? "Welcome Home" : "Welcome Home, \(viewModel.currentUser.firstName)")
-                    .font(.neueCorpMedium(22))
-                    .foregroundStyle(AVIATheme.textPrimary)
-                Text("Pre-Site Coordinator")
-                    .font(.neueCaption)
-                    .foregroundStyle(AVIATheme.textSecondary)
+                Spacer()
+
+                Image("AVIALogo")
+                    .renderingMode(.template)
+                    .resizable()
+                    .aspectRatio(contentMode: .fit)
+                    .frame(height: 20)
+                    .foregroundStyle(AVIATheme.timelessBrown)
             }
 
-            Spacer()
+            Text(viewModel.currentUser.firstName.isEmpty ? "Welcome Home" : "Welcome Home, \(viewModel.currentUser.firstName)")
+                .font(.neueCorpMedium(30))
+                .foregroundStyle(AVIATheme.timelessBrown)
 
-            Image("AVIALogo")
-                .renderingMode(.template)
-                .resizable()
-                .aspectRatio(contentMode: .fit)
-                .frame(height: 20)
-                .foregroundStyle(AVIATheme.teal)
+            Text("Pre-Site Coordinator")
+                .font(.neueCaption)
+                .foregroundStyle(AVIATheme.textSecondary)
         }
-        .padding(.top, 4)
+        .padding(20)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(AVIATheme.warmAccent)
+        .clipShape(.rect(cornerRadius: 20))
+        .padding(.horizontal, 16)
     }
 
     private var statsRow: some View {
         HStack(spacing: 12) {
-            statCard(value: "\(viewModel.clientBuildsForCurrentUser.count)", label: "Assigned Builds", icon: "building.2.fill", color: AVIATheme.teal)
-            statCard(value: "\(viewModel.totalBuildsInProgress)", label: "In Progress", icon: "hammer.fill", color: AVIATheme.warning)
+            ImmersiveStatCard(value: "\(viewModel.clientBuildsForCurrentUser.count)", label: "Assigned Builds", useFrosted: true)
+            ImmersiveStatCard(value: "\(viewModel.totalBuildsInProgress)", label: "In Progress")
         }
         .fixedSize(horizontal: false, vertical: true)
-    }
-
-    private func statCard(value: String, label: String, icon: String, color: Color) -> some View {
-        BentoCard(cornerRadius: 16) {
-            VStack(alignment: .leading, spacing: 8) {
-                BentoIconCircle(icon: icon, color: color)
-                Text(value)
-                    .font(.neueCorpMedium(32))
-                    .foregroundStyle(AVIATheme.textPrimary)
-                Text(label)
-                    .font(.neueCaption)
-                    .foregroundStyle(AVIATheme.textSecondary)
-            }
-            .padding(16)
-            .frame(maxWidth: .infinity, alignment: .leading)
-        }
+        .padding(.horizontal, 16)
     }
 
     private var filterPicker: some View {
@@ -134,6 +123,7 @@ struct StaffDashboardView: View {
             }
             Spacer()
         }
+        .padding(.horizontal, 16)
     }
 
     private var clientBuildsList: some View {
@@ -158,5 +148,6 @@ struct StaffDashboardView: View {
                 }
             }
         }
+        .padding(.horizontal, 16)
     }
 }

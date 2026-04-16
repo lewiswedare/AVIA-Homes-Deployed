@@ -43,7 +43,7 @@ struct SalesAdminDashboardView: View {
     var body: some View {
         NavigationStack {
             ScrollView {
-                VStack(spacing: 16) {
+                VStack(spacing: 20) {
                     welcomeHeader
                     overviewStats
                     filterPicker
@@ -63,45 +63,44 @@ struct SalesAdminDashboardView: View {
     }
 
     private var welcomeHeader: some View {
-        HStack(spacing: 14) {
-            Text(viewModel.currentUser.initials)
-                .font(.neueCaptionMedium)
-                .foregroundStyle(.white)
-                .frame(width: 44, height: 44)
-                .background(AVIATheme.tealGradient)
-                .clipShape(Circle())
+        VStack(alignment: .leading, spacing: 12) {
+            HStack(spacing: 14) {
+                Text(viewModel.currentUser.initials)
+                    .font(.neueCaptionMedium)
+                    .foregroundStyle(.white)
+                    .frame(width: 44, height: 44)
+                    .background(AVIATheme.brownGradient)
+                    .clipShape(Circle())
 
-            VStack(alignment: .leading, spacing: 2) {
-                Text(viewModel.currentUser.firstName.isEmpty ? "Welcome Home" : "Welcome Home, \(viewModel.currentUser.firstName)")
-                    .font(.neueCorpMedium(22))
-                    .foregroundStyle(AVIATheme.textPrimary)
-                HStack(spacing: 4) {
-                    Image(systemName: "hammer.fill")
-                        .font(.neueCorp(11))
-                        .foregroundStyle(AVIATheme.teal)
-                    Text("Staff")
-                        .font(.neueCaption)
-                        .foregroundStyle(AVIATheme.textSecondary)
-                }
+                Spacer()
+
+                Image("AVIALogo")
+                    .renderingMode(.template)
+                    .resizable()
+                    .aspectRatio(contentMode: .fit)
+                    .frame(height: 20)
+                    .foregroundStyle(AVIATheme.timelessBrown)
             }
 
-            Spacer()
+            Text(viewModel.currentUser.firstName.isEmpty ? "Welcome Home" : "Welcome Home, \(viewModel.currentUser.firstName)")
+                .font(.neueCorpMedium(30))
+                .foregroundStyle(AVIATheme.timelessBrown)
 
-            Image("AVIALogo")
-                .renderingMode(.template)
-                .resizable()
-                .aspectRatio(contentMode: .fit)
-                .frame(height: 20)
-                .foregroundStyle(AVIATheme.teal)
+            Text("Staff")
+                .font(.neueCaption)
+                .foregroundStyle(AVIATheme.textSecondary)
         }
-        .padding(.top, 4)
+        .padding(20)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(AVIATheme.warmAccent)
+        .clipShape(.rect(cornerRadius: 20))
     }
 
     private var overviewStats: some View {
         VStack(spacing: 12) {
             HStack(spacing: 12) {
-                statCard(value: "\(viewModel.allClientBuilds.count)", label: "Total Builds", icon: "building.2.fill", color: AVIATheme.teal)
-                statCard(value: "\(viewModel.allClientBuilds.filter { $0.currentStage != nil }.count)", label: "In Progress", icon: "hammer.fill", color: AVIATheme.warning)
+                ImmersiveStatCard(value: "\(viewModel.allClientBuilds.count)", label: "Total Builds", useFrosted: true)
+                ImmersiveStatCard(value: "\(viewModel.allClientBuilds.filter { $0.currentStage != nil }.count)", label: "In Progress")
             }
 
             BentoCard(cornerRadius: 16) {
@@ -145,21 +144,6 @@ struct SalesAdminDashboardView: View {
         }
     }
 
-    private func statCard(value: String, label: String, icon: String, color: Color) -> some View {
-        BentoCard(cornerRadius: 16) {
-            VStack(alignment: .leading, spacing: 8) {
-                BentoIconCircle(icon: icon, color: color)
-                Text(value)
-                    .font(.neueCorpMedium(32))
-                    .foregroundStyle(AVIATheme.textPrimary)
-                Text(label)
-                    .font(.neueCaption)
-                    .foregroundStyle(AVIATheme.textSecondary)
-            }
-            .padding(16)
-            .frame(maxWidth: .infinity, alignment: .leading)
-        }
-    }
 
     private var filterPicker: some View {
         ScrollView(.horizontal) {

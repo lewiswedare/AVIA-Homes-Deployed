@@ -38,6 +38,23 @@ enum AVIATheme {
         endPoint: .bottom
     )
 
+    static let brownGradient = LinearGradient(
+        colors: [Color(hex: "37332B"), Color(hex: "4A453B")],
+        startPoint: .topLeading,
+        endPoint: .bottomTrailing
+    )
+
+    static let immersiveGradient = LinearGradient(
+        stops: [
+            .init(color: Color(hex: "37332B").opacity(0.85), location: 0.0),
+            .init(color: Color.clear, location: 1.0)
+        ],
+        startPoint: .top,
+        endPoint: .bottom
+    )
+
+    static let warmAccent = Color(hex: "37332B").opacity(0.12)
+
     static func formatCost(_ amount: Double) -> String {
         let formatter = NumberFormatter()
         formatter.numberStyle = .currency
@@ -225,5 +242,90 @@ struct PremiumButton: View {
         case .destructive:
             AVIATheme.destructive.opacity(0.08)
         }
+    }
+}
+
+// MARK: - Frosted Glass Modifiers
+
+extension View {
+    func frostedCard(cornerRadius: CGFloat = 16) -> some View {
+        self
+            .background(.ultraThinMaterial)
+            .clipShape(.rect(cornerRadius: cornerRadius))
+            .shadow(color: .black.opacity(0.06), radius: 8, y: 2)
+    }
+
+    func frostedOverlay() -> some View {
+        self
+            .background(.thinMaterial)
+            .clipShape(.rect(cornerRadius: 12))
+    }
+}
+
+// MARK: - Hero Card
+
+struct HeroCard<Content: View>: View {
+    let imageURL: String
+    let height: CGFloat
+    @ViewBuilder let overlay: () -> Content
+
+    init(imageURL: String, height: CGFloat = 200, @ViewBuilder overlay: @escaping () -> Content) {
+        self.imageURL = imageURL
+        self.height = height
+        self.overlay = overlay
+    }
+
+    var body: some View {
+        Color(AVIATheme.surfaceElevated)
+            .frame(height: height)
+            .overlay {
+                AsyncImage(url: URL(string: imageURL)) { phase in
+                    if let image = phase.image {
+                        image.resizable().aspectRatio(contentMode: .fill)
+                    }
+                }
+                .allowsHitTesting(false)
+            }
+            .overlay(alignment: .bottomLeading) {
+                AVIATheme.immersiveGradient
+                    .frame(height: height * 0.6)
+            }
+            .overlay(alignment: .bottomLeading) {
+                overlay()
+                    .padding(16)
+                    .frostedOverlay()
+                    .padding(12)
+            }
+            .clipShape(.rect(cornerRadius: 20))
+    }
+}
+
+// MARK: - Immersive Stat Card
+
+struct ImmersiveStatCard: View {
+    let value: String
+    let label: String
+    let useFrosted: Bool
+
+    init(value: String, label: String, useFrosted: Bool = false) {
+        self.value = value
+        self.label = label
+        self.useFrosted = useFrosted
+    }
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 4) {
+            Text(value)
+                .font(.neueCorpMedium(32))
+                .foregroundStyle(AVIATheme.textPrimary)
+            Text(label)
+                .font(.neueCaption)
+                .foregroundStyle(AVIATheme.textSecondary)
+        }
+        .padding(16)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(useFrosted ? AnyShapeStyle(.ultraThinMaterial) : AnyShapeStyle(AVIATheme.cardBackground))
+        .clipShape(.rect(cornerRadius: 16))
+        .shadow(color: useFrosted ? .black.opacity(0.06) : .clear, radius: 8, y: 2)
     }
 }

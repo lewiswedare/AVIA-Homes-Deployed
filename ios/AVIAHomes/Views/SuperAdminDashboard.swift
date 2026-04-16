@@ -32,7 +32,7 @@ struct SuperAdminDashboard: View {
     var body: some View {
         NavigationStack {
             ScrollView {
-                VStack(spacing: 16) {
+                VStack(spacing: 20) {
                     allBuildsSummary
                     staffOverviewSection("Pre-Construction", staff: preConstructionStaff, countType: .builds)
                     staffOverviewSection("Building Support", staff: buildingSupportStaff, countType: .builds)
@@ -58,43 +58,28 @@ struct SuperAdminDashboard: View {
     }
 
     private var allBuildsSummary: some View {
-        BentoCard(cornerRadius: 16) {
-            VStack(alignment: .leading, spacing: 12) {
-                Text("ALL BUILDS")
-                    .font(.neueCaption2Medium)
-                    .foregroundStyle(AVIATheme.textTertiary)
-                    .kerning(0.5)
+        VStack(alignment: .leading, spacing: 12) {
+            Text("ALL BUILDS")
+                .font(.neueCaption2Medium)
+                .foregroundStyle(AVIATheme.timelessBrown)
+                .kerning(0.5)
 
-                HStack(spacing: 12) {
-                    AVIAMetricCard(
-                        title: "Active",
-                        value: "\(activeBuilds.count)",
-                        subtitle: "builds",
-                        icon: "building.2.fill",
-                        color: AVIATheme.teal
-                    )
-                    AVIAMetricCard(
-                        title: "Total",
-                        value: "\(viewModel.allClientBuilds.count)",
-                        subtitle: "all builds",
-                        icon: "square.stack.3d.up.fill",
-                        color: AVIATheme.textSecondary
-                    )
-                }
-
-                if !buildsAwaitingHandover.isEmpty {
-                    HStack(spacing: 8) {
-                        Image(systemName: "exclamationmark.triangle.fill")
-                            .font(.neueCaption)
-                            .foregroundStyle(AVIATheme.warning)
-                        Text("\(buildsAwaitingHandover.count) build\(buildsAwaitingHandover.count == 1 ? "" : "s") awaiting handover")
-                            .font(.neueCaption)
-                            .foregroundStyle(AVIATheme.warning)
-                    }
-                    .padding(.top, 4)
-                }
+            HStack(spacing: 12) {
+                ImmersiveStatCard(value: "\(activeBuilds.count)", label: "Active Builds", useFrosted: true)
+                ImmersiveStatCard(value: "\(viewModel.allClientBuilds.count)", label: "Total Builds")
             }
-            .padding(16)
+
+            if !buildsAwaitingHandover.isEmpty {
+                HStack(spacing: 8) {
+                    Image(systemName: "exclamationmark.triangle.fill")
+                        .font(.neueCaption)
+                        .foregroundStyle(AVIATheme.warning)
+                    Text("\(buildsAwaitingHandover.count) build\(buildsAwaitingHandover.count == 1 ? "" : "s") awaiting handover")
+                        .font(.neueCaption)
+                        .foregroundStyle(AVIATheme.warning)
+                }
+                .padding(.horizontal, 4)
+            }
         }
     }
 
@@ -108,7 +93,7 @@ struct SuperAdminDashboard: View {
                 VStack(alignment: .leading, spacing: 8) {
                     Text(title.uppercased())
                         .font(.neueCaption2Medium)
-                        .foregroundStyle(AVIATheme.textTertiary)
+                        .foregroundStyle(AVIATheme.timelessBrown)
                         .kerning(0.5)
 
                     ForEach(staff, id: \.id) { user in

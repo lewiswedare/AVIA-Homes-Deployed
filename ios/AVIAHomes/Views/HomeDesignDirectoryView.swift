@@ -320,60 +320,56 @@ struct HomeDesignDirectoryView: View {
     }
 
     private func designGridCard(design: HomeDesign) -> some View {
-        VStack(alignment: .leading, spacing: 0) {
-            Color(AVIATheme.surfaceElevated)
-                .aspectRatio(4/3, contentMode: .fit)
-                .overlay {
-                    AsyncImage(url: URL(string: design.imageURL)) { phase in
-                        if let image = phase.image {
-                            image.resizable().aspectRatio(contentMode: .fill)
-                        } else if phase.error != nil {
-                            Image(systemName: "house.fill")
-                                .font(.neueCorpMedium(28))
-                                .foregroundStyle(AVIATheme.teal.opacity(0.3))
-                        } else {
-                            ProgressView()
-                        }
-                    }
-                    .allowsHitTesting(false)
-                }
-                .overlay(alignment: .topTrailing) {
-                    if design.storeys == 2 {
-                        Text("2 STOREY")
-                            .font(.neueCorpMedium(8))
-                            .kerning(0.5)
-                            .foregroundStyle(.white)
-                            .padding(.horizontal, 7)
-                            .padding(.vertical, 3)
-                            .background(AVIATheme.teal)
-                            .clipShape(Capsule())
-                            .padding(8)
+        Color(AVIATheme.surfaceElevated)
+            .aspectRatio(3/4, contentMode: .fit)
+            .overlay {
+                AsyncImage(url: URL(string: design.imageURL)) { phase in
+                    if let image = phase.image {
+                        image.resizable().aspectRatio(contentMode: .fill)
+                    } else if phase.error != nil {
+                        Image(systemName: "house.fill")
+                            .font(.neueCorpMedium(28))
+                            .foregroundStyle(AVIATheme.teal.opacity(0.3))
+                    } else {
+                        ProgressView()
                     }
                 }
-                .clipShape(.rect(cornerRadii: .init(topLeading: 14, topTrailing: 14)))
-
-            VStack(alignment: .leading, spacing: 6) {
-                Text(design.name)
-                    .font(.neueSubheadlineMedium)
-                    .foregroundStyle(AVIATheme.textPrimary)
-
-                HStack(spacing: 8) {
-                    Label("\(design.bedrooms)", systemImage: "bed.double.fill")
-                    Label("\(design.bathrooms)", systemImage: "shower.fill")
-                    Label("\(design.garages)", systemImage: "car.fill")
-                }
-                .font(.neueCaption2)
-                .foregroundStyle(AVIATheme.textSecondary)
-
-                Text(String(format: "%.0fm²", design.squareMeters))
-                    .font(.neueCaption2Medium)
-                    .foregroundStyle(AVIATheme.teal)
+                .allowsHitTesting(false)
             }
-            .padding(.horizontal, 10)
-            .padding(.vertical, 10)
-        }
-        .background(AVIATheme.cardBackground)
-        .clipShape(.rect(cornerRadius: 14))
+            .overlay(alignment: .topTrailing) {
+                if design.storeys == 2 {
+                    Text("2 STOREY")
+                        .font(.neueCorpMedium(8))
+                        .kerning(0.5)
+                        .foregroundStyle(.white)
+                        .padding(.horizontal, 7)
+                        .padding(.vertical, 3)
+                        .background(AVIATheme.timelessBrown)
+                        .clipShape(Capsule())
+                        .padding(8)
+                }
+            }
+            .overlay(alignment: .bottom) {
+                VStack(alignment: .leading, spacing: 3) {
+                    Text(design.name)
+                        .font(.neueSubheadlineMedium)
+                        .foregroundStyle(AVIATheme.textPrimary)
+
+                    Text("\(design.bedrooms) Bed · \(design.bathrooms) Bath · \(design.garages) Car")
+                        .font(.neueCaption2)
+                        .foregroundStyle(AVIATheme.textSecondary)
+
+                    Text(String(format: "%.0fm²", design.squareMeters))
+                        .font(.neueCaption2Medium)
+                        .foregroundStyle(AVIATheme.timelessBrown)
+                }
+                .padding(.horizontal, 10)
+                .padding(.vertical, 8)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .background(.thinMaterial)
+                .clipShape(.rect(cornerRadii: .init(bottomLeading: 14, bottomTrailing: 14)))
+            }
+            .clipShape(.rect(cornerRadius: 14))
     }
 }
 

@@ -12,7 +12,7 @@ struct AdminDashboardView: View {
     var body: some View {
         NavigationStack {
             ScrollView {
-                VStack(spacing: 16) {
+                VStack(spacing: 20) {
                     adminWelcomeHeader
                     adminSectionPicker
                     adminSectionContent
@@ -71,35 +71,37 @@ struct AdminDashboardView: View {
     }
 
     private var adminWelcomeHeader: some View {
-        HStack(spacing: 14) {
-            Text(viewModel.currentUser.initials)
-                .font(.neueCaptionMedium)
-                .foregroundStyle(.white)
-                .frame(width: 44, height: 44)
-                .background(AVIATheme.tealGradient)
-                .clipShape(Circle())
-            VStack(alignment: .leading, spacing: 2) {
-                Text(viewModel.currentUser.firstName.isEmpty ? "Welcome Home" : "Welcome Home, \(viewModel.currentUser.firstName)")
-                    .font(.neueCorpMedium(22))
-                    .foregroundStyle(AVIATheme.textPrimary)
-                HStack(spacing: 4) {
-                    Image(systemName: "person.badge.shield.checkmark.fill")
-                        .font(.neueCorp(11))
-                        .foregroundStyle(AVIATheme.teal)
-                    Text("Admin")
-                        .font(.neueCaption)
-                        .foregroundStyle(AVIATheme.textSecondary)
-                }
+        VStack(alignment: .leading, spacing: 12) {
+            HStack(spacing: 14) {
+                Text(viewModel.currentUser.initials)
+                    .font(.neueCaptionMedium)
+                    .foregroundStyle(.white)
+                    .frame(width: 44, height: 44)
+                    .background(AVIATheme.brownGradient)
+                    .clipShape(Circle())
+
+                Spacer()
+
+                Image("AVIALogo")
+                    .renderingMode(.template)
+                    .resizable()
+                    .aspectRatio(contentMode: .fit)
+                    .frame(height: 20)
+                    .foregroundStyle(AVIATheme.timelessBrown)
             }
-            Spacer()
-            Image("AVIALogo")
-                .renderingMode(.template)
-                .resizable()
-                .aspectRatio(contentMode: .fit)
-                .frame(height: 20)
-                .foregroundStyle(AVIATheme.teal)
+
+            Text(viewModel.currentUser.firstName.isEmpty ? "Welcome Home" : "Welcome Home, \(viewModel.currentUser.firstName)")
+                .font(.neueCorpMedium(30))
+                .foregroundStyle(AVIATheme.timelessBrown)
+
+            Text("Admin")
+                .font(.neueCaption)
+                .foregroundStyle(AVIATheme.textSecondary)
         }
-        .padding(.top, 4)
+        .padding(20)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(AVIATheme.warmAccent)
+        .clipShape(.rect(cornerRadius: 20))
     }
 
     private var adminSectionPicker: some View {

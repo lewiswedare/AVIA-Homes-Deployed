@@ -74,7 +74,7 @@ struct ClientDiscoverDashboardView: View {
                 LinearGradient(
                     stops: [
                         .init(color: Color.clear, location: 0.0),
-                        .init(color: AVIATheme.background.opacity(0.15), location: 0.25),
+                        .init(color: AVIATheme.timelessBrown.opacity(0.10), location: 0.20),
                         .init(color: AVIATheme.background.opacity(0.4), location: 0.45),
                         .init(color: AVIATheme.background.opacity(0.7), location: 0.65),
                         .init(color: AVIATheme.background.opacity(0.9), location: 0.8),
@@ -89,50 +89,41 @@ struct ClientDiscoverDashboardView: View {
     }
 
     private var headerRow: some View {
-        VStack(alignment: .leading, spacing: 4) {
+        VStack(alignment: .leading, spacing: 8) {
             HStack {
                 Image("AVIALogo")
                     .renderingMode(.template)
                     .resizable()
                     .aspectRatio(contentMode: .fit)
                     .frame(height: 24)
-                    .foregroundStyle(AVIATheme.teal)
+                    .foregroundStyle(AVIATheme.timelessBrown)
                 Spacer()
                 Text(String(viewModel.currentUser.firstName.prefix(1)) + String(viewModel.currentUser.lastName.prefix(1)))
                     .font(.neueCaptionMedium)
                     .foregroundStyle(.white)
                     .frame(width: 36, height: 36)
-                    .background(AVIATheme.tealGradient)
+                    .background(AVIATheme.brownGradient)
                     .clipShape(Circle())
             }
 
             Text(viewModel.currentUser.firstName.isEmpty ? "Welcome Home" : "Welcome Home, \(viewModel.currentUser.firstName)")
-                .font(.neueCorpMedium(28))
-                .foregroundStyle(AVIATheme.textPrimary)
+                .font(.neueCorpMedium(34))
+                .foregroundStyle(AVIATheme.timelessBrown)
         }
     }
 
     private var welcomeBanner: some View {
         BentoCard(cornerRadius: 16) {
             VStack(spacing: 12) {
-                HStack(spacing: 12) {
-                    Image(systemName: "sparkles")
-                        .font(.neueCorpMedium(20))
-                        .foregroundStyle(AVIATheme.teal)
-                        .frame(width: 44, height: 44)
-                        .background(AVIATheme.teal.opacity(0.1))
-                        .clipShape(Circle())
-
-                    VStack(alignment: .leading, spacing: 2) {
-                        Text("Explore AVIA Homes")
-                            .font(.neueSubheadlineMedium)
-                            .foregroundStyle(AVIATheme.textPrimary)
-                        Text("Browse our designs, packages, and find your perfect home.")
-                            .font(.neueCaption)
-                            .foregroundStyle(AVIATheme.textSecondary)
-                    }
-                    Spacer(minLength: 0)
+                VStack(alignment: .leading, spacing: 2) {
+                    Text("Explore AVIA Homes")
+                        .font(.neueSubheadlineMedium)
+                        .foregroundStyle(AVIATheme.timelessBrown)
+                    Text("Browse our designs, packages, and find your perfect home.")
+                        .font(.neueCaption)
+                        .foregroundStyle(AVIATheme.textSecondary)
                 }
+                .frame(maxWidth: .infinity, alignment: .leading)
 
                 HStack(spacing: 10) {
                     if let phoneURL = URL(string: "tel:0756545123") {
@@ -146,7 +137,7 @@ struct ClientDiscoverDashboardView: View {
                             .foregroundStyle(.white)
                             .frame(maxWidth: .infinity)
                             .frame(height: 38)
-                            .background(AVIATheme.tealGradient)
+                            .background(AVIATheme.brownGradient)
                             .clipShape(.rect(cornerRadius: 10))
                         }
                     }
@@ -347,60 +338,51 @@ struct ClientDiscoverDashboardView: View {
     }
 
     private func designCard(design: HomeDesign) -> some View {
-        VStack(alignment: .leading, spacing: 0) {
-            Color(AVIATheme.surfaceElevated)
-                .frame(width: 260, height: 325)
-                .overlay {
-                    AsyncImage(url: URL(string: design.imageURL)) { phase in
-                        if let image = phase.image {
-                            image.resizable().aspectRatio(contentMode: .fill)
-                        } else if phase.error != nil {
-                            Image(systemName: "house.fill")
-                                .font(.neueCorpMedium(24))
-                                .foregroundStyle(AVIATheme.teal.opacity(0.25))
-                        } else {
-                            ProgressView()
-                        }
-                    }
-                    .allowsHitTesting(false)
-                }
-                .overlay(alignment: .topTrailing) {
-                    if design.storeys == 2 {
-                        Text("2 STOREY")
-                            .font(.neueCorpMedium(7))
-                            .kerning(0.4)
-                            .foregroundStyle(.white)
-                            .padding(.horizontal, 6)
-                            .padding(.vertical, 3)
-                            .background(AVIATheme.teal)
-                            .clipShape(Capsule())
-                            .padding(8)
+        Color(AVIATheme.surfaceElevated)
+            .frame(width: 260, height: 325)
+            .overlay {
+                AsyncImage(url: URL(string: design.imageURL)) { phase in
+                    if let image = phase.image {
+                        image.resizable().aspectRatio(contentMode: .fill)
+                    } else if phase.error != nil {
+                        Image(systemName: "house.fill")
+                            .font(.neueCorpMedium(24))
+                            .foregroundStyle(AVIATheme.teal.opacity(0.25))
+                    } else {
+                        ProgressView()
                     }
                 }
-                .clipShape(.rect(cornerRadii: .init(topLeading: 16, topTrailing: 16)))
-
-            VStack(alignment: .leading, spacing: 6) {
-                Text(design.name)
-                    .font(.neueSubheadlineMedium)
-                    .foregroundStyle(AVIATheme.textPrimary)
-
-                HStack(spacing: 8) {
-                    Label("\(design.bedrooms)", systemImage: "bed.double.fill")
-                    Label("\(design.bathrooms)", systemImage: "shower.fill")
-                    Label("\(design.garages)", systemImage: "car.fill")
-                }
-                .font(.neueCaption2Medium)
-                .foregroundStyle(AVIATheme.textSecondary)
-
-                Text(String(format: "%.0fm²", design.squareMeters))
-                    .font(.neueCaption2Medium)
-                    .foregroundStyle(AVIATheme.teal)
+                .allowsHitTesting(false)
             }
-            .padding(10)
-        }
-        .frame(width: 260)
-        .background(AVIATheme.cardBackground)
-        .clipShape(.rect(cornerRadius: 16))
+            .overlay(alignment: .topTrailing) {
+                if design.storeys == 2 {
+                    Text("2 STOREY")
+                        .font(.neueCorpMedium(7))
+                        .kerning(0.4)
+                        .foregroundStyle(.white)
+                        .padding(.horizontal, 6)
+                        .padding(.vertical, 3)
+                        .background(AVIATheme.timelessBrown)
+                        .clipShape(Capsule())
+                        .padding(8)
+                }
+            }
+            .overlay(alignment: .bottom) {
+                VStack(alignment: .leading, spacing: 4) {
+                    Text(design.name)
+                        .font(.neueSubheadlineMedium)
+                        .foregroundStyle(AVIATheme.textPrimary)
+
+                    Text("\(design.bedrooms) Bed · \(design.bathrooms) Bath · \(design.garages) Car · \(String(format: "%.0fm²", design.squareMeters))")
+                        .font(.neueCaption2)
+                        .foregroundStyle(AVIATheme.textSecondary)
+                }
+                .padding(12)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .background(.thinMaterial)
+                .clipShape(.rect(cornerRadii: .init(bottomLeading: 16, bottomTrailing: 16)))
+            }
+            .clipShape(.rect(cornerRadius: 16))
     }
 
     private var houseLandSection: some View {
@@ -664,7 +646,9 @@ struct ClientDiscoverDashboardView: View {
 
     private var companyHighlightsSection: some View {
         VStack(alignment: .leading, spacing: 12) {
-            sectionHeader(title: "Why AVIA", icon: "sparkles")
+            Text("Why AVIA")
+                .font(.neueCorpMedium(24))
+                .foregroundStyle(AVIATheme.textPrimary)
 
             HStack(spacing: 12) {
                 highlightCard(icon: "shield.checkerboard", title: "Quality\nAssured", description: "HIA member with full structural warranty")
@@ -685,10 +669,9 @@ struct ClientDiscoverDashboardView: View {
     private func highlightCard(icon: String, title: String, description: String) -> some View {
         BentoCard(cornerRadius: 16) {
             VStack(alignment: .leading, spacing: 8) {
-                BentoIconCircle(icon: icon, color: AVIATheme.teal)
                 Text(title)
                     .font(.neueSubheadlineMedium)
-                    .foregroundStyle(AVIATheme.textPrimary)
+                    .foregroundStyle(AVIATheme.timelessBrown)
                     .lineLimit(2)
                 Text(description)
                     .font(.neueCaption2)
@@ -702,7 +685,7 @@ struct ClientDiscoverDashboardView: View {
 
     private var contactBanner: some View {
         VStack(spacing: 0) {
-            Color(AVIATheme.aviaBlack)
+            Color(AVIATheme.timelessBrown)
                 .frame(height: 140)
                 .overlay {
                     AsyncImage(url: URL(string: "https://pub-e001eb4506b145aa938b5d3badbff6a5.r2.dev/attachments/t8j7r8vibjqzvubxzcnbg.jpeg")) { phase in
@@ -739,7 +722,7 @@ struct ClientDiscoverDashboardView: View {
                             .foregroundStyle(.white)
                             .frame(maxWidth: .infinity)
                             .frame(height: 38)
-                            .background(AVIATheme.tealGradient)
+                            .background(AVIATheme.brownGradient)
                             .clipShape(.rect(cornerRadius: 10))
                         }
                     }

@@ -19,7 +19,7 @@ struct PartnerDashboardView: View {
     var body: some View {
         NavigationStack {
             ScrollView {
-                VStack(spacing: 16) {
+                VStack(spacing: 20) {
                     welcomeHeader
                     portfolioStats
                     clientsList
@@ -38,71 +38,69 @@ struct PartnerDashboardView: View {
     }
 
     private var welcomeHeader: some View {
-        HStack(spacing: 14) {
-            Text(viewModel.currentUser.initials)
-                .font(.neueCaptionMedium)
-                .foregroundStyle(.white)
-                .frame(width: 44, height: 44)
-                .background(AVIATheme.tealGradient)
-                .clipShape(Circle())
+        VStack(alignment: .leading, spacing: 12) {
+            HStack(spacing: 14) {
+                Text(viewModel.currentUser.initials)
+                    .font(.neueCaptionMedium)
+                    .foregroundStyle(.white)
+                    .frame(width: 44, height: 44)
+                    .background(AVIATheme.brownGradient)
+                    .clipShape(Circle())
 
-            VStack(alignment: .leading, spacing: 2) {
-                Text(viewModel.currentUser.firstName.isEmpty ? "Welcome Home" : "Welcome Home, \(viewModel.currentUser.firstName)")
-                    .font(.neueCorpMedium(22))
-                    .foregroundStyle(AVIATheme.textPrimary)
-                HStack(spacing: 4) {
-                    Image(systemName: "person.2.fill")
-                        .font(.neueCorp(11))
-                        .foregroundStyle(AVIATheme.teal)
-                    Text("Partner")
-                        .font(.neueCaption)
-                        .foregroundStyle(AVIATheme.textSecondary)
-                }
+                Spacer()
+
+                Image("AVIALogo")
+                    .renderingMode(.template)
+                    .resizable()
+                    .aspectRatio(contentMode: .fit)
+                    .frame(height: 20)
+                    .foregroundStyle(AVIATheme.timelessBrown)
             }
 
-            Spacer()
+            Text(viewModel.currentUser.firstName.isEmpty ? "Welcome Home" : "Welcome Home, \(viewModel.currentUser.firstName)")
+                .font(.neueCorpMedium(30))
+                .foregroundStyle(AVIATheme.timelessBrown)
 
-            Image("AVIALogo")
-                .renderingMode(.template)
-                .resizable()
-                .aspectRatio(contentMode: .fit)
-                .frame(height: 20)
-                .foregroundStyle(AVIATheme.teal)
+            Text("Partner")
+                .font(.neueCaption)
+                .foregroundStyle(AVIATheme.textSecondary)
         }
-        .padding(.top, 4)
+        .padding(20)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(AVIATheme.warmAccent)
+        .clipShape(.rect(cornerRadius: 20))
     }
 
     private var portfolioStats: some View {
         HStack(spacing: 12) {
-            BentoCard(cornerRadius: 16) {
-                VStack(alignment: .leading, spacing: 8) {
-                    BentoIconCircle(icon: "person.2.fill", color: AVIATheme.teal)
-                    Text("\(viewModel.clientBuildsForCurrentUser.count)")
-                        .font(.neueCorpMedium(32))
-                        .foregroundStyle(AVIATheme.textPrimary)
-                    Text("Active Clients")
-                        .font(.neueCaption)
-                        .foregroundStyle(AVIATheme.textSecondary)
-                }
-                .padding(16)
-                .frame(maxWidth: .infinity, alignment: .leading)
+            VStack(alignment: .leading, spacing: 4) {
+                Text("\(viewModel.clientBuildsForCurrentUser.count)")
+                    .font(.neueCorpMedium(32))
+                    .foregroundStyle(AVIATheme.timelessBrown)
+                Text("Active Clients")
+                    .font(.neueCaption)
+                    .foregroundStyle(AVIATheme.textSecondary)
             }
+            .padding(16)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .background(.ultraThinMaterial)
+            .clipShape(.rect(cornerRadius: 16))
+            .shadow(color: .black.opacity(0.06), radius: 8, y: 2)
 
-            BentoCard(cornerRadius: 16) {
-                VStack(alignment: .leading, spacing: 8) {
-                    BentoIconCircle(icon: "chart.line.uptrend.xyaxis", color: AVIATheme.success)
-                    let avgProgress = viewModel.clientBuildsForCurrentUser.isEmpty ? 0.0 :
-                        viewModel.clientBuildsForCurrentUser.reduce(0.0) { $0 + $1.overallProgress } / Double(viewModel.clientBuildsForCurrentUser.count)
-                    Text("\(Int(avgProgress * 100))%")
-                        .font(.neueCorpMedium(32))
-                        .foregroundStyle(AVIATheme.textPrimary)
-                    Text("Avg Progress")
-                        .font(.neueCaption)
-                        .foregroundStyle(AVIATheme.textSecondary)
-                }
-                .padding(16)
-                .frame(maxWidth: .infinity, alignment: .leading)
+            VStack(alignment: .leading, spacing: 4) {
+                let avgProgress = viewModel.clientBuildsForCurrentUser.isEmpty ? 0.0 :
+                    viewModel.clientBuildsForCurrentUser.reduce(0.0) { $0 + $1.overallProgress } / Double(viewModel.clientBuildsForCurrentUser.count)
+                Text("\(Int(avgProgress * 100))%")
+                    .font(.neueCorpMedium(32))
+                    .foregroundStyle(AVIATheme.textPrimary)
+                Text("Avg Progress")
+                    .font(.neueCaption)
+                    .foregroundStyle(AVIATheme.textSecondary)
             }
+            .padding(16)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .background(AVIATheme.cardBackground)
+            .clipShape(.rect(cornerRadius: 16))
         }
         .fixedSize(horizontal: false, vertical: true)
     }
