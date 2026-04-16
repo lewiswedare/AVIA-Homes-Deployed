@@ -85,23 +85,23 @@ class CatalogDataManager {
 
     func filteredExteriorCategories(for tier: SpecTier) -> [ColourCategory] {
         let available = availableColourCategoryIds(for: tier)
-        return filterCategoriesWithTierOptions(exteriorCategories.filter { available.contains($0.id) }, tier: tier)
+        let tierFiltered = exteriorCategories.filter { $0.isAvailable(for: tier) && available.contains($0.id) }
+        return filterCategoriesWithTierOptions(tierFiltered, tier: tier)
     }
 
     func filteredInteriorCategories(for tier: SpecTier) -> [ColourCategory] {
         let available = availableColourCategoryIds(for: tier)
-        return filterCategoriesWithTierOptions(interiorCategories.filter { available.contains($0.id) }, tier: tier)
+        let tierFiltered = interiorCategories.filter { $0.isAvailable(for: tier) && available.contains($0.id) }
+        return filterCategoriesWithTierOptions(tierFiltered, tier: tier)
     }
 
     func filteredAllCategories(for tier: SpecTier) -> [ColourCategory] {
         filteredExteriorCategories(for: tier) + filteredInteriorCategories(for: tier)
     }
 
-    private func filterCategoriesWithTierOptions(_ categories: [ColourCategory], tier: SpecTier) -> [ColourCategory] {
-        categories.compactMap { category in
-            let visibleOptions = category.options.filter { option in
-                option.availableTiers.isEmpty || option.isAvailable(for: tier) || option.isUpgradeOption(for: tier)
-            }
+    func categoriesForTier(_ tier: SpecTier) -> [ColourCategory] {
+        colourCategories.filter { $0.isAvailable(for: tier) }.compactMap { category in
+            let visibleOptions = filterOptionsForTier(category.options, tier: tier)
             guard !visibleOptions.isEmpty else { return nil }
             return ColourCategory(
                 id: category.id,
@@ -111,7 +111,45 @@ class CatalogDataManager {
                 options: visibleOptions,
                 note: category.note,
                 imageURL: category.imageURL,
-                defaultOptionCost: category.defaultOptionCost
+                defaultOptionCost: category.defaultOptionCost,
+                applicableTiers: category.applicableTiers,
+                specItemId: category.specItemId
+            )
+        }
+    }
+
+    func specItem(for specItemId: String) -> SpecItem? {
+        for category in specCategories {
+            if let item = category.items.first(where: { $0.id == specItemId }) {
+                return item
+            }
+        }
+        return nil
+    }
+
+    private func filterOptionsForTier(_ options: [ColourOption], tier: SpecTier) -> [ColourOption] {
+        options.filter { option in
+            let tierOk = option.applicableTiers == nil || option.applicableTiers!.isEmpty || option.applicableTiers!.contains(tier.rawValue)
+            let availOk = option.availableTiers.isEmpty || option.isAvailable(for: tier) || option.isUpgradeOption(for: tier)
+            return tierOk && availOk
+        }
+    }
+
+    private func filterCategoriesWithTierOptions(_ categories: [ColourCategory], tier: SpecTier) -> [ColourCategory] {
+        categories.compactMap { category in
+            let visibleOptions = filterOptionsForTier(category.options, tier: tier)
+            guard !visibleOptions.isEmpty else { return nil }
+            return ColourCategory(
+                id: category.id,
+                name: category.name,
+                icon: category.icon,
+                section: category.section,
+                options: visibleOptions,
+                note: category.note,
+                imageURL: category.imageURL,
+                defaultOptionCost: category.defaultOptionCost,
+                applicableTiers: category.applicableTiers,
+                specItemId: category.specItemId
             )
         }
     }

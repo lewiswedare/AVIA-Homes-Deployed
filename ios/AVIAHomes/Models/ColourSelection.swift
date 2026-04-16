@@ -14,8 +14,10 @@ nonisolated struct ColourCategory: Identifiable, Sendable {
     let note: String?
     let imageURL: String?
     let defaultOptionCost: Double?
+    let applicableTiers: [String]?
+    let specItemId: String?
 
-    init(id: String, name: String, icon: String, section: SelectionSection, options: [ColourOption], note: String? = nil, imageURL: String? = nil, defaultOptionCost: Double? = nil) {
+    init(id: String, name: String, icon: String, section: SelectionSection, options: [ColourOption], note: String? = nil, imageURL: String? = nil, defaultOptionCost: Double? = nil, applicableTiers: [String]? = nil, specItemId: String? = nil) {
         self.id = id
         self.name = name
         self.icon = icon
@@ -24,6 +26,13 @@ nonisolated struct ColourCategory: Identifiable, Sendable {
         self.note = note
         self.imageURL = imageURL
         self.defaultOptionCost = defaultOptionCost
+        self.applicableTiers = applicableTiers
+        self.specItemId = specItemId
+    }
+
+    func isAvailable(for tier: SpecTier) -> Bool {
+        guard let tiers = applicableTiers, !tiers.isEmpty else { return true }
+        return tiers.contains(tier.rawValue)
     }
 }
 
@@ -36,8 +45,9 @@ nonisolated struct ColourOption: Identifiable, Sendable {
     let imageURL: String?
     let availableTiers: Set<String>
     let cost: Double?
+    let applicableTiers: [String]?
 
-    init(id: String, name: String, hexColor: String, brand: String? = nil, isUpgrade: Bool = false, imageURL: String? = nil, availableTiers: Set<String> = [], cost: Double? = nil) {
+    init(id: String, name: String, hexColor: String, brand: String? = nil, isUpgrade: Bool = false, imageURL: String? = nil, availableTiers: Set<String> = [], cost: Double? = nil, applicableTiers: [String]? = nil) {
         self.id = id
         self.name = name
         self.hexColor = hexColor
@@ -46,6 +56,7 @@ nonisolated struct ColourOption: Identifiable, Sendable {
         self.imageURL = imageURL
         self.availableTiers = availableTiers
         self.cost = cost
+        self.applicableTiers = applicableTiers
     }
 
     func isAvailable(for tier: SpecTier) -> Bool {

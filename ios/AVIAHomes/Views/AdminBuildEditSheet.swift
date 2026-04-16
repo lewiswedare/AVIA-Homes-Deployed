@@ -10,6 +10,7 @@ struct AdminBuildEditSheet: View {
     @State private var estate: String
     @State private var contractDate: Date
     @State private var selectedStaffId: String
+    @State private var selectedSpecTier: String
     @State private var selectedTab: AdminEditTab = .details
     @State private var isSaving = false
     @State private var showingSaved = false
@@ -55,6 +56,7 @@ struct AdminBuildEditSheet: View {
         _estate = State(initialValue: build.estate)
         _contractDate = State(initialValue: build.contractDate)
         _selectedStaffId = State(initialValue: build.assignedStaffId)
+        _selectedSpecTier = State(initialValue: build.specTier ?? "")
     }
 
     private var latestBuild: ClientBuild {
@@ -384,6 +386,43 @@ struct AdminBuildEditSheet: View {
                         DatePicker("", selection: $contractDate, displayedComponents: .date)
                             .labelsHidden()
                             .tint(AVIATheme.teal)
+                    }
+
+                    VStack(alignment: .leading, spacing: 6) {
+                        Label("Spec Tier", systemImage: "crown.fill")
+                            .font(.neueCaption)
+                            .foregroundStyle(AVIATheme.textTertiary)
+                        HStack(spacing: 8) {
+                            ForEach(SpecTier.allCases) { tier in
+                                Button {
+                                    withAnimation(.spring(response: 0.3)) {
+                                        selectedSpecTier = tier.rawValue
+                                    }
+                                } label: {
+                                    VStack(spacing: 4) {
+                                        Image(systemName: tier.icon)
+                                            .font(.system(size: 16))
+                                        Text(tier.displayName)
+                                            .font(.neueCaption2Medium)
+                                        Text(tier.tagline)
+                                            .font(.neueCaption2)
+                                            .foregroundStyle(AVIATheme.textTertiary)
+                                            .lineLimit(1)
+                                    }
+                                    .frame(maxWidth: .infinity)
+                                    .padding(.vertical, 10)
+                                    .foregroundStyle(selectedSpecTier == tier.rawValue ? .white : AVIATheme.textSecondary)
+                                    .background(selectedSpecTier == tier.rawValue ? AVIATheme.teal : AVIATheme.cardBackgroundAlt)
+                                    .clipShape(.rect(cornerRadius: 10))
+                                    .overlay {
+                                        if selectedSpecTier != tier.rawValue {
+                                            RoundedRectangle(cornerRadius: 10)
+                                                .stroke(AVIATheme.surfaceBorder, lineWidth: 1)
+                                        }
+                                    }
+                                }
+                            }
+                        }
                     }
                 }
                 .padding(16)
@@ -950,7 +989,8 @@ struct AdminBuildEditSheet: View {
                 homeDesign: homeDesign,
                 lotNumber: lotNumber,
                 estate: estate,
-                contractDate: contractDate
+                contractDate: contractDate,
+                specTier: selectedSpecTier.isEmpty ? nil : selectedSpecTier
             )
             if !selectedStaffId.isEmpty {
                 viewModel.assignStaffToBuild(buildId: build.id, staffId: selectedStaffId)

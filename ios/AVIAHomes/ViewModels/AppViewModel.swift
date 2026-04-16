@@ -663,7 +663,8 @@ class AppViewModel {
             preConstructionStaffId: oldBuild.preConstructionStaffId,
             buildingSupportStaffId: oldBuild.buildingSupportStaffId,
             handoverTriggeredAt: oldBuild.handoverTriggeredAt,
-            buildStatus: oldBuild.buildStatus
+            buildStatus: oldBuild.buildStatus,
+            specTier: oldBuild.specTier
         )
         allClientBuilds[index] = updated
         syncBuildStagesForCurrentUser()
@@ -717,7 +718,8 @@ class AppViewModel {
             preConstructionStaffId: oldBuild.preConstructionStaffId,
             buildingSupportStaffId: oldBuild.buildingSupportStaffId,
             handoverTriggeredAt: oldBuild.handoverTriggeredAt,
-            buildStatus: oldBuild.buildStatus
+            buildStatus: oldBuild.buildStatus,
+            specTier: oldBuild.specTier
         )
         allClientBuilds[index] = updated
         syncBuildStagesForCurrentUser()
@@ -758,7 +760,8 @@ class AppViewModel {
                 preConstructionStaffId: oldBuild.preConstructionStaffId,
                 buildingSupportStaffId: oldBuild.buildingSupportStaffId,
                 handoverTriggeredAt: oldBuild.handoverTriggeredAt,
-                buildStatus: oldBuild.buildStatus
+                buildStatus: oldBuild.buildStatus,
+                specTier: oldBuild.specTier
             )
         } else {
             let newAdditional = oldBuild.additionalClients.filter { $0.id != clientId }
@@ -783,7 +786,8 @@ class AppViewModel {
                 preConstructionStaffId: oldBuild.preConstructionStaffId,
                 buildingSupportStaffId: oldBuild.buildingSupportStaffId,
                 handoverTriggeredAt: oldBuild.handoverTriggeredAt,
-                buildStatus: oldBuild.buildStatus
+                buildStatus: oldBuild.buildStatus,
+                specTier: oldBuild.specTier
             )
         }
         allClientBuilds[index] = updated
@@ -866,7 +870,8 @@ class AppViewModel {
             preConstructionStaffId: oldBuild.preConstructionStaffId,
             buildingSupportStaffId: oldBuild.buildingSupportStaffId,
             handoverTriggeredAt: oldBuild.handoverTriggeredAt,
-            buildStatus: oldBuild.buildStatus
+            buildStatus: oldBuild.buildStatus,
+            specTier: oldBuild.specTier
         )
         allClientBuilds[index] = updated
         Task {
@@ -877,7 +882,7 @@ class AppViewModel {
         }
     }
 
-    func updateBuildDetails(buildId: String, homeDesign: String, lotNumber: String, estate: String, contractDate: Date) {
+    func updateBuildDetails(buildId: String, homeDesign: String, lotNumber: String, estate: String, contractDate: Date, specTier: String? = nil) {
         guard let index = allClientBuilds.firstIndex(where: { $0.id == buildId }) else { return }
         let oldBuild = allClientBuilds[index]
         let updated = ClientBuild(
@@ -901,7 +906,8 @@ class AppViewModel {
             preConstructionStaffId: oldBuild.preConstructionStaffId,
             buildingSupportStaffId: oldBuild.buildingSupportStaffId,
             handoverTriggeredAt: oldBuild.handoverTriggeredAt,
-            buildStatus: oldBuild.buildStatus
+            buildStatus: oldBuild.buildStatus,
+            specTier: specTier ?? oldBuild.specTier
         )
         allClientBuilds[index] = updated
         Task {
@@ -952,7 +958,8 @@ class AppViewModel {
             preConstructionStaffId: oldBuild.preConstructionStaffId,
             buildingSupportStaffId: oldBuild.buildingSupportStaffId,
             handoverTriggeredAt: oldBuild.handoverTriggeredAt,
-            buildStatus: oldBuild.buildStatus
+            buildStatus: oldBuild.buildStatus,
+            specTier: oldBuild.specTier
         )
         syncBuildStagesForCurrentUser()
         Task { await SupabaseService.shared.updateBuildStage(updatedStage, buildId: buildId, sortOrder: stageIndex) }
@@ -989,7 +996,7 @@ class AppViewModel {
             preConstructionStaffId: oldBuild.preConstructionStaffId,
             buildingSupportStaffId: oldBuild.buildingSupportStaffId,
             handoverTriggeredAt: oldBuild.handoverTriggeredAt, buildStatus: oldBuild.buildStatus,
-            eoiId: oldBuild.eoiId, estimatedStartDate: oldBuild.estimatedStartDate,
+            eoiId: oldBuild.eoiId, specTier: oldBuild.specTier, estimatedStartDate: oldBuild.estimatedStartDate,
             estimatedCompletionDate: oldBuild.estimatedCompletionDate,
             actualStartDate: oldBuild.actualStartDate, actualCompletionDate: oldBuild.actualCompletionDate
         )
@@ -1021,7 +1028,7 @@ class AppViewModel {
             preConstructionStaffId: oldBuild.preConstructionStaffId,
             buildingSupportStaffId: oldBuild.buildingSupportStaffId,
             handoverTriggeredAt: oldBuild.handoverTriggeredAt, buildStatus: oldBuild.buildStatus,
-            eoiId: oldBuild.eoiId, estimatedStartDate: oldBuild.estimatedStartDate,
+            eoiId: oldBuild.eoiId, specTier: oldBuild.specTier, estimatedStartDate: oldBuild.estimatedStartDate,
             estimatedCompletionDate: oldBuild.estimatedCompletionDate,
             actualStartDate: oldBuild.actualStartDate, actualCompletionDate: oldBuild.actualCompletionDate
         )

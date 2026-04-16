@@ -24,6 +24,7 @@ nonisolated struct BuildRow: Codable, Sendable {
     let custom_square_meters: Double?
     let custom_storeys: Int?
     let eoi_id: String?
+    let spec_tier: String?
     let estimated_start_date: String?
     let estimated_completion_date: String?
     let actual_start_date: String?
@@ -38,7 +39,7 @@ nonisolated struct BuildRow: Codable, Sendable {
         case is_custom, selected_facade_id
         case custom_bedrooms, custom_bathrooms, custom_garages
         case custom_square_meters, custom_storeys
-        case eoi_id, estimated_start_date, estimated_completion_date
+        case eoi_id, spec_tier, estimated_start_date, estimated_completion_date
         case actual_start_date, actual_completion_date
     }
 
@@ -67,6 +68,7 @@ nonisolated struct BuildRow: Codable, Sendable {
         custom_square_meters = try? container.decode(Double.self, forKey: .custom_square_meters)
         custom_storeys = try? container.decode(Int.self, forKey: .custom_storeys)
         eoi_id = try? container.decode(String.self, forKey: .eoi_id)
+        spec_tier = try? container.decode(String.self, forKey: .spec_tier)
         estimated_start_date = try? container.decode(String.self, forKey: .estimated_start_date)
         estimated_completion_date = try? container.decode(String.self, forKey: .estimated_completion_date)
         actual_start_date = try? container.decode(String.self, forKey: .actual_start_date)
@@ -97,6 +99,7 @@ nonisolated struct BuildRow: Codable, Sendable {
         try container.encodeIfPresent(custom_square_meters, forKey: .custom_square_meters)
         try container.encodeIfPresent(custom_storeys, forKey: .custom_storeys)
         try container.encodeIfPresent(eoi_id, forKey: .eoi_id)
+        try container.encodeIfPresent(spec_tier, forKey: .spec_tier)
         try container.encodeIfPresent(estimated_start_date, forKey: .estimated_start_date)
         try container.encodeIfPresent(estimated_completion_date, forKey: .estimated_completion_date)
         try container.encodeIfPresent(actual_start_date, forKey: .actual_start_date)
@@ -128,6 +131,7 @@ nonisolated struct BuildRow: Codable, Sendable {
         custom_square_meters = build.customSquareMeters
         custom_storeys = build.customStoreys
         eoi_id = build.eoiId
+        spec_tier = build.specTier
         estimated_start_date = build.estimatedStartDate.map { iso.string(from: $0) }
         estimated_completion_date = build.estimatedCompletionDate.map { iso.string(from: $0) }
         actual_start_date = build.actualStartDate.map { iso.string(from: $0) }
@@ -162,6 +166,7 @@ nonisolated struct BuildRow: Codable, Sendable {
             handoverTriggeredAt: handover_triggered_at,
             buildStatus: status,
             eoiId: eoi_id,
+            specTier: spec_tier,
             estimatedStartDate: estimated_start_date.flatMap { formatter.date(from: $0) ?? fallback.date(from: $0) },
             estimatedCompletionDate: estimated_completion_date.flatMap { formatter.date(from: $0) ?? fallback.date(from: $0) },
             actualStartDate: actual_start_date.flatMap { formatter.date(from: $0) ?? fallback.date(from: $0) },

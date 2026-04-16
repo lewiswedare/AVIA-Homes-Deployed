@@ -10,6 +10,8 @@ nonisolated struct ColourCategoryRow: Codable, Sendable {
     let sort_order: Int
     let options: [ColourOptionRow]
     let default_option_cost: Double?
+    let applicable_tiers: [String]?
+    let spec_item_id: String?
 
     struct ColourOptionRow: Codable, Sendable {
         let id: String
@@ -20,6 +22,7 @@ nonisolated struct ColourCategoryRow: Codable, Sendable {
         let image_url: String?
         let available_tiers: [String]?
         let cost: Double?
+        let applicable_tiers: [String]?
     }
 
     func toColourCategory() -> ColourCategory {
@@ -29,11 +32,13 @@ nonisolated struct ColourCategoryRow: Codable, Sendable {
             icon: icon,
             section: section == "exterior" ? .exterior : .interior,
             options: options.map {
-                ColourOption(id: $0.id, name: $0.name, hexColor: $0.hex_color ?? "CCCCCC", brand: $0.brand, isUpgrade: $0.is_upgrade ?? false, imageURL: $0.image_url, availableTiers: Set($0.available_tiers ?? []), cost: $0.cost)
+                ColourOption(id: $0.id, name: $0.name, hexColor: $0.hex_color ?? "CCCCCC", brand: $0.brand, isUpgrade: $0.is_upgrade ?? false, imageURL: $0.image_url, availableTiers: Set($0.available_tiers ?? []), cost: $0.cost, applicableTiers: $0.applicable_tiers)
             },
             note: note,
             imageURL: image_url,
-            defaultOptionCost: default_option_cost
+            defaultOptionCost: default_option_cost,
+            applicableTiers: applicable_tiers,
+            specItemId: spec_item_id
         )
     }
 }
@@ -230,6 +235,8 @@ nonisolated struct ColourCategoryUpsertRow: Codable, Sendable {
     let sort_order: Int
     let options: [ColourCategoryRow.ColourOptionRow]
     let default_option_cost: Double?
+    let applicable_tiers: [String]?
+    let spec_item_id: String?
 
     init(from category: ColourCategory, sortOrder: Int) {
         id = category.id
@@ -240,12 +247,15 @@ nonisolated struct ColourCategoryUpsertRow: Codable, Sendable {
         image_url = category.imageURL
         sort_order = sortOrder
         default_option_cost = category.defaultOptionCost
+        applicable_tiers = category.applicableTiers
+        spec_item_id = category.specItemId
         options = category.options.map {
             ColourCategoryRow.ColourOptionRow(
                 id: $0.id, name: $0.name, hex_color: $0.hexColor,
                 brand: $0.brand, is_upgrade: $0.isUpgrade, image_url: $0.imageURL,
                 available_tiers: Array($0.availableTiers).sorted(),
-                cost: $0.cost
+                cost: $0.cost,
+                applicable_tiers: $0.applicableTiers
             )
         }
     }

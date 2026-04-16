@@ -8,10 +8,20 @@ struct BuildColourSelectionView: View {
 
     private var catalog: CatalogDataManager { CatalogDataManager.shared }
 
+    private var buildSpecTier: SpecTier {
+        SpecTier(rawValue: viewModel.specTier.lowercased()) ?? .messina
+    }
+
     private var approvedItemsNeedingColour: [BuildSpecSelection] {
         let mapping = catalog.activeSpecToColourMapping
+        let tier = buildSpecTier
         return viewModel.approvedItems.filter { sel in
-            mapping[sel.specItemId] != nil
+            guard let catIds = mapping[sel.specItemId] else { return false }
+            let hasVisibleCategories = catIds.contains { catId in
+                guard let cat = catalog.allColourCategories.first(where: { $0.id == catId }) else { return false }
+                return cat.isAvailable(for: tier)
+            }
+            return hasVisibleCategories
         }
     }
 
@@ -185,9 +195,10 @@ struct BuildColourSelectionView: View {
 
     private func colourItemCard(_ item: BuildSpecSelection) -> some View {
         let colourSel = viewModel.colourSelections.first { $0.buildSpecSelectionId == item.id }
+        let tier = buildSpecTier
         let mapping = catalog.activeSpecToColourMapping
         let colourCatIds = mapping[item.specItemId] ?? []
-        let matchedColourCats = catalog.allColourCategories.filter { colourCatIds.contains($0.id) }
+        let matchedColourCats = catalog.allColourCategories.filter { colourCatIds.contains($0.id) && $0.isAvailable(for: tier) }
 
         return Button {
             selectedSpecItem = item
@@ -323,20 +334,33 @@ struct BuildColourPickerSheet: View {
 
     private var catalog: CatalogDataManager { CatalogDataManager.shared }
 
+    private var resolvedTier: SpecTier {
+        SpecTier(rawValue: specTier.lowercased()) ?? .messina
+    }
+
+    private var linkedSpecItem: SpecItem? {
+        catalog.specItem(for: specItem.specItemId)
+    }
+
     private var colourCategories: [ColourCategory] {
         let mapping = catalog.activeSpecToColourMapping
         let catIds = mapping[specItem.specItemId] ?? []
-        let tier = SpecTier(rawValue: specTier.lowercased()) ?? .messina
+        let tier = resolvedTier
         return catIds.compactMap { catId in
             guard let cat = catalog.allColourCategories.first(where: { $0.id == catId }) else { return nil }
+            guard cat.isAvailable(for: tier) else { return nil }
             let filteredOptions = cat.options.filter { opt in
-                opt.availableTiers.isEmpty || opt.isAvailable(for: tier) || opt.isUpgradeOption(for: tier)
+                let tierOk = opt.applicableTiers == nil || opt.applicableTiers!.isEmpty || opt.applicableTiers!.contains(tier.rawValue)
+                let availOk = opt.availableTiers.isEmpty || opt.isAvailable(for: tier) || opt.isUpgradeOption(for: tier)
+                return tierOk && availOk
             }
             guard !filteredOptions.isEmpty else { return nil }
             return ColourCategory(
                 id: cat.id, name: cat.name, icon: cat.icon,
                 section: cat.section, options: filteredOptions,
-                note: cat.note, imageURL: cat.imageURL
+                note: cat.note, imageURL: cat.imageURL,
+                applicableTiers: cat.applicableTiers,
+                specItemId: cat.specItemId
             )
         }
     }
@@ -345,17 +369,36 @@ struct BuildColourPickerSheet: View {
         NavigationStack {
             ScrollView {
                 VStack(alignment: .leading, spacing: 20) {
-                    HStack(spacing: 10) {
-                        Image(systemName: "cube.box.fill")
-                            .foregroundStyle(AVIATheme.teal)
-                        VStack(alignment: .leading, spacing: 2) {
-                            Text(specItem.snapshotName)
-                                .font(.neueSubheadlineMedium)
-                                .foregroundStyle(AVIATheme.textPrimary)
-                            Text(specItem.snapshotDescription)
-                                .font(.neueCaption2)
-                                .foregroundStyle(AVIATheme.textSecondary)
-                                .lineLimit(2)
+                    VStack(alignment: .leading, spacing: 10) {
+                        HStack(spacing: 10) {
+                            Image(systemName: "cube.box.fill")
+                                .foregroundStyle(AVIATheme.teal)
+                            VStack(alignment: .leading, spacing: 2) {
+                                Text(specItem.snapshotName)
+                                    .font(.neueSubheadlineMedium)
+                                    .foregroundStyle(AVIATheme.textPrimary)
+                                Text(specItem.snapshotDescription)
+                                    .font(.neueCaption2)
+                                    .foregroundStyle(AVIATheme.textSecondary)
+                                    .lineLimit(2)
+                            }
+                        }
+
+                        if let specItemModel = linkedSpecItem {
+                            let tierDesc = specItemModel.description(for: resolvedTier)
+                            if !tierDesc.isEmpty {
+                                HStack(spacing: 8) {
+                                    Image(systemName: "info.circle.fill")
+                                        .foregroundStyle(AVIATheme.teal.opacity(0.7))
+                                        .font(.system(size: 12))
+                                    Text("Your \(resolvedTier.displayName) spec: \(tierDesc)")
+                                        .font(.neueCaption2)
+                                        .foregroundStyle(AVIATheme.textSecondary)
+                                }
+                                .padding(10)
+                                .background(AVIATheme.teal.opacity(0.06))
+                                .clipShape(.rect(cornerRadius: 8))
+                            }
                         }
                     }
                     .padding(14)
@@ -381,7 +424,7 @@ struct BuildColourPickerSheet: View {
                                     .foregroundStyle(AVIATheme.textTertiary)
                             }
 
-                            let tier = SpecTier(rawValue: specTier.lowercased()) ?? .messina
+                            let tier = resolvedTier
                             let columns = [
                                 GridItem(.flexible(), spacing: 12),
                                 GridItem(.flexible(), spacing: 12),

@@ -607,7 +607,8 @@ class BuildSpecViewModel {
                 clientNotes: nil,
                 adminNotes: nil,
                 cost: cost,
-                isUpgrade: isUpgrade
+                isUpgrade: isUpgrade,
+                specTier: specTier
             )
             colourSelections[idx] = updated
             _ = await SupabaseService.shared.upsertBuildColourSelection(updated)
@@ -623,7 +624,8 @@ class BuildSpecViewModel {
                 clientNotes: nil,
                 adminNotes: nil,
                 cost: cost,
-                isUpgrade: isUpgrade
+                isUpgrade: isUpgrade,
+                specTier: specTier
             )
             colourSelections.append(new)
             _ = await SupabaseService.shared.upsertBuildColourSelection(new)

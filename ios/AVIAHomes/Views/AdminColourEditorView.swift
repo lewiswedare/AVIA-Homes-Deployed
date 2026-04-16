@@ -175,6 +175,19 @@ struct AdminColourEditorView: View {
 
                         Spacer()
 
+                        if let tiers = category.applicableTiers, !tiers.isEmpty {
+                            HStack(spacing: 2) {
+                                ForEach(tiers.sorted(), id: \.self) { t in
+                                    Text(String(t.prefix(1)).uppercased())
+                                        .font(.neueCorpMedium(8))
+                                        .foregroundStyle(.white)
+                                        .frame(width: 16, height: 16)
+                                        .background(AVIATheme.teal)
+                                        .clipShape(Circle())
+                                }
+                            }
+                        }
+
                         Text("\(category.options.count)")
                             .font(.neueCaptionMedium)
                             .foregroundStyle(AVIATheme.textSecondary)
@@ -271,8 +284,18 @@ struct ColourCategoryEditSheet: View {
     @State private var options: [EditableColourOption] = []
     @State private var defaultCostText: String = ""
     @State private var showingAddOption = false
+    @State private var applicableTiers: Set<String> = []
+    @State private var linkedSpecItemId: String = ""
 
     private var isNew: Bool { category == nil }
+
+    private var catalog: CatalogDataManager { CatalogDataManager.shared }
+
+    private var allSpecItems: [(id: String, name: String, categoryName: String)] {
+        catalog.allSpecCategories.flatMap { cat in
+            cat.items.map { (id: $0.id, name: $0.name, categoryName: cat.name) }
+        }
+    }
 
     var body: some View {
         NavigationStack {
@@ -326,6 +349,71 @@ struct ColourCategoryEditSheet: View {
                                 folder: "colours",
                                 itemId: isNew ? catId : (category?.id ?? catId)
                             )
+
+                            editSectionHeader("Tier Availability")
+
+                            VStack(alignment: .leading, spacing: 6) {
+                                Text("Applicable Tiers")
+                                    .font(.neueCaption2)
+                                    .foregroundStyle(AVIATheme.textTertiary)
+                                Text("Leave empty for all tiers")
+                                    .font(.neueCaption2)
+                                    .foregroundStyle(AVIATheme.textTertiary.opacity(0.7))
+                                HStack(spacing: 8) {
+                                    ForEach(SpecTier.allCases) { tier in
+                                        let isActive = applicableTiers.contains(tier.rawValue)
+                                        Button {
+                                            withAnimation(.spring(response: 0.2)) {
+                                                if isActive {
+                                                    applicableTiers.remove(tier.rawValue)
+                                                } else {
+                                                    applicableTiers.insert(tier.rawValue)
+                                                }
+                                            }
+                                        } label: {
+                                            Text(tier.displayName)
+                                                .font(.neueCaption2Medium)
+                                                .padding(.horizontal, 12)
+                                                .padding(.vertical, 6)
+                                                .foregroundStyle(isActive ? .white : AVIATheme.textSecondary)
+                                                .background(isActive ? AVIATheme.teal : AVIATheme.surfaceElevated)
+                                                .clipShape(Capsule())
+                                                .overlay {
+                                                    if !isActive {
+                                                        Capsule().stroke(AVIATheme.surfaceBorder, lineWidth: 1)
+                                                    }
+                                                }
+                                        }
+                                    }
+
+                                    Spacer()
+
+                                    Button {
+                                        withAnimation(.spring(response: 0.2)) {
+                                            if applicableTiers.count == SpecTier.allCases.count {
+                                                applicableTiers.removeAll()
+                                            } else {
+                                                applicableTiers = Set(SpecTier.allCases.map(\.rawValue))
+                                            }
+                                        }
+                                    } label: {
+                                        Text(applicableTiers.count == SpecTier.allCases.count ? "Clear" : "All")
+                                            .font(.neueCaption2Medium)
+                                            .foregroundStyle(AVIATheme.teal)
+                                    }
+                                }
+                            }
+                            .padding(.horizontal, 14)
+
+                            editFieldRow("Linked Spec Item") {
+                                Picker("Select spec item", selection: $linkedSpecItemId) {
+                                    Text("None").tag("")
+                                    ForEach(allSpecItems, id: \.id) { item in
+                                        Text("\(item.categoryName) — \(item.name)").tag(item.id)
+                                    }
+                                }
+                                .font(.neueCaption)
+                            }
                         }
                         .padding(.vertical, 14)
                     }
@@ -486,9 +574,62 @@ struct ColourCategoryEditSheet: View {
             .clipShape(.rect(cornerRadius: 6))
 
             tierAvailabilityRow(option: option)
+            optionApplicableTiersRow(option: option)
         }
         .padding(.horizontal, 14)
         .padding(.vertical, 6)
+    }
+
+    private func optionApplicableTiersRow(option: Binding<EditableColourOption>) -> some View {
+        HStack(spacing: 6) {
+            Text("Tier Filter")
+                .font(.neueCaption2)
+                .foregroundStyle(AVIATheme.textTertiary)
+
+            ForEach(SpecTier.allCases) { tier in
+                let isActive = option.wrappedValue.optionApplicableTiers.contains(tier.rawValue)
+                Button {
+                    withAnimation(.spring(response: 0.2)) {
+                        if isActive {
+                            option.wrappedValue.optionApplicableTiers.remove(tier.rawValue)
+                        } else {
+                            option.wrappedValue.optionApplicableTiers.insert(tier.rawValue)
+                        }
+                    }
+                } label: {
+                    Text(String(tier.displayName.prefix(1)))
+                        .font(.neueCorpMedium(10))
+                        .frame(width: 26, height: 22)
+                        .foregroundStyle(isActive ? .white : AVIATheme.textTertiary)
+                        .background(isActive ? Color(hex: "8B5CF6") : Color.clear)
+                        .clipShape(.rect(cornerRadius: 5))
+                        .overlay {
+                            RoundedRectangle(cornerRadius: 5)
+                                .stroke(isActive ? Color(hex: "8B5CF6") : AVIATheme.surfaceBorder, lineWidth: 1)
+                        }
+                }
+            }
+
+            Spacer(minLength: 0)
+
+            Button {
+                withAnimation(.spring(response: 0.2)) {
+                    let allTiers = Set(SpecTier.allCases.map(\.rawValue))
+                    if option.wrappedValue.optionApplicableTiers == allTiers {
+                        option.wrappedValue.optionApplicableTiers.removeAll()
+                    } else {
+                        option.wrappedValue.optionApplicableTiers = allTiers
+                    }
+                }
+            } label: {
+                Text("All")
+                    .font(.neueCaption2Medium)
+                    .foregroundStyle(Color(hex: "8B5CF6"))
+            }
+        }
+        .padding(8)
+        .background(AVIATheme.surfaceElevated)
+        .clipShape(.rect(cornerRadius: 6))
     }
 
     private func tierAvailabilityRow(option: Binding<EditableColourOption>) -> some View {
@@ -545,7 +686,7 @@ struct ColourCategoryEditSheet: View {
 
     private func addNewOption() {
         let newId = "\(catId.isEmpty ? "opt" : catId)\(options.count + 1)"
-        options.append(EditableColourOption(id: newId, name: "", hexColor: "CCCCCC", brand: "", isUpgrade: false, imageURL: "", availableTiers: [], cost: ""))
+        options.append(EditableColourOption(id: newId, name: "", hexColor: "CCCCCC", brand: "", isUpgrade: false, imageURL: "", availableTiers: [], cost: "", optionApplicableTiers: []))
     }
 
     private func populateFields() {
@@ -557,14 +698,16 @@ struct ColourCategoryEditSheet: View {
         note = category.note ?? ""
         imageURL = category.imageURL ?? ""
         defaultCostText = category.defaultOptionCost.map { String(format: "%.2f", $0) } ?? ""
+        applicableTiers = Set(category.applicableTiers ?? [])
+        linkedSpecItemId = category.specItemId ?? ""
         options = category.options.map {
-            EditableColourOption(id: $0.id, name: $0.name, hexColor: $0.hexColor, brand: $0.brand ?? "", isUpgrade: $0.isUpgrade, imageURL: $0.imageURL ?? "", availableTiers: $0.availableTiers, cost: $0.cost.map { String(format: "%.2f", $0) } ?? "")
+            EditableColourOption(id: $0.id, name: $0.name, hexColor: $0.hexColor, brand: $0.brand ?? "", isUpgrade: $0.isUpgrade, imageURL: $0.imageURL ?? "", availableTiers: $0.availableTiers, cost: $0.cost.map { String(format: "%.2f", $0) } ?? "", optionApplicableTiers: Set($0.applicableTiers ?? []))
         }
     }
 
     private func save() {
         let colourOptions = options.filter { !$0.name.isEmpty }.map {
-            ColourOption(id: $0.id, name: $0.name, hexColor: $0.hexColor, brand: $0.brand.isEmpty ? nil : $0.brand, isUpgrade: $0.isUpgrade, imageURL: $0.imageURL.isEmpty ? nil : $0.imageURL, availableTiers: $0.availableTiers, cost: Double($0.cost))
+            ColourOption(id: $0.id, name: $0.name, hexColor: $0.hexColor, brand: $0.brand.isEmpty ? nil : $0.brand, isUpgrade: $0.isUpgrade, imageURL: $0.imageURL.isEmpty ? nil : $0.imageURL, availableTiers: $0.availableTiers, cost: Double($0.cost), applicableTiers: $0.optionApplicableTiers.isEmpty ? nil : Array($0.optionApplicableTiers).sorted())
         }
         let result = ColourCategory(
             id: isNew ? catId : (category?.id ?? catId),
@@ -574,7 +717,9 @@ struct ColourCategoryEditSheet: View {
             options: colourOptions,
             note: note.isEmpty ? nil : note,
             imageURL: imageURL.isEmpty ? nil : imageURL,
-            defaultOptionCost: Double(defaultCostText)
+            defaultOptionCost: Double(defaultCostText),
+            applicableTiers: applicableTiers.isEmpty ? nil : Array(applicableTiers).sorted(),
+            specItemId: linkedSpecItemId.isEmpty ? nil : linkedSpecItemId
         )
         onSave(result)
         dismiss()
@@ -590,4 +735,5 @@ struct EditableColourOption: Identifiable {
     var imageURL: String
     var availableTiers: Set<String>
     var cost: String
+    var optionApplicableTiers: Set<String>
 }

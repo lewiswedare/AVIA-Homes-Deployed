@@ -315,12 +315,13 @@ nonisolated struct BuildColourSelectionRow: Codable, Sendable, Identifiable {
     let updated_at: String?
     let cost: Double?
     let is_upgrade: Bool?
+    let spec_tier: String?
 
     nonisolated enum CodingKeys: String, CodingKey {
         case id, build_id, build_spec_selection_id, spec_item_id
         case colour_category_id, colour_option_id, selection_status
         case client_notes, admin_notes, created_at, updated_at
-        case cost, is_upgrade
+        case cost, is_upgrade, spec_tier
     }
 
     func encode(to encoder: Encoder) throws {
@@ -337,6 +338,7 @@ nonisolated struct BuildColourSelectionRow: Codable, Sendable, Identifiable {
         try container.encodeIfPresent(updated_at, forKey: .updated_at)
         try container.encodeIfPresent(cost, forKey: .cost)
         try container.encodeIfPresent(is_upgrade, forKey: .is_upgrade)
+        try container.encodeIfPresent(spec_tier, forKey: .spec_tier)
     }
 }
 
@@ -352,6 +354,7 @@ struct BuildColourSelection: Identifiable, Sendable {
     var adminNotes: String?
     var cost: Double?
     var isUpgrade: Bool
+    var specTier: String?
 }
 
 extension BuildColourSelectionRow {
@@ -367,7 +370,8 @@ extension BuildColourSelectionRow {
             clientNotes: client_notes,
             adminNotes: admin_notes,
             cost: cost,
-            isUpgrade: is_upgrade ?? false
+            isUpgrade: is_upgrade ?? false,
+            specTier: spec_tier
         )
     }
 }
@@ -388,7 +392,8 @@ extension BuildColourSelection {
             created_at: nil,
             updated_at: iso.string(from: .now),
             cost: cost,
-            is_upgrade: isUpgrade
+            is_upgrade: isUpgrade,
+            spec_tier: specTier
         )
     }
 }
