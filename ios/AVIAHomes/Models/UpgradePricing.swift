@@ -12,11 +12,12 @@ nonisolated struct UpgradePricingRow: Codable, Sendable, Identifiable {
     let is_active: Bool
     let created_at: String?
     let updated_at: String?
+    let storey_type: String?
 
     enum CodingKeys: String, CodingKey {
         case id, spec_item_id, colour_category_id, colour_option_id
         case from_tier, to_tier, cost, description, is_active
-        case created_at, updated_at
+        case created_at, updated_at, storey_type
     }
 
     func encode(to encoder: Encoder) throws {
@@ -31,6 +32,7 @@ nonisolated struct UpgradePricingRow: Codable, Sendable, Identifiable {
         try container.encodeIfPresent(description, forKey: .description)
         try container.encode(is_active, forKey: .is_active)
         try container.encodeIfPresent(updated_at, forKey: .updated_at)
+        try container.encodeIfPresent(storey_type, forKey: .storey_type)
     }
 }
 
@@ -44,6 +46,7 @@ struct UpgradePricing: Identifiable, Sendable {
     var cost: Double
     var description: String?
     var isActive: Bool
+    let storeyType: String?
 }
 
 extension UpgradePricingRow {
@@ -57,7 +60,8 @@ extension UpgradePricingRow {
             toTier: to_tier,
             cost: cost,
             description: description,
-            isActive: is_active
+            isActive: is_active,
+            storeyType: storey_type
         )
     }
 }
@@ -76,7 +80,8 @@ extension UpgradePricing {
             description: description,
             is_active: isActive,
             created_at: nil,
-            updated_at: iso.string(from: .now)
+            updated_at: iso.string(from: .now),
+            storey_type: storeyType
         )
     }
 }

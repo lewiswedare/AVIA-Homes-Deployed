@@ -1176,7 +1176,7 @@ class SupabaseService {
         }
     }
 
-    func fetchFullRangeUpgradePricing() async -> [UpgradePricing] {
+    func fetchFullRangeUpgradePricing(storeyType: String? = nil) async -> [UpgradePricing] {
         guard isConfigured else { return [] }
         do {
             let allRows: [UpgradePricingRow] = try await client
@@ -1187,7 +1187,11 @@ class SupabaseService {
             let fullRange = allRows.filter {
                 $0.spec_item_id == nil && $0.colour_category_id == nil && $0.colour_option_id == nil
             }
-            return fullRange.map { $0.toModel() }
+            let models = fullRange.map { $0.toModel() }
+            if let storeyType {
+                return models.filter { $0.storeyType == storeyType }
+            }
+            return models
         } catch {
             print("[SupabaseService] fetchFullRangeUpgradePricing FAILED: \(error)")
             return []

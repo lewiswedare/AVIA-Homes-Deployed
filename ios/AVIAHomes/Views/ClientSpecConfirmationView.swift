@@ -29,7 +29,16 @@ struct ClientSpecConfirmationView: View {
             viewModel.clientId = appViewModel.currentUser.id
             viewModel.adminRecipientIds = appViewModel.allRegisteredUsers.filter { $0.role.isAnyStaffRole }.map(\.id)
             async let specLoad: Void = viewModel.load(buildId: buildId)
-            async let pricingLoad = SupabaseService.shared.fetchFullRangeUpgradePricing()
+
+            let storeyType: String
+            if let build = appViewModel.allClientBuilds.first(where: { $0.id == buildId }) {
+                let storeys = build.customStoreys ?? appViewModel.allHomeDesigns.first(where: { $0.name.lowercased() == build.homeDesign.lowercased() })?.storeys ?? 1
+                storeyType = storeys >= 2 ? "double" : "single"
+            } else {
+                storeyType = "single"
+            }
+
+            async let pricingLoad = SupabaseService.shared.fetchFullRangeUpgradePricing(storeyType: storeyType)
             _ = await specLoad
             fullRangePricing = await pricingLoad
         }

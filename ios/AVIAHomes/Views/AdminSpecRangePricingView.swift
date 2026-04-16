@@ -1,9 +1,15 @@
 import SwiftUI
 
 struct AdminSpecRangePricingView: View {
-    @State private var volosToMessinaCost: String = ""
-    @State private var volosToPortobelloCost: String = ""
-    @State private var messinaToPortobelloCost: String = ""
+    // Single storey costs
+    @State private var singleVolosToMessinaCost: String = ""
+    @State private var singleVolosToPortobelloCost: String = ""
+    @State private var singleMessinaToPortobelloCost: String = ""
+    // Double storey costs
+    @State private var doubleVolosToMessinaCost: String = ""
+    @State private var doubleVolosToPortobelloCost: String = ""
+    @State private var doubleMessinaToPortobelloCost: String = ""
+
     @State private var existingPricing: [UpgradePricing] = []
     @State private var isLoading = false
     @State private var isSaving = false
@@ -26,7 +32,8 @@ struct AdminSpecRangePricingView: View {
                         .tint(AVIATheme.teal)
                         .padding(.vertical, 40)
                 } else {
-                    pricingCard
+                    singleStoreyPricingCard
+                    doubleStoreyPricingCard
                     saveButton
                 }
             }
@@ -54,7 +61,7 @@ struct AdminSpecRangePricingView: View {
                     Text("Full Spec Range Upgrade Pricing")
                         .font(.neueSubheadlineMedium)
                         .foregroundStyle(AVIATheme.textPrimary)
-                    Text("Set the cost for clients to upgrade their entire spec range from one tier to another. This is separate from individual item upgrades.")
+                    Text("Set the cost for clients to upgrade their entire spec range from one tier to another. Pricing varies by single or double storey homes.")
                         .font(.neueCaption)
                         .foregroundStyle(AVIATheme.textSecondary)
                         .lineLimit(3)
@@ -65,36 +72,76 @@ struct AdminSpecRangePricingView: View {
         }
     }
 
-    private var pricingCard: some View {
+    private var singleStoreyPricingCard: some View {
         BentoCard(cornerRadius: 14) {
             VStack(alignment: .leading, spacing: 16) {
-                Text("FULL RANGE UPGRADE COSTS")
-                    .font(.neueCorpMedium(9))
-                    .kerning(0.5)
-                    .foregroundStyle(AVIATheme.textTertiary)
-                    .padding(.horizontal, 14)
-
-                Text("These prices apply when a client upgrades their entire spec range at once, rather than individual items.")
-                    .font(.neueCaption2)
-                    .foregroundStyle(AVIATheme.textTertiary)
-                    .padding(.horizontal, 14)
+                HStack(spacing: 8) {
+                    Image(systemName: "building")
+                        .font(.neueCorpMedium(12))
+                        .foregroundStyle(AVIATheme.teal)
+                    Text("SINGLE STOREY")
+                        .font(.neueCorpMedium(9))
+                        .kerning(0.5)
+                        .foregroundStyle(AVIATheme.textTertiary)
+                }
+                .padding(.horizontal, 14)
 
                 VStack(spacing: 10) {
                     fullRangeCostField(
                         label: "Full upgrade Volos \u{2192} Messina",
-                        text: $volosToMessinaCost,
+                        text: $singleVolosToMessinaCost,
                         fromColor: AVIATheme.teal,
                         toColor: AVIATheme.warning
                     )
                     fullRangeCostField(
                         label: "Full upgrade Volos \u{2192} Portobello",
-                        text: $volosToPortobelloCost,
+                        text: $singleVolosToPortobelloCost,
                         fromColor: AVIATheme.teal,
                         toColor: Color(hex: "8B5CF6")
                     )
                     fullRangeCostField(
                         label: "Full upgrade Messina \u{2192} Portobello",
-                        text: $messinaToPortobelloCost,
+                        text: $singleMessinaToPortobelloCost,
+                        fromColor: AVIATheme.warning,
+                        toColor: Color(hex: "8B5CF6")
+                    )
+                }
+                .padding(.horizontal, 14)
+            }
+            .padding(.vertical, 14)
+        }
+    }
+
+    private var doubleStoreyPricingCard: some View {
+        BentoCard(cornerRadius: 14) {
+            VStack(alignment: .leading, spacing: 16) {
+                HStack(spacing: 8) {
+                    Image(systemName: "building.2")
+                        .font(.neueCorpMedium(12))
+                        .foregroundStyle(Color(hex: "8B5CF6"))
+                    Text("DOUBLE STOREY")
+                        .font(.neueCorpMedium(9))
+                        .kerning(0.5)
+                        .foregroundStyle(AVIATheme.textTertiary)
+                }
+                .padding(.horizontal, 14)
+
+                VStack(spacing: 10) {
+                    fullRangeCostField(
+                        label: "Full upgrade Volos \u{2192} Messina",
+                        text: $doubleVolosToMessinaCost,
+                        fromColor: AVIATheme.teal,
+                        toColor: AVIATheme.warning
+                    )
+                    fullRangeCostField(
+                        label: "Full upgrade Volos \u{2192} Portobello",
+                        text: $doubleVolosToPortobelloCost,
+                        fromColor: AVIATheme.teal,
+                        toColor: Color(hex: "8B5CF6")
+                    )
+                    fullRangeCostField(
+                        label: "Full upgrade Messina \u{2192} Portobello",
+                        text: $doubleMessinaToPortobelloCost,
                         fromColor: AVIATheme.warning,
                         toColor: Color(hex: "8B5CF6")
                     )
@@ -198,13 +245,20 @@ struct AdminSpecRangePricingView: View {
 
         for item in pricing where item.isActive {
             let cost = String(format: "%.2f", item.cost)
-            switch (item.fromTier, item.toTier) {
-            case ("volos", "messina"):
-                volosToMessinaCost = cost
-            case ("volos", "portobello"):
-                volosToPortobelloCost = cost
-            case ("messina", "portobello"):
-                messinaToPortobelloCost = cost
+            let storeyType = item.storeyType ?? "single"
+            switch (storeyType, item.fromTier, item.toTier) {
+            case ("single", "volos", "messina"):
+                singleVolosToMessinaCost = cost
+            case ("single", "volos", "portobello"):
+                singleVolosToPortobelloCost = cost
+            case ("single", "messina", "portobello"):
+                singleMessinaToPortobelloCost = cost
+            case ("double", "volos", "messina"):
+                doubleVolosToMessinaCost = cost
+            case ("double", "volos", "portobello"):
+                doubleVolosToPortobelloCost = cost
+            case ("double", "messina", "portobello"):
+                doubleMessinaToPortobelloCost = cost
             default:
                 break
             }
@@ -216,10 +270,13 @@ struct AdminSpecRangePricingView: View {
         isSaving = true
         errorMessage = nil
 
-        let costs: [(from: String, to: String, value: String)] = [
-            ("volos", "messina", volosToMessinaCost),
-            ("volos", "portobello", volosToPortobelloCost),
-            ("messina", "portobello", messinaToPortobelloCost),
+        let costs: [(from: String, to: String, storeyType: String, value: String)] = [
+            ("volos", "messina", "single", singleVolosToMessinaCost),
+            ("volos", "portobello", "single", singleVolosToPortobelloCost),
+            ("messina", "portobello", "single", singleMessinaToPortobelloCost),
+            ("volos", "messina", "double", doubleVolosToMessinaCost),
+            ("volos", "portobello", "double", doubleVolosToPortobelloCost),
+            ("messina", "portobello", "double", doubleMessinaToPortobelloCost),
         ]
 
         var allSuccess = true
@@ -227,7 +284,7 @@ struct AdminSpecRangePricingView: View {
             guard let costValue = Double(entry.value), costValue > 0 else { continue }
 
             let existingId = existingPricing.first {
-                $0.fromTier == entry.from && $0.toTier == entry.to
+                $0.fromTier == entry.from && $0.toTier == entry.to && ($0.storeyType ?? "single") == entry.storeyType
             }?.id ?? UUID().uuidString
 
             let row = UpgradePricingRow(
@@ -238,10 +295,11 @@ struct AdminSpecRangePricingView: View {
                 from_tier: entry.from,
                 to_tier: entry.to,
                 cost: costValue,
-                description: "Full spec range upgrade \(entry.from.capitalized) to \(entry.to.capitalized)",
+                description: "Full spec range upgrade \(entry.from.capitalized) to \(entry.to.capitalized) (\(entry.storeyType) storey)",
                 is_active: true,
                 created_at: nil,
-                updated_at: ISO8601DateFormatter().string(from: .now)
+                updated_at: ISO8601DateFormatter().string(from: .now),
+                storey_type: entry.storeyType
             )
 
             let success = await SupabaseService.shared.upsertUpgradePricing(row)
