@@ -14,7 +14,6 @@ struct SpecificationsOverviewView: View {
 
                     VStack(spacing: 14) {
                         currentTierHeader
-                        tierSelector
                         categoriesList
                         if !specVM.upgradeRequests.isEmpty {
                             upgradeRequestsSection
@@ -261,33 +260,6 @@ struct SpecificationsOverviewView: View {
                     .background(AVIATheme.cardBackground)
                     .clipShape(.rect(cornerRadii: .init(bottomLeading: 16, bottomTrailing: 16)))
                 }
-            }
-        }
-    }
-
-    private var tierSelector: some View {
-        HStack(spacing: 6) {
-            ForEach(SpecTier.allCases) { tier in
-                let isActive = tier == specVM.currentTier
-                let isPast = tier.tierIndex < specVM.currentTier.tierIndex
-
-                HStack(spacing: 5) {
-                    if isActive {
-                        Image(systemName: "checkmark.circle.fill")
-                            .font(.neueCorp(10))
-                    } else if isPast {
-                        Image(systemName: "checkmark")
-                            .font(.neueCorp(8))
-                    }
-                    Text(tier.displayName)
-                        .font(.neueCaption2Medium)
-                }
-                .foregroundStyle(isActive ? AVIATheme.aviaWhite : AVIATheme.textSecondary)
-                .padding(.horizontal, 12)
-                .padding(.vertical, 8)
-                .frame(maxWidth: .infinity)
-                .background(isActive ? AVIATheme.aviaBlack : AVIATheme.cardBackground)
-                .clipShape(Capsule())
             }
         }
     }
