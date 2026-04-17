@@ -82,20 +82,12 @@ struct SpecificationCategoryDetailView: View {
                         HStack(spacing: 10) {
                             Text(item.name)
                                 .font(.neueSubheadlineMedium)
-                                .foregroundStyle(AVIATheme.textPrimary)
+                                .foregroundStyle(AVIATheme.aviaWhite.opacity(0.85))
                             Spacer()
                         }
                     }
 
                     HStack(spacing: 10) {
-                        Text(selectedTier.displayName)
-                            .font(.neueCaption2Medium)
-                            .foregroundStyle(AVIATheme.timelessBrown)
-                            .padding(.horizontal, 8)
-                            .padding(.vertical, 3)
-                            .background(AVIATheme.aviaWhite.opacity(0.95))
-                            .clipShape(Capsule())
-
                         Text(item.description(for: selectedTier))
                             .font(.neueCaption)
                             .foregroundStyle(AVIATheme.aviaWhite.opacity(0.85))
@@ -109,6 +101,7 @@ struct SpecificationCategoryDetailView: View {
                             .aspectRatio(contentMode: .fit)
                             .frame(width: 20, height: 20)
                             .colorInvert()
+                            .opacity(0.85)
                     }
                 }
                 .padding(14)
