@@ -285,6 +285,40 @@ class BuildSpecViewModel {
         }
     }
 
+    func adminRevertUpgrade(selectionId: String) {
+        guard let idx = selections.firstIndex(where: { $0.id == selectionId }) else { return }
+        selections[idx].selectionType = .included
+        selections[idx].status = .approved
+        selections[idx].upgradeCost = nil
+        selections[idx].upgradeCostNote = nil
+        selections[idx].clientConfirmed = false
+        selections[idx].clientConfirmedAt = nil
+        selections[idx].adminConfirmed = false
+        selections[idx].adminConfirmedAt = nil
+        selections[idx].lockedForClient = false
+        let item = selections[idx]
+        Task {
+            let ok = await SupabaseService.shared.upsertBuildSpecSelection(item)
+            if !ok {
+                errorMessage = "Failed to remove upgrade"
+                return
+            }
+            successMessage = "Upgrade removed"
+            if let ns = notificationService, !clientId.isEmpty {
+                await ns.createNotification(
+                    recipientId: clientId,
+                    senderId: nil,
+                    senderName: "AVIA Homes",
+                    type: .buildUpdate,
+                    title: "Upgrade Removed",
+                    message: "The upgrade for \(item.snapshotName) has been removed.",
+                    referenceId: buildId,
+                    referenceType: "build"
+                )
+            }
+        }
+    }
+
     func adminApproveItem(selectionId: String) {
         guard let idx = selections.firstIndex(where: { $0.id == selectionId }) else { return }
         selections[idx].adminConfirmed = true
@@ -293,9 +327,29 @@ class BuildSpecViewModel {
             selections[idx].selectionType = .upgradeApproved
         }
         selections[idx].status = .approved
+        let item = selections[idx]
+        let wasUpgrade = item.selectionType == .upgradeApproved
         Task {
-            let success = await SupabaseService.shared.upsertBuildSpecSelection(selections[idx])
-            if !success { errorMessage = "Failed to approve item" }
+            let success = await SupabaseService.shared.upsertBuildSpecSelection(item)
+            if !success {
+                errorMessage = "Failed to approve item"
+                return
+            }
+            if wasUpgrade {
+                successMessage = "Upgrade locked in"
+                if let ns = notificationService, !clientId.isEmpty {
+                    await ns.createNotification(
+                        recipientId: clientId,
+                        senderId: nil,
+                        senderName: "AVIA Homes",
+                        type: .buildUpdate,
+                        title: "Upgrade Confirmed",
+                        message: "Your upgrade for \(item.snapshotName) has been locked in.",
+                        referenceId: buildId,
+                        referenceType: "build"
+                    )
+                }
+            }
         }
     }
 

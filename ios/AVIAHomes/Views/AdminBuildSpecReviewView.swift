@@ -105,6 +105,7 @@ struct AdminBuildSpecReviewView: View {
                 clientInfoCard
 
                 rangeUpgradeAdminSection
+                specUpgradeAdminSection
                 colourUpgradeAdminSection
 
                 Picker("", selection: $activeTab) {
@@ -224,6 +225,91 @@ struct AdminBuildSpecReviewView: View {
                             .font(.neueCaption2)
                     }
                     .foregroundStyle(AVIATheme.textTertiary)
+                }
+            }
+            .padding(14)
+        }
+    }
+
+    // MARK: - Spec Upgrade Admin Section
+
+    @ViewBuilder
+    private var specUpgradeAdminSection: some View {
+        let pending = viewModel.selections.filter { $0.selectionType == .upgradeAccepted }
+        if !pending.isEmpty {
+            VStack(alignment: .leading, spacing: 8) {
+                Text("SPEC UPGRADES AWAITING APPROVAL")
+                    .font(.neueCaption2Medium)
+                    .kerning(1.0)
+                    .foregroundStyle(AVIATheme.textTertiary)
+                    .padding(.horizontal, 4)
+
+                ForEach(pending, id: \.id) { item in
+                    specUpgradeAdminCard(item)
+                }
+            }
+        }
+    }
+
+    private func specUpgradeAdminCard(_ item: BuildSpecSelection) -> some View {
+        BentoCard(cornerRadius: 14) {
+            VStack(alignment: .leading, spacing: 12) {
+                HStack(spacing: 10) {
+                    Image(systemName: "hand.thumbsup.fill")
+                        .font(.neueCorpMedium(18))
+                        .foregroundStyle(AVIATheme.heritageBlue)
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text(item.snapshotName)
+                            .font(.neueCaptionMedium)
+                            .foregroundStyle(AVIATheme.textPrimary)
+                        Text("\(item.snapshotCategoryName) \u{2022} Client approved")
+                            .font(.neueCaption2)
+                            .foregroundStyle(AVIATheme.textSecondary)
+                    }
+                    Spacer()
+                    if let cost = item.upgradeCost {
+                        Text(AVIATheme.formatCost(cost))
+                            .font(.neueCorpMedium(16))
+                            .foregroundStyle(AVIATheme.timelessBrown)
+                    }
+                }
+
+                if let note = item.upgradeCostNote, !note.isEmpty {
+                    Text(note)
+                        .font(.neueCaption2)
+                        .foregroundStyle(AVIATheme.textSecondary)
+                }
+
+                HStack(spacing: 10) {
+                    Button {
+                        viewModel.adminApproveItem(selectionId: item.id)
+                    } label: {
+                        HStack(spacing: 6) {
+                            Image(systemName: "checkmark.seal.fill")
+                            Text("Confirm & Lock In")
+                        }
+                        .font(.neueCaption2Medium)
+                        .frame(maxWidth: .infinity)
+                        .frame(height: 40)
+                        .foregroundStyle(AVIATheme.aviaWhite)
+                        .background(AVIATheme.success)
+                        .clipShape(Capsule())
+                    }
+
+                    Button {
+                        viewModel.adminRevertUpgrade(selectionId: item.id)
+                    } label: {
+                        HStack(spacing: 6) {
+                            Image(systemName: "trash")
+                            Text("Remove")
+                        }
+                        .font(.neueCaption2Medium)
+                        .frame(maxWidth: .infinity)
+                        .frame(height: 40)
+                        .foregroundStyle(AVIATheme.destructive)
+                        .background(AVIATheme.destructive.opacity(0.1))
+                        .clipShape(Capsule())
+                    }
                 }
             }
             .padding(14)

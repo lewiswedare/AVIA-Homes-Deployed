@@ -66,6 +66,7 @@ struct ClientSpecConfirmationView: View {
                 statusBanner
                 tierInfoBanner
                 specRangeUpgradeCard
+                upgradeQuotesAwaitingResponseCard
 
                 ForEach(viewModel.groupedSelections, id: \.categoryId) { group in
                     BuildSpecCategorySection(
@@ -169,6 +170,106 @@ struct ClientSpecConfirmationView: View {
         case .amendedByAdmin:
             "An admin has made changes to your specifications."
         }
+    }
+
+    @ViewBuilder
+    private var upgradeQuotesAwaitingResponseCard: some View {
+        let quoted = viewModel.selections.filter { $0.selectionType == .upgradeCosted }
+        if !quoted.isEmpty {
+            let total = quoted.compactMap(\.upgradeCost).reduce(0, +)
+            VStack(alignment: .leading, spacing: 12) {
+                HStack(spacing: 10) {
+                    Image(systemName: "dollarsign.circle.fill")
+                        .font(.neueCorpMedium(18))
+                        .foregroundStyle(AVIATheme.accent)
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text("Upgrade Quotes Ready")
+                            .font(.neueCaptionMedium)
+                            .foregroundStyle(AVIATheme.textPrimary)
+                        Text("\(quoted.count) upgrade\(quoted.count == 1 ? "" : "s") awaiting your response")
+                            .font(.neueCaption2)
+                            .foregroundStyle(AVIATheme.textSecondary)
+                    }
+                    Spacer()
+                    Text(formatCurrency(total))
+                        .font(.neueCorpMedium(18))
+                        .foregroundStyle(AVIATheme.accent)
+                }
+
+                ForEach(quoted, id: \.id) { item in
+                    quotedUpgradeRow(item)
+                }
+            }
+            .padding(14)
+            .background(AVIATheme.cardBackground)
+            .clipShape(.rect(cornerRadius: 14))
+            .overlay {
+                RoundedRectangle(cornerRadius: 14)
+                    .stroke(AVIATheme.accent.opacity(0.25), lineWidth: 1)
+            }
+        }
+    }
+
+    private func quotedUpgradeRow(_ item: BuildSpecSelection) -> some View {
+        VStack(alignment: .leading, spacing: 10) {
+            HStack(alignment: .top, spacing: 10) {
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(item.snapshotName)
+                        .font(.neueCaptionMedium)
+                        .foregroundStyle(AVIATheme.textPrimary)
+                    Text(item.snapshotCategoryName)
+                        .font(.neueCaption2)
+                        .foregroundStyle(AVIATheme.textTertiary)
+                    if let note = item.upgradeCostNote, !note.isEmpty {
+                        Text(note)
+                            .font(.neueCaption2)
+                            .foregroundStyle(AVIATheme.textSecondary)
+                            .lineLimit(2)
+                    }
+                }
+                Spacer()
+                Text(formatCurrency(item.upgradeCost ?? 0))
+                    .font(.neueCorpMedium(16))
+                    .foregroundStyle(AVIATheme.timelessBrown)
+            }
+
+            HStack(spacing: 8) {
+                Button {
+                    viewModel.clientAcceptUpgrade(selectionId: item.id)
+                } label: {
+                    HStack(spacing: 4) {
+                        Image(systemName: "checkmark.circle.fill")
+                            .font(.neueCorp(10))
+                        Text("Approve")
+                            .font(.neueCaption2Medium)
+                    }
+                    .foregroundStyle(AVIATheme.aviaWhite)
+                    .frame(maxWidth: .infinity)
+                    .frame(height: 36)
+                    .background(AVIATheme.success)
+                    .clipShape(Capsule())
+                }
+
+                Button {
+                    viewModel.clientDeclineUpgrade(selectionId: item.id)
+                } label: {
+                    HStack(spacing: 4) {
+                        Image(systemName: "xmark.circle")
+                            .font(.neueCorp(10))
+                        Text("Decline")
+                            .font(.neueCaption2Medium)
+                    }
+                    .foregroundStyle(AVIATheme.destructive)
+                    .frame(maxWidth: .infinity)
+                    .frame(height: 36)
+                    .background(AVIATheme.destructive.opacity(0.1))
+                    .clipShape(Capsule())
+                }
+            }
+        }
+        .padding(12)
+        .background(AVIATheme.accent.opacity(0.04))
+        .clipShape(.rect(cornerRadius: 10))
     }
 
     private var tierInfoBanner: some View {
