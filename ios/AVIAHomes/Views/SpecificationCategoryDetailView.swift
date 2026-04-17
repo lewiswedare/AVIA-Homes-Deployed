@@ -100,11 +100,11 @@ struct SpecificationCategoryDetailView: View {
                         Spacer(minLength: 0)
 
                         Image("spec_arrow")
+                            .renderingMode(.template)
                             .resizable()
                             .aspectRatio(contentMode: .fit)
                             .frame(width: 20, height: 20)
-                            .colorInvert()
-                            .opacity(0.85)
+                            .foregroundStyle(AVIATheme.aviaWhite.opacity(0.85))
                     }
                 }
                 .padding(14)
