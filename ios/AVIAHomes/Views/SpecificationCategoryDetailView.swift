@@ -87,7 +87,7 @@ struct SpecificationCategoryDetailView: View {
                         }
                     }
 
-                    HStack(spacing: 8) {
+                    HStack(spacing: 10) {
                         Text(selectedTier.displayName)
                             .font(.neueCaption2Medium)
                             .foregroundStyle(AVIATheme.timelessBrown)
@@ -103,39 +103,12 @@ struct SpecificationCategoryDetailView: View {
                             .multilineTextAlignment(.leading)
 
                         Spacer(minLength: 0)
-                    }
 
-                    if canUpgrade {
-                        Rectangle()
-                            .fill(AVIATheme.aviaWhite.opacity(0.2))
-                            .frame(height: 1)
-
-                        HStack(spacing: 6) {
-                            Image(systemName: "sparkles")
-                                .font(.neueCorp(10))
-                                .foregroundStyle(AVIATheme.aviaWhite.opacity(0.85))
-
-                            let nextTier = specVM.upgradeTiers.first { item.description(for: $0) != item.description(for: specVM.currentTier) }
-                            if let nextTier {
-                                Text("\(nextTier.displayName): \(item.description(for: nextTier))")
-                                    .font(.neueCaption2)
-                                    .foregroundStyle(AVIATheme.aviaWhite.opacity(0.75))
-                                    .lineLimit(1)
-                            }
-
-                            Spacer(minLength: 0)
-
-                            Image(systemName: "chevron.right")
-                                .font(.neueCaption2)
-                                .foregroundStyle(AVIATheme.aviaWhite.opacity(0.75))
-                        }
-                    } else {
-                        HStack {
-                            Spacer()
-                            Image(systemName: "chevron.right")
-                                .font(.neueCaption2)
-                                .foregroundStyle(AVIATheme.aviaWhite.opacity(0.75))
-                        }
+                        Image("spec_arrow")
+                            .resizable()
+                            .aspectRatio(contentMode: .fit)
+                            .frame(width: 20, height: 20)
+                            .colorInvert()
                     }
                 }
                 .padding(14)
