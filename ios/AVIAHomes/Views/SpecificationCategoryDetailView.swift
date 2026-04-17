@@ -78,14 +78,17 @@ struct SpecificationCategoryDetailView: View {
                 }
 
                 VStack(alignment: .leading, spacing: 10) {
-                    if item.imageURL == nil && !item.hasTierSpecificImages {
-                        HStack(spacing: 10) {
-                            Text(item.name)
-                                .font(.neueSubheadlineMedium)
-                                .foregroundStyle(AVIATheme.aviaWhite.opacity(0.85))
-                            Spacer()
-                        }
+                    HStack(spacing: 10) {
+                        Text(item.name)
+                            .font(.neueCorpMedium(18))
+                            .foregroundStyle(AVIATheme.aviaWhite)
+                            .multilineTextAlignment(.leading)
+                        Spacer(minLength: 0)
                     }
+
+                    Rectangle()
+                        .fill(AVIATheme.aviaWhite.opacity(0.2))
+                        .frame(height: 1)
 
                     HStack(spacing: 10) {
                         Text(item.description(for: selectedTier))
@@ -138,22 +141,6 @@ struct SpecificationCategoryDetailView: View {
                     }
                 }
                 .allowsHitTesting(false)
-            }
-            .overlay(alignment: .bottomLeading) {
-                LinearGradient(
-                    stops: [
-                        .init(color: .clear, location: 0.4),
-                        .init(color: AVIATheme.aviaBlack.opacity(0.5), location: 1.0)
-                    ],
-                    startPoint: .top,
-                    endPoint: .bottom
-                )
-            }
-            .overlay(alignment: .bottomLeading) {
-                Text(item.name)
-                    .font(.neueCorpMedium(18))
-                    .foregroundStyle(AVIATheme.aviaWhite)
-                    .padding(14)
             }
             .overlay(alignment: .topTrailing) {
                 HStack(spacing: 6) {
