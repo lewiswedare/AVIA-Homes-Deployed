@@ -85,8 +85,9 @@ class BuildSpecViewModel {
     }
 
     func load(buildId: String) async {
+        let isInitialLoad = self.buildId != buildId || selections.isEmpty
         self.buildId = buildId
-        isLoading = true
+        if isInitialLoad { isLoading = true }
         async let specsTask = SupabaseService.shared.fetchBuildSpecSelections(buildId: buildId)
         async let coloursTask = SupabaseService.shared.fetchBuildColourSelections(buildId: buildId)
         async let docsTask = SupabaseService.shared.fetchBuildSpecDocuments(buildId: buildId)
@@ -107,8 +108,19 @@ class BuildSpecViewModel {
         if let first = specs.first {
             specTier = first.specTier
         }
-        isLoading = false
+        if isInitialLoad { isLoading = false }
+        if !isSubscribedToRealtime {
+            isSubscribedToRealtime = true
+            SupabaseService.shared.subscribeToSpecSelectionChanges { [weak self] in
+                guard let self else { return }
+                Task { @MainActor in
+                    await self.load(buildId: self.buildId)
+                }
+            }
+        }
     }
+
+    private var isSubscribedToRealtime = false
 
     var hasSelections: Bool { !selections.isEmpty }
 
@@ -237,7 +249,12 @@ class BuildSpecViewModel {
             let success = await SupabaseService.shared.upsertBuildSpecSelection(item)
             if !success {
                 errorMessage = "Failed to accept upgrade"
-            } else if let ns = notificationService {
+                await load(buildId: buildId)
+                return
+            }
+            successMessage = "Upgrade accepted — awaiting admin confirmation"
+            await load(buildId: buildId)
+            if let ns = notificationService {
                 for recipientId in adminRecipientIds {
                     await ns.createNotification(
                         recipientId: recipientId,
@@ -268,7 +285,11 @@ class BuildSpecViewModel {
             let success = await SupabaseService.shared.upsertBuildSpecSelection(item)
             if !success {
                 errorMessage = "Failed to decline upgrade"
-            } else if let ns = notificationService {
+                await load(buildId: buildId)
+                return
+            }
+            await load(buildId: buildId)
+            if let ns = notificationService {
                 for recipientId in adminRecipientIds {
                     await ns.createNotification(
                         recipientId: recipientId,
@@ -333,8 +354,10 @@ class BuildSpecViewModel {
             let success = await SupabaseService.shared.upsertBuildSpecSelection(item)
             if !success {
                 errorMessage = "Failed to approve item"
+                await load(buildId: buildId)
                 return
             }
+            await load(buildId: buildId)
             if wasUpgrade {
                 successMessage = "Upgrade locked in"
                 if let ns = notificationService, !clientId.isEmpty {
@@ -349,6 +372,8 @@ class BuildSpecViewModel {
                         referenceType: "build"
                     )
                 }
+            } else {
+                successMessage = "Item approved"
             }
         }
     }
