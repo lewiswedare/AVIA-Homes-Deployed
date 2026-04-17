@@ -5,6 +5,7 @@ struct SpecificationsOverviewView: View {
     @Environment(CustomerJourneyViewModel.self) private var journeyVM
     @State private var showConfirmAlert = false
     @State private var selectedCategory: SpecCategory?
+    @State private var selectedUpgradeRequest: UpgradeRequest?
 
     var body: some View {
         NavigationStack {
@@ -32,6 +33,15 @@ struct SpecificationsOverviewView: View {
             .background(AVIATheme.background)
             .sheet(item: $selectedCategory) { category in
                 SpecificationCategoryDetailView(category: category)
+            }
+            .sheet(item: $selectedUpgradeRequest) { request in
+                UpgradeResponseSheet(request: request) {
+                    specVM.clientAcceptUpgradeCost(requestId: request.id)
+                    selectedUpgradeRequest = nil
+                } onDecline: {
+                    specVM.clientDeclineUpgradeCost(requestId: request.id)
+                    selectedUpgradeRequest = nil
+                }
             }
             .alert("Confirm Specifications", isPresented: $showConfirmAlert) {
                 Button("Confirm") {
@@ -370,7 +380,15 @@ struct SpecificationsOverviewView: View {
             }
 
             ForEach(specVM.upgradeRequests.prefix(3)) { request in
-                upgradeRequestRow(request)
+                Button {
+                    if request.status == .quoted {
+                        selectedUpgradeRequest = request
+                    }
+                } label: {
+                    upgradeRequestRow(request)
+                }
+                .buttonStyle(.plain)
+                .disabled(request.status != .quoted)
             }
 
             if specVM.upgradeRequests.count > 3 {
@@ -440,10 +458,30 @@ struct SpecificationsOverviewView: View {
                         .foregroundStyle(AVIATheme.textTertiary)
                 }
             }
+
+            if request.status == .quoted {
+                HStack(spacing: 6) {
+                    Image(systemName: "hand.tap.fill")
+                        .font(.neueCaption2)
+                    Text("Tap to approve or decline")
+                        .font(.neueCaption2Medium)
+                    Spacer()
+                    Image(systemName: "chevron.right")
+                        .font(.neueCaption2)
+                }
+                .foregroundStyle(AVIATheme.timelessBrown)
+                .padding(.top, 2)
+            }
         }
         .padding(14)
         .background(AVIATheme.cardBackground)
         .clipShape(.rect(cornerRadius: 14))
+        .overlay {
+            if request.status == .quoted {
+                RoundedRectangle(cornerRadius: 14)
+                    .stroke(AVIATheme.timelessBrown.opacity(0.3), lineWidth: 1)
+            }
+        }
     }
 
     private func upgradeStatusColor(_ status: UpgradeStatus) -> Color {
