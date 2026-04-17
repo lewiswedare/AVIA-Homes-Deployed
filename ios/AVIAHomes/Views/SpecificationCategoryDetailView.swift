@@ -84,20 +84,6 @@ struct SpecificationCategoryDetailView: View {
                             .foregroundStyle(AVIATheme.aviaWhite)
                             .multilineTextAlignment(.leading)
                         Spacer(minLength: 0)
-                    }
-
-                    Rectangle()
-                        .fill(AVIATheme.aviaWhite.opacity(0.2))
-                        .frame(height: 1)
-
-                    HStack(spacing: 10) {
-                        Text(item.description(for: selectedTier))
-                            .font(.neueCaption)
-                            .foregroundStyle(AVIATheme.aviaWhite.opacity(0.85))
-                            .lineLimit(2)
-                            .multilineTextAlignment(.leading)
-
-                        Spacer(minLength: 0)
 
                         Image("spec_arrow")
                             .renderingMode(.template)
@@ -106,6 +92,17 @@ struct SpecificationCategoryDetailView: View {
                             .frame(width: 20, height: 20)
                             .foregroundStyle(AVIATheme.aviaWhite.opacity(0.85))
                     }
+
+                    Rectangle()
+                        .fill(AVIATheme.aviaWhite.opacity(0.2))
+                        .frame(height: 1)
+
+                    Text(item.description(for: selectedTier))
+                        .font(.neueCaption)
+                        .foregroundStyle(AVIATheme.aviaWhite.opacity(0.85))
+                        .lineLimit(2)
+                        .multilineTextAlignment(.leading)
+                        .frame(maxWidth: .infinity, alignment: .leading)
                 }
                 .padding(14)
             }
