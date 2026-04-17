@@ -104,6 +104,9 @@ struct AdminBuildSpecReviewView: View {
                 adminStatusBanner
                 clientInfoCard
 
+                rangeUpgradeAdminSection
+                colourUpgradeAdminSection
+
                 Picker("", selection: $activeTab) {
                     ForEach(SelectionsTab.allCases, id: \.self) { tab in
                         Text(tab.rawValue).tag(tab)
@@ -137,6 +140,175 @@ struct AdminBuildSpecReviewView: View {
             }
             .padding(.horizontal, 16)
             .padding(.bottom, 40)
+        }
+    }
+
+    // MARK: - Range Upgrade Admin Section
+
+    @ViewBuilder
+    private var rangeUpgradeAdminSection: some View {
+        let pending = viewModel.rangeUpgradeRequests.filter { $0.status == .clientAccepted || $0.status == .pendingClient }
+        if !pending.isEmpty {
+            VStack(alignment: .leading, spacing: 8) {
+                Text("RANGE UPGRADE REQUESTS")
+                    .font(.neueCaption2Medium)
+                    .kerning(1.0)
+                    .foregroundStyle(AVIATheme.textTertiary)
+                    .padding(.horizontal, 4)
+
+                ForEach(pending, id: \.id) { req in
+                    rangeUpgradeAdminCard(req)
+                }
+            }
+        }
+    }
+
+    private func rangeUpgradeAdminCard(_ req: BuildRangeUpgradeRequest) -> some View {
+        BentoCard(cornerRadius: 14) {
+            VStack(alignment: .leading, spacing: 12) {
+                HStack(spacing: 10) {
+                    Image(systemName: "arrow.up.forward.circle.fill")
+                        .font(.neueCorpMedium(18))
+                        .foregroundStyle(AVIATheme.timelessBrown)
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text("\(req.fromTier.capitalized) → \(req.toTier.capitalized)")
+                            .font(.neueCaptionMedium)
+                            .foregroundStyle(AVIATheme.textPrimary)
+                        Text(req.status.displayLabel)
+                            .font(.neueCaption2)
+                            .foregroundStyle(AVIATheme.textSecondary)
+                    }
+                    Spacer()
+                    Text(AVIATheme.formatCost(req.cost))
+                        .font(.neueCorpMedium(16))
+                        .foregroundStyle(AVIATheme.timelessBrown)
+                }
+
+                if req.status == .clientAccepted {
+                    HStack(spacing: 10) {
+                        Button {
+                            Task { await viewModel.adminApproveRangeUpgrade(requestId: req.id) }
+                        } label: {
+                            HStack(spacing: 6) {
+                                Image(systemName: "checkmark.seal.fill")
+                                Text("Approve & Apply")
+                            }
+                            .font(.neueCaption2Medium)
+                            .frame(maxWidth: .infinity)
+                            .frame(height: 40)
+                            .foregroundStyle(AVIATheme.aviaWhite)
+                            .background(AVIATheme.success)
+                            .clipShape(Capsule())
+                        }
+
+                        Button {
+                            Task { await viewModel.adminRejectRangeUpgrade(requestId: req.id) }
+                        } label: {
+                            HStack(spacing: 6) {
+                                Image(systemName: "trash")
+                                Text("Remove")
+                            }
+                            .font(.neueCaption2Medium)
+                            .frame(maxWidth: .infinity)
+                            .frame(height: 40)
+                            .foregroundStyle(AVIATheme.destructive)
+                            .background(AVIATheme.destructive.opacity(0.1))
+                            .clipShape(Capsule())
+                        }
+                    }
+                } else {
+                    HStack(spacing: 6) {
+                        Image(systemName: "hourglass")
+                            .font(.neueCorp(10))
+                        Text("Waiting for client to confirm.")
+                            .font(.neueCaption2)
+                    }
+                    .foregroundStyle(AVIATheme.textTertiary)
+                }
+            }
+            .padding(14)
+        }
+    }
+
+    // MARK: - Colour Upgrade Admin Section
+
+    @ViewBuilder
+    private var colourUpgradeAdminSection: some View {
+        let pending = viewModel.colourSelections.filter { $0.isUpgrade && $0.selectionStatus == .upgradeAcceptedByClient }
+        if !pending.isEmpty {
+            VStack(alignment: .leading, spacing: 8) {
+                Text("COLOUR UPGRADES AWAITING APPROVAL")
+                    .font(.neueCaption2Medium)
+                    .kerning(1.0)
+                    .foregroundStyle(AVIATheme.textTertiary)
+                    .padding(.horizontal, 4)
+
+                ForEach(pending, id: \.id) { cs in
+                    colourUpgradeAdminCard(cs)
+                }
+            }
+        }
+    }
+
+    private func colourUpgradeAdminCard(_ cs: BuildColourSelection) -> some View {
+        let resolved = resolveColourSelection(cs)
+        let specName = viewModel.selections.first { $0.id == cs.buildSpecSelectionId }?.snapshotName ?? ""
+        return BentoCard(cornerRadius: 14) {
+            VStack(alignment: .leading, spacing: 12) {
+                HStack(spacing: 10) {
+                    if let r = resolved {
+                        Circle()
+                            .fill(Color(hex: r.hex))
+                            .frame(width: 28, height: 28)
+                            .overlay { Circle().stroke(AVIATheme.surfaceBorder, lineWidth: 1) }
+                    }
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text(resolved?.optName ?? cs.colourOptionId)
+                            .font(.neueCaptionMedium)
+                            .foregroundStyle(AVIATheme.textPrimary)
+                        Text("\(specName) • \(resolved?.catName ?? cs.colourCategoryId)")
+                            .font(.neueCaption2)
+                            .foregroundStyle(AVIATheme.textSecondary)
+                    }
+                    Spacer()
+                    Text(AVIATheme.formatCost(cs.cost ?? 0))
+                        .font(.neueCorpMedium(16))
+                        .foregroundStyle(AVIATheme.timelessBrown)
+                }
+
+                HStack(spacing: 10) {
+                    Button {
+                        viewModel.adminApproveColourUpgrade(selectionId: cs.id)
+                    } label: {
+                        HStack(spacing: 6) {
+                            Image(systemName: "checkmark.seal.fill")
+                            Text("Approve")
+                        }
+                        .font(.neueCaption2Medium)
+                        .frame(maxWidth: .infinity)
+                        .frame(height: 40)
+                        .foregroundStyle(AVIATheme.aviaWhite)
+                        .background(AVIATheme.success)
+                        .clipShape(Capsule())
+                    }
+
+                    Button {
+                        viewModel.adminRejectColourUpgrade(selectionId: cs.id)
+                    } label: {
+                        HStack(spacing: 6) {
+                            Image(systemName: "xmark.circle")
+                            Text("Remove Upgrade")
+                        }
+                        .font(.neueCaption2Medium)
+                        .frame(maxWidth: .infinity)
+                        .frame(height: 40)
+                        .foregroundStyle(AVIATheme.destructive)
+                        .background(AVIATheme.destructive.opacity(0.1))
+                        .clipShape(Capsule())
+                    }
+                }
+            }
+            .padding(14)
         }
     }
 
@@ -370,6 +542,9 @@ struct AdminBuildSpecReviewView: View {
         case .submitted: AVIATheme.warning
         case .approved: AVIATheme.success
         case .reopened: AVIATheme.heritageBlue
+        case .upgradePendingClient: AVIATheme.warning
+        case .upgradeAcceptedByClient: AVIATheme.accent
+        case .upgradeDeclinedByClient: AVIATheme.textTertiary
         }
     }
 
@@ -458,6 +633,9 @@ struct AdminBuildSpecReviewView: View {
         case .submitted: ("clock.fill", AVIATheme.warning)
         case .approved: ("checkmark.circle.fill", AVIATheme.success)
         case .reopened: ("arrow.counterclockwise", AVIATheme.heritageBlue)
+        case .upgradePendingClient: ("dollarsign.circle", AVIATheme.warning)
+        case .upgradeAcceptedByClient: ("hourglass", AVIATheme.accent)
+        case .upgradeDeclinedByClient: ("xmark.circle", AVIATheme.textTertiary)
         }
         Image(systemName: icon)
             .font(.neueCorp(12))

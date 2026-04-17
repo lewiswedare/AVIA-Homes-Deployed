@@ -368,6 +368,9 @@ struct AdminBuildSelectionsTab: View {
         case .submitted: AVIATheme.warning
         case .approved: AVIATheme.success
         case .reopened: AVIATheme.heritageBlue
+        case .upgradePendingClient: AVIATheme.warning
+        case .upgradeAcceptedByClient: AVIATheme.accent
+        case .upgradeDeclinedByClient: AVIATheme.textTertiary
         }
     }
 
@@ -455,6 +458,9 @@ struct AdminBuildSelectionsTab: View {
         case .submitted: ("clock.fill", AVIATheme.warning)
         case .approved: ("checkmark.circle.fill", AVIATheme.success)
         case .reopened: ("arrow.counterclockwise", AVIATheme.heritageBlue)
+        case .upgradePendingClient: ("dollarsign.circle", AVIATheme.warning)
+        case .upgradeAcceptedByClient: ("hourglass", AVIATheme.accent)
+        case .upgradeDeclinedByClient: ("xmark.circle", AVIATheme.textTertiary)
         }
         Image(systemName: icon)
             .font(.neueCorp(12))

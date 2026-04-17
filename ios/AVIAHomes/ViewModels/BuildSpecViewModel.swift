@@ -6,6 +6,7 @@ class BuildSpecViewModel {
     var selections: [BuildSpecSelection] = []
     var colourSelections: [BuildColourSelection] = []
     var documents: [BuildSpecDocument] = []
+    var rangeUpgradeRequests: [BuildRangeUpgradeRequest] = []
     var isLoading = false
     var isSaving = false
     var errorMessage: String?
@@ -89,7 +90,8 @@ class BuildSpecViewModel {
         async let specsTask = SupabaseService.shared.fetchBuildSpecSelections(buildId: buildId)
         async let coloursTask = SupabaseService.shared.fetchBuildColourSelections(buildId: buildId)
         async let docsTask = SupabaseService.shared.fetchBuildSpecDocuments(buildId: buildId)
-        var (specs, colours, docs) = await (specsTask, coloursTask, docsTask)
+        async let rangeTask = SupabaseService.shared.fetchBuildRangeUpgradeRequests(buildId: buildId)
+        var (specs, colours, docs, ranges) = await (specsTask, coloursTask, docsTask, rangeTask)
 
         if specs.isEmpty {
             let tier = SpecTier(rawValue: specTier.lowercased()) ?? .messina
@@ -100,6 +102,8 @@ class BuildSpecViewModel {
         selections = specs
         colourSelections = colours
         documents = docs
+        rangeUpgradeRequests = ranges
+        _ = ranges
         if let first = specs.first {
             specTier = first.specTier
         }
@@ -338,6 +342,245 @@ class BuildSpecViewModel {
             errorMessage = "Failed to reopen"
         }
         isSaving = false
+    }
+
+    // MARK: - Range Upgrade Flow
+
+    var pendingRangeUpgrade: BuildRangeUpgradeRequest? {
+        rangeUpgradeRequests.first {
+            $0.status == .pendingClient || $0.status == .clientAccepted
+        }
+    }
+
+    func clientRequestRangeUpgrade(toTier: String, cost: Double, notes: String?) {
+        if let existing = pendingRangeUpgrade {
+            Task { _ = await SupabaseService.shared.deleteBuildRangeUpgradeRequest(id: existing.id) }
+            rangeUpgradeRequests.removeAll { $0.id == existing.id }
+        }
+        let request = BuildRangeUpgradeRequest(
+            id: UUID().uuidString,
+            buildId: buildId,
+            fromTier: specTier,
+            toTier: toTier,
+            cost: cost,
+            status: .pendingClient,
+            clientNotes: notes,
+            adminNotes: nil
+        )
+        rangeUpgradeRequests.append(request)
+        Task {
+            let ok = await SupabaseService.shared.upsertBuildRangeUpgradeRequest(request)
+            if !ok {
+                errorMessage = "Failed to save range upgrade request"
+            }
+        }
+    }
+
+    func clientAcceptRangeUpgrade(requestId: String) {
+        guard let idx = rangeUpgradeRequests.firstIndex(where: { $0.id == requestId }) else { return }
+        rangeUpgradeRequests[idx].status = .clientAccepted
+        let req = rangeUpgradeRequests[idx]
+        Task {
+            let ok = await SupabaseService.shared.upsertBuildRangeUpgradeRequest(req)
+            if !ok {
+                errorMessage = "Failed to confirm upgrade"
+                return
+            }
+            successMessage = "Upgrade confirmed — awaiting admin approval"
+            if let ns = notificationService {
+                for recipientId in adminRecipientIds {
+                    await ns.createNotification(
+                        recipientId: recipientId,
+                        senderId: clientId,
+                        senderName: "Client",
+                        type: .buildUpdate,
+                        title: "Range Upgrade Accepted",
+                        message: "Client has accepted the \(req.toTier.capitalized) range upgrade. Please approve.",
+                        referenceId: buildId,
+                        referenceType: "build"
+                    )
+                }
+            }
+        }
+    }
+
+    func clientDeclineRangeUpgrade(requestId: String) {
+        guard let idx = rangeUpgradeRequests.firstIndex(where: { $0.id == requestId }) else { return }
+        rangeUpgradeRequests[idx].status = .clientDeclined
+        let req = rangeUpgradeRequests[idx]
+        Task {
+            let ok = await SupabaseService.shared.upsertBuildRangeUpgradeRequest(req)
+            if !ok {
+                errorMessage = "Failed to decline upgrade"
+                return
+            }
+            successMessage = "Upgrade declined"
+            if let ns = notificationService {
+                for recipientId in adminRecipientIds {
+                    await ns.createNotification(
+                        recipientId: recipientId,
+                        senderId: clientId,
+                        senderName: "Client",
+                        type: .buildUpdate,
+                        title: "Range Upgrade Declined",
+                        message: "Client has declined the \(req.toTier.capitalized) range upgrade.",
+                        referenceId: buildId,
+                        referenceType: "build"
+                    )
+                }
+            }
+        }
+    }
+
+    func adminApproveRangeUpgrade(requestId: String) async {
+        guard let idx = rangeUpgradeRequests.firstIndex(where: { $0.id == requestId }) else { return }
+        isSaving = true
+        rangeUpgradeRequests[idx].status = .adminApproved
+        let req = rangeUpgradeRequests[idx]
+        let ok = await SupabaseService.shared.upsertBuildRangeUpgradeRequest(req)
+        let tierUpdated = await SupabaseService.shared.updateBuildSpecTier(buildId: buildId, newTier: req.toTier)
+        if ok && tierUpdated {
+            if let tier = SpecTier(rawValue: req.toTier.lowercased()) {
+                _ = await SupabaseService.shared.createBuildSpecSnapshot(buildId: buildId, specTier: tier)
+            }
+            specTier = req.toTier
+            successMessage = "Range upgrade approved"
+            await load(buildId: buildId)
+            if let ns = notificationService, !clientId.isEmpty {
+                await ns.createNotification(
+                    recipientId: clientId,
+                    senderId: nil,
+                    senderName: "AVIA Homes",
+                    type: .buildUpdate,
+                    title: "Range Upgrade Approved",
+                    message: "Your upgrade to the \(req.toTier.capitalized) spec range has been approved.",
+                    referenceId: buildId,
+                    referenceType: "build"
+                )
+            }
+        } else {
+            errorMessage = "Failed to approve range upgrade"
+        }
+        isSaving = false
+    }
+
+    func adminRejectRangeUpgrade(requestId: String) async {
+        guard let idx = rangeUpgradeRequests.firstIndex(where: { $0.id == requestId }) else { return }
+        let req = rangeUpgradeRequests[idx]
+        let ok = await SupabaseService.shared.deleteBuildRangeUpgradeRequest(id: req.id)
+        if ok {
+            rangeUpgradeRequests.removeAll { $0.id == req.id }
+            successMessage = "Range upgrade removed"
+            if let ns = notificationService, !clientId.isEmpty {
+                await ns.createNotification(
+                    recipientId: clientId,
+                    senderId: nil,
+                    senderName: "AVIA Homes",
+                    type: .buildUpdate,
+                    title: "Range Upgrade Removed",
+                    message: "Your \(req.toTier.capitalized) range upgrade request has been removed.",
+                    referenceId: buildId,
+                    referenceType: "build"
+                )
+            }
+        } else {
+            errorMessage = "Failed to remove range upgrade"
+        }
+    }
+
+    // MARK: - Colour Upgrade Flow
+
+    func clientAcceptColourUpgrade(selectionId: String) {
+        guard let idx = colourSelections.firstIndex(where: { $0.id == selectionId }) else { return }
+        colourSelections[idx].selectionStatus = .upgradeAcceptedByClient
+        let item = colourSelections[idx]
+        Task {
+            let ok = await SupabaseService.shared.upsertBuildColourSelection(item)
+            if !ok {
+                errorMessage = "Failed to confirm colour upgrade"
+                return
+            }
+            successMessage = "Colour upgrade confirmed — awaiting admin approval"
+            if let ns = notificationService {
+                for recipientId in adminRecipientIds {
+                    await ns.createNotification(
+                        recipientId: recipientId,
+                        senderId: clientId,
+                        senderName: "Client",
+                        type: .buildUpdate,
+                        title: "Colour Upgrade Accepted",
+                        message: "Client has accepted a colour upgrade cost. Please approve.",
+                        referenceId: buildId,
+                        referenceType: "build"
+                    )
+                }
+            }
+        }
+    }
+
+    func clientDeclineColourUpgrade(selectionId: String) {
+        guard let idx = colourSelections.firstIndex(where: { $0.id == selectionId }) else { return }
+        colourSelections[idx].selectionStatus = .upgradeDeclinedByClient
+        let item = colourSelections[idx]
+        Task {
+            let ok = await SupabaseService.shared.upsertBuildColourSelection(item)
+            if !ok {
+                errorMessage = "Failed to decline colour upgrade"
+                return
+            }
+            successMessage = "Colour upgrade declined"
+            if let ns = notificationService {
+                for recipientId in adminRecipientIds {
+                    await ns.createNotification(
+                        recipientId: recipientId,
+                        senderId: clientId,
+                        senderName: "Client",
+                        type: .buildUpdate,
+                        title: "Colour Upgrade Declined",
+                        message: "Client has declined a colour upgrade cost.",
+                        referenceId: buildId,
+                        referenceType: "build"
+                    )
+                }
+            }
+        }
+    }
+
+    func adminApproveColourUpgrade(selectionId: String) {
+        guard let idx = colourSelections.firstIndex(where: { $0.id == selectionId }) else { return }
+        colourSelections[idx].selectionStatus = .approved
+        let item = colourSelections[idx]
+        Task {
+            let ok = await SupabaseService.shared.upsertBuildColourSelection(item)
+            if !ok {
+                errorMessage = "Failed to approve colour upgrade"
+                return
+            }
+            successMessage = "Colour upgrade approved"
+            if let ns = notificationService, !clientId.isEmpty {
+                await ns.createNotification(
+                    recipientId: clientId,
+                    senderId: nil,
+                    senderName: "AVIA Homes",
+                    type: .buildUpdate,
+                    title: "Colour Upgrade Approved",
+                    message: "Your colour upgrade has been approved.",
+                    referenceId: buildId,
+                    referenceType: "build"
+                )
+            }
+        }
+    }
+
+    func adminRejectColourUpgrade(selectionId: String) {
+        guard let idx = colourSelections.firstIndex(where: { $0.id == selectionId }) else { return }
+        colourSelections[idx].selectionStatus = .draft
+        colourSelections[idx].cost = nil
+        colourSelections[idx].isUpgrade = false
+        let item = colourSelections[idx]
+        Task {
+            _ = await SupabaseService.shared.upsertBuildColourSelection(item)
+        }
     }
 
     func generatePDF() async {
@@ -594,6 +837,7 @@ class BuildSpecViewModel {
     }
 
     func saveColourSelection(buildSpecSelectionId: String, specItemId: String, colourCategoryId: String, colourOptionId: String, cost: Double? = nil, isUpgrade: Bool = false) async {
+        let initialStatus: ColourSelectionStatus = (isUpgrade && (cost ?? 0) > 0) ? .upgradePendingClient : .draft
         if let idx = colourSelections.firstIndex(where: { $0.buildSpecSelectionId == buildSpecSelectionId && $0.colourCategoryId == colourCategoryId }) {
             var updated = colourSelections[idx]
             updated = BuildColourSelection(
@@ -603,7 +847,7 @@ class BuildSpecViewModel {
                 specItemId: specItemId,
                 colourCategoryId: colourCategoryId,
                 colourOptionId: colourOptionId,
-                selectionStatus: .draft,
+                selectionStatus: initialStatus,
                 clientNotes: nil,
                 adminNotes: nil,
                 cost: cost,
@@ -620,7 +864,7 @@ class BuildSpecViewModel {
                 specItemId: specItemId,
                 colourCategoryId: colourCategoryId,
                 colourOptionId: colourOptionId,
-                selectionStatus: .draft,
+                selectionStatus: initialStatus,
                 clientNotes: nil,
                 adminNotes: nil,
                 cost: cost,

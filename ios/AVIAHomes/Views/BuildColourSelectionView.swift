@@ -252,6 +252,9 @@ struct BuildColourSelectionView: View {
                                     .clipShape(Capsule())
                             }
                         }
+                        if colourSel.isUpgrade {
+                            colourUpgradeStatusLabel(colourSel)
+                        }
                     } else {
                         Text("Tap to select colour")
                             .font(.neueCaption2)
@@ -273,6 +276,82 @@ struct BuildColourSelectionView: View {
                     RoundedRectangle(cornerRadius: 14)
                         .stroke(AVIATheme.success.opacity(0.2), lineWidth: 1)
                 }
+            }
+        }
+        .overlay(alignment: .bottom) {
+            if let colourSel, colourSel.isUpgrade, colourSel.selectionStatus == .upgradePendingClient {
+                upgradeActionsRow(colourSel)
+                    .padding(.horizontal, 12)
+                    .padding(.bottom, 10)
+            }
+        }
+    }
+
+    @ViewBuilder
+    private func colourUpgradeStatusLabel(_ sel: BuildColourSelection) -> some View {
+        switch sel.selectionStatus {
+        case .upgradePendingClient:
+            Text("Confirm this upgrade below")
+                .font(.neueCaption2)
+                .foregroundStyle(AVIATheme.warning)
+        case .upgradeAcceptedByClient:
+            HStack(spacing: 4) {
+                Image(systemName: "hourglass")
+                    .font(.neueCorp(9))
+                Text("Awaiting admin approval")
+                    .font(.neueCaption2)
+            }
+            .foregroundStyle(AVIATheme.warning)
+        case .upgradeDeclinedByClient:
+            Text("Upgrade declined")
+                .font(.neueCaption2)
+                .foregroundStyle(AVIATheme.textTertiary)
+        case .approved:
+            HStack(spacing: 4) {
+                Image(systemName: "checkmark.seal.fill")
+                    .font(.neueCorp(9))
+                Text("Upgrade approved")
+                    .font(.neueCaption2)
+            }
+            .foregroundStyle(AVIATheme.success)
+        default:
+            EmptyView()
+        }
+    }
+
+    @ViewBuilder
+    private func upgradeActionsRow(_ sel: BuildColourSelection) -> some View {
+        HStack(spacing: 8) {
+            Button {
+                viewModel.clientAcceptColourUpgrade(selectionId: sel.id)
+            } label: {
+                HStack(spacing: 4) {
+                    Image(systemName: "checkmark.circle.fill")
+                        .font(.neueCorp(10))
+                    Text("Confirm \(AVIATheme.formatCost(sel.cost ?? 0))")
+                        .font(.neueCaption2Medium)
+                }
+                .foregroundStyle(AVIATheme.aviaWhite)
+                .padding(.horizontal, 12)
+                .padding(.vertical, 8)
+                .background(AVIATheme.success)
+                .clipShape(Capsule())
+            }
+
+            Button {
+                viewModel.clientDeclineColourUpgrade(selectionId: sel.id)
+            } label: {
+                HStack(spacing: 4) {
+                    Image(systemName: "xmark.circle")
+                        .font(.neueCorp(10))
+                    Text("Reject")
+                        .font(.neueCaption2Medium)
+                }
+                .foregroundStyle(AVIATheme.destructive)
+                .padding(.horizontal, 12)
+                .padding(.vertical, 8)
+                .background(AVIATheme.destructive.opacity(0.1))
+                .clipShape(Capsule())
             }
         }
     }

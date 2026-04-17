@@ -200,7 +200,9 @@ struct ClientSpecConfirmationView: View {
             return true
         }
 
-        if !availableUpgrades.isEmpty {
+        if let pending = viewModel.pendingRangeUpgrade {
+            pendingRangeUpgradeCard(pending)
+        } else if !availableUpgrades.isEmpty {
             BentoCard(cornerRadius: 14) {
                 VStack(alignment: .leading, spacing: 12) {
                     HStack(spacing: 10) {
@@ -220,50 +222,125 @@ struct ClientSpecConfirmationView: View {
 
                     ForEach(availableUpgrades, id: \.id) { pricing in
                         if let toTier = pricing.toTier, let tier = SpecTier(rawValue: toTier) {
-                            HStack(spacing: 10) {
-                                Image(systemName: tier.icon)
-                                    .font(.neueCorp(12))
-                                    .foregroundStyle(tierColor(tier))
-                                    .frame(width: 28, height: 28)
-                                    .background(tierColor(tier).opacity(0.12))
-                                    .clipShape(Circle())
+                            Button {
+                                viewModel.clientRequestRangeUpgrade(toTier: toTier, cost: pricing.cost, notes: nil)
+                                viewModel.clientAcceptRangeUpgrade(requestId: viewModel.pendingRangeUpgrade?.id ?? "")
+                            } label: {
+                                HStack(spacing: 10) {
+                                    Image(systemName: tier.icon)
+                                        .font(.neueCorp(12))
+                                        .foregroundStyle(tierColor(tier))
+                                        .frame(width: 28, height: 28)
+                                        .background(tierColor(tier).opacity(0.12))
+                                        .clipShape(Circle())
 
-                                VStack(alignment: .leading, spacing: 2) {
-                                    Text("Upgrade to \(tier.displayName)")
-                                        .font(.neueCaptionMedium)
-                                        .foregroundStyle(AVIATheme.textPrimary)
-                                    Text(tier.tagline)
-                                        .font(.neueCaption2)
-                                        .foregroundStyle(AVIATheme.textTertiary)
+                                    VStack(alignment: .leading, spacing: 2) {
+                                        Text("Upgrade to \(tier.displayName)")
+                                            .font(.neueCaptionMedium)
+                                            .foregroundStyle(AVIATheme.textPrimary)
+                                        Text(tier.tagline)
+                                            .font(.neueCaption2)
+                                            .foregroundStyle(AVIATheme.textTertiary)
+                                    }
+
+                                    Spacer()
+
+                                    VStack(alignment: .trailing, spacing: 2) {
+                                        Text(formatCurrency(pricing.cost))
+                                            .font(.neueCorpMedium(16))
+                                            .foregroundStyle(AVIATheme.timelessBrown)
+                                        Text("Tap to request")
+                                            .font(.neueCaption2)
+                                            .foregroundStyle(AVIATheme.textTertiary)
+                                    }
                                 }
-
-                                Spacer()
-
-                                Text(formatCurrency(pricing.cost))
-                                    .font(.neueCorpMedium(16))
-                                    .foregroundStyle(AVIATheme.timelessBrown)
+                                .padding(12)
+                                .background(tierColor(tier).opacity(0.04))
+                                .clipShape(.rect(cornerRadius: 10))
+                                .overlay {
+                                    RoundedRectangle(cornerRadius: 10)
+                                        .stroke(tierColor(tier).opacity(0.15), lineWidth: 1)
+                                }
                             }
-                            .padding(12)
-                            .background(tierColor(tier).opacity(0.04))
-                            .clipShape(.rect(cornerRadius: 10))
-                            .overlay {
-                                RoundedRectangle(cornerRadius: 10)
-                                    .stroke(tierColor(tier).opacity(0.15), lineWidth: 1)
-                            }
+                            .buttonStyle(.plain)
                         }
-                    }
-
-                    HStack(spacing: 6) {
-                        Image(systemName: "info.circle")
-                            .font(.neueCorp(10))
-                            .foregroundStyle(AVIATheme.textTertiary)
-                        Text("Contact your AVIA consultant to proceed with a full range upgrade.")
-                            .font(.neueCaption2)
-                            .foregroundStyle(AVIATheme.textTertiary)
                     }
                 }
                 .padding(14)
             }
+        }
+    }
+
+    @ViewBuilder
+    private func pendingRangeUpgradeCard(_ request: BuildRangeUpgradeRequest) -> some View {
+        let toTier = SpecTier(rawValue: request.toTier.lowercased()) ?? .messina
+        BentoCard(cornerRadius: 14) {
+            VStack(alignment: .leading, spacing: 14) {
+                HStack(spacing: 10) {
+                    Image(systemName: request.status == .clientAccepted ? "clock.fill" : "arrow.up.forward.circle.fill")
+                        .font(.neueCorpMedium(18))
+                        .foregroundStyle(request.status == .clientAccepted ? AVIATheme.warning : AVIATheme.timelessBrown)
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text("Upgrade to \(toTier.displayName)")
+                            .font(.neueCaptionMedium)
+                            .foregroundStyle(AVIATheme.textPrimary)
+                        Text(request.status.displayLabel)
+                            .font(.neueCaption2)
+                            .foregroundStyle(AVIATheme.textSecondary)
+                    }
+                    Spacer()
+                    Text(formatCurrency(request.cost))
+                        .font(.neueCorpMedium(18))
+                        .foregroundStyle(AVIATheme.timelessBrown)
+                }
+
+                if request.status == .pendingClient {
+                    HStack(spacing: 10) {
+                        Button {
+                            viewModel.clientAcceptRangeUpgrade(requestId: request.id)
+                        } label: {
+                            HStack(spacing: 6) {
+                                Image(systemName: "checkmark.circle.fill")
+                                Text("Confirm Upgrade")
+                            }
+                            .font(.neueCaption2Medium)
+                            .frame(maxWidth: .infinity)
+                            .frame(height: 40)
+                            .foregroundStyle(AVIATheme.aviaWhite)
+                            .background(AVIATheme.success)
+                            .clipShape(Capsule())
+                        }
+
+                        Button {
+                            viewModel.clientDeclineRangeUpgrade(requestId: request.id)
+                        } label: {
+                            HStack(spacing: 6) {
+                                Image(systemName: "xmark.circle")
+                                Text("Reject")
+                            }
+                            .font(.neueCaption2Medium)
+                            .frame(maxWidth: .infinity)
+                            .frame(height: 40)
+                            .foregroundStyle(AVIATheme.destructive)
+                            .background(AVIATheme.destructive.opacity(0.1))
+                            .clipShape(Capsule())
+                        }
+                    }
+                } else if request.status == .clientAccepted {
+                    HStack(spacing: 6) {
+                        Image(systemName: "hourglass")
+                            .font(.neueCorp(10))
+                        Text("Awaiting admin approval to apply this upgrade.")
+                            .font(.neueCaption2)
+                    }
+                    .foregroundStyle(AVIATheme.warning)
+                    .padding(10)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .background(AVIATheme.warning.opacity(0.08))
+                    .clipShape(.rect(cornerRadius: 10))
+                }
+            }
+            .padding(14)
         }
     }
 

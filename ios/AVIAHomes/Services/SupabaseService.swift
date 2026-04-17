@@ -1198,6 +1198,58 @@ class SupabaseService {
         }
     }
 
+    // MARK: - Build Range Upgrade Requests
+
+    func fetchBuildRangeUpgradeRequests(buildId: String) async -> [BuildRangeUpgradeRequest] {
+        guard isConfigured else { return [] }
+        do {
+            let rows: [BuildRangeUpgradeRequestRow] = try await client
+                .from("build_range_upgrade_requests")
+                .select()
+                .eq("build_id", value: buildId)
+                .execute()
+                .value
+            return rows.map { $0.toModel() }
+        } catch {
+            print("[SupabaseService] fetchBuildRangeUpgradeRequests FAILED: \(error)")
+            return []
+        }
+    }
+
+    func upsertBuildRangeUpgradeRequest(_ request: BuildRangeUpgradeRequest) async -> Bool {
+        guard isConfigured else { return false }
+        do {
+            try await client.from("build_range_upgrade_requests").upsert(request.toRow()).execute()
+            return true
+        } catch {
+            print("[SupabaseService] upsertBuildRangeUpgradeRequest FAILED: \(error)")
+            return false
+        }
+    }
+
+    func deleteBuildRangeUpgradeRequest(id: String) async -> Bool {
+        guard isConfigured else { return false }
+        do {
+            try await client.from("build_range_upgrade_requests").delete().eq("id", value: id).execute()
+            return true
+        } catch {
+            print("[SupabaseService] deleteBuildRangeUpgradeRequest FAILED: \(error)")
+            return false
+        }
+    }
+
+    func updateBuildSpecTier(buildId: String, newTier: String) async -> Bool {
+        guard isConfigured else { return false }
+        do {
+            struct TierPatch: Codable { let spec_tier: String }
+            try await client.from("builds").update(TierPatch(spec_tier: newTier)).eq("id", value: buildId).execute()
+            return true
+        } catch {
+            print("[SupabaseService] updateBuildSpecTier FAILED: \(error)")
+            return false
+        }
+    }
+
     func upsertHomeDesign(_ row: HomeDesignRow) async -> Bool {
         guard isConfigured else { return false }
         do {
