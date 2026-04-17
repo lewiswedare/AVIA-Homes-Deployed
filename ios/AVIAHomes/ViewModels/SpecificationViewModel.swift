@@ -179,6 +179,41 @@ class SpecificationViewModel {
         upgradeRequests.contains { $0.itemId == itemId && $0.status == .pending }
     }
 
+    func clientAcceptUpgradeCost(requestId: String) {
+        if let reqIdx = upgradeRequests.firstIndex(where: { $0.id == requestId }) {
+            upgradeRequests[reqIdx].status = .pending
+        }
+        guard let idx = cachedSelections.firstIndex(where: { $0.id == requestId }) else { return }
+        cachedSelections[idx].selectionType = .upgradeAccepted
+        cachedSelections[idx].status = .awaitingAdmin
+        cachedSelections[idx].clientConfirmed = true
+        cachedSelections[idx].clientConfirmedAt = .now
+        cachedSelections[idx].lockedForClient = true
+        let item = cachedSelections[idx]
+        Task { @MainActor in
+            _ = await SupabaseService.shared.upsertBuildSpecSelection(item)
+        }
+    }
+
+    func clientDeclineUpgradeCost(requestId: String) {
+        if let reqIdx = upgradeRequests.firstIndex(where: { $0.id == requestId }) {
+            upgradeRequests[reqIdx].status = .declined
+            upgradeRequests[reqIdx].upgradeCost = nil
+        }
+        guard let idx = cachedSelections.firstIndex(where: { $0.id == requestId }) else { return }
+        cachedSelections[idx].selectionType = .upgradeDeclined
+        cachedSelections[idx].status = .approved
+        cachedSelections[idx].clientConfirmed = true
+        cachedSelections[idx].clientConfirmedAt = .now
+        cachedSelections[idx].lockedForClient = false
+        cachedSelections[idx].upgradeCost = nil
+        cachedSelections[idx].upgradeCostNote = nil
+        let item = cachedSelections[idx]
+        Task { @MainActor in
+            _ = await SupabaseService.shared.upsertBuildSpecSelection(item)
+        }
+    }
+
     func requestFullUpgrade(toTier: SpecTier) {
         for category in categories {
             for item in upgradeableItems(in: category) {
