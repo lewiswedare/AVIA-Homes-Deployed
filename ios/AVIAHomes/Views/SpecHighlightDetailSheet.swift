@@ -6,12 +6,11 @@ struct SpecHighlightDetailSheet: View {
     @Environment(\.dismiss) private var dismiss
 
     var body: some View {
-        NavigationStack {
-            ScrollView {
-                VStack(alignment: .leading, spacing: 20) {
-                    heroImage
+        ScrollView {
+            VStack(alignment: .leading, spacing: 20) {
+                heroImage
 
-                    VStack(alignment: .leading, spacing: 14) {
+                VStack(alignment: .leading, spacing: 14) {
                         HStack(spacing: 12) {
                             Image(systemName: highlight.icon)
                                 .font(.system(size: 18, weight: .semibold))
@@ -53,29 +52,41 @@ struct SpecHighlightDetailSheet: View {
                             .foregroundStyle(AVIATheme.textPrimary)
                             .padding(.top, 4)
 
-                        HStack(spacing: 8) {
-                            Text(tier.displayName)
-                                .font(.neueCorpMedium(10))
-                                .kerning(0.8)
-                                .foregroundStyle(AVIATheme.aviaWhite)
-                                .padding(.horizontal, 12)
-                                .padding(.vertical, 7)
-                                .background(AVIATheme.timelessBrown)
-                                .clipShape(Capsule())
-                        }
+                    HStack(spacing: 8) {
+                        Text(tier.displayName)
+                            .font(.neueCorpMedium(10))
+                            .kerning(0.8)
+                            .foregroundStyle(AVIATheme.aviaWhite)
+                            .padding(.horizontal, 12)
+                            .padding(.vertical, 7)
+                            .background(AVIATheme.timelessBrown)
+                            .clipShape(Capsule())
                     }
-                    .padding(.horizontal, 20)
-                    .padding(.bottom, 40)
                 }
+                .padding(.horizontal, 20)
+                .padding(.bottom, 40)
             }
-            .background(AVIATheme.background)
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .confirmationAction) {
-                    Button("Done") { dismiss() }
-                        .tint(AVIATheme.timelessBrown)
-                }
+        }
+        .background(AVIATheme.background)
+        .ignoresSafeArea(edges: .top)
+        .overlay(alignment: .topTrailing) {
+            Button {
+                dismiss()
+            } label: {
+                Image(systemName: "xmark")
+                    .font(.system(size: 14, weight: .bold))
+                    .foregroundStyle(.white)
+                    .frame(width: 32, height: 32)
+                    .background(.ultraThinMaterial, in: Circle())
+                    .overlay(Circle().fill(Color.black.opacity(0.25)))
+                    .overlay(
+                        Image(systemName: "xmark")
+                            .font(.system(size: 13, weight: .bold))
+                            .foregroundStyle(.white)
+                    )
             }
+            .padding(.top, 12)
+            .padding(.trailing, 16)
         }
         .presentationDetents([.large])
         .presentationContentInteraction(.scrolls)
@@ -83,7 +94,7 @@ struct SpecHighlightDetailSheet: View {
 
     private var heroImage: some View {
         Color(AVIATheme.surfaceElevated)
-            .frame(height: 220)
+            .frame(height: 320)
             .overlay {
                 AsyncImage(url: URL(string: imageURL)) { phase in
                     if let image = phase.image {
