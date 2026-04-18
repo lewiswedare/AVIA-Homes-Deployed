@@ -148,7 +148,7 @@ struct PackageDetailView: View {
             priceBreakdown
             landDetailsSection
             houseDesignSection
-            facadeSection
+            facadeSectionIfAvailable
             specificationSection
             inclusionsSection
             estateSection
@@ -421,6 +421,18 @@ struct PackageDetailView: View {
 
     // MARK: - Facade
 
+    private var resolvedFacade: Facade? {
+        guard let id = package.selectedFacadeId, !id.isEmpty else { return nil }
+        return viewModel.findFacade(byId: id)
+    }
+
+    @ViewBuilder
+    private var facadeSectionIfAvailable: some View {
+        if resolvedFacade != nil {
+            facadeSection
+        }
+    }
+
     private var facadeSection: some View {
         VStack(alignment: .leading, spacing: 12) {
             Text("INCLUDED FACADE")
@@ -434,7 +446,7 @@ struct PackageDetailView: View {
                         .frame(width: 3)
                 }
 
-            if let facade = package.matchedFacade {
+            if let facade = resolvedFacade {
 
             BentoCard(cornerRadius: 16) {
                 VStack(spacing: 0) {

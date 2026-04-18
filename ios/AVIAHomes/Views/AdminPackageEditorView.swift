@@ -263,9 +263,7 @@ struct AdminPackageEditorView: View {
 
             specTierSection
 
-            if isCustomHome {
-                facadeSelectionSection
-            }
+            facadeSelectionSection
 
             BentoCard(cornerRadius: 16) {
                 editorField(label: "Image URL", text: $imageURL, placeholder: "https://... (auto-filled from design)", icon: "photo.fill")
@@ -1080,7 +1078,7 @@ struct AdminPackageEditorView: View {
         let imgURL: String
         if !imageURL.isEmpty {
             imgURL = imageURL
-        } else if isCustomHome, let facadeImg = selectedFacade?.heroImageURL {
+        } else if let facadeImg = selectedFacade?.heroImageURL, isCustomHome {
             imgURL = facadeImg
         } else {
             imgURL = selectedDesign?.imageURL ?? ""
@@ -1114,7 +1112,7 @@ struct AdminPackageEditorView: View {
             customGarages: isCustomHome ? customGarages : nil,
             customSquareMeters: isCustomHome ? sqm : nil,
             customStoreys: isCustomHome ? customStoreys : nil,
-            selectedFacadeId: isCustomHome && !selectedFacadeId.isEmpty ? selectedFacadeId : nil
+            selectedFacadeId: selectedFacadeId.isEmpty ? nil : selectedFacadeId
         )
 
         if isEditing {

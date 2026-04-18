@@ -61,9 +61,7 @@ struct AddBuildSheet: View {
 
                     specTierCard
 
-                    if isCustomHome {
-                        facadeCard
-                    }
+                    facadeCard
 
                     clientCard
                     staffCard
@@ -761,7 +759,7 @@ struct AddBuildSheet: View {
                 staffId: selectedStaffId,
                 specTier: selectedSpecTier,
                 isCustom: isCustomHome,
-                selectedFacadeId: isCustomHome && !selectedFacadeId.isEmpty ? selectedFacadeId : nil,
+                selectedFacadeId: selectedFacadeId.isEmpty ? nil : selectedFacadeId,
                 customBedrooms: isCustomHome ? customBedrooms : nil,
                 customBathrooms: isCustomHome ? customBathrooms : nil,
                 customGarages: isCustomHome ? customGarages : nil,
