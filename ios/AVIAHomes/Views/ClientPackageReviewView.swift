@@ -98,10 +98,14 @@ struct ClientPackageReviewView: View {
 
     private func sharedPackageCard(package: HouseLandPackage) -> some View {
         let response = viewModel.clientResponseForPackage(package.id, clientId: viewModel.currentUser.id)
+        let design = package.matchedDesign
+        let facade = package.selectedFacadeId.flatMap { viewModel.findFacade(byId: $0) }
+        let tier = package.specTier
+
         return BentoCard(cornerRadius: 16) {
             VStack(spacing: 0) {
                 Color(AVIATheme.surfaceElevated)
-                    .frame(height: 140)
+                    .frame(height: 160)
                     .overlay {
                         AsyncImage(url: URL(string: package.imageURL)) { phase in
                             if let image = phase.image {
@@ -116,7 +120,7 @@ struct ClientPackageReviewView: View {
                     }
                     .clipShape(.rect(cornerRadii: .init(topLeading: 16, topTrailing: 16)))
 
-                VStack(alignment: .leading, spacing: 8) {
+                VStack(alignment: .leading, spacing: 10) {
                     Text(package.title)
                         .font(.neueSubheadlineMedium)
                         .foregroundStyle(AVIATheme.textPrimary)
@@ -130,16 +134,49 @@ struct ClientPackageReviewView: View {
                             .font(.neueCaption)
                             .foregroundStyle(AVIATheme.textSecondary)
                             .lineLimit(1)
-                    }
-
-                    HStack {
+                        Spacer()
                         Text(package.price)
                             .font(.neueCorpMedium(18))
                             .foregroundStyle(AVIATheme.timelessBrown)
-                        Spacer()
-                        if response?.status == .pending || response == nil {
-                            Text("Tap to review")
+                    }
+
+                    Divider()
+
+                    VStack(spacing: 8) {
+                        if let design {
+                            NavigationLink {
+                                HomeDesignDetailView(design: design)
+                            } label: {
+                                detailRow(icon: "house.fill", title: design.name, subtitle: "Home Design · \(design.bedrooms) Bed · \(design.bathrooms) Bath")
+                            }
+                            .buttonStyle(.plain)
+                        }
+
+                        NavigationLink {
+                            SpecRangeDetailView(tier: tier)
+                        } label: {
+                            detailRow(icon: "square.stack.3d.up.fill", title: "\(tier.displayName) Spec Range", subtitle: tier.tagline)
+                        }
+                        .buttonStyle(.plain)
+
+                        if let facade {
+                            NavigationLink {
+                                FacadeDetailView(facade: facade)
+                            } label: {
+                                detailRow(icon: "building.2.fill", title: facade.name, subtitle: "Facade · \(facade.style)")
+                            }
+                            .buttonStyle(.plain)
+                        }
+                    }
+
+                    if response?.status == .pending || response == nil {
+                        HStack {
+                            Spacer()
+                            Text("Tap hero to review & respond")
                                 .font(.neueCaption2Medium)
+                                .foregroundStyle(AVIATheme.timelessBrown)
+                            Image(systemName: "arrow.up.right.circle.fill")
+                                .font(.neueCaption2)
                                 .foregroundStyle(AVIATheme.timelessBrown)
                         }
                     }
@@ -147,6 +184,35 @@ struct ClientPackageReviewView: View {
                 .padding(14)
             }
         }
+    }
+
+    private func detailRow(icon: String, title: String, subtitle: String) -> some View {
+        HStack(spacing: 12) {
+            Image(systemName: icon)
+                .font(.system(size: 13, weight: .semibold))
+                .foregroundStyle(AVIATheme.timelessBrown)
+                .frame(width: 32, height: 32)
+                .background(AVIATheme.timelessBrown.opacity(0.1))
+                .clipShape(.rect(cornerRadius: 8))
+            VStack(alignment: .leading, spacing: 1) {
+                Text(title)
+                    .font(.neueCaptionMedium)
+                    .foregroundStyle(AVIATheme.textPrimary)
+                    .lineLimit(1)
+                Text(subtitle)
+                    .font(.neueCaption2)
+                    .foregroundStyle(AVIATheme.textTertiary)
+                    .lineLimit(1)
+            }
+            Spacer()
+            Image(systemName: "chevron.right")
+                .font(.neueCaption2)
+                .foregroundStyle(AVIATheme.textTertiary)
+        }
+        .padding(.horizontal, 12)
+        .padding(.vertical, 10)
+        .background(AVIATheme.surfaceElevated.opacity(0.5))
+        .clipShape(.rect(cornerRadius: 10))
     }
 
     private func responseStatusBadge(_ status: PackageResponseStatus?) -> some View {

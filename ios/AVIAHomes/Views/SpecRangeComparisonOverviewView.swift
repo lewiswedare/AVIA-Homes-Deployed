@@ -2,15 +2,15 @@ import SwiftUI
 
 struct SpecRangeComparisonOverviewView: View {
     @State private var expandedItemId: String?
-    @State private var highlightedTier: SpecTier?
+    @State private var leftTier: SpecTier = .volos
+    @State private var rightTier: SpecTier = .messina
 
-    private let tiers = SpecTier.allCases
     private var categories: [SpecCategory] { CatalogDataManager.shared.allSpecCategories }
 
     var body: some View {
         ScrollView {
-            VStack(spacing: 16) {
-                tierSelector
+            VStack(spacing: 18) {
+                tierPicker
 
                 if categories.isEmpty {
                     emptyState
@@ -37,21 +37,97 @@ struct SpecRangeComparisonOverviewView: View {
             Text("No spec items available")
                 .font(.neueSubheadlineMedium)
                 .foregroundStyle(AVIATheme.textSecondary)
-            Text("Spec range data is managed by your admin team.")
-                .font(.neueCaption)
-                .foregroundStyle(AVIATheme.textTertiary)
         }
         .frame(maxWidth: .infinity)
         .padding(.vertical, 40)
     }
 
+    private var tierPicker: some View {
+        VStack(spacing: 12) {
+            HStack {
+                Text("Select two ranges to compare")
+                    .font(.neueCaptionMedium)
+                    .foregroundStyle(AVIATheme.textSecondary)
+                Spacer()
+                Button {
+                    withAnimation(.spring(response: 0.35)) {
+                        let tmp = leftTier
+                        leftTier = rightTier
+                        rightTier = tmp
+                    }
+                } label: {
+                    HStack(spacing: 4) {
+                        Image(systemName: "arrow.left.arrow.right")
+                            .font(.system(size: 11, weight: .semibold))
+                        Text("Swap")
+                            .font(.neueCaption2Medium)
+                    }
+                    .foregroundStyle(AVIATheme.timelessBrown)
+                }
+            }
+
+            HStack(spacing: 12) {
+                tierSelector(label: "Range A", selection: $leftTier, other: rightTier)
+                tierSelector(label: "Range B", selection: $rightTier, other: leftTier)
+            }
+        }
+        .padding(14)
+        .background(AVIATheme.cardBackground)
+        .clipShape(.rect(cornerRadius: 16))
+    }
+
+    private func tierSelector(label: String, selection: Binding<SpecTier>, other: SpecTier) -> some View {
+        Menu {
+            ForEach(SpecTier.allCases) { tier in
+                Button {
+                    withAnimation(.spring(response: 0.35)) { selection.wrappedValue = tier }
+                } label: {
+                    HStack {
+                        Text(tier.displayName)
+                        if selection.wrappedValue == tier {
+                            Image(systemName: "checkmark")
+                        }
+                    }
+                }
+            }
+        } label: {
+            VStack(alignment: .leading, spacing: 6) {
+                Text(label.uppercased())
+                    .font(.neueCorpMedium(9))
+                    .kerning(1.0)
+                    .foregroundStyle(AVIATheme.textTertiary)
+
+                HStack {
+                    Text(selection.wrappedValue.displayName)
+                        .font(.neueSubheadlineMedium)
+                        .foregroundStyle(AVIATheme.textPrimary)
+                    Spacer()
+                    Image(systemName: "chevron.up.chevron.down")
+                        .font(.system(size: 10, weight: .semibold))
+                        .foregroundStyle(AVIATheme.textTertiary)
+                }
+                Text(selection.wrappedValue.tagline)
+                    .font(.neueCaption2)
+                    .foregroundStyle(AVIATheme.textTertiary)
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .padding(12)
+            .background(AVIATheme.surfaceElevated.opacity(0.5))
+            .clipShape(.rect(cornerRadius: 12))
+            .overlay {
+                RoundedRectangle(cornerRadius: 12)
+                    .stroke(AVIATheme.timelessBrown.opacity(0.25), lineWidth: 1)
+            }
+        }
+    }
+
     private func categorySection(_ category: SpecCategory) -> some View {
-        VStack(alignment: .leading, spacing: 8) {
+        VStack(alignment: .leading, spacing: 10) {
             HStack(spacing: 10) {
                 Image(systemName: category.icon)
                     .font(.neueCaptionMedium)
                     .foregroundStyle(AVIATheme.timelessBrown)
-                    .frame(width: 28, height: 28)
+                    .frame(width: 32, height: 32)
                     .background(AVIATheme.timelessBrown.opacity(0.08))
                     .clipShape(.rect(cornerRadius: 8))
 
@@ -60,227 +136,162 @@ struct SpecRangeComparisonOverviewView: View {
                     .foregroundStyle(AVIATheme.textPrimary)
 
                 Spacer(minLength: 0)
-
-                Text("\(category.items.count)")
-                    .font(.neueCaption2Medium)
-                    .foregroundStyle(AVIATheme.textTertiary)
             }
             .padding(.horizontal, 4)
 
-            VStack(spacing: 0) {
-                ForEach(Array(category.items.enumerated()), id: \.element.id) { index, item in
-                    comparisonItemCard(item: item)
-
-                    if index < category.items.count - 1 {
-                        Divider()
-                            .padding(.leading, 14)
-                    }
-                }
-            }
-            .background(AVIATheme.cardBackground)
-            .clipShape(.rect(cornerRadius: 16))
-        }
-    }
-
-    private var tierSelector: some View {
-        HStack(spacing: 8) {
-            ForEach(tiers) { tier in
-                let data = CatalogDataManager.shared.specRangeData(for: tier)
-                let isSelected = highlightedTier == tier
-
-                Button {
-                    withAnimation(.spring(response: 0.35, dampingFraction: 0.8)) {
-                        highlightedTier = highlightedTier == tier ? nil : tier
-                    }
-                } label: {
-                    VStack(spacing: 8) {
-                        Color(AVIATheme.surfaceElevated)
-                            .frame(height: 80)
-                            .overlay {
-                                AsyncImage(url: URL(string: data.heroImageURL)) { phase in
-                                    if let image = phase.image {
-                                        image.resizable().aspectRatio(contentMode: .fill)
-                                    }
-                                }
-                                .allowsHitTesting(false)
-                            }
-                            .clipShape(.rect(cornerRadius: 12))
-
-                        Text(tier.displayName)
-                            .font(.neueCaptionMedium)
-                            .foregroundStyle(isSelected ? AVIATheme.aviaBlack : AVIATheme.textPrimary)
-
-                        Text(tier.tagline)
-                            .font(.neueCaption2)
-                            .foregroundStyle(isSelected ? AVIATheme.textSecondary : AVIATheme.textTertiary)
-                            .lineLimit(1)
-                    }
-                    .frame(maxWidth: .infinity)
-                    .padding(.bottom, 4)
+            VStack(spacing: 14) {
+                ForEach(category.items) { item in
+                    comparisonCard(item: item)
                 }
             }
         }
-        .padding(12)
-        .background(AVIATheme.cardBackground)
-        .clipShape(.rect(cornerRadius: 16))
-        .overlay(alignment: .bottom) {
-            if highlightedTier != nil {
-                selectedTierIndicator
-            }
-        }
     }
 
-    @ViewBuilder
-    private var selectedTierIndicator: some View {
-        if let tier = highlightedTier {
-            HStack(spacing: 6) {
-                Image(systemName: "checkmark.circle.fill")
-                    .font(.neueCorp(11))
-                Text("Viewing \(tier.displayName)")
-                    .font(.neueCaption2Medium)
-            }
-            .foregroundStyle(AVIATheme.aviaWhite)
-            .padding(.horizontal, 12)
-            .padding(.vertical, 6)
-            .background(AVIATheme.aviaBlack)
-            .clipShape(Capsule())
-            .offset(y: 14)
-        }
-    }
-
-    private func comparisonItemCard(item: SpecItem) -> some View {
+    private func comparisonCard(item: SpecItem) -> some View {
         let isExpanded = expandedItemId == item.id
 
-        return VStack(spacing: 0) {
+        return VStack(alignment: .leading, spacing: 12) {
+            HStack(spacing: 10) {
+                Text(item.name)
+                    .font(.neueSubheadlineMedium)
+                    .foregroundStyle(AVIATheme.textPrimary)
+                Spacer()
+                if item.isUpgradeable {
+                    Text("UPGRADEABLE")
+                        .font(.neueCorpMedium(8))
+                        .kerning(0.5)
+                        .foregroundStyle(AVIATheme.timelessBrown)
+                        .padding(.horizontal, 8)
+                        .padding(.vertical, 4)
+                        .background(AVIATheme.timelessBrown.opacity(0.1))
+                        .clipShape(Capsule())
+                }
+            }
+
+            HStack(alignment: .top, spacing: 10) {
+                bigTierCell(item: item, tier: leftTier)
+                bigTierCell(item: item, tier: rightTier)
+            }
+
             Button {
                 withAnimation(.spring(response: 0.35, dampingFraction: 0.85)) {
                     expandedItemId = isExpanded ? nil : item.id
                 }
             } label: {
-                HStack(spacing: 12) {
-                    if let url = item.imageURL {
-                        Color(AVIATheme.surfaceElevated)
-                            .frame(width: 44, height: 44)
-                            .overlay {
-                                AsyncImage(url: url) { phase in
-                                    if let image = phase.image {
-                                        image.resizable().aspectRatio(contentMode: .fill)
-                                    }
-                                }
-                                .allowsHitTesting(false)
-                            }
-                            .clipShape(.rect(cornerRadius: 8))
-                    }
-
-                    VStack(alignment: .leading, spacing: 2) {
-                        Text(item.name)
-                            .font(.neueSubheadlineMedium)
-                            .foregroundStyle(AVIATheme.textPrimary)
-
-                        if item.isUpgradeable {
-                            Text("UPGRADEABLE")
-                                .font(.neueCorpMedium(8))
-                                .kerning(0.5)
-                                .foregroundStyle(AVIATheme.timelessBrown)
-                        }
-                    }
-
-                    Spacer(minLength: 0)
-
-                    if let tier = highlightedTier {
-                        Text(item.description(for: tier))
-                            .font(.neueCaption2)
-                            .foregroundStyle(AVIATheme.textSecondary)
-                            .lineLimit(2)
-                            .multilineTextAlignment(.trailing)
-                            .frame(maxWidth: 120)
-                    }
-
-                    Image(systemName: "chevron.right")
+                HStack(spacing: 6) {
+                    Text(isExpanded ? "Hide available colours" : "Show available colours")
                         .font(.neueCaption2Medium)
-                        .foregroundStyle(AVIATheme.textTertiary)
-                        .rotationEffect(.degrees(isExpanded ? 90 : 0))
+                    Image(systemName: "chevron.down")
+                        .font(.system(size: 9, weight: .semibold))
+                        .rotationEffect(.degrees(isExpanded ? 180 : 0))
                 }
-                .padding(14)
+                .foregroundStyle(AVIATheme.timelessBrown)
             }
 
             if isExpanded {
-                Divider()
-                    .padding(.horizontal, 14)
-
-                tierComparisonGrid(item: item)
-                    .padding(14)
+                coloursPreview(item: item)
                     .transition(.opacity.combined(with: .move(edge: .top)))
             }
         }
+        .padding(14)
+        .background(AVIATheme.cardBackground)
+        .clipShape(.rect(cornerRadius: 18))
     }
 
-    private func tierComparisonGrid(item: SpecItem) -> some View {
-        VStack(spacing: 10) {
-            HStack(spacing: 8) {
-                ForEach(tiers) { tier in
-                    let isHighlighted = highlightedTier == tier
-                    Text(tier.displayName)
-                        .font(isHighlighted ? .neueCaption2Medium : .neueCaption2Medium)
-                        .foregroundStyle(isHighlighted ? AVIATheme.aviaBlack : AVIATheme.textTertiary)
-                        .frame(maxWidth: .infinity)
-                }
+    private func bigTierCell(item: SpecItem, tier: SpecTier) -> some View {
+        VStack(alignment: .leading, spacing: 10) {
+            HStack(spacing: 6) {
+                Text(tier.displayName.uppercased())
+                    .font(.neueCorpMedium(9))
+                    .kerning(0.8)
+                    .foregroundStyle(AVIATheme.aviaWhite)
+                    .padding(.horizontal, 8)
+                    .padding(.vertical, 4)
+                    .background(AVIATheme.timelessBrown)
+                    .clipShape(Capsule())
+                Spacer()
             }
 
-            HStack(alignment: .top, spacing: 8) {
-                ForEach(tiers) { tier in
-                    tierCell(item: item, tier: tier)
-                }
-            }
-        }
-    }
-
-    private func tierCell(item: SpecItem, tier: SpecTier) -> some View {
-        let isHighlighted = highlightedTier == tier
-
-        return VStack(spacing: 8) {
-            if let url = item.tierImageURL(for: tier) {
-                Color(isHighlighted ? AVIATheme.aviaBlack.opacity(0.1) : AVIATheme.surfaceElevated)
-                    .aspectRatio(1, contentMode: .fit)
-                    .overlay {
+            Color(AVIATheme.surfaceElevated)
+                .aspectRatio(1.1, contentMode: .fit)
+                .overlay {
+                    if let url = item.tierImageURL(for: tier) ?? item.imageURL {
                         AsyncImage(url: url) { phase in
                             if let image = phase.image {
                                 image.resizable().aspectRatio(contentMode: .fill)
                             } else if phase.error != nil {
                                 Image(systemName: "photo")
-                                    .font(.neueCorp(16))
+                                    .font(.neueCorp(18))
                                     .foregroundStyle(AVIATheme.textTertiary.opacity(0.3))
                             } else {
-                                ProgressView()
-                                    .controlSize(.small)
+                                ProgressView().controlSize(.small)
                             }
                         }
                         .allowsHitTesting(false)
+                    } else {
+                        Image(systemName: "photo")
+                            .font(.neueCorp(18))
+                            .foregroundStyle(AVIATheme.textTertiary.opacity(0.3))
                     }
-                    .clipShape(.rect(cornerRadius: 8))
-            } else if let url = item.imageURL {
-                Color(isHighlighted ? AVIATheme.aviaBlack.opacity(0.1) : AVIATheme.surfaceElevated)
-                    .aspectRatio(1, contentMode: .fit)
-                    .overlay {
-                        AsyncImage(url: url) { phase in
-                            if let image = phase.image {
-                                image.resizable().aspectRatio(contentMode: .fill)
-                            }
-                        }
-                        .allowsHitTesting(false)
-                    }
-                    .clipShape(.rect(cornerRadius: 8))
-            }
+                }
+                .clipShape(.rect(cornerRadius: 12))
 
             Text(item.description(for: tier))
-                .font(isHighlighted ? .neueCaption2Medium : .neueCaption2)
-                .foregroundStyle(isHighlighted ? AVIATheme.textPrimary : AVIATheme.textSecondary)
+                .font(.neueCaption)
+                .foregroundStyle(AVIATheme.textPrimary)
                 .fixedSize(horizontal: false, vertical: true)
-                .multilineTextAlignment(.center)
+                .frame(maxWidth: .infinity, alignment: .leading)
         }
-        .frame(maxWidth: .infinity)
-        .padding(6)
-        .background(isHighlighted ? AVIATheme.aviaBlack.opacity(0.05) : Color.clear)
-        .clipShape(.rect(cornerRadius: 10))
+        .padding(12)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(AVIATheme.surfaceElevated.opacity(0.4))
+        .clipShape(.rect(cornerRadius: 14))
+    }
+
+    private func coloursPreview(item: SpecItem) -> some View {
+        let colourCategory = resolveColourCategory(for: item)
+
+        return VStack(alignment: .leading, spacing: 10) {
+            Divider()
+
+            Text("Available colour options")
+                .font(.neueCaption2Medium)
+                .foregroundStyle(AVIATheme.textSecondary)
+
+            if let colourCategory, !colourCategory.options.isEmpty {
+                ScrollView(.horizontal, showsIndicators: false) {
+                    HStack(spacing: 10) {
+                        ForEach(colourCategory.options.prefix(12)) { option in
+                            VStack(spacing: 4) {
+                                Circle()
+                                    .fill(Color(hex: option.hexColor))
+                                    .frame(width: 36, height: 36)
+                                    .overlay {
+                                        Circle()
+                                            .stroke(AVIATheme.surfaceBorder, lineWidth: 1)
+                                    }
+                                Text(option.name)
+                                    .font(.neueCaption2)
+                                    .foregroundStyle(AVIATheme.textSecondary)
+                                    .lineLimit(1)
+                                    .frame(maxWidth: 60)
+                            }
+                        }
+                    }
+                }
+            } else {
+                Text("Colour selections are personalised with your AVIA consultant.")
+                    .font(.neueCaption2)
+                    .foregroundStyle(AVIATheme.textTertiary)
+            }
+        }
+    }
+
+    private func resolveColourCategory(for item: SpecItem) -> ColourCategory? {
+        let categories = CatalogDataManager.shared.allColourCategories
+        let target = item.name.lowercased()
+        return categories.first { $0.name.lowercased() == target }
+            ?? categories.first { $0.name.lowercased().contains(target) || target.contains($0.name.lowercased()) }
     }
 }
+

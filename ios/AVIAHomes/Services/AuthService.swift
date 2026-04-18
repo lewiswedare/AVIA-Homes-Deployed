@@ -300,6 +300,35 @@ nonisolated struct UserData: Codable, Sendable {
     let assignedClientIds: [String]
     let assignedStaffId: String?
     let salesPartnerId: String?
+    let displayTitle: String?
+    let avatarUrl: String?
+
+    nonisolated enum CodingKeys: String, CodingKey {
+        case id, firstName, lastName, email, phone, address
+        case homeDesign, lotNumber, contractDateInterval, profileCompleted
+        case role, assignedClientIds, assignedStaffId, salesPartnerId
+        case displayTitle, avatarUrl
+    }
+
+    init(from decoder: Decoder) throws {
+        let c = try decoder.container(keyedBy: CodingKeys.self)
+        id = try c.decode(String.self, forKey: .id)
+        firstName = try c.decode(String.self, forKey: .firstName)
+        lastName = try c.decode(String.self, forKey: .lastName)
+        email = try c.decode(String.self, forKey: .email)
+        phone = (try? c.decode(String.self, forKey: .phone)) ?? ""
+        address = (try? c.decode(String.self, forKey: .address)) ?? ""
+        homeDesign = (try? c.decode(String.self, forKey: .homeDesign)) ?? ""
+        lotNumber = (try? c.decode(String.self, forKey: .lotNumber)) ?? ""
+        contractDateInterval = (try? c.decode(TimeInterval.self, forKey: .contractDateInterval)) ?? 0
+        profileCompleted = (try? c.decode(Bool.self, forKey: .profileCompleted)) ?? false
+        role = (try? c.decode(String.self, forKey: .role)) ?? "Client"
+        assignedClientIds = (try? c.decode([String].self, forKey: .assignedClientIds)) ?? []
+        assignedStaffId = try? c.decode(String.self, forKey: .assignedStaffId)
+        salesPartnerId = try? c.decode(String.self, forKey: .salesPartnerId)
+        displayTitle = try? c.decode(String.self, forKey: .displayTitle)
+        avatarUrl = try? c.decode(String.self, forKey: .avatarUrl)
+    }
 
     init(from user: ClientUser) {
         self.id = user.id
@@ -316,6 +345,8 @@ nonisolated struct UserData: Codable, Sendable {
         self.assignedClientIds = user.assignedClientIds
         self.assignedStaffId = user.assignedStaffId
         self.salesPartnerId = user.salesPartnerId
+        self.displayTitle = user.displayTitle
+        self.avatarUrl = user.avatarUrl
     }
 
     func toClientUser() -> ClientUser {
@@ -333,7 +364,9 @@ nonisolated struct UserData: Codable, Sendable {
             role: UserRole(rawValue: role) ?? .client,
             assignedClientIds: assignedClientIds,
             assignedStaffId: assignedStaffId,
-            salesPartnerId: salesPartnerId
+            salesPartnerId: salesPartnerId,
+            displayTitle: displayTitle,
+            avatarUrl: avatarUrl
         )
     }
 }

@@ -52,7 +52,11 @@ struct PackageDetailView: View {
                         }
                         .sensoryFeedback(.impact(weight: .light), trigger: showPackageSharing)
                     }
-                    ShareLink(item: "Check out this AVIA package: \(package.title) — \(package.price)") {
+                    ShareLink(
+                        item: URL(string: "https://apps.apple.com/app/avia-homes/id0000000000")!,
+                        subject: Text("AVIA Homes — \(package.title)"),
+                        message: Text("Check out this AVIA package: \(package.title) — \(package.price). Download the AVIA Homes app to view the full package details: https://apps.apple.com/app/avia-homes/id0000000000")
+                    ) {
                         Image(systemName: "square.and.arrow.up")
                             .font(.neueSubheadline)
                     }
@@ -100,44 +104,57 @@ struct PackageDetailView: View {
     // MARK: - Hero
 
     private var heroSection: some View {
-        GeometryReader { geo in
-            Color(AVIATheme.surfaceElevated)
-                .overlay {
-                    AsyncImage(url: URL(string: package.imageURL)) { phase in
-                        if let image = phase.image {
-                            image.resizable().aspectRatio(contentMode: .fill)
-                        } else if phase.error != nil {
-                            Image(systemName: "house.and.flag.fill")
-                                .font(.neueCorpMedium(56))
-                                .foregroundStyle(AVIATheme.timelessBrown.opacity(0.2))
-                        } else {
-                            ProgressView()
-                        }
+        Color(AVIATheme.surfaceElevated)
+            .frame(height: 420)
+            .overlay {
+                AsyncImage(url: URL(string: package.imageURL)) { phase in
+                    if let image = phase.image {
+                        image.resizable().aspectRatio(contentMode: .fill)
+                    } else if phase.error != nil {
+                        Image(systemName: "house.and.flag.fill")
+                            .font(.neueCorpMedium(56))
+                            .foregroundStyle(AVIATheme.timelessBrown.opacity(0.2))
+                    } else {
+                        ProgressView()
                     }
-                    .allowsHitTesting(false)
                 }
-                .overlay(alignment: .bottom) {
-                    VStack(alignment: .leading, spacing: 6) {
-                        Text(package.title)
-                            .font(.neueCorpMedium(26))
-                            .foregroundStyle(AVIATheme.aviaWhite)
-                        HStack(spacing: 12) {
-                            Text(package.price)
-                                .font(.neueCorpMedium(18))
-                                .foregroundStyle(AVIATheme.aviaWhite.opacity(0.95))
-                            Text(package.location)
-                                .font(.neueCaption)
-                                .foregroundStyle(AVIATheme.aviaWhite.opacity(0.8))
-                        }
+                .allowsHitTesting(false)
+            }
+            .overlay(alignment: .bottom) {
+                LinearGradient(
+                    stops: [
+                        .init(color: Color.clear, location: 0.0),
+                        .init(color: AVIATheme.background.opacity(0.3), location: 0.4),
+                        .init(color: AVIATheme.background.opacity(0.7), location: 0.7),
+                        .init(color: AVIATheme.background.opacity(0.92), location: 0.9),
+                        .init(color: AVIATheme.background, location: 1.0)
+                    ],
+                    startPoint: .top,
+                    endPoint: .bottom
+                )
+                .frame(height: 240)
+                .allowsHitTesting(false)
+            }
+            .overlay(alignment: .bottomLeading) {
+                VStack(alignment: .leading, spacing: 6) {
+                    Text(package.title)
+                        .font(.neueCorpMedium(28))
+                        .foregroundStyle(AVIATheme.textPrimary)
+                    HStack(spacing: 12) {
+                        Text(package.price)
+                            .font(.neueCorpMedium(18))
+                            .foregroundStyle(AVIATheme.timelessBrown)
+                        Text("·")
+                            .foregroundStyle(AVIATheme.textTertiary)
+                        Text(package.location)
+                            .font(.neueCaption)
+                            .foregroundStyle(AVIATheme.textSecondary)
                     }
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                    .padding(.horizontal, 20)
-                    .padding(.vertical, 16)
-                    .background(.ultraThinMaterial)
                 }
-                .clipped()
-        }
-        .frame(height: 380)
+                .padding(.horizontal, 20)
+                .padding(.bottom, 16)
+            }
+            .clipped()
     }
 
     // MARK: - Content
@@ -871,7 +888,11 @@ struct PackageDetailView: View {
             }
             .sensoryFeedback(.impact(weight: .medium), trigger: showPackageSharing)
 
-            ShareLink(item: "Check out this AVIA package: \(package.title) — \(package.price)") {
+            ShareLink(
+                item: URL(string: "https://apps.apple.com/app/avia-homes/id0000000000")!,
+                subject: Text("AVIA Homes — \(package.title)"),
+                message: Text("Check out this AVIA package: \(package.title) — \(package.price). Download the AVIA Homes app to view the full package details: https://apps.apple.com/app/avia-homes/id0000000000")
+            ) {
                 HStack(spacing: 8) {
                     Image(systemName: "square.and.arrow.up")
                         .font(.neueSubheadlineMedium)

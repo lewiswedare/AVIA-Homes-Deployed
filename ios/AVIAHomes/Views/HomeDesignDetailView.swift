@@ -22,11 +22,13 @@ struct HomeDesignDetailView: View {
                     .foregroundStyle(AVIATheme.textPrimary)
             }
             ToolbarItem(placement: .topBarTrailing) {
-                if let url = URL(string: "https://www.aviahomes.com.au/homes/\(design.slug)") {
-                    ShareLink(item: url) {
-                        Image(systemName: "square.and.arrow.up")
-                            .font(.neueSubheadline)
-                    }
+                ShareLink(
+                    item: URL(string: "https://apps.apple.com/app/avia-homes/id0000000000")!,
+                    subject: Text("AVIA Homes — \(design.name)"),
+                    message: Text("Take a look at the \(design.name) home design by AVIA Homes. Download the AVIA Homes app to explore the full design: https://apps.apple.com/app/avia-homes/id0000000000")
+                ) {
+                    Image(systemName: "square.and.arrow.up")
+                        .font(.neueSubheadline)
                 }
             }
         }

@@ -19,10 +19,12 @@ struct ClientDiscoverDashboardView: View {
                         ourDesignsSection
                         specRangesSlider
                         facadesSlider
-                        companyHighlightsSection
+                        socialFollowBlock
                     }
                     .padding(.horizontal, 16)
                     .padding(.bottom, 40)
+
+                    brandFooter
                 }
             }
             .ignoresSafeArea(edges: .top)
@@ -97,12 +99,7 @@ struct ClientDiscoverDashboardView: View {
                     .frame(height: 24)
                     .foregroundStyle(AVIATheme.timelessBrown)
                 Spacer()
-                Text(String(viewModel.currentUser.firstName.prefix(1)) + String(viewModel.currentUser.lastName.prefix(1)))
-                    .font(.neueCaptionMedium)
-                    .foregroundStyle(AVIATheme.aviaWhite)
-                    .frame(width: 36, height: 36)
-                    .background(AVIATheme.brownGradient)
-                    .clipShape(Circle())
+                UserAvatarView(user: viewModel.currentUser, size: 36)
             }
 
             Text(viewModel.currentUser.firstName.isEmpty ? "Welcome Home" : "Welcome Home, \(viewModel.currentUser.firstName)")
@@ -653,6 +650,106 @@ struct ClientDiscoverDashboardView: View {
         .frame(width: 320)
         .background(AVIATheme.cardBackground)
         .clipShape(.rect(cornerRadius: 16))
+    }
+
+    private var socialFollowBlock: some View {
+        Link(destination: URL(string: "https://www.instagram.com/aviahomes")!) {
+            Color(AVIATheme.timelessBrown)
+                .aspectRatio(4.0/5.0, contentMode: .fit)
+                .overlay {
+                    AsyncImage(url: URL(string: "https://pub-e001eb4506b145aa938b5d3badbff6a5.r2.dev/attachments/t8j7r8vibjqzvubxzcnbg.jpeg")) { phase in
+                        if let image = phase.image {
+                            image.resizable().aspectRatio(contentMode: .fill).opacity(0.35)
+                        }
+                    }
+                    .allowsHitTesting(false)
+                }
+                .overlay {
+                    LinearGradient(
+                        colors: [
+                            AVIATheme.aviaBlack.opacity(0.25),
+                            AVIATheme.aviaBlack.opacity(0.65)
+                        ],
+                        startPoint: .top,
+                        endPoint: .bottom
+                    )
+                }
+                .overlay {
+                    VStack(spacing: 14) {
+                        Spacer()
+                        Image("AVIALogo")
+                            .renderingMode(.template)
+                            .resizable()
+                            .aspectRatio(contentMode: .fit)
+                            .frame(height: 28)
+                            .foregroundStyle(AVIATheme.aviaWhite)
+                        Text("FOLLOW OUR JOURNEY")
+                            .font(.neueCorpMedium(12))
+                            .kerning(1.4)
+                            .foregroundStyle(AVIATheme.aviaWhite.opacity(0.85))
+                        Text("Follow Us on Social")
+                            .font(.neueCorpMedium(30))
+                            .foregroundStyle(AVIATheme.aviaWhite)
+                            .multilineTextAlignment(.center)
+                        Text("Get the latest home inspiration, build progress and design tips from the AVIA team.")
+                            .font(.neueCaption)
+                            .foregroundStyle(AVIATheme.aviaWhite.opacity(0.85))
+                            .multilineTextAlignment(.center)
+                            .padding(.horizontal, 20)
+                        Spacer()
+                        HStack(spacing: 14) {
+                            socialIcon("camera.fill", label: "Instagram")
+                            socialIcon("play.rectangle.fill", label: "TikTok")
+                            socialIcon("person.2.fill", label: "Facebook")
+                        }
+                        .padding(.bottom, 24)
+                    }
+                }
+                .clipShape(.rect(cornerRadius: 20))
+        }
+        .buttonStyle(.plain)
+    }
+
+    private func socialIcon(_ symbol: String, label: String) -> some View {
+        VStack(spacing: 6) {
+            Image(systemName: symbol)
+                .font(.system(size: 18, weight: .semibold))
+                .foregroundStyle(AVIATheme.aviaWhite)
+                .frame(width: 48, height: 48)
+                .background(AVIATheme.aviaWhite.opacity(0.18))
+                .clipShape(Circle())
+                .overlay {
+                    Circle().stroke(AVIATheme.aviaWhite.opacity(0.3), lineWidth: 1)
+                }
+            Text(label)
+                .font(.neueCaption2Medium)
+                .foregroundStyle(AVIATheme.aviaWhite.opacity(0.9))
+        }
+    }
+
+    private var brandFooter: some View {
+        ZStack(alignment: .bottom) {
+            LinearGradient(
+                stops: [
+                    .init(color: AVIATheme.background, location: 0.0),
+                    .init(color: AVIATheme.timelessBrown.opacity(0.4), location: 0.35),
+                    .init(color: AVIATheme.timelessBrown.opacity(0.85), location: 0.65),
+                    .init(color: AVIATheme.timelessBrown, location: 1.0)
+                ],
+                startPoint: .top,
+                endPoint: .bottom
+            )
+            .frame(height: 320)
+
+            Image("AVIALogo")
+                .renderingMode(.template)
+                .resizable()
+                .aspectRatio(contentMode: .fit)
+                .foregroundStyle(AVIATheme.aviaWhite)
+                .frame(maxWidth: .infinity)
+                .padding(.horizontal, 24)
+                .padding(.bottom, 40)
+        }
     }
 
     private var companyHighlightsSection: some View {

@@ -5,6 +5,7 @@ struct SpecRangeDetailView: View {
     @State private var showingInclusions: Bool = false
     @State private var showCompareRanges: Bool = false
     @State private var selectedRoomIndex: Int = 0
+    @State private var highlightDetail: SpecRangeHighlight?
 
     private var specData: SpecRangeData {
         CatalogDataManager.shared.specRangeData(for: tier)
@@ -23,6 +24,7 @@ struct SpecRangeDetailView: View {
                     compareRangesButton
                     highlightsSection
                     roomGallerySection
+                    brandPartnersSection
                     downloadSection
                 }
                 .padding(.horizontal, 16)
@@ -44,6 +46,59 @@ struct SpecRangeDetailView: View {
         }
         .navigationDestination(isPresented: $showCompareRanges) {
             SpecRangeComparisonOverviewView()
+        }
+        .sheet(item: $highlightDetail) { highlight in
+            SpecHighlightDetailSheet(tier: tier, highlight: highlight)
+        }
+    }
+
+    private var brandPartnersSection: some View {
+        VStack(alignment: .leading, spacing: 14) {
+            Text("Trusted Brand Partners")
+                .font(.neueCorpMedium(20))
+                .foregroundStyle(AVIATheme.textPrimary)
+
+            Text("Products from the brands you trust are included in the \(tier.displayName) range.")
+                .font(.neueCaption)
+                .foregroundStyle(AVIATheme.textSecondary)
+
+            LazyVGrid(columns: [GridItem(.flexible(), spacing: 10), GridItem(.flexible(), spacing: 10), GridItem(.flexible(), spacing: 10)], spacing: 10) {
+                ForEach(brandPartners, id: \.self) { name in
+                    VStack(spacing: 6) {
+                        Image(systemName: "building.2.crop.circle.fill")
+                            .font(.system(size: 24))
+                            .foregroundStyle(AVIATheme.timelessBrown.opacity(0.7))
+                        Text(name)
+                            .font(.neueCaption2Medium)
+                            .foregroundStyle(AVIATheme.textPrimary)
+                            .lineLimit(1)
+                            .minimumScaleFactor(0.7)
+                    }
+                    .frame(maxWidth: .infinity)
+                    .frame(height: 80)
+                    .background(AVIATheme.cardBackground)
+                    .clipShape(.rect(cornerRadius: 12))
+                    .overlay {
+                        RoundedRectangle(cornerRadius: 12)
+                            .stroke(AVIATheme.surfaceBorder, lineWidth: 1)
+                    }
+                }
+            }
+
+            Text("Logos shown are representative. Actual branded products included vary by plan and availability.")
+                .font(.neueCaption2)
+                .foregroundStyle(AVIATheme.textTertiary)
+        }
+    }
+
+    private var brandPartners: [String] {
+        switch tier {
+        case .volos:
+            return ["Colorbond", "Caroma", "James Hardie", "Bosch", "Dulux", "Bristol"]
+        case .messina:
+            return ["Colorbond", "Caesarstone", "Smeg", "Caroma", "Dulux", "Bosch", "James Hardie", "Phoenix", "Clark"]
+        case .portobello:
+            return ["Miele", "Caesarstone", "Fisher & Paykel", "Phoenix", "Colorbond", "Porter's Paints", "Reece", "Franke", "Hafele"]
         }
     }
 
@@ -153,27 +208,37 @@ struct SpecRangeDetailView: View {
 
             VStack(spacing: 0) {
                 ForEach(Array(specData.highlights.enumerated()), id: \.offset) { index, highlight in
-                    HStack(alignment: .top, spacing: 14) {
-                        Image(systemName: highlight.icon)
-                            .font(.neueCorpMedium(14))
-                            .foregroundStyle(AVIATheme.timelessBrown)
-                            .frame(width: 36, height: 36)
-                            .background(AVIATheme.timelessBrown.opacity(0.1))
-                            .clipShape(Circle())
+                    Button {
+                        highlightDetail = highlight
+                    } label: {
+                        HStack(alignment: .top, spacing: 14) {
+                            Image(systemName: highlight.icon)
+                                .font(.neueCorpMedium(14))
+                                .foregroundStyle(AVIATheme.timelessBrown)
+                                .frame(width: 36, height: 36)
+                                .background(AVIATheme.timelessBrown.opacity(0.1))
+                                .clipShape(Circle())
 
-                        VStack(alignment: .leading, spacing: 2) {
-                            Text(highlight.title)
-                                .font(.neueSubheadlineMedium)
-                                .foregroundStyle(AVIATheme.textPrimary)
-                            Text(highlight.subtitle)
-                                .font(.neueCaption)
+                            VStack(alignment: .leading, spacing: 2) {
+                                Text(highlight.title)
+                                    .font(.neueSubheadlineMedium)
+                                    .foregroundStyle(AVIATheme.textPrimary)
+                                Text(highlight.subtitle)
+                                    .font(.neueCaption)
+                                    .foregroundStyle(AVIATheme.textTertiary)
+                            }
+
+                            Spacer(minLength: 0)
+
+                            Image(systemName: "chevron.right")
+                                .font(.neueCaption2)
                                 .foregroundStyle(AVIATheme.textTertiary)
                         }
-
-                        Spacer(minLength: 0)
+                        .padding(.vertical, 12)
+                        .padding(.horizontal, 14)
+                        .contentShape(Rectangle())
                     }
-                    .padding(.vertical, 12)
-                    .padding(.horizontal, 14)
+                    .buttonStyle(.plain)
 
                     if index < specData.highlights.count - 1 {
                         Divider()

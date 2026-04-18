@@ -13,7 +13,10 @@ class MessagingService {
         conversations.reduce(0) { $0 + $1.unreadCount }
     }
 
+    private var currentUserId: String = ""
+
     func loadConversations(for userId: String) async {
+        currentUserId = userId
         guard supabase.isConfigured else { return }
         isLoading = true
         defer { isLoading = false }
@@ -25,9 +28,33 @@ class MessagingService {
                 .order("last_message_date", ascending: false)
                 .execute()
                 .value
-            conversations = rows.map { $0.toConversation() }
+            var result: [Conversation] = []
+            for row in rows {
+                var conv = row.toConversation()
+                let unread = await fetchUnreadCount(conversationId: conv.id, userId: userId)
+                conv.unreadCount = unread
+                result.append(conv)
+            }
+            conversations = result
         } catch {
             print("[MessagingService] loadConversations FAILED: \(error)")
+        }
+    }
+
+    private func fetchUnreadCount(conversationId: String, userId: String) async -> Int {
+        guard supabase.isConfigured else { return 0 }
+        do {
+            let rows: [ChatMessageRow] = try await supabase.client
+                .from("messages")
+                .select()
+                .eq("conversation_id", value: conversationId)
+                .eq("is_read", value: false)
+                .neq("sender_id", value: userId)
+                .execute()
+                .value
+            return rows.count
+        } catch {
+            return 0
         }
     }
 

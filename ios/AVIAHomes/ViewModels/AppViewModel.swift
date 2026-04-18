@@ -1420,7 +1420,12 @@ class AppViewModel {
             return
         }
 
-        let assignment = packageAssignments[index]
+        await loadAssignmentsFromSupabase()
+
+        guard let refreshedIndex = packageAssignments.firstIndex(where: { $0.packageId == packageId }) else {
+            return
+        }
+        let assignment = packageAssignments[refreshedIndex]
         let pkg = allPackages.first { $0.id == packageId }
         let notifType: NotificationType = status == .accepted ? .packageApproved : .packageDeclined
         let verb = status == .accepted ? "approved" : "declined"

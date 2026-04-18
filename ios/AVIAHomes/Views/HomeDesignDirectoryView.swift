@@ -6,6 +6,7 @@ struct HomeDesignDirectoryView: View {
     @State private var searchText: String = ""
     @State private var selectedBedFilter: Int? = nil
     @State private var selectedStoreyFilter: Int? = nil
+    @State private var minLotWidth: Double = 0
     @State private var sortOption: SortOption = .nameAZ
     @State private var isCompareMode: Bool = false
     @State private var compareSelections: [HomeDesign] = []
@@ -27,6 +28,10 @@ struct HomeDesignDirectoryView: View {
 
         if let storeys = selectedStoreyFilter {
             designs = designs.filter { $0.storeys == storeys }
+        }
+
+        if minLotWidth > 0 {
+            designs = designs.filter { $0.lotWidth <= minLotWidth }
         }
 
         switch sortOption {
@@ -169,11 +174,47 @@ struct HomeDesignDirectoryView: View {
                     }
                 }
 
-                if selectedBedFilter != nil || selectedStoreyFilter != nil {
+                Menu {
+                    Button {
+                        withAnimation(.spring(response: 0.3)) { minLotWidth = 0 }
+                    } label: {
+                        HStack { Text("Any width"); if minLotWidth == 0 { Image(systemName: "checkmark") } }
+                    }
+                    ForEach([10.0, 12.0, 14.0, 16.0, 18.0, 20.0], id: \.self) { w in
+                        Button {
+                            withAnimation(.spring(response: 0.3)) { minLotWidth = w }
+                        } label: {
+                            HStack {
+                                Text("Fits \(Int(w))m lot")
+                                if minLotWidth == w { Image(systemName: "checkmark") }
+                            }
+                        }
+                    }
+                } label: {
+                    HStack(spacing: 5) {
+                        Image(systemName: "ruler")
+                            .font(.neueCorp(10))
+                        Text(minLotWidth > 0 ? "Fits \(Int(minLotWidth))m" : "Lot Width")
+                            .font(.neueCaptionMedium)
+                    }
+                    .foregroundStyle(minLotWidth > 0 ? AVIATheme.aviaWhite : AVIATheme.textPrimary)
+                    .padding(.horizontal, 14)
+                    .padding(.vertical, 8)
+                    .background(minLotWidth > 0 ? AVIATheme.timelessBrown : AVIATheme.cardBackground)
+                    .clipShape(Capsule())
+                    .overlay {
+                        if minLotWidth == 0 {
+                            Capsule().stroke(AVIATheme.surfaceBorder, lineWidth: 1)
+                        }
+                    }
+                }
+
+                if selectedBedFilter != nil || selectedStoreyFilter != nil || minLotWidth > 0 {
                     Button {
                         withAnimation(.spring(response: 0.3)) {
                             selectedBedFilter = nil
                             selectedStoreyFilter = nil
+                            minLotWidth = 0
                         }
                     } label: {
                         HStack(spacing: 4) {
