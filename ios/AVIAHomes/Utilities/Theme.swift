@@ -268,6 +268,60 @@ extension View {
     }
 }
 
+// MARK: - Pill Button (Website-style CTA)
+
+struct AVIAPill: View {
+    enum Style {
+        case onImage
+        case onLight
+    }
+
+    let title: String
+    let icon: String
+    let style: Style
+
+    init(_ title: String, icon: String = "arrow.up.right", style: Style = .onImage) {
+        self.title = title
+        self.icon = icon
+        self.style = style
+    }
+
+    var body: some View {
+        HStack(spacing: 8) {
+            Text(title)
+                .font(.neueCaptionMedium)
+            Image(systemName: icon)
+                .font(.system(size: 11, weight: .semibold))
+        }
+        .foregroundStyle(foregroundColor)
+        .padding(.horizontal, 16)
+        .padding(.vertical, 10)
+        .background(
+            Capsule()
+                .fill(.ultraThinMaterial)
+                .environment(\.colorScheme, style == .onImage ? .dark : .light)
+        )
+        .overlay(
+            Capsule()
+                .stroke(strokeColor, lineWidth: 1)
+        )
+    }
+
+    private var foregroundColor: Color {
+        switch style {
+        case .onImage: AVIATheme.aviaWhite
+        case .onLight: AVIATheme.textPrimary
+        }
+    }
+
+    private var strokeColor: Color {
+        switch style {
+        case .onImage: AVIATheme.aviaWhite.opacity(0.9)
+        case .onLight: AVIATheme.textPrimary.opacity(0.35)
+        }
+    }
+}
+
 // MARK: - Hero Card
 
 struct HeroCard<Content: View>: View {

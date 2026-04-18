@@ -524,24 +524,7 @@ struct ClientDiscoverDashboardView: View {
 
                         Spacer(minLength: 8)
 
-                        HStack(spacing: 6) {
-                            Text("Explore \(tier.displayName)")
-                                .font(.neueCaptionMedium)
-                            Image(systemName: "arrow.right")
-                                .font(.system(size: 11, weight: .semibold))
-                        }
-                        .foregroundStyle(AVIATheme.aviaWhite)
-                        .padding(.horizontal, 14)
-                        .padding(.vertical, 8)
-                        .background(
-                            Capsule()
-                                .fill(.ultraThinMaterial)
-                                .environment(\.colorScheme, .dark)
-                        )
-                        .overlay(
-                            Capsule()
-                                .stroke(AVIATheme.aviaWhite.opacity(0.25), lineWidth: 0.5)
-                        )
+                        AVIAPill("Explore \(tier.displayName)", style: .onImage)
                     }
                 }
                 .frame(maxWidth: .infinity, alignment: .leading)
