@@ -75,23 +75,32 @@ class MessagingService {
         }
     }
 
-    func sendMessage(conversationId: String, senderId: String, content: String) async {
+    func sendMessage(conversationId: String, senderId: String, content: String, attachmentUrl: String? = nil, attachmentType: String? = nil) async {
         let msg = ChatMessage(
             id: UUID().uuidString,
             conversationId: conversationId,
             senderId: senderId,
             content: content,
             createdAt: .now,
-            isRead: false
+            isRead: false,
+            attachmentUrl: attachmentUrl,
+            attachmentType: attachmentType
         )
         currentMessages.append(msg)
+
+        let previewText: String = {
+            if !content.isEmpty { return content }
+            if let type = attachmentType, type.hasPrefix("image") { return "\u{1F4F7} Photo" }
+            if attachmentUrl != nil { return "\u{1F4CE} Attachment" }
+            return ""
+        }()
 
         if let idx = conversations.firstIndex(where: { $0.id == conversationId }) {
             let old = conversations[idx]
             conversations[idx] = Conversation(
                 id: old.id,
                 participantIds: old.participantIds,
-                lastMessage: content,
+                lastMessage: previewText,
                 lastMessageDate: .now,
                 lastSenderId: senderId,
                 unreadCount: old.unreadCount,
@@ -110,7 +119,7 @@ class MessagingService {
 
         _ = try? await supabase.client
             .from("conversations")
-            .update(["last_message": content, "last_message_date": ISO8601DateFormatter().string(from: .now), "last_sender_id": senderId])
+            .update(["last_message": previewText, "last_message_date": ISO8601DateFormatter().string(from: .now), "last_sender_id": senderId])
             .eq("id", value: conversationId)
             .execute()
     }
@@ -299,10 +308,23 @@ nonisolated struct ChatMessageRow: Codable, Sendable {
     let content: String
     let created_at: String
     let is_read: Bool
-    // Explicit CodingKeys so extra DB columns (topic, extension, payload, event,
-    // private, inserted_at, updated_at, uuid id) are silently ignored during decode.
+    let attachment_url: String?
+    let attachment_type: String?
+
     nonisolated enum CodingKeys: String, CodingKey {
-        case id, conversation_id, sender_id, content, created_at, is_read
+        case id, conversation_id, sender_id, content, created_at, is_read, attachment_url, attachment_type
+    }
+
+    init(from decoder: Decoder) throws {
+        let c = try decoder.container(keyedBy: CodingKeys.self)
+        id = try c.decode(String.self, forKey: .id)
+        conversation_id = try c.decode(String.self, forKey: .conversation_id)
+        sender_id = try c.decode(String.self, forKey: .sender_id)
+        content = (try? c.decode(String.self, forKey: .content)) ?? ""
+        created_at = (try? c.decode(String.self, forKey: .created_at)) ?? ""
+        is_read = (try? c.decode(Bool.self, forKey: .is_read)) ?? false
+        attachment_url = try? c.decode(String.self, forKey: .attachment_url)
+        attachment_type = try? c.decode(String.self, forKey: .attachment_type)
     }
 
     init(from m: ChatMessage) {
@@ -312,6 +334,8 @@ nonisolated struct ChatMessageRow: Codable, Sendable {
         content = m.content
         created_at = ISO8601DateFormatter().string(from: m.createdAt)
         is_read = m.isRead
+        attachment_url = m.attachmentUrl
+        attachment_type = m.attachmentType
     }
 
     func toChatMessage() -> ChatMessage {
@@ -323,7 +347,9 @@ nonisolated struct ChatMessageRow: Codable, Sendable {
             senderId: sender_id,
             content: content,
             createdAt: formatter.date(from: created_at) ?? .now,
-            isRead: is_read
+            isRead: is_read,
+            attachmentUrl: attachment_url,
+            attachmentType: attachment_type
         )
     }
 }

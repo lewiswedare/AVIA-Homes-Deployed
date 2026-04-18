@@ -36,6 +36,12 @@ nonisolated struct ChatMessage: Identifiable, Sendable, Hashable {
     let content: String
     let createdAt: Date
     var isRead: Bool
+    var attachmentUrl: String?
+    var attachmentType: String?
+
+    var hasImageAttachment: Bool {
+        (attachmentType ?? "").hasPrefix("image") && !(attachmentUrl ?? "").isEmpty
+    }
 
     nonisolated func hash(into hasher: inout Hasher) {
         hasher.combine(id)

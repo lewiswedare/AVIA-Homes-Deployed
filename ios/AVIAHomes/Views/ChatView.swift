@@ -1,4 +1,5 @@
 import SwiftUI
+import PhotosUI
 
 struct ChatView: View {
     let conversation: Conversation
@@ -7,9 +8,20 @@ struct ChatView: View {
     @State private var scrollProxy: ScrollViewProxy?
     @FocusState private var isInputFocused: Bool
 
+    @State private var showAttachMenu = false
+    @State private var photoItem: PhotosPickerItem?
+    @State private var showCamera = false
+    @State private var cameraImage: UIImage?
+    @State private var isUploading = false
+    @State private var fullScreenImage: ChatImagePreview?
+
     private var otherUser: ClientUser? {
         let otherId = conversation.otherParticipantId(currentUserId: viewModel.currentUser.id)
         return viewModel.allRegisteredUsers.first { $0.id == otherId }
+    }
+
+    private var headerTitle: String {
+        conversation.isGeneral ? "AVIA Homes" : (otherUser?.fullName ?? "Chat")
     }
 
     private var messages: [ChatMessage] {
@@ -22,18 +34,11 @@ struct ChatView: View {
             inputBar
         }
         .background(AVIATheme.background)
-        .navigationTitle(otherUser?.fullName ?? "Chat")
+        .navigationTitle("")
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
             ToolbarItem(placement: .principal) {
-                VStack(spacing: 1) {
-                    Text(otherUser?.fullName ?? "Chat")
-                        .font(.neueSubheadlineMedium)
-                        .foregroundStyle(AVIATheme.textPrimary)
-                    Text(otherUser?.role.rawValue ?? "")
-                        .font(.neueCaption2)
-                        .foregroundStyle(AVIATheme.textTertiary)
-                }
+                headerView
             }
         }
         .task {
@@ -47,25 +52,82 @@ struct ChatView: View {
         .onChange(of: messages.count) { _, _ in
             scrollToBottom()
         }
+        .onChange(of: photoItem) { _, newItem in
+            if let newItem {
+                Task { await handlePhotoPick(newItem) }
+            }
+        }
+        .onChange(of: cameraImage) { _, newImage in
+            if let newImage {
+                Task { await handleCameraImage(newImage) }
+            }
+        }
+        .confirmationDialog("Attach", isPresented: $showAttachMenu, titleVisibility: .hidden) {
+            Button("Take Photo") { showCamera = true }
+            Button("Cancel", role: .cancel) {}
+        }
+        .fullScreenCover(isPresented: $showCamera) {
+            CameraPickerRepresentable(image: $cameraImage)
+                .ignoresSafeArea()
+        }
+        .fullScreenCover(item: $fullScreenImage) { item in
+            ChatImageViewer(urlString: item.urlString)
+        }
     }
+
+    // MARK: - Header
+
+    private var headerView: some View {
+        VStack(spacing: 4) {
+            headerAvatar
+            Text(headerTitle)
+                .font(.neueCaptionMedium)
+                .foregroundStyle(AVIATheme.textPrimary)
+                .lineLimit(1)
+        }
+        .padding(.top, 2)
+    }
+
+    @ViewBuilder
+    private var headerAvatar: some View {
+        if conversation.isGeneral {
+            Text("A")
+                .font(.neueCorpMedium(14))
+                .foregroundStyle(AVIATheme.aviaWhite)
+                .frame(width: 32, height: 32)
+                .background(AVIATheme.primaryGradient)
+                .clipShape(Circle())
+        } else {
+            UserAvatarView(
+                avatarUrl: otherUser?.avatarUrl,
+                initials: otherUser?.initials ?? "?",
+                size: 32
+            )
+        }
+    }
+
+    // MARK: - Scroll / messages
 
     private var messagesScrollView: some View {
         ScrollViewReader { proxy in
             ScrollView {
-                LazyVStack(spacing: 4) {
-                    ForEach(groupedMessages, id: \.0) { dateString, dayMessages in
-                        dateSeparator(dateString)
-                        ForEach(dayMessages) { message in
-                            messageBubble(message)
-                                .id(message.id)
+                LazyVStack(spacing: 2) {
+                    ForEach(Array(messages.enumerated()), id: \.element.id) { index, message in
+                        if shouldShowDateSeparator(at: index) {
+                            dateSeparator(dateSeparatorText(for: message.createdAt))
+                                .padding(.top, index == 0 ? 4 : 16)
+                                .padding(.bottom, 4)
                         }
+                        messageRow(message, at: index)
+                            .id(message.id)
                     }
                     Color.clear.frame(height: 1).id("bottom")
                 }
-                .padding(.horizontal, 16)
-                .padding(.top, 12)
+                .padding(.horizontal, 12)
+                .padding(.top, 8)
                 .padding(.bottom, 8)
             }
+            .scrollDismissesKeyboard(.interactively)
             .onAppear {
                 scrollProxy = proxy
                 DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
@@ -75,128 +137,243 @@ struct ChatView: View {
         }
     }
 
-    private var groupedMessages: [(String, [ChatMessage])] {
-        let calendar = Calendar.current
-        let grouped = Dictionary(grouping: messages) { msg -> String in
-            if calendar.isDateInToday(msg.createdAt) {
-                return "Today"
-            } else if calendar.isDateInYesterday(msg.createdAt) {
-                return "Yesterday"
-            } else {
-                return msg.createdAt.formatted(date: .abbreviated, time: .omitted)
-            }
-        }
-        let sorted = messages.sorted { $0.createdAt < $1.createdAt }
-        var result: [(String, [ChatMessage])] = []
-        var currentKey = ""
-        var currentGroup: [ChatMessage] = []
+    private func shouldShowDateSeparator(at index: Int) -> Bool {
+        guard index > 0 else { return true }
+        let previous = messages[index - 1].createdAt
+        let current = messages[index].createdAt
+        return current.timeIntervalSince(previous) > 60 * 60
+    }
 
-        for msg in sorted {
-            let key: String
-            if calendar.isDateInToday(msg.createdAt) {
-                key = "Today"
-            } else if calendar.isDateInYesterday(msg.createdAt) {
-                key = "Yesterday"
-            } else {
-                key = msg.createdAt.formatted(date: .abbreviated, time: .omitted)
-            }
-            if key != currentKey {
-                if !currentGroup.isEmpty {
-                    result.append((currentKey, currentGroup))
-                }
-                currentKey = key
-                currentGroup = [msg]
-            } else {
-                currentGroup.append(msg)
-            }
+    private func dateSeparatorText(for date: Date) -> String {
+        let calendar = Calendar.current
+        let timeString = date.formatted(date: .omitted, time: .shortened)
+        if calendar.isDateInToday(date) {
+            return timeString
+        } else if calendar.isDateInYesterday(date) {
+            return "Yesterday \(timeString)"
+        } else if let days = calendar.dateComponents([.day], from: date, to: .now).day, days < 7 {
+            let weekday = date.formatted(.dateTime.weekday(.wide))
+            return "\(weekday) \(timeString)"
+        } else {
+            return date.formatted(.dateTime.day().month().year().hour().minute())
         }
-        if !currentGroup.isEmpty {
-            result.append((currentKey, currentGroup))
-        }
-        return result
     }
 
     private func dateSeparator(_ text: String) -> some View {
-        HStack {
-            Rectangle().fill(AVIATheme.surfaceBorder).frame(height: 0.5)
-            Text(text)
-                .font(.neueCaption2Medium)
-                .foregroundStyle(AVIATheme.textTertiary)
-                .fixedSize()
-            Rectangle().fill(AVIATheme.surfaceBorder).frame(height: 0.5)
-        }
-        .padding(.vertical, 12)
+        Text(text)
+            .font(.neueCaption2Medium)
+            .foregroundStyle(AVIATheme.textTertiary)
+            .frame(maxWidth: .infinity)
+            .multilineTextAlignment(.center)
     }
 
-    private func messageBubble(_ message: ChatMessage) -> some View {
-        let isMine = message.senderId == viewModel.currentUser.id
-        let showTime = shouldShowTime(for: message)
+    // MARK: - Rows
 
-        return VStack(alignment: isMine ? .trailing : .leading, spacing: 2) {
-            HStack {
-                if isMine { Spacer(minLength: 60) }
+    @ViewBuilder
+    private func messageRow(_ message: ChatMessage, at index: Int) -> some View {
+        let isMine = message.senderId == viewModel.currentUser.id
+        let isLastInCluster = isLastInCluster(at: index)
+        let showAvatar = !isMine && isLastInCluster
+        let showTail = isLastInCluster
+
+        HStack(alignment: .bottom, spacing: 6) {
+            if !isMine {
+                if showAvatar {
+                    senderAvatar(for: message)
+                } else {
+                    Color.clear.frame(width: 28, height: 28)
+                }
+            } else {
+                Spacer(minLength: 60)
+            }
+
+            bubble(for: message, isMine: isMine, showTail: showTail)
+
+            if !isMine {
+                Spacer(minLength: 60)
+            }
+        }
+        .padding(.top, isFirstInCluster(at: index) ? 6 : 1)
+    }
+
+    @ViewBuilder
+    private func senderAvatar(for message: ChatMessage) -> some View {
+        if conversation.isGeneral && message.senderId != viewModel.currentUser.id {
+            // General conversation: sender may be any admin/staff
+            if let sender = viewModel.allRegisteredUsers.first(where: { $0.id == message.senderId }) {
+                UserAvatarView(user: sender, size: 28)
+            } else {
+                Text("A")
+                    .font(.neueCorpMedium(12))
+                    .foregroundStyle(AVIATheme.aviaWhite)
+                    .frame(width: 28, height: 28)
+                    .background(AVIATheme.primaryGradient)
+                    .clipShape(Circle())
+            }
+        } else {
+            UserAvatarView(
+                avatarUrl: otherUser?.avatarUrl,
+                initials: otherUser?.initials ?? "?",
+                size: 28
+            )
+        }
+    }
+
+    private func isFirstInCluster(at index: Int) -> Bool {
+        guard index > 0 else { return true }
+        let prev = messages[index - 1]
+        let curr = messages[index]
+        if prev.senderId != curr.senderId { return true }
+        if curr.createdAt.timeIntervalSince(prev.createdAt) > 120 { return true }
+        return false
+    }
+
+    private func isLastInCluster(at index: Int) -> Bool {
+        let next = index + 1
+        guard next < messages.count else { return true }
+        let curr = messages[index]
+        let nxt = messages[next]
+        if nxt.senderId != curr.senderId { return true }
+        if nxt.createdAt.timeIntervalSince(curr.createdAt) > 120 { return true }
+        return false
+    }
+
+    // MARK: - Bubble
+
+    @ViewBuilder
+    private func bubble(for message: ChatMessage, isMine: Bool, showTail: Bool) -> some View {
+        let bubbleColor: Color = isMine ? AVIATheme.timelessBrown : AVIATheme.cardBackground
+        let textColor: Color = isMine ? AVIATheme.aviaWhite : AVIATheme.textPrimary
+
+        VStack(alignment: isMine ? .trailing : .leading, spacing: 4) {
+            if message.hasImageAttachment, let urlString = message.attachmentUrl, let url = URL(string: urlString) {
+                Button {
+                    fullScreenImage = ChatImagePreview(urlString: urlString)
+                } label: {
+                    Color(.secondarySystemBackground)
+                        .frame(width: 240, height: 240)
+                        .overlay {
+                            AsyncImage(url: url) { phase in
+                                switch phase {
+                                case .success(let image):
+                                    image
+                                        .resizable()
+                                        .aspectRatio(contentMode: .fill)
+                                        .allowsHitTesting(false)
+                                case .empty:
+                                    ProgressView().tint(AVIATheme.textSecondary)
+                                default:
+                                    Image(systemName: "photo")
+                                        .font(.system(size: 32))
+                                        .foregroundStyle(AVIATheme.textTertiary)
+                                }
+                            }
+                        }
+                        .clipShape(iMessageBubbleShape(isMine: isMine, hasTail: showTail && message.content.isEmpty))
+                }
+                .buttonStyle(.plain)
+            }
+
+            if !message.content.isEmpty {
                 Text(message.content)
                     .font(.neueSubheadline)
-                    .foregroundStyle(isMine ? AVIATheme.aviaWhite : AVIATheme.textPrimary)
+                    .foregroundStyle(textColor)
                     .padding(.horizontal, 14)
-                    .padding(.vertical, 10)
-                    .background(isMine ? AVIATheme.timelessBrown : AVIATheme.cardBackground)
-                    .clipShape(.rect(cornerRadius: 18, style: .continuous))
-                if !isMine { Spacer(minLength: 60) }
-            }
-
-            if showTime {
-                Text(message.createdAt.formatted(date: .omitted, time: .shortened))
-                    .font(.neueCaption2)
-                    .foregroundStyle(AVIATheme.textTertiary)
-                    .padding(.horizontal, 4)
-                    .padding(.top, 1)
-                    .padding(.bottom, 4)
+                    .padding(.vertical, 9)
+                    .background(bubbleColor)
+                    .clipShape(iMessageBubbleShape(isMine: isMine, hasTail: showTail))
             }
         }
-        .frame(maxWidth: .infinity, alignment: isMine ? .trailing : .leading)
     }
 
-    private func shouldShowTime(for message: ChatMessage) -> Bool {
-        guard let index = messages.firstIndex(where: { $0.id == message.id }) else { return true }
-        let nextIndex = messages.index(after: index)
-        guard nextIndex < messages.count else { return true }
-        let next = messages[nextIndex]
-        if next.senderId != message.senderId { return true }
-        return next.createdAt.timeIntervalSince(message.createdAt) > 300
-    }
+    // MARK: - Input bar
 
     private var inputBar: some View {
-        HStack(spacing: 10) {
-            TextField("Message", text: $messageText, axis: .vertical)
-                .font(.neueSubheadline)
-                .foregroundStyle(AVIATheme.textPrimary)
-                .tint(AVIATheme.timelessBrown)
-                .lineLimit(1...5)
-                .padding(.horizontal, 14)
-                .padding(.vertical, 10)
-                .background(AVIATheme.cardBackground)
-                .clipShape(.rect(cornerRadius: 20))
-                .overlay {
-                    RoundedRectangle(cornerRadius: 20)
-                        .stroke(AVIATheme.surfaceBorder, lineWidth: 1)
-                }
-                .focused($isInputFocused)
+        HStack(alignment: .bottom, spacing: 8) {
+            attachmentButton
 
-            Button {
-                sendMessage()
-            } label: {
-                Image(systemName: "arrow.up.circle.fill")
-                    .font(.system(size: 32))
-                    .foregroundStyle(messageText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty ? AVIATheme.surfaceBorder : AVIATheme.timelessBrown)
+            HStack(alignment: .bottom, spacing: 8) {
+                TextField("iMessage", text: $messageText, axis: .vertical)
+                    .font(.neueSubheadline)
+                    .foregroundStyle(AVIATheme.textPrimary)
+                    .tint(AVIATheme.timelessBrown)
+                    .lineLimit(1...5)
+                    .padding(.horizontal, 14)
+                    .padding(.vertical, 8)
+                    .focused($isInputFocused)
+
+                if !messageText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+                    Button {
+                        sendMessage()
+                    } label: {
+                        Image(systemName: "arrow.up")
+                            .font(.system(size: 15, weight: .bold))
+                            .foregroundStyle(AVIATheme.aviaWhite)
+                            .frame(width: 28, height: 28)
+                            .background(AVIATheme.timelessBrown)
+                            .clipShape(Circle())
+                    }
+                    .sensoryFeedback(.impact(weight: .light), trigger: messages.count)
+                    .padding(.trailing, 4)
+                    .padding(.bottom, 4)
+                    .transition(.scale.combined(with: .opacity))
+                }
             }
-            .disabled(messageText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
-            .sensoryFeedback(.impact(weight: .light), trigger: messages.count)
+            .background(
+                Capsule(style: .continuous)
+                    .fill(AVIATheme.cardBackground)
+            )
+            .overlay(
+                Capsule(style: .continuous)
+                    .stroke(AVIATheme.surfaceBorder, lineWidth: 0.5)
+            )
         }
-        .padding(.horizontal, 16)
-        .padding(.vertical, 10)
-        .background(.ultraThinMaterial)
+        .animation(.spring(duration: 0.25), value: messageText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
+        .padding(.horizontal, 12)
+        .padding(.vertical, 8)
+        .background(AVIATheme.background)
+        .overlay(alignment: .top) {
+            Rectangle()
+                .fill(AVIATheme.surfaceBorder.opacity(0.6))
+                .frame(height: 0.5)
+        }
     }
+
+    @ViewBuilder
+    private var attachmentButton: some View {
+        Menu {
+            Button {
+                showCamera = true
+            } label: {
+                Label("Take Photo", systemImage: "camera")
+            }
+
+            PhotosPicker(selection: $photoItem, matching: .images) {
+                Label("Photo Library", systemImage: "photo.on.rectangle")
+            }
+        } label: {
+            Image(systemName: "plus")
+                .font(.system(size: 18, weight: .medium))
+                .foregroundStyle(AVIATheme.timelessBrown)
+                .frame(width: 32, height: 32)
+                .background(AVIATheme.cardBackground)
+                .clipShape(Circle())
+                .overlay(
+                    Circle().stroke(AVIATheme.surfaceBorder, lineWidth: 0.5)
+                )
+        }
+        .disabled(isUploading)
+        .overlay {
+            if isUploading {
+                ProgressView()
+                    .tint(AVIATheme.timelessBrown)
+                    .scaleEffect(0.7)
+            }
+        }
+        .padding(.bottom, 2)
+    }
+
+    // MARK: - Sending
 
     private func sendMessage() {
         let text = messageText.trimmingCharacters(in: .whitespacesAndNewlines)
@@ -209,27 +386,146 @@ struct ChatView: View {
                 senderId: viewModel.currentUser.id,
                 content: text
             )
-
-            let recipientId = conversation.otherParticipantId(currentUserId: viewModel.currentUser.id)
-            await viewModel.notificationService.createNotification(
-                recipientId: recipientId,
-                senderId: viewModel.currentUser.id,
-                senderName: viewModel.currentUser.fullName,
-                type: .newMessage,
-                title: "New Message",
-                message: "\(viewModel.currentUser.fullName): \(text.prefix(100))",
-                referenceId: conversation.id,
-                referenceType: "conversation"
-            )
-
+            await notifyRecipient(preview: text)
             scrollToBottom()
         }
+    }
+
+    private func handlePhotoPick(_ item: PhotosPickerItem) async {
+        defer { photoItem = nil }
+        guard let data = await ImageUploadService.shared.loadTransferable(from: item) else { return }
+        await uploadAndSend(data: data)
+    }
+
+    private func handleCameraImage(_ image: UIImage) async {
+        defer { cameraImage = nil }
+        guard let data = image.jpegData(compressionQuality: 0.85) else { return }
+        await uploadAndSend(data: data)
+    }
+
+    private func uploadAndSend(data: Data) async {
+        isUploading = true
+        defer { isUploading = false }
+        let fileName = "\(conversation.id)_\(UUID().uuidString).jpg"
+        guard let url = await ImageUploadService.shared.uploadImage(data, folder: "messages", fileName: fileName) else {
+            return
+        }
+        await viewModel.messagingService.sendMessage(
+            conversationId: conversation.id,
+            senderId: viewModel.currentUser.id,
+            content: "",
+            attachmentUrl: url,
+            attachmentType: "image/jpeg"
+        )
+        await notifyRecipient(preview: "\u{1F4F7} Photo")
+        scrollToBottom()
+    }
+
+    private func notifyRecipient(preview: String) async {
+        let recipientId = conversation.otherParticipantId(currentUserId: viewModel.currentUser.id)
+        guard !recipientId.isEmpty else { return }
+        await viewModel.notificationService.createNotification(
+            recipientId: recipientId,
+            senderId: viewModel.currentUser.id,
+            senderName: viewModel.currentUser.fullName,
+            type: .newMessage,
+            title: "New Message",
+            message: "\(viewModel.currentUser.fullName): \(preview.prefix(100))",
+            referenceId: conversation.id,
+            referenceType: "conversation"
+        )
     }
 
     private func scrollToBottom() {
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
             withAnimation(.spring(duration: 0.25)) {
                 scrollProxy?.scrollTo("bottom", anchor: .bottom)
+            }
+        }
+    }
+}
+
+// MARK: - iMessage-style bubble shape
+
+private struct iMessageBubbleShape: Shape {
+    let isMine: Bool
+    let hasTail: Bool
+
+    func path(in rect: CGRect) -> Path {
+        let radius: CGFloat = 18
+        if !hasTail {
+            return Path(roundedRect: rect, cornerRadius: radius, style: .continuous)
+        }
+
+        var path = Path()
+        let w = rect.width
+        let h = rect.height
+        let r = min(radius, min(w, h) / 2)
+        let tail: CGFloat = 6
+
+        if isMine {
+            path.move(to: CGPoint(x: r, y: 0))
+            path.addLine(to: CGPoint(x: w - r, y: 0))
+            path.addQuadCurve(to: CGPoint(x: w, y: r), control: CGPoint(x: w, y: 0))
+            path.addLine(to: CGPoint(x: w, y: h - r))
+            path.addQuadCurve(to: CGPoint(x: w - tail, y: h), control: CGPoint(x: w, y: h))
+            path.addLine(to: CGPoint(x: r, y: h))
+            path.addQuadCurve(to: CGPoint(x: 0, y: h - r), control: CGPoint(x: 0, y: h))
+            path.addLine(to: CGPoint(x: 0, y: r))
+            path.addQuadCurve(to: CGPoint(x: r, y: 0), control: CGPoint(x: 0, y: 0))
+        } else {
+            path.move(to: CGPoint(x: r, y: 0))
+            path.addLine(to: CGPoint(x: w - r, y: 0))
+            path.addQuadCurve(to: CGPoint(x: w, y: r), control: CGPoint(x: w, y: 0))
+            path.addLine(to: CGPoint(x: w, y: h - r))
+            path.addQuadCurve(to: CGPoint(x: w - r, y: h), control: CGPoint(x: w, y: h))
+            path.addLine(to: CGPoint(x: tail, y: h))
+            path.addQuadCurve(to: CGPoint(x: 0, y: h - r), control: CGPoint(x: 0, y: h))
+            path.addLine(to: CGPoint(x: 0, y: r))
+            path.addQuadCurve(to: CGPoint(x: r, y: 0), control: CGPoint(x: 0, y: 0))
+        }
+
+        path.closeSubpath()
+        return path
+    }
+}
+
+private struct ChatImagePreview: Identifiable {
+    let urlString: String
+    var id: String { urlString }
+}
+
+private struct ChatImageViewer: View {
+    let urlString: String
+    @Environment(\.dismiss) private var dismiss
+
+    var body: some View {
+        NavigationStack {
+            ZStack {
+                Color.black.ignoresSafeArea()
+                if let url = URL(string: urlString) {
+                    AsyncImage(url: url) { phase in
+                        switch phase {
+                        case .success(let image):
+                            image
+                                .resizable()
+                                .aspectRatio(contentMode: .fit)
+                        case .empty:
+                            ProgressView().tint(.white)
+                        default:
+                            Image(systemName: "exclamationmark.triangle")
+                                .foregroundStyle(.white)
+                        }
+                    }
+                    .padding()
+                }
+            }
+            .toolbarBackground(.hidden, for: .navigationBar)
+            .toolbar {
+                ToolbarItem(placement: .topBarTrailing) {
+                    Button("Done") { dismiss() }
+                        .tint(.white)
+                }
             }
         }
     }
