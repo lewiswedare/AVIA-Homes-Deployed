@@ -5,9 +5,7 @@ struct PackageDetailView: View {
     @Environment(AppViewModel.self) private var viewModel
     @State private var showPackageSharing = false
     @State private var showSpecComparison = false
-    @State private var showResponseConfirmation = false
-    @State private var responseNotes = ""
-    @State private var pendingAction: PackageResponseStatus?
+    @State private var showDeclineConfirmation = false
     @State private var showEOIForm = false
     @State private var showContractSigning = false
     @State private var contractRecord: ContractSignatureRow?
@@ -63,16 +61,18 @@ struct PackageDetailView: View {
                 }
             }
         }
-        .alert("Confirm Response", isPresented: $showResponseConfirmation) {
-            TextField("Notes (optional)", text: $responseNotes)
-            Button("Cancel", role: .cancel) { }
-            Button("Decline", role: .destructive) {
-                if let action = pendingAction {
-                    viewModel.respondToPackage(packageId: package.id, status: action, notes: responseNotes.isEmpty ? nil : responseNotes)
-                }
+        .confirmationDialog(
+            "Decline this house & land package?",
+            isPresented: $showDeclineConfirmation,
+            titleVisibility: .visible
+        ) {
+            Button("Decline Package", role: .destructive) {
+                print("[PackageDetailView] Declining package \(package.id)")
+                viewModel.respondToPackage(packageId: package.id, status: .declined)
             }
+            Button("Cancel", role: .cancel) { }
         } message: {
-            Text("Decline this house & land package?")
+            Text("You can change your response later.")
         }
         .sheet(isPresented: $showEOIForm) {
             if let assign = assignment {
@@ -1312,10 +1312,9 @@ struct PackageDetailView: View {
                 .sensoryFeedback(.impact(weight: .medium), trigger: showEOIForm)
             }
 
-            if currentResponse?.status != .declined && assignment?.eoiStatus == "none" {
+            if currentResponse?.status != .declined && (assignment?.eoiStatus == "none" || assignment?.eoiStatus == nil) {
                 Button {
-                    pendingAction = .declined
-                    showResponseConfirmation = true
+                    showDeclineConfirmation = true
                 } label: {
                     HStack(spacing: 8) {
                         Image(systemName: "xmark.circle")
