@@ -444,11 +444,50 @@ struct PackageDetailView: View {
                         .background(AVIATheme.surfaceElevated)
                         .clipShape(.rect(cornerRadius: 14))
 
-                        HStack(spacing: 8) {
-                            dimensionTag(icon: "arrow.left.and.right", value: String(format: "%.1fm wide", design.houseWidth))
-                            dimensionTag(icon: "arrow.up.and.down", value: String(format: "%.1fm long", design.houseLength))
-                            dimensionTag(icon: "ruler", value: String(format: "%.1fm lot", design.lotWidth))
+                        VStack(alignment: .leading, spacing: 10) {
+                            Text("HOUSE DIMENSIONS")
+                                .font(.neueCaption2Medium)
+                                .kerning(1.0)
+                                .foregroundStyle(AVIATheme.timelessBrown)
+
+                            HStack(spacing: 10) {
+                                dimensionStat(
+                                    icon: "square.dashed",
+                                    value: String(format: "%.0f", design.squareMeters),
+                                    unit: "m²",
+                                    label: "Total Living"
+                                )
+                                dimensionStat(
+                                    icon: "arrow.left.and.right",
+                                    value: String(format: "%.1f", design.houseWidth),
+                                    unit: "m",
+                                    label: "Width"
+                                )
+                                dimensionStat(
+                                    icon: "arrow.up.and.down",
+                                    value: String(format: "%.1f", design.houseLength),
+                                    unit: "m",
+                                    label: "Length"
+                                )
+                            }
+
+                            HStack(spacing: 6) {
+                                Image(systemName: "ruler")
+                                    .font(.system(size: 11, weight: .semibold))
+                                    .foregroundStyle(AVIATheme.textTertiary)
+                                Text("Minimum lot width:")
+                                    .font(.neueCaption2)
+                                    .foregroundStyle(AVIATheme.textTertiary)
+                                Text(String(format: "%.1fm", design.lotWidth))
+                                    .font(.neueCaption2Medium)
+                                    .foregroundStyle(AVIATheme.textSecondary)
+                                Spacer()
+                            }
                         }
+                        .padding(14)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .background(AVIATheme.surfaceElevated)
+                        .clipShape(.rect(cornerRadius: 14))
 
                         if !design.floorplanImageURL.isEmpty {
                             VStack(alignment: .leading, spacing: 10) {
@@ -1391,6 +1430,29 @@ struct PackageDetailView: View {
         Rectangle()
             .fill(AVIATheme.surfaceBorder)
             .frame(width: 1, height: 40)
+    }
+
+    private func dimensionStat(icon: String, value: String, unit: String, label: String) -> some View {
+        VStack(spacing: 4) {
+            Image(systemName: icon)
+                .font(.system(size: 12, weight: .semibold))
+                .foregroundStyle(AVIATheme.timelessBrown)
+            HStack(alignment: .lastTextBaseline, spacing: 2) {
+                Text(value)
+                    .font(.neueCorpMedium(20))
+                    .foregroundStyle(AVIATheme.textPrimary)
+                Text(unit)
+                    .font(.neueCaption2Medium)
+                    .foregroundStyle(AVIATheme.textSecondary)
+            }
+            Text(label)
+                .font(.neueCaption2)
+                .foregroundStyle(AVIATheme.textTertiary)
+        }
+        .frame(maxWidth: .infinity)
+        .padding(.vertical, 10)
+        .background(AVIATheme.background.opacity(0.5))
+        .clipShape(.rect(cornerRadius: 10))
     }
 
     private func dimensionTag(icon: String, value: String) -> some View {
