@@ -415,6 +415,7 @@
 				DEVELOPMENT_TEAM = "";
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_CFBundleDisplayName = "AVIA©";
 				INFOPLIST_KEY_ITSAppUsesNonExemptEncryption = NO;
 				INFOPLIST_KEY_NSCalendarsFullAccessUsageDescription = "AVIA Homes needs calendar access to add your build milestones and appointments.";
 				INFOPLIST_KEY_NSCameraUsageDescription = "AVIA Homes needs camera access to take photos for your support requests.";
@@ -463,6 +464,7 @@
 				DEVELOPMENT_TEAM = "";
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_CFBundleDisplayName = "AVIA©";
 				INFOPLIST_KEY_ITSAppUsesNonExemptEncryption = NO;
 				INFOPLIST_KEY_NSCalendarsFullAccessUsageDescription = "AVIA Homes needs calendar access to add your build milestones and appointments.";
 				INFOPLIST_KEY_NSCameraUsageDescription = "AVIA Homes needs camera access to take photos for your support requests.";
