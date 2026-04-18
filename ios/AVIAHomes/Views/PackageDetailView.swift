@@ -496,6 +496,7 @@ struct PackageDetailView: View {
 
             if let facade = resolvedFacade {
 
+            NavigationLink(value: facade) {
             BentoCard(cornerRadius: 16) {
                 VStack(spacing: 0) {
                     Color(AVIATheme.surfaceElevated)
@@ -553,6 +554,8 @@ struct PackageDetailView: View {
                     .padding(14)
                 }
             }
+            }
+            .buttonStyle(.plain)
 
             NavigationLink(value: facade) {
                 HStack(spacing: 8) {
