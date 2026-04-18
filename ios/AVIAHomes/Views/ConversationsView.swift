@@ -190,9 +190,59 @@ struct NewConversationSheet: View {
         return users
     }
 
+    private var showAVIAOption: Bool {
+        switch viewModel.currentRole {
+        case .client, .partner, .salesPartner:
+            return true
+        default:
+            return false
+        }
+    }
+
+    private var matchesAVIASearch: Bool {
+        if searchText.isEmpty { return true }
+        return "AVIA".localizedStandardContains(searchText) ||
+            "AVIA Homes".localizedStandardContains(searchText) ||
+            "admin".localizedStandardContains(searchText) ||
+            "team".localizedStandardContains(searchText) ||
+            "support".localizedStandardContains(searchText)
+    }
+
     var body: some View {
         NavigationStack {
             List {
+                if showAVIAOption && matchesAVIASearch {
+                    Button {
+                        Task {
+                            let _ = await viewModel.messagingService.getOrCreateGeneralConversation(
+                                currentUserId: viewModel.currentUser.id
+                            )
+                            dismiss()
+                        }
+                    } label: {
+                        HStack(spacing: 12) {
+                            Text("A")
+                                .font(.neueCorpMedium(16))
+                                .foregroundStyle(AVIATheme.aviaWhite)
+                                .frame(width: 40, height: 40)
+                                .background(AVIATheme.primaryGradient)
+                                .clipShape(Circle())
+
+                            VStack(alignment: .leading, spacing: 2) {
+                                HStack(spacing: 6) {
+                                    Text("AVIA")
+                                        .font(.neueSubheadlineMedium)
+                                        .foregroundStyle(AVIATheme.textPrimary)
+                                    StatusBadge(title: "General", color: AVIATheme.warning)
+                                }
+                                Text("Message the AVIA Homes team")
+                                    .font(.neueCaption)
+                                    .foregroundStyle(AVIATheme.textSecondary)
+                            }
+                        }
+                    }
+                }
+
                 ForEach(availableUsers, id: \.id) { user in
                     Button {
                         Task {
