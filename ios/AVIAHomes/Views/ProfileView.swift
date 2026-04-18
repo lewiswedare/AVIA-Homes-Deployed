@@ -96,12 +96,7 @@ struct ProfileView: View {
 
     private var profileHeader: some View {
         HStack(spacing: 16) {
-            Text(String(viewModel.currentUser.firstName.prefix(1)) + String(viewModel.currentUser.lastName.prefix(1)))
-                .font(.neueCorpMedium(22))
-                .foregroundStyle(AVIATheme.aviaWhite)
-                .frame(width: 56, height: 56)
-                .background(AVIATheme.primaryGradient)
-                .clipShape(Circle())
+            UserAvatarView(user: viewModel.currentUser, size: 56, fontSize: 22)
 
             VStack(alignment: .leading, spacing: 4) {
                 Text(viewModel.currentUser.fullName)

@@ -55,12 +55,20 @@ struct ConversationsView: View {
         let hasUnread = conversation.unreadCount > 0 && conversation.lastSenderId != viewModel.currentUser.id
 
         return HStack(spacing: 14) {
-            Text(otherUser?.initials ?? "?")
-                .font(.neueCorpMedium(14))
-                .foregroundStyle(AVIATheme.aviaWhite)
-                .frame(width: 48, height: 48)
-                .background(AVIATheme.primaryGradient)
-                .clipShape(Circle())
+            if conversation.isGeneral {
+                Text("A")
+                    .font(.neueCorpMedium(18))
+                    .foregroundStyle(AVIATheme.aviaWhite)
+                    .frame(width: 48, height: 48)
+                    .background(AVIATheme.primaryGradient)
+                    .clipShape(Circle())
+            } else {
+                UserAvatarView(
+                    avatarUrl: otherUser?.avatarUrl,
+                    initials: otherUser?.initials ?? "?",
+                    size: 48
+                )
+            }
 
             VStack(alignment: .leading, spacing: 4) {
                 HStack {
@@ -254,12 +262,7 @@ struct NewConversationSheet: View {
                         }
                     } label: {
                         HStack(spacing: 12) {
-                            Text(user.initials.isEmpty ? "?" : user.initials)
-                                .font(.neueCaptionMedium)
-                                .foregroundStyle(AVIATheme.aviaWhite)
-                                .frame(width: 40, height: 40)
-                                .background(AVIATheme.primaryGradient)
-                                .clipShape(Circle())
+                            UserAvatarView(user: user, size: 40)
 
                             VStack(alignment: .leading, spacing: 2) {
                                 Text(user.fullName)
