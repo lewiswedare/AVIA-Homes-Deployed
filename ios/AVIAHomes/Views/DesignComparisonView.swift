@@ -32,9 +32,6 @@ struct DesignComparisonView: View {
                     }
                 }
             }
-            .navigationDestination(for: HomeDesign.self) { design in
-                HomeDesignDetailView(design: design)
-            }
         }
     }
 
@@ -48,39 +45,37 @@ struct DesignComparisonView: View {
     }
 
     private func designImageCard(design: HomeDesign) -> some View {
-        NavigationLink(value: design) {
-            Color(AVIATheme.surfaceElevated)
-                .aspectRatio(4 / 3, contentMode: .fit)
-                .overlay {
-                    AsyncImage(url: URL(string: design.imageURL)) { phase in
-                        if let image = phase.image {
-                            image.resizable().aspectRatio(contentMode: .fill)
-                        } else if phase.error != nil {
-                            Image(systemName: "house.fill")
-                                .font(.neueCorpMedium(28))
-                                .foregroundStyle(AVIATheme.timelessBrown.opacity(0.3))
-                        } else {
-                            ProgressView()
-                        }
+        Color(AVIATheme.surfaceElevated)
+            .aspectRatio(4 / 3, contentMode: .fit)
+            .overlay {
+                AsyncImage(url: URL(string: design.imageURL)) { phase in
+                    if let image = phase.image {
+                        image.resizable().aspectRatio(contentMode: .fill)
+                    } else if phase.error != nil {
+                        Image(systemName: "house.fill")
+                            .font(.neueCorpMedium(28))
+                            .foregroundStyle(AVIATheme.timelessBrown.opacity(0.3))
+                    } else {
+                        ProgressView()
                     }
-                    .allowsHitTesting(false)
                 }
-                .overlay(alignment: .bottom) {
-                    VStack(spacing: 2) {
-                        Text(design.name)
-                            .font(.neueCaptionMedium)
-                            .foregroundStyle(AVIATheme.aviaWhite)
-                            .lineLimit(1)
-                        Text(String(format: "%.0fm²", design.squareMeters))
-                            .font(.neueCaption2)
-                            .foregroundStyle(AVIATheme.aviaWhite.opacity(0.85))
-                    }
-                    .frame(maxWidth: .infinity)
-                    .padding(.vertical, 10)
-                    .background(.ultraThinMaterial)
+                .allowsHitTesting(false)
+            }
+            .overlay(alignment: .bottom) {
+                VStack(spacing: 2) {
+                    Text(design.name)
+                        .font(.neueCaptionMedium)
+                        .foregroundStyle(AVIATheme.aviaWhite)
+                        .lineLimit(1)
+                    Text(String(format: "%.0fm²", design.squareMeters))
+                        .font(.neueCaption2)
+                        .foregroundStyle(AVIATheme.aviaWhite.opacity(0.85))
                 }
-                .clipShape(.rect(cornerRadius: 14))
-        }
+                .frame(maxWidth: .infinity)
+                .padding(.vertical, 10)
+                .background(.ultraThinMaterial)
+            }
+            .clipShape(.rect(cornerRadius: 14))
     }
 
     // MARK: - Stats Section

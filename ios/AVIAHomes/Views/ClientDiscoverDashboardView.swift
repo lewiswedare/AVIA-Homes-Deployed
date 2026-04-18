@@ -554,10 +554,14 @@ struct ClientDiscoverDashboardView: View {
     }
 
     private func specRangeImageURL(for tier: SpecTier) -> String {
+        let editedURL = CatalogDataManager.shared.specRangeData(for: tier).heroImageURL
+        if !editedURL.isEmpty {
+            return editedURL
+        }
         switch tier {
-        case .volos: "https://pub-e001eb4506b145aa938b5d3badbff6a5.r2.dev/attachments/2m8uxjn7nelckolf349xo.jpg"
-        case .messina: "https://pub-e001eb4506b145aa938b5d3badbff6a5.r2.dev/attachments/sxfdai5efw1uz7s7qqgmo.jpeg"
-        case .portobello: "https://pub-e001eb4506b145aa938b5d3badbff6a5.r2.dev/attachments/j4n8xaj2jlxo0wjxvkhr8.jpeg"
+        case .volos: return "https://pub-e001eb4506b145aa938b5d3badbff6a5.r2.dev/attachments/2m8uxjn7nelckolf349xo.jpg"
+        case .messina: return "https://pub-e001eb4506b145aa938b5d3badbff6a5.r2.dev/attachments/sxfdai5efw1uz7s7qqgmo.jpeg"
+        case .portobello: return "https://pub-e001eb4506b145aa938b5d3badbff6a5.r2.dev/attachments/j4n8xaj2jlxo0wjxvkhr8.jpeg"
         }
     }
 
