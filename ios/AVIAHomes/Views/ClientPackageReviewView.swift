@@ -18,9 +18,12 @@ struct ClientPackageReviewView: View {
                 } else {
                     statusSummary
                     ForEach(sharedPackages) { pkg in
-                        NavigationLink(value: pkg) {
+                        NavigationLink {
+                            PackageDetailView(package: pkg)
+                        } label: {
                             sharedPackageCard(package: pkg)
                         }
+                        .buttonStyle(.plain)
                     }
                 }
             }
@@ -31,21 +34,6 @@ struct ClientPackageReviewView: View {
         .background(AVIATheme.background)
         .navigationTitle("Shared Packages")
         .navigationBarTitleDisplayMode(.large)
-        .navigationDestination(for: HouseLandPackage.self) { pkg in
-            PackageDetailView(package: pkg)
-        }
-        .navigationDestination(for: HomeDesign.self) { design in
-            HomeDesignDetailView(design: design)
-        }
-        .navigationDestination(for: LandEstate.self) { estate in
-            EstateDetailView(estate: estate)
-        }
-        .navigationDestination(for: SpecTier.self) { tier in
-            SpecRangeDetailView(tier: tier)
-        }
-        .navigationDestination(for: Facade.self) { facade in
-            FacadeDetailView(facade: facade)
-        }
     }
 
     private var emptyState: some View {
