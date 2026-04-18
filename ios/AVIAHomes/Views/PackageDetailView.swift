@@ -386,6 +386,34 @@ struct PackageDetailView: View {
                                 dimensionTag(icon: "ruler", value: String(format: "%.1fm min lot", design.lotWidth))
                             }
 
+                            if !design.floorplanImageURL.isEmpty {
+                                VStack(alignment: .leading, spacing: 6) {
+                                    Text("Floor Plan")
+                                        .font(.neueCaptionMedium)
+                                        .foregroundStyle(AVIATheme.textPrimary)
+                                        .padding(.top, 4)
+
+                                    AVIATheme.timelessBrown
+                                        .frame(height: 200)
+                                        .overlay {
+                                            AsyncImage(url: URL(string: design.floorplanImageURL)) { phase in
+                                                if let image = phase.image {
+                                                    image.resizable().aspectRatio(contentMode: .fit)
+                                                } else if phase.error != nil {
+                                                    Image(systemName: "rectangle.split.2x2")
+                                                        .font(.system(size: 32))
+                                                        .foregroundStyle(AVIATheme.aviaWhite.opacity(0.3))
+                                                } else {
+                                                    ProgressView()
+                                                        .tint(AVIATheme.aviaWhite.opacity(0.5))
+                                                }
+                                            }
+                                            .allowsHitTesting(false)
+                                        }
+                                        .clipShape(.rect(cornerRadius: 12))
+                                }
+                            }
+
                             if !design.roomHighlights.isEmpty {
                                 VStack(alignment: .leading, spacing: 6) {
                                     Text("Room Highlights")
