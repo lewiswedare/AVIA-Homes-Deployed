@@ -329,7 +329,7 @@ struct PackageDetailView: View {
                         .frame(width: 3)
                 }
 
-            if let design = package.matchedDesign {
+            if let design = viewModel.findDesign(byName: package.homeDesign) {
                 homeDesignCard(for: design)
 
                 NavigationLink(value: design) {
