@@ -288,19 +288,6 @@ class AppViewModel {
         await loadAssignmentsFromSupabase()
     }
 
-    func refreshAllData() async {
-        await loadContentFromSupabase()
-        await fetchAllUsersFromSupabase()
-        await loadBuildsFromSupabase()
-        await loadAssignmentsFromSupabase()
-        await loadRequestsFromSupabase()
-        await loadDocumentsFromSupabase()
-        await loadScheduleItemsFromSupabase()
-        await loadPendingSpecReviews()
-        await loadMilestonesForCurrentBuilds()
-        await loadRemindersForCurrentUser()
-    }
-
     func loadRequestsFromSupabase() async {
         let reqs: [ServiceRequest]
         if currentRole == .client {
