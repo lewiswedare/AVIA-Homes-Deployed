@@ -1519,8 +1519,6 @@ struct DashboardView: View {
                 highlightCard(icon: "star.fill", title: "Award\nWinning", description: "Multi-award winning Queensland builder")
             }
             .fixedSize(horizontal: false, vertical: true)
-
-            contactBanner
         }
     }
 
