@@ -594,6 +594,7 @@ struct PackageDetailView: View {
 
             let tier = package.specTier
 
+            NavigationLink(value: tier) {
             BentoCard(cornerRadius: 16) {
                 VStack(spacing: 0) {
                     Color(AVIATheme.surfaceElevated)
@@ -652,6 +653,25 @@ struct PackageDetailView: View {
                     }
                     .padding(14)
                 }
+            }
+            }
+            .buttonStyle(.plain)
+
+            NavigationLink(value: tier) {
+                HStack(spacing: 8) {
+                    Image(systemName: "square.stack.3d.up.fill")
+                        .font(.neueCaptionMedium)
+                    Text("View Full \(tier.displayName) Spec Range Details")
+                        .font(.neueCaptionMedium)
+                    Spacer()
+                    Image(systemName: "chevron.right")
+                        .font(.neueCaption2)
+                }
+                .foregroundStyle(AVIATheme.timelessBrown)
+                .padding(.horizontal, 16)
+                .padding(.vertical, 12)
+                .background(AVIATheme.timelessBrown.opacity(0.06))
+                .clipShape(.rect(cornerRadius: 12))
             }
 
             Button {
