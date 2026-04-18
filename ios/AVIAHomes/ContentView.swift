@@ -526,44 +526,6 @@ struct MoreView: View {
                                 Rectangle().fill(AVIATheme.surfaceBorder).frame(height: 1).padding(.leading, 66)
 
                                 NavigationLink {
-                                    ClientContractListView()
-                                } label: {
-                                    HStack(spacing: 14) {
-                                        BentoIconCircle(icon: "doc.richtext.fill", color: AVIATheme.timelessBrown)
-                                        Text("Contracts")
-                                            .font(.neueSubheadlineMedium)
-                                            .foregroundStyle(AVIATheme.textPrimary)
-                                        Spacer()
-                                        Image(systemName: "chevron.right")
-                                            .font(.neueCaption2Medium)
-                                            .foregroundStyle(AVIATheme.textTertiary)
-                                    }
-                                    .padding(.horizontal, 16)
-                                    .padding(.vertical, 14)
-                                }
-
-                                Rectangle().fill(AVIATheme.surfaceBorder).frame(height: 1).padding(.leading, 66)
-
-                                NavigationLink {
-                                    ClientInvoiceListView()
-                                } label: {
-                                    HStack(spacing: 14) {
-                                        BentoIconCircle(icon: "dollarsign.circle.fill", color: AVIATheme.timelessBrown)
-                                        Text("Invoices")
-                                            .font(.neueSubheadlineMedium)
-                                            .foregroundStyle(AVIATheme.textPrimary)
-                                        Spacer()
-                                        Image(systemName: "chevron.right")
-                                            .font(.neueCaption2Medium)
-                                            .foregroundStyle(AVIATheme.textTertiary)
-                                    }
-                                    .padding(.horizontal, 16)
-                                    .padding(.vertical, 14)
-                                }
-
-                                Rectangle().fill(AVIATheme.surfaceBorder).frame(height: 1).padding(.leading, 66)
-
-                                NavigationLink {
                                     DocumentsView()
                                 } label: {
                                     HStack(spacing: 14) {

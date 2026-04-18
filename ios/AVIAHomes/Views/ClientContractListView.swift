@@ -1,6 +1,15 @@
 import SwiftUI
 
 struct ClientContractListView: View {
+    var body: some View {
+        ClientContractListContent()
+            .background(AVIATheme.background)
+            .navigationTitle("My Contracts")
+            .navigationBarTitleDisplayMode(.large)
+    }
+}
+
+struct ClientContractListContent: View {
     @Environment(AppViewModel.self) private var viewModel
     @State private var contracts: [ContractRow] = []
     @State private var isLoading = true
@@ -24,9 +33,6 @@ struct ClientContractListView: View {
             .padding(.horizontal, 16)
             .padding(.bottom, 40)
         }
-        .background(AVIATheme.background)
-        .navigationTitle("My Contracts")
-        .navigationBarTitleDisplayMode(.large)
         .task { await loadContracts() }
         .refreshable { await loadContracts() }
         .sheet(item: $selectedContract) { contract in

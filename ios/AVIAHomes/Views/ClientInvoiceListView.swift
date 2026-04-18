@@ -1,6 +1,15 @@
 import SwiftUI
 
 struct ClientInvoiceListView: View {
+    var body: some View {
+        ClientInvoiceListContent()
+            .background(AVIATheme.background)
+            .navigationTitle("My Invoices")
+            .navigationBarTitleDisplayMode(.large)
+    }
+}
+
+struct ClientInvoiceListContent: View {
     @Environment(AppViewModel.self) private var viewModel
     @State private var invoices: [InvoiceRow] = []
     @State private var isLoading = true
@@ -24,9 +33,6 @@ struct ClientInvoiceListView: View {
             .padding(.horizontal, 16)
             .padding(.bottom, 40)
         }
-        .background(AVIATheme.background)
-        .navigationTitle("My Invoices")
-        .navigationBarTitleDisplayMode(.large)
         .task { await loadInvoices() }
         .refreshable { await loadInvoices() }
         .sheet(item: $selectedInvoice) { invoice in

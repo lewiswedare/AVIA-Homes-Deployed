@@ -1,9 +1,16 @@
 import SwiftUI
 
+enum DocumentsSection: String, CaseIterable, Hashable {
+    case documents = "Documents"
+    case contracts = "Contracts"
+    case invoices = "Invoices"
+}
+
 struct DocumentsView: View {
     @Environment(AppViewModel.self) private var viewModel
     @State private var searchText = ""
     @State private var selectedFilter: DocumentCategory?
+    @State private var section: DocumentsSection = .documents
 
     private var filteredDocuments: [ClientDocument] {
         var docs = viewModel.documents
@@ -26,33 +33,67 @@ struct DocumentsView: View {
 
     var body: some View {
         NavigationStack {
-            ScrollView {
-                VStack(spacing: 16) {
-                    filterChips
+            VStack(spacing: 0) {
+                Picker("Section", selection: $section) {
+                    ForEach(DocumentsSection.allCases, id: \.self) { s in
+                        Text(s.rawValue).tag(s)
+                    }
+                }
+                .pickerStyle(.segmented)
+                .padding(.horizontal, 16)
+                .padding(.top, 8)
+                .padding(.bottom, 12)
 
-                    if filteredDocuments.isEmpty {
-                        ContentUnavailableView(
-                            "No Documents Found",
-                            systemImage: "doc.text.magnifyingglass",
-                            description: Text("Try adjusting your search or filter.")
-                        )
-                        .foregroundStyle(AVIATheme.textSecondary)
-                        .padding(.top, 40)
-                    } else {
-                        ForEach(groupedDocuments, id: \.0) { category, docs in
-                            VStack(alignment: .leading, spacing: 10) {
-                                Label(category.rawValue, systemImage: category.icon)
-                                    .font(.neueSubheadlineMedium)
-                                    .foregroundStyle(AVIATheme.textPrimary)
-                                    .padding(.leading, 4)
+                switch section {
+                case .documents:
+                    documentsContent
+                case .contracts:
+                    ClientContractListContent()
+                case .invoices:
+                    ClientInvoiceListContent()
+                }
+            }
+            .background(AVIATheme.background)
+            .navigationTitle(navTitle)
+            .navigationBarTitleDisplayMode(.large)
+        }
+    }
 
-                                BentoCard(cornerRadius: 14) {
-                                    VStack(spacing: 0) {
-                                        ForEach(Array(docs.enumerated()), id: \.element.id) { index, doc in
-                                            DocumentRow(document: doc)
-                                            if index < docs.count - 1 {
-                                                Rectangle().fill(AVIATheme.surfaceBorder).frame(height: 1).padding(.leading, 56)
-                                            }
+    private var navTitle: String {
+        switch section {
+        case .documents: "Documents"
+        case .contracts: "Contracts"
+        case .invoices: "Invoices"
+        }
+    }
+
+    private var documentsContent: some View {
+        ScrollView {
+            VStack(spacing: 16) {
+                filterChips
+
+                if filteredDocuments.isEmpty {
+                    ContentUnavailableView(
+                        "No Documents Found",
+                        systemImage: "doc.text.magnifyingglass",
+                        description: Text("Try adjusting your search or filter.")
+                    )
+                    .foregroundStyle(AVIATheme.textSecondary)
+                    .padding(.top, 40)
+                } else {
+                    ForEach(groupedDocuments, id: \.0) { category, docs in
+                        VStack(alignment: .leading, spacing: 10) {
+                            Label(category.rawValue, systemImage: category.icon)
+                                .font(.neueSubheadlineMedium)
+                                .foregroundStyle(AVIATheme.textPrimary)
+                                .padding(.leading, 4)
+
+                            BentoCard(cornerRadius: 14) {
+                                VStack(spacing: 0) {
+                                    ForEach(Array(docs.enumerated()), id: \.element.id) { index, doc in
+                                        DocumentRow(document: doc)
+                                        if index < docs.count - 1 {
+                                            Rectangle().fill(AVIATheme.surfaceBorder).frame(height: 1).padding(.leading, 56)
                                         }
                                     }
                                 }
@@ -60,14 +101,11 @@ struct DocumentsView: View {
                         }
                     }
                 }
-                .padding(.horizontal, 16)
-                .padding(.bottom, 40)
             }
-            .background(AVIATheme.background)
-            .navigationTitle("Documents")
-            .navigationBarTitleDisplayMode(.large)
-            .searchable(text: $searchText, prompt: "Search documents")
+            .padding(.horizontal, 16)
+            .padding(.bottom, 40)
         }
+        .searchable(text: $searchText, prompt: "Search documents")
     }
 
     private var filterChips: some View {
