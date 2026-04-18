@@ -295,7 +295,7 @@ struct ClientContractDetailSheet: View {
     }
 }
 
-extension ContractRow: @retroactive Hashable {
+extension ContractRow: Hashable {
     nonisolated func hash(into hasher: inout Hasher) {
         hasher.combine(id)
     }

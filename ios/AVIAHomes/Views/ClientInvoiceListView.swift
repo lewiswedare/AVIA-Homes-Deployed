@@ -297,7 +297,7 @@ struct ClientInvoiceDetailSheet: View {
     }
 }
 
-extension InvoiceRow: @retroactive Hashable {
+extension InvoiceRow: Hashable {
     nonisolated func hash(into hasher: inout Hasher) {
         hasher.combine(id)
     }
