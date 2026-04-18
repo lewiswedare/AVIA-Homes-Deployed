@@ -515,41 +515,27 @@ struct ClientDiscoverDashboardView: View {
                 )
             }
             .overlay(alignment: .topLeading) {
-                HStack(spacing: 6) {
-                    Text(String(format: "%02d", index + 1))
-                        .font(.neueCorpMedium(10))
-                        .kerning(1.2)
-                        .foregroundStyle(AVIATheme.aviaWhite.opacity(0.85))
-                    Rectangle()
-                        .fill(AVIATheme.aviaWhite.opacity(0.6))
-                        .frame(width: 18, height: 1)
-                    Text("RANGE")
-                        .font(.neueCorpMedium(10))
-                        .kerning(1.2)
-                        .foregroundStyle(AVIATheme.aviaWhite.opacity(0.85))
-                }
-                .padding(.horizontal, 14)
-                .padding(.vertical, 8)
-                .background(.ultraThinMaterial, in: Capsule())
-                .environment(\.colorScheme, .dark)
-                .padding(16)
+                Text(specRangeBadge(for: tier))
+                    .font(.neueCorpMedium(10))
+                    .kerning(1.2)
+                    .foregroundStyle(AVIATheme.aviaWhite.opacity(0.9))
+                    .padding(.horizontal, 14)
+                    .padding(.vertical, 8)
+                    .background(.ultraThinMaterial, in: Capsule())
+                    .environment(\.colorScheme, .dark)
+                    .padding(16)
             }
             .overlay(alignment: .bottomLeading) {
                 VStack(alignment: .leading, spacing: 8) {
-                    Text(tier.displayName.uppercased())
+                    Text(tier.displayName)
                         .font(.neueCorpMedium(28))
-                        .kerning(1.5)
                         .foregroundStyle(AVIATheme.aviaWhite)
                     Text(tier.tagline)
                         .font(.neueSubheadlineMedium)
                         .foregroundStyle(AVIATheme.aviaWhite.opacity(0.9))
-                    Text(specRangeDescription(for: tier))
-                        .font(.neueCaption)
-                        .foregroundStyle(AVIATheme.aviaWhite.opacity(0.75))
-                        .lineLimit(2)
 
                     HStack(spacing: 6) {
-                        Text("Explore range")
+                        Text("Explore \(tier.displayName)")
                             .font(.neueCaptionMedium)
                         Image(systemName: "arrow.right")
                             .font(.system(size: 11, weight: .semibold))
@@ -580,6 +566,14 @@ struct ClientDiscoverDashboardView: View {
         case .volos: "Quality foundations for smart living"
         case .messina: "Step up to elevated comfort & style"
         case .portobello: "The ultimate in premium finishes"
+        }
+    }
+
+    private func specRangeBadge(for tier: SpecTier) -> String {
+        switch tier {
+        case .volos: "INCLUDED"
+        case .messina: "UPGRADE"
+        case .portobello: "UPGRADE"
         }
     }
 
