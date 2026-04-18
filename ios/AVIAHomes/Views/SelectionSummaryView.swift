@@ -3,9 +3,6 @@ import SwiftUI
 struct SelectionSummaryView: View {
     @Environment(\.dismiss) private var dismiss
     @Environment(ColourSelectionViewModel.self) private var viewModel
-    @Environment(CustomerJourneyViewModel.self) private var journeyVM
-    @State private var isSubmitting = false
-    @State private var showSubmitConfirmation = false
 
     private var exteriorSelections: [(ColourCategory, SelectionChoice)] {
         viewModel.exteriorCategories.compactMap { category in
@@ -24,13 +21,11 @@ struct SelectionSummaryView: View {
     var body: some View {
         NavigationStack {
             Group {
-                if viewModel.isSubmitted {
-                    submittedState
-                } else if viewModel.completedCount == 0 {
+                if viewModel.completedCount == 0 {
                     ContentUnavailableView(
-                        "No Selections Yet",
+                        "No Previews Yet",
                         systemImage: "paintpalette",
-                        description: Text("Start choosing colours and finishes for your new home.")
+                        description: Text("Browse the Colour Library to preview colours and finishes. Your final selections are made on your live build once specs are approved.")
                     )
                     .foregroundStyle(AVIATheme.textSecondary)
                 } else {
@@ -38,7 +33,7 @@ struct SelectionSummaryView: View {
                 }
             }
             .background(AVIATheme.background)
-            .navigationTitle("Selection Summary")
+            .navigationTitle("Preview Summary")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
@@ -46,19 +41,6 @@ struct SelectionSummaryView: View {
                         .font(.neueSubheadlineMedium)
                         .tint(AVIATheme.timelessBrown)
                 }
-            }
-            .alert("Submit Selections?", isPresented: $showSubmitConfirmation) {
-                Button("Cancel", role: .cancel) {}
-                Button("Submit") {
-                    isSubmitting = true
-                    Task {
-                        await viewModel.submitSelections()
-                        journeyVM.markColoursComplete()
-                        isSubmitting = false
-                    }
-                }
-            } message: {
-                Text("Your colour selections will be sent to the AVIA design team for review.")
             }
         }
         .presentationBackground(AVIATheme.background)
@@ -68,6 +50,7 @@ struct SelectionSummaryView: View {
         ScrollView {
             VStack(spacing: 20) {
                 statusBanner
+                libraryNotice
 
                 if !exteriorSelections.isEmpty {
                     selectionSection(title: "Exterior", selections: exteriorSelections)
@@ -75,15 +58,23 @@ struct SelectionSummaryView: View {
                 if !interiorSelections.isEmpty {
                     selectionSection(title: "Interior", selections: interiorSelections)
                 }
-
-                if viewModel.completedCount < viewModel.totalCount {
-                    incompleteWarning
-                }
-
-                submitButton
             }
             .padding(20)
         }
+    }
+
+    private var libraryNotice: some View {
+        HStack(alignment: .top, spacing: 10) {
+            Image(systemName: "info.circle.fill")
+                .foregroundStyle(AVIATheme.timelessBrown)
+            Text("These are preview-only previews. Your official colour choices are made on your live build once the AVIA team approves your Stage 1 specifications.")
+                .font(.neueCaption)
+                .foregroundStyle(AVIATheme.textSecondary)
+        }
+        .padding(14)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(AVIATheme.timelessBrown.opacity(0.06))
+        .clipShape(.rect(cornerRadius: 12))
     }
 
     private var statusBanner: some View {
@@ -181,66 +172,4 @@ struct SelectionSummaryView: View {
         }
     }
 
-    private var incompleteWarning: some View {
-        HStack(spacing: 10) {
-            Image(systemName: "exclamationmark.triangle.fill")
-                .foregroundStyle(AVIATheme.warning)
-            Text("\(viewModel.totalCount - viewModel.completedCount) categories still need selection. You can submit partial selections and update later.")
-                .font(.neueCaption)
-                .foregroundStyle(AVIATheme.textSecondary)
-        }
-        .padding(14)
-        .background(AVIATheme.warning.opacity(0.08))
-        .clipShape(.rect(cornerRadius: 12))
-    }
-
-    private var submitButton: some View {
-        Button {
-            showSubmitConfirmation = true
-        } label: {
-            Group {
-                if isSubmitting {
-                    ProgressView().tint(AVIATheme.aviaWhite)
-                } else {
-                    Label("Submit Selections", systemImage: "paperplane.fill")
-                }
-            }
-            .font(.neueSubheadlineMedium)
-            .frame(maxWidth: .infinity)
-            .frame(height: 52)
-            .foregroundStyle(AVIATheme.aviaWhite)
-            .background(AVIATheme.primaryGradient)
-            .clipShape(.rect(cornerRadius: 14))
-        }
-        .disabled(viewModel.completedCount == 0 || isSubmitting)
-    }
-
-    private var submittedState: some View {
-        VStack(spacing: 24) {
-            Spacer()
-            Image(systemName: "checkmark.circle.fill")
-                .font(.neueCorp(72))
-                .foregroundStyle(AVIATheme.success)
-                .symbolEffect(.bounce, value: viewModel.isSubmitted)
-
-            Text("Selections Submitted!")
-                .font(.neueCorpMedium(22))
-                .foregroundStyle(AVIATheme.textPrimary)
-
-            Text("Your colour selections have been sent to the AVIA design team. They'll review and confirm your choices within 2 business days.")
-                .font(.neueSubheadline)
-                .foregroundStyle(AVIATheme.textSecondary)
-                .multilineTextAlignment(.center)
-                .padding(.horizontal, 32)
-
-            Button("Close") { dismiss() }
-                .font(.neueSubheadlineMedium)
-                .frame(width: 200, height: 50)
-                .foregroundStyle(AVIATheme.aviaWhite)
-                .background(AVIATheme.primaryGradient)
-                .clipShape(.rect(cornerRadius: 14))
-
-            Spacer()
-        }
-    }
 }

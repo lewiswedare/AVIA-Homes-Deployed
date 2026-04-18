@@ -76,9 +76,9 @@ struct BuildJourneyDetailView: View {
                         color: journeyVM.specsConfirmed ? AVIATheme.success : AVIATheme.warning
                     )
                     statPill(
-                        value: colourVM.isSubmitted ? "Submitted" : "\(colourVM.completedCount)/\(colourVM.totalCount)",
-                        label: "Colours",
-                        color: colourVM.isSubmitted ? AVIATheme.success : (journeyVM.specsConfirmed ? AVIATheme.warning : AVIATheme.textTertiary)
+                        value: "\(colourVM.completedCount)/\(colourVM.totalCount)",
+                        label: "Previews",
+                        color: journeyVM.specsConfirmed ? AVIATheme.warning : AVIATheme.textTertiary
                     )
                 }
             }

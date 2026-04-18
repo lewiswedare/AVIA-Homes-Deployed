@@ -142,6 +142,7 @@ struct AdminBuildSpecReviewView: View {
             .padding(.horizontal, 16)
             .padding(.bottom, 40)
         }
+        .refreshable { await appViewModel.refreshAllData() }
     }
 
     // MARK: - Range Upgrade Admin Section

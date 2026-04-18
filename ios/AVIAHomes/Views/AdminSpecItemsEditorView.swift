@@ -87,13 +87,13 @@ struct AdminSpecItemsEditorView: View {
             }
         }
         .sheet(isPresented: $showingAddSheet) {
-            SpecItemEditSheet(item: nil, categories: viewModel.specCategoryOrder) { row, tierImages in
-                Task { await viewModel.saveSpecItem(row, tierImages: tierImages) }
+            SpecItemEditSheet(item: nil, categories: viewModel.specCategoryOrder) { row, tierImages, linkedColours in
+                Task { await viewModel.saveSpecItem(row, tierImages: tierImages, linkedColourCategoryIds: linkedColours) }
             }
         }
         .sheet(item: $editingItem) { item in
-            SpecItemEditSheet(item: item, categories: viewModel.specCategoryOrder) { row, tierImages in
-                Task { await viewModel.saveSpecItem(row, tierImages: tierImages) }
+            SpecItemEditSheet(item: item, categories: viewModel.specCategoryOrder) { row, tierImages, linkedColours in
+                Task { await viewModel.saveSpecItem(row, tierImages: tierImages, linkedColourCategoryIds: linkedColours) }
             }
         }
         .alert("Delete Item", isPresented: .init(
@@ -256,7 +256,7 @@ struct SpecItemEditSheet: View {
     @Environment(\.dismiss) private var dismiss
     let item: SpecItemFlatRow?
     let categories: [(id: String, name: String, icon: String)]
-    let onSave: (SpecItemFlatRow, [String: String]) -> Void
+    let onSave: (SpecItemFlatRow, [String: String], [String]) -> Void
 
     @State private var itemId: String = ""
     @State private var name: String = ""
@@ -276,6 +276,9 @@ struct SpecItemEditSheet: View {
     @State private var volosToMessinaCost: String = ""
     @State private var volosToPortobelloCost: String = ""
     @State private var messinaToPortobelloCost: String = ""
+
+    // Linked colour categories (Stage-2 colour configurator reads this mapping)
+    @State private var linkedColourCategoryIds: Set<String> = []
 
     private var isNew: Bool { item == nil }
 
@@ -390,6 +393,20 @@ struct SpecItemEditSheet: View {
                             .padding(.vertical, 14)
                         }
                     }
+
+                    BentoCard(cornerRadius: 14) {
+                        VStack(alignment: .leading, spacing: 14) {
+                            sectionHeader("Linked Colour Categories")
+                            Text("Select which colour categories this spec item unlocks. When the client confirms this item in Stage 1, the chosen colour categories appear in their Stage 2 colour selection.")
+                                .font(.neueCaption2)
+                                .foregroundStyle(AVIATheme.textTertiary)
+                                .padding(.horizontal, 14)
+
+                            colourChipGrid
+                                .padding(.horizontal, 14)
+                        }
+                        .padding(.vertical, 14)
+                    }
                 }
                 .padding(.horizontal, 16)
                 .padding(.vertical, 12)
@@ -410,6 +427,55 @@ struct SpecItemEditSheet: View {
         }
         .onAppear { populateFields() }
         .presentationDetents([.large])
+    }
+
+    private var colourChipGrid: some View {
+        let categories = CatalogDataManager.shared.allColourCategories
+        return Group {
+            if categories.isEmpty {
+                Text("No colour categories found. Add them in the Colours editor first.")
+                    .font(.neueCaption2)
+                    .foregroundStyle(AVIATheme.textTertiary)
+            } else {
+                LazyVGrid(
+                    columns: [GridItem(.adaptive(minimum: 140), spacing: 8)],
+                    alignment: .leading,
+                    spacing: 8
+                ) {
+                    ForEach(categories, id: \.id) { cat in
+                        colourChip(cat: cat)
+                    }
+                }
+            }
+        }
+    }
+
+    private func colourChip(cat: ColourCategory) -> some View {
+        let isSelected = linkedColourCategoryIds.contains(cat.id)
+        return Button {
+            if isSelected {
+                linkedColourCategoryIds.remove(cat.id)
+            } else {
+                linkedColourCategoryIds.insert(cat.id)
+            }
+        } label: {
+            HStack(spacing: 6) {
+                Image(systemName: isSelected ? "checkmark.circle.fill" : "circle")
+                    .font(.caption)
+                Text(cat.name)
+                    .font(.neueCaption2Medium)
+            }
+            .padding(.horizontal, 10)
+            .padding(.vertical, 6)
+            .background(isSelected ? AVIATheme.timelessBrown.opacity(0.15) : AVIATheme.surfaceElevated)
+            .foregroundStyle(isSelected ? AVIATheme.timelessBrown : AVIATheme.textSecondary)
+            .overlay(
+                RoundedRectangle(cornerRadius: 8)
+                    .stroke(isSelected ? AVIATheme.timelessBrown : Color.clear, lineWidth: 1)
+            )
+            .clipShape(.rect(cornerRadius: 8))
+        }
+        .buttonStyle(.plain)
     }
 
     private func sectionHeader(_ title: String) -> some View {
@@ -512,6 +578,11 @@ struct SpecItemEditSheet: View {
         volosToMessinaCost = item.volos_to_messina_cost.map { formatCost($0) } ?? ""
         volosToPortobelloCost = item.volos_to_portobello_cost.map { formatCost($0) } ?? ""
         messinaToPortobelloCost = item.messina_to_portobello_cost.map { formatCost($0) } ?? ""
+        if let existing = CatalogDataManager.shared.specToColourMapping[item.id] {
+            linkedColourCategoryIds = Set(existing)
+        } else {
+            linkedColourCategoryIds = []
+        }
         loadTierImages()
     }
 
@@ -548,7 +619,8 @@ struct SpecItemEditSheet: View {
         if !volosImageURL.isEmpty { tierImages["volos"] = volosImageURL }
         if !messinaImageURL.isEmpty { tierImages["messina"] = messinaImageURL }
         if !portobelloImageURL.isEmpty { tierImages["portobello"] = portobelloImageURL }
-        onSave(row, tierImages)
+        let linkedColours = Array(linkedColourCategoryIds).sorted()
+        onSave(row, tierImages, linkedColours)
         dismiss()
     }
 }

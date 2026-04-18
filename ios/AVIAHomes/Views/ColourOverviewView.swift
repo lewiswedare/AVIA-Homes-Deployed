@@ -77,9 +77,13 @@ struct ColourOverviewView: View {
             }
             .overlay(alignment: .bottomLeading) {
                 VStack(alignment: .leading, spacing: 4) {
-                    Text("Colour Selections")
+                    Text("Colour Library")
                         .font(.neueCorpMedium(28))
                         .foregroundStyle(AVIATheme.textPrimary)
+                    Text("Preview colours — your official build selections are made on your live build.")
+                        .font(.neueCaption2)
+                        .foregroundStyle(AVIATheme.textSecondary)
+                        .lineLimit(2)
                 }
                 .padding(.horizontal, 20)
                 .padding(.bottom, 16)
@@ -110,15 +114,12 @@ struct ColourOverviewView: View {
                 .frame(width: 68, height: 68)
 
                 VStack(alignment: .leading, spacing: 4) {
-                    Text("Your Selections")
+                    Text("Your Previews")
                         .font(.neueHeadline)
                         .foregroundStyle(AVIATheme.textPrimary)
-                    Text(viewModel.isComplete
-                        ? "All selections complete! Review and submit."
-                        : "Choose colours and finishes for your new home."
-                    )
-                    .font(.neueSubheadline)
-                    .foregroundStyle(AVIATheme.textSecondary)
+                    Text("Explore colours and finishes. These are preview-only.")
+                        .font(.neueSubheadline)
+                        .foregroundStyle(AVIATheme.textSecondary)
                 }
                 Spacer()
             }

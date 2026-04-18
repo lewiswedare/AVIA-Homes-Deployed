@@ -27,6 +27,7 @@ struct ClientPackageReviewView: View {
             .padding(.horizontal, 16)
             .padding(.bottom, 40)
         }
+        .refreshable { await viewModel.refreshAllData() }
         .background(AVIATheme.background)
         .navigationTitle("Shared Packages")
         .navigationBarTitleDisplayMode(.large)

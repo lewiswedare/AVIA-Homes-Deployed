@@ -1,5 +1,13 @@
 import SwiftUI
 
+extension Notification.Name {
+    /// Posted when a realtime event or push notification indicates the
+    /// currently-open build needs a fresh load. userInfo contains "buildId".
+    static let aviaBuildNeedsRefresh = Notification.Name("aviaBuildNeedsRefresh")
+    /// Posted when incoming pushes tell us the open colour picker should reload.
+    static let aviaColoursNeedRefresh = Notification.Name("aviaColoursNeedRefresh")
+}
+
 @Observable
 class AppViewModel {
     var authService = AuthService()
@@ -19,6 +27,14 @@ class AppViewModel {
     var pendingSpecReviews: [BuildSpecSelection] = []
     var buildMilestones: [String: [BuildMilestone]] = [:]
     var buildReminders: [BuildReminder] = []
+
+    // Tracks which build the user is actively viewing so realtime callbacks
+    // can refresh the right detail view (Stage-2 colour picker, etc).
+    var activeBuildId: String?
+
+    // Guards setupRealtimeSubscriptions() against being installed repeatedly
+    // by multiple role-branch views each calling loadUserData().
+    private var realtimeInstalled = false
 
     var allHomeDesigns: [HomeDesign] = []
     var allPackages: [HouseLandPackage] = []
@@ -209,20 +225,60 @@ class AppViewModel {
         syncBuildStagesForCurrentUser()
     }
 
-    private func fetchAllUsersFromSupabase() async {
+    /// Refetches every remote data source in parallel. Use on foreground,
+    /// on pull-to-refresh, and after push notification taps.
+    func refreshAllData() async {
+        guard !currentUser.id.isEmpty else { return }
+        async let a: () = loadContentFromSupabase()
+        async let b: () = fetchAllUsersFromSupabase()
+        async let c: () = loadBuildsFromSupabase()
+        async let d: () = loadAssignmentsFromSupabase()
+        async let e: () = loadRequestsFromSupabase()
+        async let f: () = loadDocumentsFromSupabase()
+        async let g: () = loadScheduleItemsFromSupabase()
+        async let h: () = loadPendingSpecReviews()
+        async let i: () = loadMilestonesForCurrentBuilds()
+        async let j: () = loadRemindersForCurrentUser()
+        async let k: () = notificationService.loadNotifications(for: currentUser.id)
+        async let l: () = messagingService.loadConversations(for: currentUser.id)
+        async let m: () = catalogManager.loadAll()
+        _ = await (a, b, c, d, e, f, g, h, i, j, k, l, m)
+        syncBuildStagesForCurrentUser()
+    }
+
+    /// Called from AVIAHomesApp when the scene becomes active.
+    /// Tears down realtime channels (they'll have been broken by the OS while backgrounded),
+    /// rebuilds them from scratch, and does a full refetch so the UI is never stale.
+    func handleForeground() async {
+        guard !currentUser.id.isEmpty else { return }
+        await SupabaseService.shared.removeAllChannels()
+        realtimeInstalled = false
+        setupRealtimeSubscriptions()
+        notificationService.subscribeToNotifications(for: currentUser.id)
+        await refreshAllData()
+    }
+
+    /// Called from AVIAHomesApp when the scene goes to background.
+    /// Cleanly removes all realtime channels so they can be rebuilt on foreground.
+    func handleBackground() async {
+        await SupabaseService.shared.removeAllChannels()
+        realtimeInstalled = false
+    }
+
+    func fetchAllUsersFromSupabase() async {
         let users = await SupabaseService.shared.fetchAllProfiles()
         if !users.isEmpty {
             cachedUsers = users
         }
     }
 
-    private func loadBuildsFromSupabase() async {
+    func loadBuildsFromSupabase() async {
         let builds = await SupabaseService.shared.fetchBuilds()
         allClientBuilds = builds
         syncBuildStagesForCurrentUser()
     }
 
-    private func loadAssignmentsFromSupabase() async {
+    func loadAssignmentsFromSupabase() async {
         let assignments = await SupabaseService.shared.fetchPackageAssignments()
         packageAssignments = assignments
     }
@@ -245,7 +301,7 @@ class AppViewModel {
         await loadRemindersForCurrentUser()
     }
 
-    private func loadRequestsFromSupabase() async {
+    func loadRequestsFromSupabase() async {
         let reqs: [ServiceRequest]
         if currentRole == .client {
             reqs = await SupabaseService.shared.fetchServiceRequests(clientId: currentUser.id)
@@ -255,7 +311,7 @@ class AppViewModel {
         requests = reqs
     }
 
-    private func loadContentFromSupabase() async {
+    func loadContentFromSupabase() async {
         async let designsTask = SupabaseService.shared.fetchHomeDesigns()
         async let packagesTask = SupabaseService.shared.fetchHouseLandPackages()
         async let postsTask = SupabaseService.shared.fetchBlogPosts()
@@ -274,7 +330,7 @@ class AppViewModel {
         contentLoaded = true
     }
 
-    private func loadDocumentsFromSupabase() async {
+    func loadDocumentsFromSupabase() async {
         guard !currentUser.id.isEmpty else { return }
         if currentRole.isAnyStaffRole {
             let docs = await SupabaseService.shared.fetchAllDocuments()
@@ -285,19 +341,19 @@ class AppViewModel {
         }
     }
 
-    private func loadPendingSpecReviews() async {
+    func loadPendingSpecReviews() async {
         guard currentRole.isAnyStaffRole else { return }
         let reviews = await SupabaseService.shared.fetchAllPendingSpecReviews()
         pendingSpecReviews = reviews
     }
 
-    private func loadScheduleItemsFromSupabase() async {
+    func loadScheduleItemsFromSupabase() async {
         guard !currentUser.id.isEmpty else { return }
         let items = await SupabaseService.shared.fetchScheduleItems(clientId: currentUser.id)
         scheduleItems = items
     }
 
-    private func loadMilestonesForCurrentBuilds() async {
+    func loadMilestonesForCurrentBuilds() async {
         let builds = clientBuildsForCurrentUser
         var result: [String: [BuildMilestone]] = [:]
         for build in builds {
@@ -307,7 +363,7 @@ class AppViewModel {
         buildMilestones = result
     }
 
-    private func loadRemindersForCurrentUser() async {
+    func loadRemindersForCurrentUser() async {
         guard !currentUser.id.isEmpty else { return }
         if currentRole == .client {
             buildReminders = await SupabaseService.shared.fetchRemindersForClient(clientId: currentUser.id)
@@ -332,6 +388,7 @@ class AppViewModel {
         buildMilestones[milestone.buildId] = current
         Task {
             await SupabaseService.shared.upsertMilestone(milestone)
+            await loadMilestonesForCurrentBuilds()
         }
     }
 
@@ -343,6 +400,7 @@ class AppViewModel {
         }
         Task {
             await SupabaseService.shared.upsertMilestone(milestone)
+            await loadMilestonesForCurrentBuilds()
         }
     }
 
@@ -405,6 +463,12 @@ class AppViewModel {
     }
 
     private func setupRealtimeSubscriptions() {
+        // Hard guard against duplicate installs. ContentView mounts multiple
+        // role-branch tab views each calling loadUserData(); without this
+        // guard we'd stack dozens of duplicate channels per session.
+        guard !realtimeInstalled else { return }
+        realtimeInstalled = true
+
         SupabaseService.shared.subscribeToBuildChanges { [weak self] in
             guard let self else { return }
             Task { await self.loadBuildsFromSupabase() }
@@ -441,11 +505,33 @@ class AppViewModel {
         }
         SupabaseService.shared.subscribeToSpecSelectionChanges { [weak self] in
             guard let self else { return }
-            Task { await self.loadPendingSpecReviews() }
+            Task {
+                await self.loadPendingSpecReviews()
+                // Also refresh the active build so the Stage-1 view updates live.
+                if let active = self.activeBuildId {
+                    NotificationCenter.default.post(
+                        name: .aviaBuildNeedsRefresh,
+                        object: nil,
+                        userInfo: ["buildId": active]
+                    )
+                }
+            }
         }
         SupabaseService.shared.subscribeToColourSelectionChanges { [weak self] in
             guard let self else { return }
-            Task { await self.loadBuildsFromSupabase() }
+            Task {
+                // Keep the list fresh.
+                await self.loadBuildsFromSupabase()
+                // Route to the active build so the Stage-2 colour picker
+                // reflects admin approvals / cross-device edits live.
+                if let active = self.activeBuildId {
+                    NotificationCenter.default.post(
+                        name: .aviaBuildNeedsRefresh,
+                        object: nil,
+                        userInfo: ["buildId": active]
+                    )
+                }
+            }
         }
         SupabaseService.shared.subscribeToScheduleChanges(clientId: currentUser.id) { [weak self] in
             guard let self else { return }
@@ -456,6 +542,21 @@ class AppViewModel {
             Task {
                 await self.catalogManager.loadAll()
                 await self.loadContentFromSupabase()
+            }
+        }
+        // Cross-user finance/contracts changes (invoices, contracts, eoi).
+        SupabaseService.shared.subscribeToFinanceChanges { [weak self] in
+            guard let self else { return }
+            Task { await self.loadBuildsFromSupabase() }
+        }
+        // Milestones / reminders / upgrade requests — admin-driven changes
+        // that must show up on the client without a restart.
+        SupabaseService.shared.subscribeToBuildExtras { [weak self] in
+            guard let self else { return }
+            Task {
+                await self.loadMilestonesForCurrentBuilds()
+                await self.loadRemindersForCurrentUser()
+                await self.loadPendingSpecReviews()
             }
         }
     }

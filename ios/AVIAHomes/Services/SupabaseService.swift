@@ -1103,6 +1103,30 @@ class SupabaseService {
         }
     }
 
+    /// Upsert the spec-to-colour linkage. If `colourCategoryIds` is empty, the row is deleted
+    /// so the spec item shows no colour categories in Stage 2 filtering.
+    func upsertSpecToColourMapping(specItemId: String, colourCategoryIds: [String]) async -> Bool {
+        guard isConfigured else { return false }
+        do {
+            if colourCategoryIds.isEmpty {
+                try await client.from("spec_to_colour_mapping")
+                    .delete()
+                    .eq("spec_item_id", value: specItemId)
+                    .execute()
+            } else {
+                let row = SpecToColourMappingRow(
+                    spec_item_id: specItemId,
+                    colour_category_ids: colourCategoryIds
+                )
+                try await client.from("spec_to_colour_mapping").upsert(row).execute()
+            }
+            return true
+        } catch {
+            print("[SupabaseService] upsertSpecToColourMapping FAILED: \(error)")
+            return false
+        }
+    }
+
     func deleteSpecItem(id: String) async -> Bool {
         guard isConfigured else { return false }
         do {
@@ -2252,34 +2276,65 @@ class SupabaseService {
         }
     }
 
-    func subscribeToCatalogChanges(onUpdate: @escaping @Sendable () -> Void) {
+    /// Installs a generic AnyAction realtime listener on `table` in the `public` schema
+    /// and forwards each event to `onUpdate` on the MainActor.
+    private func installChannel(name: String, table: String, onUpdate: @escaping @Sendable () -> Void) {
         guard isConfigured else { return }
-        let colourChannel = client.realtimeV2.channel("colour_categories_sync")
-        realtimeChannels.append(colourChannel)
-        let colourChanges = colourChannel.postgresChange(
+        let channel = client.realtimeV2.channel(name)
+        realtimeChannels.append(channel)
+        let changes = channel.postgresChange(
             AnyAction.self,
             schema: "public",
-            table: "colour_categories"
+            table: table
         )
         Task {
-            try? await colourChannel.subscribeWithError()
-            for await _ in colourChanges {
+            try? await channel.subscribeWithError()
+            for await _ in changes {
                 await MainActor.run { onUpdate() }
             }
         }
+    }
 
-        let specChannel = client.realtimeV2.channel("spec_items_sync")
-        realtimeChannels.append(specChannel)
-        let specChanges = specChannel.postgresChange(
-            AnyAction.self,
-            schema: "public",
-            table: "spec_items"
-        )
-        Task {
-            try? await specChannel.subscribeWithError()
-            for await _ in specChanges {
-                await MainActor.run { onUpdate() }
-            }
+    func subscribeToCatalogChanges(onUpdate: @escaping @Sendable () -> Void) {
+        // All catalog tables that power the Stage-1 / Stage-2 configurator.
+        // Without these an admin edit won't appear on client devices until relaunch.
+        let tables = [
+            "colour_categories",
+            "spec_items",
+            "spec_categories",
+            "spec_to_colour_mapping",
+            "spec_range_tiers",
+            "spec_item_images",
+            "homefast_schemes"
+        ]
+        for table in tables {
+            installChannel(name: "\(table)_sync", table: table, onUpdate: onUpdate)
+        }
+    }
+
+    /// Milestones, reminders, and range-upgrade requests — admin-driven changes
+    /// that need to appear on client devices without a restart.
+    func subscribeToBuildExtras(onUpdate: @escaping @Sendable () -> Void) {
+        let tables = [
+            "build_milestones",
+            "build_reminders",
+            "build_range_upgrade_requests"
+        ]
+        for table in tables {
+            installChannel(name: "\(table)_sync", table: table, onUpdate: onUpdate)
+        }
+    }
+
+    /// Finance + contract mutations that the client must see live.
+    func subscribeToFinanceChanges(onUpdate: @escaping @Sendable () -> Void) {
+        let tables = [
+            "invoices",
+            "contracts",
+            "contract_signatures",
+            "eoi_submissions"
+        ]
+        for table in tables {
+            installChannel(name: "\(table)_sync", table: table, onUpdate: onUpdate)
         }
     }
 

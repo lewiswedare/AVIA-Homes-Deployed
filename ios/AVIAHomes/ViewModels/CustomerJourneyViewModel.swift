@@ -31,10 +31,9 @@ class CustomerJourneyViewModel {
             ]
         case .colourSelection:
             let allSelected = colourVM.isComplete
-            let submitted = colourVM.isSubmitted
             return [
-                JourneyTask(id: "select_colours", title: "Complete all colour selections (\(colourVM.completedCount)/\(colourVM.totalCount))", icon: allSelected ? "checkmark.circle.fill" : "circle", isComplete: allSelected),
-                JourneyTask(id: "submit_colours", title: "Review and submit selections", icon: submitted ? "checkmark.circle.fill" : "circle", isComplete: submitted),
+                JourneyTask(id: "select_colours", title: "Preview colours in the Colour Library (\(colourVM.completedCount)/\(colourVM.totalCount))", icon: allSelected ? "checkmark.circle.fill" : "circle", isComplete: allSelected),
+                JourneyTask(id: "build_colours", title: "Select official colours on your live build", icon: "circle", isComplete: false),
             ]
         case .complete:
             return [

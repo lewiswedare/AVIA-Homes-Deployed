@@ -123,6 +123,7 @@ struct BuildColourSelectionView: View {
                 .padding(.horizontal, 16)
                 .padding(.bottom, colourUpgradeTotal > 0 ? 80 : 40)
             }
+            .refreshable { await appViewModel.refreshAllData() }
 
             if colourUpgradeTotal > 0 {
                 upgradeTotalBar

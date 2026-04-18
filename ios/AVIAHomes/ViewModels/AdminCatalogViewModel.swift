@@ -80,7 +80,11 @@ class AdminCatalogViewModel {
         }
     }
 
-    func saveSpecItem(_ row: SpecItemFlatRow, tierImages: [String: String] = [:]) async {
+    func saveSpecItem(
+        _ row: SpecItemFlatRow,
+        tierImages: [String: String] = [:],
+        linkedColourCategoryIds: [String]? = nil
+    ) async {
         errorMessage = nil
         let success = await SupabaseService.shared.upsertSpecItem(row)
         guard success else {
@@ -100,6 +104,19 @@ class AdminCatalogViewModel {
             let imgOk = await SupabaseService.shared.upsertSpecItemImageRow(imageRow)
             if !imgOk {
                 errorMessage = "Spec item saved but tier images failed"
+                await loadSpecItems()
+                await catalog.loadAll()
+                return
+            }
+        }
+
+        if let linkedColourCategoryIds {
+            let mappingOk = await SupabaseService.shared.upsertSpecToColourMapping(
+                specItemId: row.id,
+                colourCategoryIds: linkedColourCategoryIds
+            )
+            if !mappingOk {
+                errorMessage = "Spec item saved but colour linkage failed"
                 await loadSpecItems()
                 await catalog.loadAll()
                 return

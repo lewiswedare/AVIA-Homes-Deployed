@@ -4,7 +4,6 @@ import SwiftUI
 class ColourSelectionViewModel {
     var selections: [String: SelectionChoice] = [:]
     var showSummary = false
-    var isSubmitted = false
     var appliedScheme: HomeFastScheme?
     var specTier: SpecTier = .messina
 
@@ -70,10 +69,7 @@ class ColourSelectionViewModel {
         appliedScheme = nil
     }
 
-    // Note: This ViewModel is for the catalog colour browser, not build-specific submissions.
-    // The actual build colour submission is in BuildSpecViewModel.submitColourSelectionsForApproval().
-    func submitSelections() async {
-        try? await Task.sleep(for: .seconds(1.5))
-        isSubmitted = true
-    }
+    // This ViewModel powers the read-only Colour Library (catalog preview).
+    // Build-specific colour submissions happen in BuildSpecViewModel via
+    // BuildColourSelectionView — there is no submission path from the Library.
 }

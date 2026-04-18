@@ -131,6 +131,7 @@ class BuildSpecViewModel {
         Task {
             let success = await SupabaseService.shared.upsertBuildSpecSelection(selections[idx])
             if !success { errorMessage = "Failed to save upgrade request" }
+            await load(buildId: buildId)
         }
     }
 
@@ -140,6 +141,7 @@ class BuildSpecViewModel {
         Task {
             let success = await SupabaseService.shared.upsertBuildSpecSelection(selections[idx])
             if !success { errorMessage = "Failed to save notes" }
+            await load(buildId: buildId)
         }
     }
 
@@ -337,6 +339,7 @@ class BuildSpecViewModel {
                     referenceType: "build"
                 )
             }
+            await load(buildId: buildId)
         }
     }
 
@@ -386,6 +389,7 @@ class BuildSpecViewModel {
         Task {
             let success = await SupabaseService.shared.upsertBuildSpecSelection(selections[idx])
             if !success { errorMessage = "Failed to substitute item" }
+            await load(buildId: buildId)
         }
     }
 
@@ -395,6 +399,7 @@ class BuildSpecViewModel {
         Task {
             let success = await SupabaseService.shared.upsertBuildSpecSelection(selections[idx])
             if !success { errorMessage = "Failed to save notes" }
+            await load(buildId: buildId)
         }
     }
 
@@ -594,6 +599,7 @@ class BuildSpecViewModel {
                     )
                 }
             }
+            await load(buildId: buildId)
         }
     }
 
@@ -622,6 +628,7 @@ class BuildSpecViewModel {
                     )
                 }
             }
+            await load(buildId: buildId)
         }
     }
 

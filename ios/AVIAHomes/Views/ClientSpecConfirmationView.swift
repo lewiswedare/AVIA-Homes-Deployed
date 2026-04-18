@@ -97,6 +97,7 @@ struct ClientSpecConfirmationView: View {
             .padding(.horizontal, 16)
             .padding(.bottom, 40)
         }
+        .refreshable { await appViewModel.refreshAllData() }
     }
 
     private var statusBanner: some View {

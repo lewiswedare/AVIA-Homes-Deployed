@@ -4,6 +4,7 @@ import UserNotifications
 @main
 struct AVIAHomesApp: App {
     @UIApplicationDelegateAdaptor(AppDelegate.self) private var appDelegate
+    @Environment(\.scenePhase) private var scenePhase
     @State private var appViewModel = AppViewModel()
     @State private var colourViewModel = ColourSelectionViewModel()
     @State private var specViewModel = SpecificationViewModel()
@@ -38,6 +39,19 @@ struct AVIAHomesApp: App {
                 .onChange(of: appViewModel.activeClientCount) { _, _ in
                     if let first = appViewModel.clientBuildsForCurrentUser.first {
                         Task { await specViewModel.load(buildId: first.id) }
+                    }
+                }
+                // Rebuild realtime + refetch everything when the app returns to the foreground,
+                // and tear realtime down cleanly when backgrounded. This is the single biggest
+                // fix for the "close-and-reopen to refresh" bug.
+                .onChange(of: scenePhase) { _, phase in
+                    switch phase {
+                    case .active:
+                        Task { await appViewModel.handleForeground() }
+                    case .background:
+                        Task { await appViewModel.handleBackground() }
+                    default:
+                        break
                     }
                 }
         }
@@ -85,8 +99,40 @@ class AppDelegate: NSObject, UIApplicationDelegate, UNUserNotificationCenterDele
                     await vm.notificationService.markAsRead(notificationId)
                 }
             }
+            // Always refresh the notification list.
             Task {
                 await vm.notificationService.loadNotifications(for: userId)
+            }
+            // Route to the matching data refetch so the user never opens a
+            // build/invoice/conversation from a push and sees stale content.
+            let type = (userInfo["type"] as? String) ?? ""
+            let buildId = userInfo["build_id"] as? String
+            switch type {
+            case let t where t.hasPrefix("spec_selection") || t.hasPrefix("colour_selection"):
+                Task {
+                    await vm.loadPendingSpecReviews()
+                    await vm.loadBuildsFromSupabase()
+                    if let bid = buildId {
+                        NotificationCenter.default.post(
+                            name: .aviaBuildNeedsRefresh,
+                            object: nil,
+                            userInfo: ["buildId": bid]
+                        )
+                    }
+                }
+            case let t where t.hasPrefix("build_milestone") || t.hasPrefix("build_reminder"):
+                Task {
+                    await vm.loadMilestonesForCurrentBuilds()
+                    await vm.loadRemindersForCurrentUser()
+                    await vm.loadBuildsFromSupabase()
+                }
+            case let t where t.hasPrefix("invoice") || t.hasPrefix("contract") || t.hasPrefix("eoi"):
+                Task { await vm.loadBuildsFromSupabase() }
+            case let t where t.hasPrefix("message"):
+                Task { await vm.messagingService.loadConversations(for: userId) }
+            default:
+                // Unknown push — do a safe broad refresh.
+                Task { await vm.refreshAllData() }
             }
         }
     }

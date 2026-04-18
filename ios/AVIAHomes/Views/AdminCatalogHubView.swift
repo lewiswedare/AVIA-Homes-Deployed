@@ -1,6 +1,7 @@
 import SwiftUI
 
 struct AdminCatalogHubView: View {
+    @Environment(AppViewModel.self) private var appViewModel
     @State private var specCount: Int = 0
     @State private var colourCount: Int = 0
     @State private var designCount: Int = 0
@@ -137,6 +138,7 @@ struct AdminCatalogHubView: View {
             .padding(.horizontal, 16)
             .padding(.bottom, 40)
         }
+        .refreshable { await appViewModel.refreshAllData() }
         .background(AVIATheme.background)
         .navigationTitle("Catalog Management")
         .navigationBarTitleDisplayMode(.large)

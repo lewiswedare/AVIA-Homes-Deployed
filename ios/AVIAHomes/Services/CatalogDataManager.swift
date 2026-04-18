@@ -68,16 +68,37 @@ class CatalogDataManager {
         return nil
     }
 
+    /// Returns every colour category that is linked (via spec_to_colour_mapping)
+    /// to any spec item. Spec items themselves are not tier-gated — tier is
+    /// expressed via per-tier description/cost, not availability — so the tier
+    /// parameter is retained for future use but currently informational.
+    ///
+    /// Stage-2 colour filtering is build-aware and uses
+    /// `colourCategoryIds(forApprovedSpecItems:)` instead.
     func availableColourCategoryIds(for tier: SpecTier) -> Set<String> {
         let mapping = activeSpecToColourMapping
         var ids = Set<String>()
         for category in allSpecCategories {
             for item in category.items {
                 if let colourIds = mapping[item.id] {
-                    for colourId in colourIds {
-                        ids.insert(colourId)
-                    }
+                    ids.formUnion(colourIds)
                 }
+            }
+        }
+        return ids
+    }
+
+    /// Stage-2 filtering: given a set of spec item IDs that have been approved
+    /// for a specific build, return the colour categories that should be offered
+    /// for colour selection. This is the build-aware version of
+    /// `availableColourCategoryIds(for:)` and is what `BuildColourSelectionViewModel`
+    /// uses to enforce "only pick colours for items you've already locked in".
+    func colourCategoryIds(forApprovedSpecItems approvedIds: Set<String>) -> Set<String> {
+        let mapping = activeSpecToColourMapping
+        var ids = Set<String>()
+        for itemId in approvedIds {
+            if let colourIds = mapping[itemId] {
+                ids.formUnion(colourIds)
             }
         }
         return ids

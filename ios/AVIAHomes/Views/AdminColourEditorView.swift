@@ -285,17 +285,10 @@ struct ColourCategoryEditSheet: View {
     @State private var defaultCostText: String = ""
     @State private var showingAddOption = false
     @State private var applicableTiers: Set<String> = []
-    @State private var linkedSpecItemId: String = ""
 
     private var isNew: Bool { category == nil }
 
     private var catalog: CatalogDataManager { CatalogDataManager.shared }
-
-    private var allSpecItems: [(id: String, name: String, categoryName: String)] {
-        catalog.allSpecCategories.flatMap { cat in
-            cat.items.map { (id: $0.id, name: $0.name, categoryName: cat.name) }
-        }
-    }
 
     var body: some View {
         NavigationStack {
@@ -405,15 +398,19 @@ struct ColourCategoryEditSheet: View {
                             }
                             .padding(.horizontal, 14)
 
-                            editFieldRow("Linked Spec Item") {
-                                Picker("Select spec item", selection: $linkedSpecItemId) {
-                                    Text("None").tag("")
-                                    ForEach(allSpecItems, id: \.id) { item in
-                                        Text("\(item.categoryName) — \(item.name)").tag(item.id)
-                                    }
-                                }
-                                .font(.neueCaption)
+                            // NOTE: Spec-item linkage is now managed from the
+                            // Spec Items editor via `spec_to_colour_mapping`
+                            // (many-to-many). The old single-picker was misleading
+                            // and the backing column is scheduled for removal.
+                            VStack(alignment: .leading, spacing: 4) {
+                                Text("Linked Spec Items")
+                                    .font(.neueCaption2)
+                                    .foregroundStyle(AVIATheme.textTertiary)
+                                Text("Managed in Catalog → Spec Items. Open a spec item and toggle the colour categories it unlocks.")
+                                    .font(.neueCaption2)
+                                    .foregroundStyle(AVIATheme.textTertiary.opacity(0.7))
                             }
+                            .padding(.horizontal, 14)
                         }
                         .padding(.vertical, 14)
                     }
@@ -699,7 +696,6 @@ struct ColourCategoryEditSheet: View {
         imageURL = category.imageURL ?? ""
         defaultCostText = category.defaultOptionCost.map { String(format: "%.2f", $0) } ?? ""
         applicableTiers = Set(category.applicableTiers ?? [])
-        linkedSpecItemId = category.specItemId ?? ""
         options = category.options.map {
             EditableColourOption(id: $0.id, name: $0.name, hexColor: $0.hexColor, brand: $0.brand ?? "", isUpgrade: $0.isUpgrade, imageURL: $0.imageURL ?? "", availableTiers: $0.availableTiers, cost: $0.cost.map { String(format: "%.2f", $0) } ?? "", optionApplicableTiers: Set($0.applicableTiers ?? []))
         }
@@ -719,7 +715,10 @@ struct ColourCategoryEditSheet: View {
             imageURL: imageURL.isEmpty ? nil : imageURL,
             defaultOptionCost: Double(defaultCostText),
             applicableTiers: applicableTiers.isEmpty ? nil : Array(applicableTiers).sorted(),
-            specItemId: linkedSpecItemId.isEmpty ? nil : linkedSpecItemId
+            // Deprecated: spec-item linkage now lives in spec_to_colour_mapping.
+            // Preserve the existing value if editing (pass it through) so the field
+            // isn't accidentally cleared during partial edits.
+            specItemId: category?.specItemId
         )
         onSave(result)
         dismiss()

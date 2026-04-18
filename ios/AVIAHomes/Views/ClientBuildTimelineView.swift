@@ -24,6 +24,7 @@ struct ClientBuildTimelineView: View {
             .padding(.horizontal, 16)
             .padding(.bottom, 40)
         }
+        .refreshable { await viewModel.refreshAllData() }
         .background(AVIATheme.background)
         .task {
             milestones = await SupabaseService.shared.fetchMilestonesForBuild(buildId: build.id)

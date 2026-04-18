@@ -11,7 +11,6 @@ nonisolated struct ColourCategoryRow: Codable, Sendable {
     let options: [ColourOptionRow]
     let default_option_cost: Double?
     let applicable_tiers: [String]?
-    let spec_item_id: String?
 
     struct ColourOptionRow: Codable, Sendable {
         let id: String
@@ -38,7 +37,7 @@ nonisolated struct ColourCategoryRow: Codable, Sendable {
             imageURL: image_url,
             defaultOptionCost: default_option_cost,
             applicableTiers: applicable_tiers,
-            specItemId: spec_item_id
+            specItemId: nil
         )
     }
 }
@@ -236,7 +235,6 @@ nonisolated struct ColourCategoryUpsertRow: Codable, Sendable {
     let options: [ColourCategoryRow.ColourOptionRow]
     let default_option_cost: Double?
     let applicable_tiers: [String]?
-    let spec_item_id: String?
 
     init(from category: ColourCategory, sortOrder: Int) {
         id = category.id
@@ -248,7 +246,6 @@ nonisolated struct ColourCategoryUpsertRow: Codable, Sendable {
         sort_order = sortOrder
         default_option_cost = category.defaultOptionCost
         applicable_tiers = category.applicableTiers
-        spec_item_id = category.specItemId
         options = category.options.map {
             ColourCategoryRow.ColourOptionRow(
                 id: $0.id, name: $0.name, hex_color: $0.hexColor,

@@ -34,6 +34,7 @@ struct AdminPipelineView: View {
                 .padding(16)
                 .padding(.bottom, 40)
             }
+            .refreshable { await viewModel.refreshAllData() }
             .background(AVIATheme.background)
             .navigationTitle("Pipeline")
             .navigationBarTitleDisplayMode(.inline)

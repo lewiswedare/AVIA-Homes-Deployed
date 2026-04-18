@@ -36,6 +36,7 @@ struct ClientBuildDetailView: View {
             .padding(.horizontal, 16)
             .padding(.bottom, 40)
         }
+        .refreshable { await appViewModel.refreshAllData() }
         .background(AVIATheme.background)
         .navigationTitle(build.clientDisplayName)
         .navigationBarTitleDisplayMode(.large)
