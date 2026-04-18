@@ -12,6 +12,10 @@ class ImageUploadService {
     var isUploading = false
 
     func uploadImage(_ data: Data, folder: String, fileName: String) async -> String? {
+        await uploadFile(data, folder: folder, fileName: fileName, contentType: "image/png")
+    }
+
+    func uploadFile(_ data: Data, folder: String, fileName: String, contentType: String) async -> String? {
         isUploading = true
         defer { isUploading = false }
 
@@ -25,7 +29,7 @@ class ImageUploadService {
                     data: data,
                     options: FileOptions(
                         cacheControl: "3600",
-                        contentType: "image/png",
+                        contentType: contentType,
                         upsert: true
                     )
                 )

@@ -1,5 +1,6 @@
 import SwiftUI
 import PhotosUI
+import UniformTypeIdentifiers
 
 struct ChatView: View {
     let conversation: Conversation
@@ -10,10 +11,13 @@ struct ChatView: View {
 
     @State private var showAttachMenu = false
     @State private var photoItem: PhotosPickerItem?
+    @State private var showPhotosPicker = false
+    @State private var showFileImporter = false
     @State private var showCamera = false
     @State private var cameraImage: UIImage?
     @State private var isUploading = false
     @State private var fullScreenImage: ChatImagePreview?
+    @State private var uploadError: String?
 
     private var otherUser: ClientUser? {
         let otherId = conversation.otherParticipantId(currentUserId: viewModel.currentUser.id)
@@ -64,7 +68,24 @@ struct ChatView: View {
         }
         .confirmationDialog("Attach", isPresented: $showAttachMenu, titleVisibility: .hidden) {
             Button("Take Photo") { showCamera = true }
+            Button("Photo Library") { showPhotosPicker = true }
+            Button("Choose File") { showFileImporter = true }
             Button("Cancel", role: .cancel) {}
+        }
+        .photosPicker(isPresented: $showPhotosPicker, selection: $photoItem, matching: .images)
+        .fileImporter(
+            isPresented: $showFileImporter,
+            allowedContentTypes: [.pdf, .image, .plainText, .text, .rtf, .presentation, .spreadsheet, .item],
+            allowsMultipleSelection: false
+        ) { result in
+            switch result {
+            case .success(let urls):
+                if let url = urls.first {
+                    Task { await handleFilePick(url: url) }
+                }
+            case .failure(let error):
+                uploadError = error.localizedDescription
+            }
         }
         .fullScreenCover(isPresented: $showCamera) {
             CameraPickerRepresentable(image: $cameraImage)
@@ -72,6 +93,14 @@ struct ChatView: View {
         }
         .fullScreenCover(item: $fullScreenImage) { item in
             ChatImageViewer(urlString: item.urlString)
+        }
+        .alert("Upload Failed", isPresented: Binding(
+            get: { uploadError != nil },
+            set: { if !$0 { uploadError = nil } }
+        )) {
+            Button("OK", role: .cancel) { uploadError = nil }
+        } message: {
+            Text(uploadError ?? "")
         }
     }
 
@@ -341,16 +370,8 @@ struct ChatView: View {
 
     @ViewBuilder
     private var attachmentButton: some View {
-        Menu {
-            Button {
-                showCamera = true
-            } label: {
-                Label("Take Photo", systemImage: "camera")
-            }
-
-            PhotosPicker(selection: $photoItem, matching: .images) {
-                Label("Photo Library", systemImage: "photo.on.rectangle")
-            }
+        Button {
+            showAttachMenu = true
         } label: {
             Image(systemName: "plus")
                 .font(.system(size: 18, weight: .medium))
@@ -403,11 +424,63 @@ struct ChatView: View {
         await uploadAndSend(data: data)
     }
 
+    private func handleFilePick(url: URL) async {
+        let didAccess = url.startAccessingSecurityScopedResource()
+        defer { if didAccess { url.stopAccessingSecurityScopedResource() } }
+
+        guard let data = try? Data(contentsOf: url) else {
+            uploadError = "Couldn't read the selected file."
+            return
+        }
+        let fileName = url.lastPathComponent
+        let mimeType = mimeType(for: url.pathExtension)
+        await uploadAndSendFile(data: data, fileName: fileName, mimeType: mimeType)
+    }
+
+    private func uploadAndSendFile(data: Data, fileName: String, mimeType: String) async {
+        isUploading = true
+        defer { isUploading = false }
+        let safeName = fileName.replacingOccurrences(of: " ", with: "_")
+        let storageName = "\(conversation.id)_\(UUID().uuidString)_\(safeName)"
+        guard let url = await ImageUploadService.shared.uploadFile(
+            data,
+            folder: "messages",
+            fileName: storageName,
+            contentType: mimeType
+        ) else {
+            uploadError = "Upload failed. Please try again."
+            return
+        }
+        let isImage = mimeType.hasPrefix("image")
+        await viewModel.messagingService.sendMessage(
+            conversationId: conversation.id,
+            senderId: viewModel.currentUser.id,
+            content: isImage ? "" : fileName,
+            attachmentUrl: url,
+            attachmentType: mimeType
+        )
+        await notifyRecipient(preview: isImage ? "\u{1F4F7} Photo" : "\u{1F4CE} \(fileName)")
+        scrollToBottom()
+    }
+
+    private func mimeType(for ext: String) -> String {
+        if let type = UTType(filenameExtension: ext.lowercased()), let mime = type.preferredMIMEType {
+            return mime
+        }
+        return "application/octet-stream"
+    }
+
     private func uploadAndSend(data: Data) async {
         isUploading = true
         defer { isUploading = false }
         let fileName = "\(conversation.id)_\(UUID().uuidString).jpg"
-        guard let url = await ImageUploadService.shared.uploadImage(data, folder: "messages", fileName: fileName) else {
+        guard let url = await ImageUploadService.shared.uploadFile(
+            data,
+            folder: "messages",
+            fileName: fileName,
+            contentType: "image/jpeg"
+        ) else {
+            uploadError = "Upload failed. Please try again."
             return
         }
         await viewModel.messagingService.sendMessage(
