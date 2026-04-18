@@ -33,11 +33,11 @@ struct ChatView: View {
     }
 
     var body: some View {
-        VStack(spacing: 0) {
+        ZStack(alignment: .bottom) {
             messagesScrollView
             inputBar
         }
-        .background(AVIATheme.background)
+        .background(AVIATheme.background.ignoresSafeArea())
         .navigationTitle("")
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
@@ -150,13 +150,14 @@ struct ChatView: View {
                         messageRow(message, at: index)
                             .id(message.id)
                     }
-                    Color.clear.frame(height: 1).id("bottom")
+                    Color.clear.frame(height: 72).id("bottom")
                 }
                 .padding(.horizontal, 12)
                 .padding(.top, 8)
                 .padding(.bottom, 8)
             }
             .scrollDismissesKeyboard(.interactively)
+            .scrollIndicators(.hidden)
             .onAppear {
                 scrollProxy = proxy
                 DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
@@ -359,11 +360,25 @@ struct ChatView: View {
         }
         .animation(.spring(duration: 0.25), value: messageText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
         .padding(.horizontal, 12)
-        .padding(.vertical, 8)
-        .background(AVIATheme.background)
+        .padding(.top, 8)
+        .padding(.bottom, 8)
+        .background {
+            ZStack {
+                Rectangle().fill(.ultraThinMaterial)
+                LinearGradient(
+                    colors: [
+                        AVIATheme.background.opacity(0.0),
+                        AVIATheme.background.opacity(0.55)
+                    ],
+                    startPoint: .top,
+                    endPoint: .bottom
+                )
+            }
+            .ignoresSafeArea(edges: .bottom)
+        }
         .overlay(alignment: .top) {
             Rectangle()
-                .fill(AVIATheme.surfaceBorder.opacity(0.6))
+                .fill(AVIATheme.surfaceBorder.opacity(0.35))
                 .frame(height: 0.5)
         }
     }
