@@ -631,17 +631,6 @@ struct ClientDiscoverDashboardView: View {
                     .allowsHitTesting(false)
                 }
                 .overlay(alignment: .topLeading) {
-                    Text(facade.storeys == 1 ? "SINGLE STOREY" : "DOUBLE STOREY")
-                        .font(.neueCorpMedium(9))
-                        .kerning(0.8)
-                        .foregroundStyle(AVIATheme.aviaWhite)
-                        .padding(.horizontal, 10)
-                        .padding(.vertical, 5)
-                        .background(AVIATheme.aviaBlack.opacity(0.7))
-                        .clipShape(Capsule())
-                        .padding(10)
-                }
-                .overlay(alignment: .topTrailing) {
                     Text(facade.pricing.isIncluded ? "INCLUDED" : "UPGRADE")
                         .font(.neueCorpMedium(9))
                         .kerning(0.8)
