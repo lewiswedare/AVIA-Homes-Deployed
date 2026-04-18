@@ -313,6 +313,7 @@ struct PackageDetailView: View {
                 }
 
             if let design = package.matchedDesign {
+                NavigationLink(value: design) {
                 BentoCard(cornerRadius: 16) {
                     VStack(spacing: 0) {
                         Color(AVIATheme.surfaceElevated)
@@ -386,6 +387,8 @@ struct PackageDetailView: View {
                         .padding(14)
                     }
                 }
+                }
+                .buttonStyle(.plain)
 
                 NavigationLink(value: design) {
                     HStack(spacing: 8) {
