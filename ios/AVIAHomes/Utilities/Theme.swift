@@ -130,10 +130,13 @@ struct StatusBadge: View {
     var body: some View {
         Text(title)
             .font(.neueCaption2Medium)
-            .foregroundStyle(AVIATheme.aviaWhite)
+            .foregroundStyle(color)
             .padding(.horizontal, 10)
             .padding(.vertical, 4)
-            .background(color, in: Capsule())
+            .overlay(
+                Capsule()
+                    .stroke(color, lineWidth: 1)
+            )
     }
 }
 
@@ -277,10 +280,10 @@ struct AVIAPill: View {
     }
 
     let title: String
-    let icon: String
+    let icon: String?
     let style: Style
 
-    init(_ title: String, icon: String = "arrow.up.right", style: Style = .onImage) {
+    init(_ title: String, icon: String? = "arrow.up.right", style: Style = .onImage) {
         self.title = title
         self.icon = icon
         self.style = style
@@ -290,21 +293,20 @@ struct AVIAPill: View {
         HStack(spacing: 8) {
             Text(title)
                 .font(.neueCaptionMedium)
-            Image(systemName: icon)
-                .font(.system(size: 11, weight: .semibold))
+            if let icon {
+                Image(systemName: icon)
+                    .font(.system(size: 11, weight: .semibold))
+            }
         }
         .foregroundStyle(foregroundColor)
         .padding(.horizontal, 16)
         .padding(.vertical, 10)
-        .background(
-            Capsule()
-                .fill(.ultraThinMaterial)
-                .environment(\.colorScheme, style == .onImage ? .dark : .light)
-        )
+        .background(Color.clear)
         .overlay(
             Capsule()
                 .stroke(strokeColor, lineWidth: 1)
         )
+        .contentShape(Capsule())
     }
 
     private var foregroundColor: Color {
@@ -319,6 +321,56 @@ struct AVIAPill: View {
         case .onImage: AVIATheme.aviaWhite.opacity(0.9)
         case .onLight: AVIATheme.textPrimary.opacity(0.35)
         }
+    }
+}
+
+// MARK: - Brand Chip (outline-only pill for filters, tags, badges)
+
+struct AVIAChip: View {
+    let title: String
+    let icon: String?
+    let isSelected: Bool
+    let onLight: Bool
+
+    init(_ title: String, icon: String? = nil, isSelected: Bool = false, onLight: Bool = true) {
+        self.title = title
+        self.icon = icon
+        self.isSelected = isSelected
+        self.onLight = onLight
+    }
+
+    var body: some View {
+        HStack(spacing: 6) {
+            if let icon {
+                Image(systemName: icon)
+                    .font(.system(size: 11, weight: .semibold))
+            }
+            Text(title)
+                .font(.neueCaptionMedium)
+        }
+        .foregroundStyle(foregroundColor)
+        .padding(.horizontal, 14)
+        .padding(.vertical, 8)
+        .background(Color.clear)
+        .overlay(
+            Capsule()
+                .stroke(strokeColor, lineWidth: isSelected ? 1.5 : 1)
+        )
+        .contentShape(Capsule())
+    }
+
+    private var foregroundColor: Color {
+        if isSelected {
+            return onLight ? AVIATheme.textPrimary : AVIATheme.aviaWhite
+        }
+        return onLight ? AVIATheme.textPrimary.opacity(0.75) : AVIATheme.aviaWhite.opacity(0.85)
+    }
+
+    private var strokeColor: Color {
+        if isSelected {
+            return onLight ? AVIATheme.textPrimary : AVIATheme.aviaWhite
+        }
+        return onLight ? AVIATheme.textPrimary.opacity(0.3) : AVIATheme.aviaWhite.opacity(0.5)
     }
 }
 
