@@ -615,7 +615,7 @@ struct ClientDiscoverDashboardView: View {
     private func facadeShowcaseCard(facade: Facade) -> some View {
         VStack(alignment: .leading, spacing: 0) {
             Color(AVIATheme.surfaceElevated)
-                .frame(width: 260, height: 325)
+                .frame(width: 320, height: 240)
                 .overlay {
                     AsyncImage(url: URL(string: facade.heroImageURL)) { phase in
                         if let image = phase.image {
@@ -631,7 +631,7 @@ struct ClientDiscoverDashboardView: View {
                     .allowsHitTesting(false)
                 }
                 .overlay(alignment: .topLeading) {
-                    Text(facade.name.uppercased())
+                    Text(facade.storeys == 1 ? "SINGLE STOREY" : "DOUBLE STOREY")
                         .font(.neueCorpMedium(9))
                         .kerning(0.8)
                         .foregroundStyle(AVIATheme.aviaWhite)
@@ -642,9 +642,9 @@ struct ClientDiscoverDashboardView: View {
                         .padding(10)
                 }
                 .overlay(alignment: .topTrailing) {
-                    Text(facade.pricing.displayText)
+                    Text(facade.pricing.isIncluded ? "INCLUDED" : "UPGRADE")
                         .font(.neueCorpMedium(9))
-                        .kerning(0.6)
+                        .kerning(0.8)
                         .foregroundStyle(AVIATheme.aviaWhite)
                         .padding(.horizontal, 10)
                         .padding(.vertical, 5)
@@ -662,9 +662,9 @@ struct ClientDiscoverDashboardView: View {
                     .font(.neueCaption2)
                     .foregroundStyle(AVIATheme.textTertiary)
             }
-            .padding(12)
+            .padding(14)
         }
-        .frame(width: 260)
+        .frame(width: 320)
         .background(AVIATheme.cardBackground)
         .clipShape(.rect(cornerRadius: 16))
     }
