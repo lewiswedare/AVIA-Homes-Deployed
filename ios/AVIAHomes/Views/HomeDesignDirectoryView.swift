@@ -9,7 +9,7 @@ struct HomeDesignDirectoryView: View {
     @State private var sortOption: SortOption = .nameAZ
     @State private var isCompareMode: Bool = false
     @State private var compareSelections: [HomeDesign] = []
-    @State private var showComparison: Bool = false
+    @State private var comparisonPair: DesignComparisonPair? = nil
 
     private let bedOptions = [3, 4]
     private let storeyOptions = [1, 2]
@@ -100,10 +100,8 @@ struct HomeDesignDirectoryView: View {
             .navigationDestination(for: HomeDesign.self) { design in
                 HomeDesignDetailView(design: design)
             }
-            .sheet(isPresented: $showComparison) {
-                if compareSelections.count == 2 {
-                    DesignComparisonView(designA: compareSelections[0], designB: compareSelections[1])
-                }
+            .sheet(item: $comparisonPair) { pair in
+                DesignComparisonView(designA: pair.designA, designB: pair.designB)
             }
         }
     }
@@ -288,7 +286,8 @@ struct HomeDesignDirectoryView: View {
 
     private var compareActionButton: some View {
         Button {
-            showComparison = true
+            guard compareSelections.count == 2 else { return }
+            comparisonPair = DesignComparisonPair(designA: compareSelections[0], designB: compareSelections[1])
         } label: {
             HStack(spacing: 8) {
                 Image(systemName: "arrow.left.arrow.right")
@@ -371,6 +370,12 @@ struct HomeDesignDirectoryView: View {
             }
             .clipShape(.rect(cornerRadius: 14))
     }
+}
+
+nonisolated struct DesignComparisonPair: Identifiable, Sendable {
+    let designA: HomeDesign
+    let designB: HomeDesign
+    var id: String { "\(designA.id)-\(designB.id)" }
 }
 
 nonisolated enum SortOption: CaseIterable, Sendable {
