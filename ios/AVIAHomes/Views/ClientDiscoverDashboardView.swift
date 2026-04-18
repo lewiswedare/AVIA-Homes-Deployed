@@ -4,7 +4,6 @@ struct ClientDiscoverDashboardView: View {
     @Environment(AppViewModel.self) private var viewModel
     @State private var showDesignDirectory: Bool = false
     @State private var showAllNews: Bool = false
-    @State private var showAllFacades: Bool = false
     @State private var showSpecComparison: Bool = false
 
     var body: some View {
@@ -49,7 +48,7 @@ struct ClientDiscoverDashboardView: View {
             .navigationDestination(for: SpecTier.self) { tier in
                 SpecRangeDetailView(tier: tier)
             }
-            .navigationDestination(isPresented: $showAllFacades) {
+            .navigationDestination(for: AllFacadesRoute.self) { _ in
                 AllFacadesView()
             }
             .navigationDestination(for: Facade.self) { facade in
@@ -588,9 +587,7 @@ struct ClientDiscoverDashboardView: View {
                     .font(.neueCorpMedium(24))
                     .foregroundStyle(AVIATheme.textPrimary)
                 Spacer()
-                Button {
-                    showAllFacades = true
-                } label: {
+                NavigationLink(value: AllFacadesRoute.all) {
                     Text("See All")
                         .font(.neueCaptionMedium)
                         .foregroundStyle(AVIATheme.timelessBrown)

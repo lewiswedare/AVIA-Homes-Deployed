@@ -283,3 +283,7 @@ private enum PricingFilter {
     case included
     case upgrade
 }
+
+enum AllFacadesRoute: Hashable {
+    case all
+}
