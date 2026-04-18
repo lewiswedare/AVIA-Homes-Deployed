@@ -67,6 +67,39 @@ struct AdminCatalogHubView: View {
                 }
 
                 NavigationLink {
+                    AdminSpecRangeEditorView()
+                } label: {
+                    BentoCard(cornerRadius: 14) {
+                        HStack(spacing: 14) {
+                            Image(systemName: "square.stack.3d.up.fill")
+                                .font(.neueCorpMedium(16))
+                                .foregroundStyle(AVIATheme.timelessBrown)
+                                .frame(width: 44, height: 44)
+                                .background(AVIATheme.timelessBrown.opacity(0.12))
+                                .clipShape(.rect(cornerRadius: 12))
+
+                            VStack(alignment: .leading, spacing: 3) {
+                                Text("Spec Range Content")
+                                    .font(.neueCaptionMedium)
+                                    .foregroundStyle(AVIATheme.textPrimary)
+                                Text("Edit hero image, summary, highlights & room gallery for each spec range")
+                                    .font(.neueCaption2)
+                                    .foregroundStyle(AVIATheme.textTertiary)
+                                    .lineLimit(2)
+                                    .multilineTextAlignment(.leading)
+                            }
+
+                            Spacer()
+
+                            Image(systemName: "chevron.right")
+                                .font(.neueCaption2)
+                                .foregroundStyle(AVIATheme.textTertiary)
+                        }
+                        .padding(14)
+                    }
+                }
+
+                NavigationLink {
                     AdminSpecRangePricingView()
                 } label: {
                     BentoCard(cornerRadius: 14) {

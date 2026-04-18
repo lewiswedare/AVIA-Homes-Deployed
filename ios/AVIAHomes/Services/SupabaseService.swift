@@ -990,6 +990,17 @@ class SupabaseService {
         }
     }
 
+    func upsertSpecRangeTier(_ row: SpecRangeTierRow) async -> Bool {
+        guard isConfigured else { return false }
+        do {
+            try await client.from("spec_range_tiers").upsert(row, onConflict: "tier").execute()
+            return true
+        } catch {
+            print("[SupabaseService] upsertSpecRangeTier FAILED: \(error)")
+            return false
+        }
+    }
+
     func fetchHomeFastSchemes() async -> [HomeFastScheme] {
         guard isConfigured else { return [] }
         do {
