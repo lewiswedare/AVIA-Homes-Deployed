@@ -330,110 +330,7 @@ struct PackageDetailView: View {
                 }
 
             if let design = package.matchedDesign {
-                NavigationLink(value: design) {
-                BentoCard(cornerRadius: 16) {
-                    VStack(spacing: 0) {
-                        Color(AVIATheme.surfaceElevated)
-                            .frame(height: 180)
-                            .overlay {
-                                AsyncImage(url: URL(string: design.imageURL)) { phase in
-                                    if let image = phase.image {
-                                        image.resizable().aspectRatio(contentMode: .fill)
-                                    }
-                                }
-                                .allowsHitTesting(false)
-                            }
-                            .clipShape(.rect(cornerRadii: .init(topLeading: 16, topTrailing: 16)))
-
-                        VStack(alignment: .leading, spacing: 10) {
-                            HStack {
-                                Text(design.name)
-                                    .font(.neueCorpMedium(22))
-                                    .foregroundStyle(AVIATheme.textPrimary)
-                                Spacer()
-                                if design.storeys == 2 {
-                                    Text("DOUBLE STOREY")
-                                        .font(.neueCorpMedium(8))
-                                        .kerning(0.5)
-                                        .foregroundStyle(AVIATheme.aviaWhite)
-                                        .padding(.horizontal, 8)
-                                        .padding(.vertical, 4)
-                                        .background(AVIATheme.timelessBrown)
-                                        .clipShape(Capsule())
-                                }
-                            }
-
-                            Text(String(format: "%.0f m² of living space", design.squareMeters))
-                                .font(.neueCaption)
-                                .foregroundStyle(AVIATheme.textSecondary)
-
-                            HStack(spacing: 0) {
-                                houseStatPill(value: "\(design.bedrooms)", label: "Bed", icon: "bed.double.fill")
-                                houseStatDivider
-                                houseStatPill(value: "\(design.bathrooms)", label: "Bath", icon: "shower.fill")
-                                houseStatDivider
-                                houseStatPill(value: "\(design.garages)", label: "Car", icon: "car.fill")
-                                houseStatDivider
-                                houseStatPill(value: "\(design.livingAreas)", label: "Living", icon: "sofa.fill")
-                            }
-                            .padding(.vertical, 12)
-                            .background(AVIATheme.surfaceElevated)
-                            .clipShape(.rect(cornerRadius: 12))
-
-                            HStack(spacing: 10) {
-                                dimensionTag(icon: "arrow.left.and.right", value: String(format: "%.1fm wide", design.houseWidth))
-                                dimensionTag(icon: "arrow.up.and.down", value: String(format: "%.1fm long", design.houseLength))
-                                dimensionTag(icon: "ruler", value: String(format: "%.1fm min lot", design.lotWidth))
-                            }
-
-                            if !design.floorplanImageURL.isEmpty {
-                                VStack(alignment: .leading, spacing: 6) {
-                                    Text("Floor Plan")
-                                        .font(.neueCaptionMedium)
-                                        .foregroundStyle(AVIATheme.textPrimary)
-                                        .padding(.top, 4)
-
-                                    AVIATheme.timelessBrown
-                                        .frame(height: 200)
-                                        .overlay {
-                                            AsyncImage(url: URL(string: design.floorplanImageURL)) { phase in
-                                                if let image = phase.image {
-                                                    image.resizable().aspectRatio(contentMode: .fit)
-                                                } else if phase.error != nil {
-                                                    Image(systemName: "rectangle.split.2x2")
-                                                        .font(.system(size: 32))
-                                                        .foregroundStyle(AVIATheme.aviaWhite.opacity(0.3))
-                                                } else {
-                                                    ProgressView()
-                                                        .tint(AVIATheme.aviaWhite.opacity(0.5))
-                                                }
-                                            }
-                                            .allowsHitTesting(false)
-                                        }
-                                        .clipShape(.rect(cornerRadius: 12))
-                                }
-                            }
-
-                            if !design.roomHighlights.isEmpty {
-                                VStack(alignment: .leading, spacing: 6) {
-                                    Text("Room Highlights")
-                                        .font(.neueCaptionMedium)
-                                        .foregroundStyle(AVIATheme.textPrimary)
-                                        .padding(.top, 4)
-
-                                    ForEach(design.roomHighlights.prefix(5), id: \.self) { highlight in
-                                        Text(highlight)
-                                            .font(.neueCaption2)
-                                            .foregroundStyle(AVIATheme.textSecondary)
-                                    }
-                                }
-                            }
-                        }
-                        .padding(14)
-                    }
-                }
-                }
-                .buttonStyle(.plain)
+                homeDesignCard(for: design)
 
                 NavigationLink(value: design) {
                     HStack(spacing: 8) {
@@ -465,6 +362,184 @@ struct PackageDetailView: View {
                 }
             }
         }
+    }
+
+    @ViewBuilder
+    private func homeDesignCard(for design: HomeDesign) -> some View {
+        NavigationLink(value: design) {
+            BentoCard(cornerRadius: 20) {
+                VStack(spacing: 0) {
+                    Color(AVIATheme.surfaceElevated)
+                        .frame(height: 240)
+                        .overlay {
+                            AsyncImage(url: URL(string: design.imageURL)) { phase in
+                                if let image = phase.image {
+                                    image.resizable().aspectRatio(contentMode: .fill)
+                                } else if phase.error != nil {
+                                    Image(systemName: "house.fill")
+                                        .font(.system(size: 48))
+                                        .foregroundStyle(AVIATheme.timelessBrown.opacity(0.2))
+                                } else {
+                                    ProgressView()
+                                }
+                            }
+                            .allowsHitTesting(false)
+                        }
+                        .overlay(alignment: .topLeading) {
+                            if design.storeys == 2 {
+                                Text("DOUBLE STOREY")
+                                    .font(.neueCorpMedium(10))
+                                    .kerning(0.8)
+                                    .foregroundStyle(AVIATheme.aviaWhite)
+                                    .padding(.horizontal, 10)
+                                    .padding(.vertical, 6)
+                                    .background(AVIATheme.aviaBlack.opacity(0.55))
+                                    .clipShape(Capsule())
+                                    .padding(12)
+                            } else {
+                                Text("SINGLE STOREY")
+                                    .font(.neueCorpMedium(10))
+                                    .kerning(0.8)
+                                    .foregroundStyle(AVIATheme.aviaWhite)
+                                    .padding(.horizontal, 10)
+                                    .padding(.vertical, 6)
+                                    .background(AVIATheme.aviaBlack.opacity(0.55))
+                                    .clipShape(Capsule())
+                                    .padding(12)
+                            }
+                        }
+                        .overlay(alignment: .bottomLeading) {
+                            VStack(alignment: .leading, spacing: 4) {
+                                Text(design.name)
+                                    .font(.neueCorpMedium(26))
+                                    .foregroundStyle(AVIATheme.aviaWhite)
+                                Text(String(format: "%.0f m² of living space", design.squareMeters))
+                                    .font(.neueCaption)
+                                    .foregroundStyle(AVIATheme.aviaWhite.opacity(0.9))
+                            }
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                            .padding(.horizontal, 16)
+                            .padding(.vertical, 14)
+                            .background(
+                                LinearGradient(
+                                    colors: [Color.clear, AVIATheme.aviaBlack.opacity(0.55)],
+                                    startPoint: .top,
+                                    endPoint: .bottom
+                                )
+                            )
+                        }
+                        .clipShape(.rect(cornerRadii: .init(topLeading: 20, topTrailing: 20)))
+
+                    VStack(spacing: 16) {
+                        HStack(spacing: 0) {
+                            houseStatPill(value: "\(design.bedrooms)", label: "Bed", icon: "bed.double.fill")
+                            houseStatDivider
+                            houseStatPill(value: "\(design.bathrooms)", label: "Bath", icon: "shower.fill")
+                            houseStatDivider
+                            houseStatPill(value: "\(design.garages)", label: "Car", icon: "car.fill")
+                            houseStatDivider
+                            houseStatPill(value: "\(design.livingAreas)", label: "Living", icon: "sofa.fill")
+                        }
+                        .padding(.vertical, 14)
+                        .background(AVIATheme.surfaceElevated)
+                        .clipShape(.rect(cornerRadius: 14))
+
+                        HStack(spacing: 8) {
+                            dimensionTag(icon: "arrow.left.and.right", value: String(format: "%.1fm wide", design.houseWidth))
+                            dimensionTag(icon: "arrow.up.and.down", value: String(format: "%.1fm long", design.houseLength))
+                            dimensionTag(icon: "ruler", value: String(format: "%.1fm lot", design.lotWidth))
+                        }
+
+                        if !design.floorplanImageURL.isEmpty {
+                            VStack(alignment: .leading, spacing: 10) {
+                                HStack {
+                                    Text("FLOOR PLAN")
+                                        .font(.neueCaption2Medium)
+                                        .kerning(1.0)
+                                        .foregroundStyle(AVIATheme.timelessBrown)
+                                    Spacer()
+                                    HStack(spacing: 4) {
+                                        Image(systemName: "arrow.up.right")
+                                            .font(.system(size: 9, weight: .semibold))
+                                        Text("View details")
+                                            .font(.neueCaption2)
+                                    }
+                                    .foregroundStyle(AVIATheme.timelessBrown.opacity(0.7))
+                                }
+
+                                AVIATheme.timelessBrown
+                                    .frame(height: 340)
+                                    .overlay {
+                                        AsyncImage(url: URL(string: design.floorplanImageURL)) { phase in
+                                            if let image = phase.image {
+                                                image.resizable().aspectRatio(contentMode: .fit)
+                                            } else if phase.error != nil {
+                                                Image(systemName: "rectangle.split.2x2")
+                                                    .font(.system(size: 36))
+                                                    .foregroundStyle(AVIATheme.aviaWhite.opacity(0.3))
+                                            } else {
+                                                ProgressView()
+                                                    .tint(AVIATheme.aviaWhite.opacity(0.5))
+                                            }
+                                        }
+                                        .allowsHitTesting(false)
+                                    }
+                                    .clipShape(.rect(cornerRadius: 14))
+                            }
+                        }
+
+                        if !design.description.isEmpty {
+                            VStack(alignment: .leading, spacing: 8) {
+                                Text("ABOUT")
+                                    .font(.neueCaption2Medium)
+                                    .kerning(1.0)
+                                    .foregroundStyle(AVIATheme.timelessBrown)
+                                Text(design.description)
+                                    .font(.neueCaption)
+                                    .foregroundStyle(AVIATheme.textSecondary)
+                                    .lineSpacing(4)
+                                    .lineLimit(4)
+                                    .frame(maxWidth: .infinity, alignment: .leading)
+                            }
+                        }
+
+                        if !design.roomHighlights.isEmpty {
+                            VStack(alignment: .leading, spacing: 10) {
+                                Text("ROOM HIGHLIGHTS")
+                                    .font(.neueCaption2Medium)
+                                    .kerning(1.0)
+                                    .foregroundStyle(AVIATheme.timelessBrown)
+
+                                VStack(spacing: 0) {
+                                    ForEach(Array(design.roomHighlights.prefix(5).enumerated()), id: \.offset) { index, highlight in
+                                        HStack(spacing: 10) {
+                                            Image(systemName: "checkmark")
+                                                .font(.system(size: 10, weight: .semibold))
+                                                .foregroundStyle(AVIATheme.timelessBrown)
+                                                .frame(width: 16)
+                                            Text(highlight)
+                                                .font(.neueCaption)
+                                                .foregroundStyle(AVIATheme.textPrimary)
+                                            Spacer()
+                                        }
+                                        .padding(.vertical, 9)
+
+                                        if index < min(design.roomHighlights.count, 5) - 1 {
+                                            Rectangle()
+                                                .fill(AVIATheme.surfaceBorder)
+                                                .frame(height: 1)
+                                                .padding(.leading, 26)
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    .padding(16)
+                }
+            }
+        }
+        .buttonStyle(.plain)
     }
 
     // MARK: - Facade
