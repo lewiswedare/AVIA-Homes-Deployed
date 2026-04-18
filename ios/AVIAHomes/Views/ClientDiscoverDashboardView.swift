@@ -460,7 +460,7 @@ struct ClientDiscoverDashboardView: View {
     }
 
     private var specRangesSlider: some View {
-        VStack(alignment: .leading, spacing: 12) {
+        VStack(alignment: .leading, spacing: 14) {
             HStack(spacing: 8) {
                 Text("Our Spec Ranges")
                     .font(.neueCorpMedium(24))
@@ -475,69 +475,96 @@ struct ClientDiscoverDashboardView: View {
                 }
             }
 
-            ScrollView(.horizontal) {
-                HStack(spacing: 12) {
-                    ForEach(SpecTier.allCases) { tier in
-                        NavigationLink(value: tier) {
-                            specRangeCard(tier: tier)
-                        }
-                        .buttonStyle(.plain)
+            VStack(spacing: 14) {
+                ForEach(Array(SpecTier.allCases.enumerated()), id: \.element) { index, tier in
+                    NavigationLink(value: tier) {
+                        specRangeCard(tier: tier, index: index)
                     }
+                    .buttonStyle(.plain)
                 }
             }
-            .contentMargins(.horizontal, 0)
-            .scrollIndicators(.hidden)
         }
     }
 
-    private func specRangeCard(tier: SpecTier) -> some View {
-        VStack(alignment: .leading, spacing: 0) {
-            Color(AVIATheme.surfaceElevated)
-                .frame(width: 240, height: 300)
-                .overlay {
-                    AsyncImage(url: URL(string: specRangeImageURL(for: tier))) { phase in
-                        if let image = phase.image {
-                            image.resizable().aspectRatio(contentMode: .fill)
-                        } else if phase.error != nil {
-                            Text(tier.displayName)
-                                .font(.neueCorpMedium(16))
-                                .foregroundStyle(AVIATheme.timelessBrown.opacity(0.25))
-                        } else {
-                            ProgressView()
-                        }
+    private func specRangeCard(tier: SpecTier, index: Int) -> some View {
+        Color(AVIATheme.surfaceElevated)
+            .frame(height: 320)
+            .overlay {
+                AsyncImage(url: URL(string: specRangeImageURL(for: tier))) { phase in
+                    if let image = phase.image {
+                        image.resizable().aspectRatio(contentMode: .fill)
+                    } else if phase.error != nil {
+                        Text(tier.displayName)
+                            .font(.neueCorpMedium(16))
+                            .foregroundStyle(AVIATheme.timelessBrown.opacity(0.25))
+                    } else {
+                        ProgressView()
                     }
-                    .allowsHitTesting(false)
                 }
-                .overlay(alignment: .bottomLeading) {
-                    LinearGradient(
-                        colors: [.clear, AVIATheme.aviaBlack.opacity(0.6)],
-                        startPoint: .top,
-                        endPoint: .bottom
-                    )
-                    .frame(height: 60)
-                }
-                .overlay(alignment: .bottomLeading) {
-                    Text(tier.displayName)
-                        .font(.neueSubheadlineMedium)
-                        .foregroundStyle(AVIATheme.aviaWhite)
-                        .padding(10)
-                }
-                .clipShape(.rect(cornerRadii: .init(topLeading: 16, topTrailing: 16)))
-
-            VStack(alignment: .leading, spacing: 4) {
-                Text(tier.tagline)
-                    .font(.neueCaptionMedium)
-                    .foregroundStyle(AVIATheme.textPrimary)
-                Text(specRangeDescription(for: tier))
-                    .font(.neueCaption2)
-                    .foregroundStyle(AVIATheme.textTertiary)
-                    .lineLimit(2)
+                .allowsHitTesting(false)
             }
-            .padding(10)
-        }
-        .frame(width: 240)
-        .background(AVIATheme.cardBackground)
-        .clipShape(.rect(cornerRadius: 16))
+            .overlay {
+                LinearGradient(
+                    colors: [
+                        AVIATheme.aviaBlack.opacity(0.15),
+                        AVIATheme.aviaBlack.opacity(0.35),
+                        AVIATheme.aviaBlack.opacity(0.85)
+                    ],
+                    startPoint: .top,
+                    endPoint: .bottom
+                )
+            }
+            .overlay(alignment: .topLeading) {
+                HStack(spacing: 6) {
+                    Text(String(format: "%02d", index + 1))
+                        .font(.neueCorpMedium(10))
+                        .kerning(1.2)
+                        .foregroundStyle(AVIATheme.aviaWhite.opacity(0.85))
+                    Rectangle()
+                        .fill(AVIATheme.aviaWhite.opacity(0.6))
+                        .frame(width: 18, height: 1)
+                    Text("RANGE")
+                        .font(.neueCorpMedium(10))
+                        .kerning(1.2)
+                        .foregroundStyle(AVIATheme.aviaWhite.opacity(0.85))
+                }
+                .padding(.horizontal, 14)
+                .padding(.vertical, 8)
+                .background(.ultraThinMaterial, in: Capsule())
+                .environment(\.colorScheme, .dark)
+                .padding(16)
+            }
+            .overlay(alignment: .bottomLeading) {
+                VStack(alignment: .leading, spacing: 8) {
+                    Text(tier.displayName.uppercased())
+                        .font(.neueCorpMedium(28))
+                        .kerning(1.5)
+                        .foregroundStyle(AVIATheme.aviaWhite)
+                    Text(tier.tagline)
+                        .font(.neueSubheadlineMedium)
+                        .foregroundStyle(AVIATheme.aviaWhite.opacity(0.9))
+                    Text(specRangeDescription(for: tier))
+                        .font(.neueCaption)
+                        .foregroundStyle(AVIATheme.aviaWhite.opacity(0.75))
+                        .lineLimit(2)
+
+                    HStack(spacing: 6) {
+                        Text("Explore range")
+                            .font(.neueCaptionMedium)
+                        Image(systemName: "arrow.right")
+                            .font(.system(size: 11, weight: .semibold))
+                    }
+                    .foregroundStyle(AVIATheme.aviaWhite)
+                    .padding(.horizontal, 14)
+                    .padding(.vertical, 8)
+                    .background(.ultraThinMaterial, in: Capsule())
+                    .environment(\.colorScheme, .dark)
+                    .padding(.top, 4)
+                }
+                .padding(18)
+            }
+            .clipShape(.rect(cornerRadius: 20))
+            .shadow(color: AVIATheme.aviaBlack.opacity(0.12), radius: 14, x: 0, y: 6)
     }
 
     private func specRangeImageURL(for tier: SpecTier) -> String {
