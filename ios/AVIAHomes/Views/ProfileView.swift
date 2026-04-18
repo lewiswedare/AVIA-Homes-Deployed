@@ -17,10 +17,6 @@ struct ProfileView: View {
 
                 if isClient {
                     settingsSection(title: "Home Details") {
-                        DetailRow(icon: "house.fill", title: "Home Design", value: viewModel.currentUser.homeDesign)
-                        Rectangle().fill(AVIATheme.surfaceBorder).frame(height: 1).padding(.leading, 48)
-                        DetailRow(icon: "mappin.circle.fill", title: "Lot", value: viewModel.currentUser.lotNumber)
-                        Rectangle().fill(AVIATheme.surfaceBorder).frame(height: 1).padding(.leading, 48)
                         DetailRow(icon: "location.fill", title: "Mailing Address", value: viewModel.currentUser.address)
                         Rectangle().fill(AVIATheme.surfaceBorder).frame(height: 1).padding(.leading, 48)
                         DetailRow(icon: "calendar", title: "Contract Date", value: viewModel.currentUser.contractDate.formatted(date: .long, time: .omitted))
