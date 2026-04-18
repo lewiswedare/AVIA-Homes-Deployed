@@ -510,39 +510,41 @@ struct ClientDiscoverDashboardView: View {
                     endPoint: .bottom
                 )
             }
-            .overlay(alignment: .topLeading) {
-                Text(specRangeBadge(for: tier))
-                    .font(.neueCorpMedium(10))
-                    .kerning(1.2)
-                    .foregroundStyle(AVIATheme.aviaWhite.opacity(0.9))
-                    .padding(.horizontal, 14)
-                    .padding(.vertical, 8)
-                    .background(.ultraThinMaterial, in: Capsule())
-                    .environment(\.colorScheme, .dark)
-                    .padding(16)
-            }
-            .overlay(alignment: .bottomLeading) {
+            .overlay(alignment: .bottom) {
                 VStack(alignment: .leading, spacing: 8) {
                     Text(tier.displayName)
                         .font(.neueCorpMedium(28))
                         .foregroundStyle(AVIATheme.aviaWhite)
-                    Text(tier.tagline)
-                        .font(.neueSubheadlineMedium)
-                        .foregroundStyle(AVIATheme.aviaWhite.opacity(0.9))
 
-                    HStack(spacing: 6) {
-                        Text("Explore \(tier.displayName)")
-                            .font(.neueCaptionMedium)
-                        Image(systemName: "arrow.right")
-                            .font(.system(size: 11, weight: .semibold))
+                    HStack(alignment: .center, spacing: 12) {
+                        Text(tier.tagline)
+                            .font(.neueSubheadlineMedium)
+                            .foregroundStyle(AVIATheme.aviaWhite.opacity(0.9))
+                            .fixedSize(horizontal: false, vertical: true)
+
+                        Spacer(minLength: 8)
+
+                        HStack(spacing: 6) {
+                            Text("Explore \(tier.displayName)")
+                                .font(.neueCaptionMedium)
+                            Image(systemName: "arrow.right")
+                                .font(.system(size: 11, weight: .semibold))
+                        }
+                        .foregroundStyle(AVIATheme.aviaWhite)
+                        .padding(.horizontal, 14)
+                        .padding(.vertical, 8)
+                        .background(
+                            Capsule()
+                                .fill(.ultraThinMaterial)
+                                .environment(\.colorScheme, .dark)
+                        )
+                        .overlay(
+                            Capsule()
+                                .stroke(AVIATheme.aviaWhite.opacity(0.25), lineWidth: 0.5)
+                        )
                     }
-                    .foregroundStyle(AVIATheme.aviaWhite)
-                    .padding(.horizontal, 14)
-                    .padding(.vertical, 8)
-                    .background(.ultraThinMaterial, in: Capsule())
-                    .environment(\.colorScheme, .dark)
-                    .padding(.top, 4)
                 }
+                .frame(maxWidth: .infinity, alignment: .leading)
                 .padding(18)
             }
             .clipShape(.rect(cornerRadius: 20))
