@@ -156,13 +156,10 @@ struct EstateDetailView: View {
 
     private var titleBlock: some View {
         VStack(alignment: .leading, spacing: 8) {
-            HStack(alignment: .firstTextBaseline) {
-                Text(estate.name)
-                    .font(.neueCorpMedium(28))
-                    .foregroundStyle(AVIATheme.textPrimary)
-                Spacer()
-                estateStatusBadge
-            }
+            Text(estate.name)
+                .font(.neueCorpMedium(28))
+                .foregroundStyle(AVIATheme.textPrimary)
+                .frame(maxWidth: .infinity, alignment: .leading)
 
             HStack(spacing: 6) {
                 Image(systemName: "mappin.circle.fill")
