@@ -1374,14 +1374,14 @@ struct PackageDetailView: View {
     // MARK: - Helpers
 
     private func statusBadge(_ status: PackageStatus) -> some View {
-        Text(status.rawValue.uppercased())
+        let color = statusColor(status)
+        return Text(status.rawValue.uppercased())
             .font(.neueCorpMedium(9))
             .kerning(0.5)
-            .foregroundStyle(AVIATheme.aviaWhite)
+            .foregroundStyle(color)
             .padding(.horizontal, 10)
             .padding(.vertical, 5)
-            .background(statusColor(status))
-            .clipShape(Capsule())
+            .overlay(Capsule().stroke(color, lineWidth: 1))
     }
 
     private func statusColor(_ status: PackageStatus) -> Color {

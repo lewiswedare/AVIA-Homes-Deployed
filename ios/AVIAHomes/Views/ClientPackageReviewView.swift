@@ -217,6 +217,7 @@ struct ClientPackageReviewView: View {
 
     private func responseStatusBadge(_ status: PackageResponseStatus?) -> some View {
         let displayStatus = status ?? .pending
+        let color = statusColor(displayStatus)
         return HStack(spacing: 4) {
             Image(systemName: displayStatus.icon)
                 .font(.system(size: 9, weight: .bold))
@@ -224,11 +225,11 @@ struct ClientPackageReviewView: View {
                 .font(.neueCorpMedium(9))
                 .kerning(0.3)
         }
-        .foregroundStyle(AVIATheme.aviaWhite)
+        .foregroundStyle(color)
         .padding(.horizontal, 10)
         .padding(.vertical, 5)
-        .background(statusColor(displayStatus))
-        .clipShape(Capsule())
+        .background(.ultraThinMaterial, in: Capsule())
+        .overlay(Capsule().stroke(color, lineWidth: 1))
     }
 
     private func statusColor(_ status: PackageResponseStatus) -> Color {

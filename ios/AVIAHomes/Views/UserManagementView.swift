@@ -176,13 +176,13 @@ struct UserManagementView: View {
     }
 
     private func roleBadge(_ role: UserRole) -> some View {
-        Text(role.rawValue)
+        let color: Color = role.isPending ? AVIATheme.warning : AVIATheme.timelessBrown
+        return Text(role.rawValue)
             .font(.neueCaption2Medium)
-            .foregroundStyle(role.isPending ? AVIATheme.warning : AVIATheme.timelessBrown)
+            .foregroundStyle(color)
             .padding(.horizontal, 10)
             .padding(.vertical, 4)
-            .background(role.isPending ? AVIATheme.warning.opacity(0.12) : AVIATheme.timelessBrown.opacity(0.12))
-            .clipShape(.capsule)
+            .overlay(Capsule().stroke(color, lineWidth: 1))
     }
 
     private var emptyState: some View {

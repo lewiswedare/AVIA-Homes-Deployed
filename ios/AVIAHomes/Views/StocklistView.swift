@@ -599,14 +599,14 @@ struct StocklistView: View {
     // MARK: - Status Badge
 
     private func stocklistStatusBadge(_ status: String) -> some View {
-        Text(status.isEmpty ? "—" : status)
+        let color = stocklistStatusColor(status)
+        return Text(status.isEmpty ? "—" : status)
             .font(.neueCorpMedium(8))
             .kerning(0.5)
-            .foregroundStyle(AVIATheme.aviaWhite)
+            .foregroundStyle(color)
             .padding(.horizontal, 8)
             .padding(.vertical, 4)
-            .background(stocklistStatusColor(status))
-            .clipShape(Capsule())
+            .overlay(Capsule().stroke(color, lineWidth: 1))
     }
 
     private func stocklistStatusColor(_ status: String) -> Color {

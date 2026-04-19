@@ -256,14 +256,14 @@ struct PackagesContentView: View {
     }
 
     private func statusBadge(_ status: PackageStatus) -> some View {
-        Text(status.rawValue)
+        let color = statusColor(status)
+        return Text(status.rawValue)
             .font(.neueCorpMedium(8))
             .kerning(0.4)
-            .foregroundStyle(AVIATheme.aviaWhite)
+            .foregroundStyle(color)
             .padding(.horizontal, 8)
             .padding(.vertical, 4)
-            .background(statusColor(status))
-            .clipShape(Capsule())
+            .overlay(Capsule().stroke(color, lineWidth: 1))
     }
 
     private func statusColor(_ status: PackageStatus) -> Color {

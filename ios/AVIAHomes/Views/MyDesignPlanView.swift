@@ -196,8 +196,7 @@ struct MyDesignPlanView: View {
         }
         .frame(maxWidth: .infinity)
         .padding(.vertical, 8)
-        .background(confirmed ? AVIATheme.success.opacity(0.05) : AVIATheme.surfaceElevated)
-        .clipShape(.rect(cornerRadius: 8))
+        .overlay(RoundedRectangle(cornerRadius: 8).stroke(confirmed ? AVIATheme.success : AVIATheme.textTertiary, lineWidth: 1))
     }
 
     private var statusColor: Color {

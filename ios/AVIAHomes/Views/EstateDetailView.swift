@@ -176,11 +176,10 @@ struct EstateDetailView: View {
                 Text("COMING SOON")
                     .font(.neueCorpMedium(9))
                     .kerning(0.8)
-                    .foregroundStyle(AVIATheme.aviaWhite)
+                    .foregroundStyle(AVIATheme.warning)
                     .padding(.horizontal, 10)
                     .padding(.vertical, 5)
-                    .background(AVIATheme.warning)
-                    .clipShape(Capsule())
+                    .overlay(Capsule().stroke(AVIATheme.warning, lineWidth: 1))
             }
         }
     }
@@ -189,11 +188,10 @@ struct EstateDetailView: View {
         Text(estate.status.rawValue.uppercased())
             .font(.neueCorpMedium(9))
             .kerning(0.5)
-            .foregroundStyle(AVIATheme.aviaWhite)
+            .foregroundStyle(estateStatusColor)
             .padding(.horizontal, 10)
             .padding(.vertical, 5)
-            .background(estateStatusColor)
-            .clipShape(Capsule())
+            .overlay(Capsule().stroke(estateStatusColor, lineWidth: 1))
     }
 
     private var estateStatusColor: Color {
@@ -654,14 +652,14 @@ struct EstateDetailView: View {
     }
 
     private func packageStatusBadge(_ status: PackageStatus) -> some View {
-        Text(status.rawValue)
+        let color = packageStatusColor(status)
+        return Text(status.rawValue)
             .font(.neueCorpMedium(8))
             .kerning(0.4)
-            .foregroundStyle(AVIATheme.aviaWhite)
+            .foregroundStyle(color)
             .padding(.horizontal, 8)
             .padding(.vertical, 4)
-            .background(packageStatusColor(status))
-            .clipShape(Capsule())
+            .overlay(Capsule().stroke(color, lineWidth: 1))
     }
 
     private func packageStatusColor(_ status: PackageStatus) -> Color {

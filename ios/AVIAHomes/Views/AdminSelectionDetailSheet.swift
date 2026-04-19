@@ -131,6 +131,7 @@ struct AdminSelectionDetailSheet: View {
         }
         Text(label.uppercased())
             .font(.neueCorpMedium(8))
+            .kerning(0.5)
             .foregroundStyle(color)
             .padding(.horizontal, 8)
             .padding(.vertical, 3)
