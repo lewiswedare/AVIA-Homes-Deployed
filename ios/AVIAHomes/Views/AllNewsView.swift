@@ -144,23 +144,8 @@ struct AllNewsView: View {
                 .clipShape(.rect(cornerRadii: .init(topLeading: 16, topTrailing: 16)))
                 .overlay(alignment: .topLeading) {
                     HStack(spacing: 6) {
-                        Text("FEATURED")
-                            .font(.neueCorpMedium(9))
-                            .kerning(0.8)
-                            .foregroundStyle(AVIATheme.aviaWhite)
-                            .padding(.horizontal, 10)
-                            .padding(.vertical, 5)
-                            .background(AVIATheme.aviaBlack.opacity(0.7))
-                            .clipShape(Capsule())
-
-                        Text(post.category.uppercased())
-                            .font(.neueCorpMedium(9))
-                            .kerning(0.8)
-                            .foregroundStyle(AVIATheme.aviaWhite)
-                            .padding(.horizontal, 10)
-                            .padding(.vertical, 5)
-                            .background(AVIATheme.timelessBrown.opacity(0.8))
-                            .clipShape(Capsule())
+                        AVIAChip("FEATURED", onLight: false)
+                        AVIAChip(post.category.uppercased(), onLight: false)
                     }
                     .padding(12)
                 }

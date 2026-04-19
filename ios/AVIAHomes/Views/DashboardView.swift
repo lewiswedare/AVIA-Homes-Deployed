@@ -1251,14 +1251,7 @@ struct DashboardView: View {
                 }
                 .clipShape(.rect(cornerRadii: .init(topLeading: 16, topTrailing: 16)))
                 .overlay(alignment: .topLeading) {
-                    Text(post.category.uppercased())
-                        .font(.neueCaption2Medium)
-                        .kerning(0.8)
-                        .foregroundStyle(AVIATheme.aviaWhite)
-                        .padding(.horizontal, 10)
-                        .padding(.vertical, 5)
-                        .background(AVIATheme.aviaBlack.opacity(0.7))
-                        .clipShape(Capsule())
+                    AVIAChip(post.category.uppercased(), onLight: false)
                         .padding(12)
                 }
 
@@ -1398,14 +1391,7 @@ struct DashboardView: View {
             }
             .overlay(alignment: .topTrailing) {
                 if design.storeys == 2 {
-                    Text("2 STOREY")
-                        .font(.neueCorpMedium(7))
-                        .kerning(0.4)
-                        .foregroundStyle(AVIATheme.aviaWhite)
-                        .padding(.horizontal, 6)
-                        .padding(.vertical, 3)
-                        .background(AVIATheme.timelessBrown)
-                        .clipShape(Capsule())
+                    AVIAChip("2 STOREY", onLight: false)
                         .padding(8)
                 }
             }
@@ -1453,13 +1439,7 @@ struct DashboardView: View {
                     .clipShape(.rect(cornerRadius: 12))
                     .overlay(alignment: .topLeading) {
                         if package.isNew {
-                            Text("NEW")
-                                .font(.neueCorpMedium(8))
-                                .foregroundStyle(AVIATheme.aviaWhite)
-                                .padding(.horizontal, 6)
-                                .padding(.vertical, 3)
-                                .background(AVIATheme.timelessBrown)
-                                .clipShape(Capsule())
+                            AVIAChip("NEW", onLight: false)
                                 .padding(4)
                         }
                     }

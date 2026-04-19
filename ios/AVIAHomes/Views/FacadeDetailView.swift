@@ -62,25 +62,7 @@ struct FacadeDetailView: View {
                         .font(.neueCorpMedium(34))
                         .foregroundStyle(AVIATheme.textPrimary)
                     Spacer()
-                    if facade.storeys == 2 {
-                        Text("DOUBLE STOREY")
-                            .font(.neueCorpMedium(9))
-                            .kerning(0.8)
-                            .foregroundStyle(AVIATheme.aviaWhite)
-                            .padding(.horizontal, 10)
-                            .padding(.vertical, 5)
-                            .background(AVIATheme.timelessBrown)
-                            .clipShape(Capsule())
-                    } else {
-                        Text("SINGLE STOREY")
-                            .font(.neueCorpMedium(9))
-                            .kerning(0.8)
-                            .foregroundStyle(AVIATheme.textSecondary)
-                            .padding(.horizontal, 10)
-                            .padding(.vertical, 5)
-                            .background(AVIATheme.surfaceElevated)
-                            .clipShape(Capsule())
-                    }
+                    AVIAChip(facade.storeys == 2 ? "DOUBLE STOREY" : "SINGLE STOREY")
                 }
                 .padding(.horizontal, 16)
                 .padding(.bottom, 8)

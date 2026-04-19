@@ -378,14 +378,7 @@ struct HomeDesignDirectoryView: View {
             }
             .overlay(alignment: .topTrailing) {
                 if design.storeys == 2 {
-                    Text("2 STOREY")
-                        .font(.neueCorpMedium(8))
-                        .kerning(0.5)
-                        .foregroundStyle(AVIATheme.aviaWhite)
-                        .padding(.horizontal, 7)
-                        .padding(.vertical, 3)
-                        .background(AVIATheme.timelessBrown)
-                        .clipShape(Capsule())
+                    AVIAChip("2 STOREY", onLight: false)
                         .padding(8)
                 }
             }

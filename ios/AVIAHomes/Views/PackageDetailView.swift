@@ -186,14 +186,7 @@ struct PackageDetailView: View {
             }
 
             if package.isNew {
-                Text("NEW LISTING")
-                    .font(.neueCorpMedium(9))
-                    .kerning(0.8)
-                    .foregroundStyle(AVIATheme.aviaWhite)
-                    .padding(.horizontal, 10)
-                    .padding(.vertical, 5)
-                    .background(AVIATheme.timelessBrown)
-                    .clipShape(Capsule())
+                AVIAChip("NEW LISTING")
             }
         }
     }
@@ -386,27 +379,8 @@ struct PackageDetailView: View {
                             .allowsHitTesting(false)
                         }
                         .overlay(alignment: .topLeading) {
-                            if design.storeys == 2 {
-                                Text("DOUBLE STOREY")
-                                    .font(.neueCorpMedium(10))
-                                    .kerning(0.8)
-                                    .foregroundStyle(AVIATheme.aviaWhite)
-                                    .padding(.horizontal, 10)
-                                    .padding(.vertical, 6)
-                                    .background(AVIATheme.aviaBlack.opacity(0.55))
-                                    .clipShape(Capsule())
-                                    .padding(12)
-                            } else {
-                                Text("SINGLE STOREY")
-                                    .font(.neueCorpMedium(10))
-                                    .kerning(0.8)
-                                    .foregroundStyle(AVIATheme.aviaWhite)
-                                    .padding(.horizontal, 10)
-                                    .padding(.vertical, 6)
-                                    .background(AVIATheme.aviaBlack.opacity(0.55))
-                                    .clipShape(Capsule())
-                                    .padding(12)
-                            }
+                            AVIAChip(design.storeys == 2 ? "DOUBLE STOREY" : "SINGLE STOREY", onLight: false)
+                                .padding(12)
                         }
                         .overlay(alignment: .bottomLeading) {
                             VStack(alignment: .leading, spacing: 4) {

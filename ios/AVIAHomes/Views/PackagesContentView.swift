@@ -196,14 +196,7 @@ struct PackagesContentView: View {
                     .overlay(alignment: .topLeading) {
                         HStack(spacing: 6) {
                             if package.isNew {
-                                Text("NEW")
-                                    .font(.neueCorpMedium(8))
-                                    .kerning(0.5)
-                                    .foregroundStyle(AVIATheme.aviaWhite)
-                                    .padding(.horizontal, 8)
-                                    .padding(.vertical, 4)
-                                    .background(AVIATheme.timelessBrown)
-                                    .clipShape(Capsule())
+                                AVIAChip("NEW", onLight: false)
                             }
                             statusBadge(package.status)
                         }
