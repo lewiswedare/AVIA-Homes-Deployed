@@ -62,26 +62,13 @@ struct SpecRangeDetailView: View {
                 .font(.neueCaption)
                 .foregroundStyle(AVIATheme.textSecondary)
 
-            LazyVGrid(columns: [GridItem(.flexible(), spacing: 10), GridItem(.flexible(), spacing: 10), GridItem(.flexible(), spacing: 10)], spacing: 10) {
-                ForEach(brandPartners, id: \.self) { name in
-                    VStack(spacing: 6) {
-                        Image(systemName: "building.2.crop.circle.fill")
-                            .font(.system(size: 24))
-                            .foregroundStyle(AVIATheme.timelessBrown.opacity(0.7))
-                        Text(name)
-                            .font(.neueCaption2Medium)
-                            .foregroundStyle(AVIATheme.textPrimary)
-                            .lineLimit(1)
-                            .minimumScaleFactor(0.7)
-                    }
-                    .frame(maxWidth: .infinity)
-                    .frame(height: 80)
-                    .background(AVIATheme.cardBackground)
-                    .clipShape(.rect(cornerRadius: 12))
-                    .overlay {
-                        RoundedRectangle(cornerRadius: 12)
-                            .stroke(AVIATheme.surfaceBorder, lineWidth: 1)
-                    }
+            LazyVGrid(columns: [GridItem(.flexible(), spacing: 10), GridItem(.flexible(), spacing: 10), GridItem(.flexible(), spacing: 10)], spacing: 16) {
+                ForEach(brandPartners, id: \.self) { _ in
+                    Image(systemName: "building.2.crop.circle.fill")
+                        .font(.system(size: 28))
+                        .foregroundStyle(AVIATheme.timelessBrown.opacity(0.7))
+                        .frame(maxWidth: .infinity)
+                        .frame(height: 64)
                 }
             }
 
