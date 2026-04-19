@@ -205,14 +205,7 @@ struct AllFacadesView: View {
                 }
                 .clipShape(.rect(cornerRadii: .init(topLeading: 16, topTrailing: 16)))
                 .overlay(alignment: .topLeading) {
-                    HStack(spacing: 6) {
-                        AVIAChip(facade.style.uppercased(), onLight: false)
-                        AVIAChip(facade.storeys == 1 ? "SINGLE STOREY" : "DOUBLE STOREY", onLight: false)
-                    }
-                    .padding(12)
-                }
-                .overlay(alignment: .topTrailing) {
-                    AVIAChip(facade.pricing.displayText.uppercased(), onLight: false)
+                    AVIAPill(facade.pricing.isIncluded ? "Included" : "Upgrade", style: .onImage)
                         .padding(12)
                 }
 
