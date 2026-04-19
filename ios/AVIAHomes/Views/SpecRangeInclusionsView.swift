@@ -120,14 +120,7 @@ struct SpecRangeInclusionsView: View {
                 Spacer(minLength: 0)
 
                 if item.isUpgradeable {
-                    Text("UPGRADEABLE")
-                        .font(.neueCorpMedium(8))
-                        .kerning(0.5)
-                        .foregroundStyle(AVIATheme.timelessBrown)
-                        .padding(.horizontal, 6)
-                        .padding(.vertical, 3)
-                        .background(AVIATheme.timelessBrown.opacity(0.1))
-                        .clipShape(Capsule())
+                    AVIAPill("Upgradeable", style: .onLight)
                 }
             }
 

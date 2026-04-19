@@ -157,14 +157,7 @@ struct SpecRangeComparisonOverviewView: View {
                     .foregroundStyle(AVIATheme.textPrimary)
                 Spacer()
                 if item.isUpgradeable {
-                    Text("UPGRADEABLE")
-                        .font(.neueCorpMedium(8))
-                        .kerning(0.5)
-                        .foregroundStyle(AVIATheme.timelessBrown)
-                        .padding(.horizontal, 8)
-                        .padding(.vertical, 4)
-                        .background(AVIATheme.timelessBrown.opacity(0.1))
-                        .clipShape(Capsule())
+                    AVIAPill("Upgradeable", style: .onLight)
                 }
             }
 

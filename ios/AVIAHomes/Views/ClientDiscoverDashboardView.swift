@@ -601,14 +601,7 @@ struct ClientDiscoverDashboardView: View {
                     .allowsHitTesting(false)
                 }
                 .overlay(alignment: .topLeading) {
-                    Text(facade.pricing.isIncluded ? "INCLUDED" : "UPGRADE")
-                        .font(.neueCorpMedium(9))
-                        .kerning(0.8)
-                        .foregroundStyle(AVIATheme.aviaWhite)
-                        .padding(.horizontal, 10)
-                        .padding(.vertical, 5)
-                        .background(facade.pricing.isIncluded ? AVIATheme.success.opacity(0.85) : AVIATheme.warning.opacity(0.85))
-                        .clipShape(Capsule())
+                    AVIAPill(facade.pricing.isIncluded ? "Included" : "Upgrade", style: .onImage)
                         .padding(10)
                 }
                 .clipShape(.rect(cornerRadii: .init(topLeading: 16, topTrailing: 16)))
