@@ -621,14 +621,7 @@ struct PackageDetailView: View {
                                     .foregroundStyle(AVIATheme.textSecondary)
                             }
                             Spacer()
-                            Text(facade.pricing.isIncluded ? "INCLUDED" : facade.pricing.displayText.uppercased())
-                                .font(.neueCorpMedium(9))
-                                .kerning(0.8)
-                                .foregroundStyle(AVIATheme.timelessBrown)
-                                .padding(.horizontal, 10)
-                                .padding(.vertical, 5)
-                                .background(AVIATheme.timelessBrown.opacity(0.08))
-                                .clipShape(Capsule())
+                            AVIAPill(facade.pricing.isIncluded ? "Included" : facade.pricing.displayText, style: .onLight)
                         }
 
                         VStack(alignment: .leading, spacing: 5) {
@@ -727,14 +720,7 @@ struct PackageDetailView: View {
                                     .foregroundStyle(AVIATheme.textSecondary)
                             }
                             Spacer()
-                            Text("INCLUDED")
-                                .font(.neueCorpMedium(9))
-                                .kerning(0.8)
-                                .foregroundStyle(AVIATheme.success)
-                                .padding(.horizontal, 10)
-                                .padding(.vertical, 5)
-                                .background(AVIATheme.success.opacity(0.08))
-                                .clipShape(Capsule())
+                            AVIAPill("Included", style: .onLight)
                         }
 
                         specHighlights(for: tier)
