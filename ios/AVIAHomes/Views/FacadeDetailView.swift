@@ -9,7 +9,7 @@ struct FacadeDetailView: View {
             VStack(spacing: 0) {
                 heroSection
 
-                VStack(spacing: 28) {
+                VStack(alignment: .leading, spacing: 28) {
                     pricingSection
                     descriptionSection
                     featuresSection
@@ -102,8 +102,11 @@ struct FacadeDetailView: View {
                 .font(.neueSubheadline)
                 .foregroundStyle(AVIATheme.textSecondary)
                 .lineSpacing(4)
+                .multilineTextAlignment(.leading)
+                .frame(maxWidth: .infinity, alignment: .leading)
                 .fixedSize(horizontal: false, vertical: true)
         }
+        .frame(maxWidth: .infinity, alignment: .leading)
     }
 
     private var featuresSection: some View {
