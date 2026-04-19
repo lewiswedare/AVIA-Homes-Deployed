@@ -23,8 +23,6 @@ struct ClientDiscoverDashboardView: View {
                     }
                     .padding(.horizontal, 16)
                     .padding(.bottom, 40)
-
-                    brandFooter
                 }
             }
             .ignoresSafeArea(edges: .top)
