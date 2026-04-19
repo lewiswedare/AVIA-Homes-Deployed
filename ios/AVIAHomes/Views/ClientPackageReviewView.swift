@@ -18,12 +18,7 @@ struct ClientPackageReviewView: View {
                 } else {
                     statusSummary
                     ForEach(sharedPackages) { pkg in
-                        NavigationLink {
-                            PackageDetailView(package: pkg)
-                        } label: {
-                            sharedPackageCard(package: pkg)
-                        }
-                        .buttonStyle(.plain)
+                        sharedPackageCard(package: pkg)
                     }
                 }
             }
@@ -104,42 +99,55 @@ struct ClientPackageReviewView: View {
 
         return BentoCard(cornerRadius: 16) {
             VStack(spacing: 0) {
-                Color(AVIATheme.surfaceElevated)
-                    .frame(height: 160)
-                    .overlay {
-                        AsyncImage(url: URL(string: package.imageURL)) { phase in
-                            if let image = phase.image {
-                                image.resizable().aspectRatio(contentMode: .fill)
+                NavigationLink {
+                    PackageDetailView(package: package)
+                } label: {
+                    VStack(spacing: 0) {
+                        Color(AVIATheme.surfaceElevated)
+                            .frame(height: 160)
+                            .overlay {
+                                AsyncImage(url: URL(string: package.imageURL)) { phase in
+                                    if let image = phase.image {
+                                        image.resizable().aspectRatio(contentMode: .fill)
+                                    }
+                                }
+                                .allowsHitTesting(false)
+                            }
+                            .overlay(alignment: .topTrailing) {
+                                responseStatusBadge(response?.status)
+                                    .padding(10)
+                            }
+                            .clipShape(.rect(cornerRadii: .init(topLeading: 16, topTrailing: 16)))
+
+                        VStack(alignment: .leading, spacing: 10) {
+                            Text(package.title)
+                                .font(.neueSubheadlineMedium)
+                                .foregroundStyle(AVIATheme.textPrimary)
+                                .lineLimit(1)
+
+                            HStack(spacing: 6) {
+                                Image(systemName: "mappin.circle.fill")
+                                    .font(.neueCorp(10))
+                                    .foregroundStyle(AVIATheme.timelessBrown)
+                                Text(package.location)
+                                    .font(.neueCaption)
+                                    .foregroundStyle(AVIATheme.textSecondary)
+                                    .lineLimit(1)
+                                Spacer()
+                                Text(package.price)
+                                    .font(.neueCorpMedium(18))
+                                    .foregroundStyle(AVIATheme.timelessBrown)
                             }
                         }
-                        .allowsHitTesting(false)
+                        .padding(.horizontal, 14)
+                        .padding(.top, 14)
+                        .padding(.bottom, 10)
+                        .frame(maxWidth: .infinity, alignment: .leading)
                     }
-                    .overlay(alignment: .topTrailing) {
-                        responseStatusBadge(response?.status)
-                            .padding(10)
-                    }
-                    .clipShape(.rect(cornerRadii: .init(topLeading: 16, topTrailing: 16)))
+                }
+                .buttonStyle(.plain)
 
                 VStack(alignment: .leading, spacing: 10) {
-                    Text(package.title)
-                        .font(.neueSubheadlineMedium)
-                        .foregroundStyle(AVIATheme.textPrimary)
-                        .lineLimit(1)
-
-                    HStack(spacing: 6) {
-                        Image(systemName: "mappin.circle.fill")
-                            .font(.neueCorp(10))
-                            .foregroundStyle(AVIATheme.timelessBrown)
-                        Text(package.location)
-                            .font(.neueCaption)
-                            .foregroundStyle(AVIATheme.textSecondary)
-                            .lineLimit(1)
-                        Spacer()
-                        Text(package.price)
-                            .font(.neueCorpMedium(18))
-                            .foregroundStyle(AVIATheme.timelessBrown)
-                    }
-
                     Divider()
 
                     VStack(spacing: 8) {
@@ -170,18 +178,24 @@ struct ClientPackageReviewView: View {
                     }
 
                     if response?.status == .pending || response == nil {
-                        HStack {
-                            Spacer()
-                            Text("Tap hero to review & respond")
-                                .font(.neueCaption2Medium)
-                                .foregroundStyle(AVIATheme.timelessBrown)
-                            Image(systemName: "arrow.up.right.circle.fill")
-                                .font(.neueCaption2)
-                                .foregroundStyle(AVIATheme.timelessBrown)
+                        NavigationLink {
+                            PackageDetailView(package: package)
+                        } label: {
+                            HStack {
+                                Spacer()
+                                Text("Tap to review & respond")
+                                    .font(.neueCaption2Medium)
+                                    .foregroundStyle(AVIATheme.timelessBrown)
+                                Image(systemName: "arrow.up.right.circle.fill")
+                                    .font(.neueCaption2)
+                                    .foregroundStyle(AVIATheme.timelessBrown)
+                            }
                         }
+                        .buttonStyle(.plain)
                     }
                 }
-                .padding(14)
+                .padding(.horizontal, 14)
+                .padding(.bottom, 14)
             }
         }
     }
