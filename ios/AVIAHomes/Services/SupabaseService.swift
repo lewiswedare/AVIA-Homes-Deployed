@@ -508,6 +508,14 @@ class SupabaseService {
         }
     }
 
+    /// Writes a package assignment.
+    ///
+    /// Uses separate INSERT/UPDATE paths because RLS on `package_assignments` has different
+    /// permission scopes per command: only staff can INSERT, but clients listed in
+    /// `shared_with_client_ids` can UPDATE (to record accept/decline). A PostgREST
+    /// upsert always enforces the INSERT policy’s WITH CHECK even when it takes the UPDATE
+    /// path, so a plain `.upsert()` fails silently for clients — which broke the
+    /// decline/accept flow. See https://github.com/orgs/supabase/discussions/30499
     @discardableResult
     func upsertPackageAssignment(_ assignment: PackageAssignment) async -> Bool {
         guard isConfigured else {
@@ -516,11 +524,32 @@ class SupabaseService {
         }
         let row = PackageAssignmentRow(from: assignment)
         do {
-            try await client
+            // First, see if a row with this id already exists. We can’t do this with a
+            // simple head-only count because SELECT is RLS-gated too, but every caller who
+            // can UPDATE can also SELECT this row (pa_select covers shared clients,
+            // partners and staff), so this is safe.
+            let existing: [PackageAssignmentRow] = try await client
                 .from("package_assignments")
-                .upsert(row)
+                .select()
+                .eq("id", value: assignment.id)
+                .limit(1)
                 .execute()
-            print("[SupabaseService] upsertPackageAssignment SUCCESS for pkg=\(assignment.packageId)")
+                .value
+
+            if existing.isEmpty {
+                try await client
+                    .from("package_assignments")
+                    .insert(row)
+                    .execute()
+                print("[SupabaseService] upsertPackageAssignment INSERT SUCCESS for pkg=\(assignment.packageId)")
+            } else {
+                try await client
+                    .from("package_assignments")
+                    .update(row)
+                    .eq("id", value: assignment.id)
+                    .execute()
+                print("[SupabaseService] upsertPackageAssignment UPDATE SUCCESS for pkg=\(assignment.packageId)")
+            }
             return true
         } catch {
             print("[SupabaseService] upsertPackageAssignment FAILED for pkg=\(assignment.packageId) — error: \(error)")
