@@ -268,14 +268,16 @@ struct AllFacadesView: View {
     }
 
     private func pricingBadge(_ pricing: FacadePricing) -> some View {
-        Text(pricing.displayText)
+        Text(pricing.displayText.uppercased())
             .font(.neueCorpMedium(9))
-            .kerning(0.6)
+            .kerning(0.8)
             .foregroundStyle(AVIATheme.aviaWhite)
-            .padding(.horizontal, 10)
-            .padding(.vertical, 5)
-            .background(AVIATheme.timelessBrown.opacity(0.85))
-            .clipShape(Capsule())
+            .padding(.horizontal, 12)
+            .padding(.vertical, 6)
+            .background(Color.clear)
+            .overlay(
+                Capsule().stroke(AVIATheme.aviaWhite.opacity(0.9), lineWidth: 1)
+            )
     }
 }
 
