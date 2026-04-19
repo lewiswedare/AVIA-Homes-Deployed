@@ -237,13 +237,7 @@ struct AllFacadesView: View {
 
                     Spacer()
 
-                    HStack(spacing: 4) {
-                        Text("View Details")
-                            .font(.neueCaptionMedium)
-                        Image(systemName: "arrow.right")
-                            .font(.neueCaption2)
-                    }
-                    .foregroundStyle(AVIATheme.timelessBrown)
+                    AVIAPill("View Details", style: .onLight)
                 }
             }
             .padding(14)
