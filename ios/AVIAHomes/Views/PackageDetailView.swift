@@ -598,14 +598,7 @@ struct PackageDetailView: View {
                             .allowsHitTesting(false)
                         }
                         .overlay(alignment: .topLeading) {
-                            Text(facade.style.uppercased())
-                                .font(.neueCorpMedium(11))
-                                .kerning(0.8)
-                                .foregroundStyle(AVIATheme.aviaWhite)
-                                .padding(.horizontal, 12)
-                                .padding(.vertical, 7)
-                                .background(AVIATheme.aviaBlack.opacity(0.55))
-                                .clipShape(Capsule())
+                            AVIAPill(facade.style, icon: nil, style: .onImage)
                                 .padding(12)
                         }
                         .clipShape(.rect(cornerRadii: .init(topLeading: 16, topTrailing: 16)))
@@ -695,17 +688,8 @@ struct PackageDetailView: View {
                             }
                         }
                         .overlay(alignment: .topLeading) {
-                            HStack(spacing: 6) {
-                                Text(tier.displayName.uppercased())
-                                    .font(.neueCorpMedium(11))
-                                    .kerning(0.8)
-                            }
-                            .foregroundStyle(AVIATheme.aviaWhite)
-                            .padding(.horizontal, 12)
-                            .padding(.vertical, 7)
-                            .background(AVIATheme.aviaBlack.opacity(0.55))
-                            .clipShape(Capsule())
-                            .padding(12)
+                            AVIAPill(tier.displayName, icon: nil, style: .onImage)
+                                .padding(12)
                         }
                         .clipShape(.rect(cornerRadii: .init(topLeading: 16, topTrailing: 16)))
 
