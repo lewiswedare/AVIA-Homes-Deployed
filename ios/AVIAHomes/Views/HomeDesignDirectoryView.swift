@@ -4,7 +4,6 @@ struct HomeDesignDirectoryView: View {
     @Environment(\.dismiss) private var dismiss
     @Environment(AppViewModel.self) private var viewModel
     @State private var searchText: String = ""
-    @State private var selectedBedFilter: Int? = nil
     @State private var selectedStoreyFilter: Int? = nil
     @State private var minLotWidth: Double = 0
     @State private var sortOption: SortOption = .nameAZ
@@ -12,7 +11,6 @@ struct HomeDesignDirectoryView: View {
     @State private var compareSelections: [HomeDesign] = []
     @State private var comparisonPair: DesignComparisonPair? = nil
 
-    private let bedOptions = [3, 4]
     private let storeyOptions = [1, 2]
 
     private var filteredDesigns: [HomeDesign] {
@@ -20,10 +18,6 @@ struct HomeDesignDirectoryView: View {
 
         if !searchText.isEmpty {
             designs = designs.filter { $0.name.localizedStandardContains(searchText) }
-        }
-
-        if let beds = selectedBedFilter {
-            designs = designs.filter { $0.bedrooms == beds }
         }
 
         if let storeys = selectedStoreyFilter {
@@ -152,17 +146,6 @@ struct HomeDesignDirectoryView: View {
                     .overlay { Capsule().stroke(AVIATheme.surfaceBorder, lineWidth: 1) }
                 }
 
-                ForEach(bedOptions, id: \.self) { beds in
-                    filterChip(
-                        label: "\(beds) Bed",
-                        isActive: selectedBedFilter == beds
-                    ) {
-                        withAnimation(.spring(response: 0.3)) {
-                            selectedBedFilter = selectedBedFilter == beds ? nil : beds
-                        }
-                    }
-                }
-
                 ForEach(storeyOptions, id: \.self) { storeys in
                     filterChip(
                         label: storeys == 1 ? "Single Storey" : "Double Storey",
@@ -209,10 +192,9 @@ struct HomeDesignDirectoryView: View {
                     }
                 }
 
-                if selectedBedFilter != nil || selectedStoreyFilter != nil || minLotWidth > 0 {
+                if selectedStoreyFilter != nil || minLotWidth > 0 {
                     Button {
                         withAnimation(.spring(response: 0.3)) {
-                            selectedBedFilter = nil
                             selectedStoreyFilter = nil
                             minLotWidth = 0
                         }
