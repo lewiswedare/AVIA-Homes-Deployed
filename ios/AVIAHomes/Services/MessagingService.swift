@@ -23,9 +23,10 @@ class MessagingService {
         do {
             let rows: [ConversationRow] = try await supabase.client
                 .from("conversations")
-                .select()
+                .select("id, participant_ids, last_message, last_message_date, last_sender_id, unread_count, created_at, conversation_type")
                 .contains("participant_ids", value: [userId])
                 .order("last_message_date", ascending: false)
+                .limit(100)
                 .execute()
                 .value
             var result: [Conversation] = []
@@ -46,7 +47,7 @@ class MessagingService {
         do {
             let rows: [ChatMessageRow] = try await supabase.client
                 .from("messages")
-                .select()
+                .select("id, conversation_id, sender_id, content, created_at, is_read, attachment_url, attachment_type")
                 .eq("conversation_id", value: conversationId)
                 .eq("is_read", value: false)
                 .neq("sender_id", value: userId)
@@ -63,7 +64,7 @@ class MessagingService {
         do {
             let rows: [ChatMessageRow] = try await supabase.client
                 .from("messages")
-                .select()
+                .select("id, conversation_id, sender_id, content, created_at, is_read, attachment_url, attachment_type")
                 .eq("conversation_id", value: conversationId)
                 .order("created_at", ascending: true)
                 .limit(200)

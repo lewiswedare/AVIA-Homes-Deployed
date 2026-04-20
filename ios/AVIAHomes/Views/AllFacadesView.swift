@@ -190,7 +190,7 @@ struct AllFacadesView: View {
             Color(AVIATheme.surfaceElevated)
                 .frame(height: 200)
                 .overlay {
-                    AsyncImage(url: URL(string: facade.heroImageURL)) { phase in
+                    AsyncImage(url: URL(string: facade.heroImageURL)?.supabaseImageTransform(width: 800, height: 600)) { phase in
                         if let image = phase.image {
                             image.resizable().aspectRatio(contentMode: .fill)
                         } else if phase.error != nil {
