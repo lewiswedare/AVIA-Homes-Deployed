@@ -1981,22 +1981,33 @@ class SupabaseService {
         }
     }
 
-    func uploadContractDocument(contractId: String, assignmentId: String, fileData: Data, fileName: String, uploadedBy: String) async -> String? {
+    /// Uploads a signed contract PDF. Either the owning client or an admin
+    /// can call this. The storage path starts with `<client_id>/` so the
+    /// existing per-client storage RLS policies apply.
+    ///
+    /// After upload the status moves to `awaiting_confirmation` and BOTH
+    /// parties must then tick confirm via `confirmContract(...)`.
+    func uploadContractDocument(contractId: String, assignmentId: String, clientId: String, fileData: Data, fileName: String, uploadedBy: String) async -> String? {
         do {
-            let path = "contracts/\(contractId)/\(fileName)"
-            try await client.storage.from("contracts").upload(path: path, file: fileData, options: .init(contentType: "application/pdf"))
+            let safeName = fileName.replacingOccurrences(of: " ", with: "_")
+            let path = "\(clientId)/\(contractId)/\(safeName)"
+            try await client.storage.from("contracts").upload(
+                path: path,
+                file: fileData,
+                options: .init(contentType: "application/pdf", upsert: true)
+            )
             let url = try client.storage.from("contracts").getPublicURL(path: path).absoluteString
             try await client.from("contract_signatures")
                 .update([
                     "contract_document_url": url,
                     "contract_uploaded_by": uploadedBy,
                     "contract_uploaded_at": ISO8601DateFormatter().string(from: .now),
-                    "status": "awaiting_signature"
+                    "status": "awaiting_confirmation"
                 ])
                 .eq("id", value: contractId)
                 .execute()
             try await client.from("package_assignments")
-                .update(["contract_status": "awaiting_signature"])
+                .update(["contract_status": "awaiting_confirmation"])
                 .eq("id", value: assignmentId)
                 .execute()
             return url
@@ -2022,28 +2033,51 @@ class SupabaseService {
         }
     }
 
-    func signContract(contractId: String, assignmentId: String, signatureImageData: Data, signerName: String) async -> Bool {
-        do {
-            let sigPath = "contracts/\(contractId)/signature.png"
-            try await client.storage.from("contracts").upload(path: sigPath, file: signatureImageData, options: .init(contentType: "image/png"))
-            let sigUrl = try client.storage.from("contracts").getPublicURL(path: sigPath).absoluteString
+    enum ContractConfirmationRole: String {
+        case client
+        case admin
+    }
 
+    /// Records a confirmation tick from either the client or an admin.
+    /// When BOTH sides have confirmed, the contract row + assignment move
+    /// to `status = 'signed'`.
+    func confirmContract(contractId: String, assignmentId: String, role: ContractConfirmationRole, confirmedBy: String) async -> Bool {
+        do {
+            let nowStr = ISO8601DateFormatter().string(from: .now)
+            var updateFields: [String: String] = [:]
+            switch role {
+            case .client:
+                updateFields["client_confirmed_at"] = nowStr
+            case .admin:
+                updateFields["admin_confirmed_at"] = nowStr
+                updateFields["admin_confirmed_by"] = confirmedBy
+            }
             try await client.from("contract_signatures")
-                .update([
-                    "signature_image_url": sigUrl,
-                    "signed_at": ISO8601DateFormatter().string(from: .now),
-                    "signer_name": signerName,
-                    "status": "signed"
-                ])
+                .update(updateFields)
                 .eq("id", value: contractId)
                 .execute()
-            try await client.from("package_assignments")
-                .update(["contract_status": "signed"])
-                .eq("id", value: assignmentId)
+
+            // Re-fetch to decide the new aggregate status atomically.
+            let rows: [ContractSignatureRow] = try await client.from("contract_signatures")
+                .select()
+                .eq("id", value: contractId)
+                .limit(1)
                 .execute()
+                .value
+            guard let updated = rows.first else { return true }
+            if updated.isFullyConfirmed {
+                try await client.from("contract_signatures")
+                    .update(["status": "signed"])
+                    .eq("id", value: contractId)
+                    .execute()
+                try await client.from("package_assignments")
+                    .update(["contract_status": "signed"])
+                    .eq("id", value: assignmentId)
+                    .execute()
+            }
             return true
         } catch {
-            print("[SupabaseService] signContract error: \(error)")
+            print("[SupabaseService] confirmContract error: \(error)")
             return false
         }
     }

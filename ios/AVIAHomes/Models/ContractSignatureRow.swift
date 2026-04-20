@@ -10,14 +10,34 @@ nonisolated struct ContractSignatureRow: Identifiable, Codable, Sendable {
     var contract_uploaded_by: String?
     var contract_uploaded_at: String?
 
+    // Legacy in-app signature fields (kept for backwards compatibility with
+    // existing rows; no longer written by the app).
     var signature_image_url: String?
     var signed_at: String?
     var signer_name: String?
     var signer_ip: String?
-
     var signed_document_url: String?
+
+    // Dual-confirmation: both parties must tick "I confirm this is signed"
+    // after the in-person signing + PDF upload for the contract to be
+    // considered complete.
+    var client_confirmed_at: String?
+    var admin_confirmed_at: String?
+    var admin_confirmed_by: String?
+
     var status: String
 
     let created_at: String?
     let updated_at: String?
+
+    // MARK: - Convenience
+
+    var hasDocument: Bool {
+        if let url = contract_document_url, !url.isEmpty { return true }
+        return false
+    }
+
+    var isClientConfirmed: Bool { client_confirmed_at != nil }
+    var isAdminConfirmed: Bool { admin_confirmed_at != nil }
+    var isFullyConfirmed: Bool { isClientConfirmed && isAdminConfirmed }
 }

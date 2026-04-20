@@ -77,8 +77,8 @@ struct DashboardView: View {
                 MyDesignPlanView()
             }
             .sheet(isPresented: $showContractSigning) {
-                if let contract = pendingContract, let assign = pendingContractAssignment, let pkg = pendingContractPackage {
-                    ContractSigningView(contract: contract, assignment: assign, package: pkg)
+                if let assign = pendingContractAssignment, let pkg = pendingContractPackage {
+                    ContractUploadView(assignment: assign, package: pkg)
                 }
             }
             .sheet(isPresented: $showJourneyDetail) {
@@ -303,7 +303,12 @@ struct DashboardView: View {
     }
 
     private func loadPendingContract() async {
-        for assign in viewModel.packageAssignments where assign.contractStatus == "awaiting_signature" {
+        let relevantStatuses: Set<String> = [
+            "awaiting_contract",      // legacy / pre-upload
+            "awaiting_signature",     // legacy / pre-upload
+            "awaiting_confirmation"   // upload done, waiting for dual confirm
+        ]
+        for assign in viewModel.packageAssignments where relevantStatuses.contains(assign.contractStatus) {
             if assign.sharedWithClientIds.contains(viewModel.currentUser.id) {
                 if let contract = await SupabaseService.shared.fetchContractSignature(forAssignment: assign.id) {
                     pendingContract = contract

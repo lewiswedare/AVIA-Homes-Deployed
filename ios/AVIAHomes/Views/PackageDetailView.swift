@@ -80,12 +80,16 @@ struct PackageDetailView: View {
             }
         }
         .sheet(isPresented: $showContractSigning) {
-            if let contract = contractRecord, let assign = assignment {
-                ContractSigningView(contract: contract, assignment: assign, package: package)
+            if let assign = assignment {
+                ContractUploadView(assignment: assign, package: package)
             }
         }
         .task {
-            if let assign = assignment, assign.contractStatus == "awaiting_signature" {
+            if let assign = assignment,
+               assign.contractStatus == "awaiting_contract"
+                || assign.contractStatus == "awaiting_signature"
+                || assign.contractStatus == "awaiting_confirmation"
+                || assign.contractStatus == "signed" {
                 contractRecord = await SupabaseService.shared.fetchContractSignature(forAssignment: assign.id)
             }
         }
@@ -1112,17 +1116,25 @@ struct PackageDetailView: View {
         VStack(spacing: 10) {
             if let assign = assignment {
                 // Show EOI/contract status banners
-                if assign.contractStatus == "awaiting_signature" {
+                if assign.contractStatus == "awaiting_contract"
+                    || assign.contractStatus == "awaiting_signature"
+                    || assign.contractStatus == "awaiting_confirmation" {
+                    let isUploadStep = contractRecord?.hasDocument != true
+                    let bannerTitle = isUploadStep ? "Signed Contract Needs Uploading" : "Confirm Signed Contract"
+                    let bannerBody = isUploadStep
+                        ? "Upload a PDF of the signed contract after the in-person signing."
+                        : "Both parties need to tick ‘I confirm this is signed’."
+                    let buttonLabel = isUploadStep ? "Open Contract Upload" : "Review & Confirm Contract"
                     BentoCard(cornerRadius: 16) {
                         HStack(spacing: 12) {
-                            Image(systemName: "signature")
+                            Image(systemName: isUploadStep ? "arrow.up.doc.fill" : "checkmark.seal")
                                 .font(.system(size: 24))
                                 .foregroundStyle(AVIATheme.warning)
                             VStack(alignment: .leading, spacing: 3) {
-                                Text("Contract Ready to Sign")
+                                Text(bannerTitle)
                                     .font(.neueSubheadlineMedium)
                                     .foregroundStyle(AVIATheme.textPrimary)
-                                Text("Your contract is ready for signature")
+                                Text(bannerBody)
                                     .font(.neueCaption)
                                     .foregroundStyle(AVIATheme.textSecondary)
                             }
@@ -1135,9 +1147,9 @@ struct PackageDetailView: View {
                         showContractSigning = true
                     } label: {
                         HStack(spacing: 8) {
-                            Image(systemName: "signature")
+                            Image(systemName: isUploadStep ? "arrow.up.doc.fill" : "checkmark.seal")
                                 .font(.neueSubheadlineMedium)
-                            Text("Sign Contract")
+                            Text(buttonLabel)
                                 .font(.neueSubheadlineMedium)
                         }
                         .frame(maxWidth: .infinity)

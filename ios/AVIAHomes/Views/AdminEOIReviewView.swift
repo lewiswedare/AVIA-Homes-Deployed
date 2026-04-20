@@ -623,6 +623,7 @@ struct AdminEOIDetailSheet: View {
         let _ = await SupabaseService.shared.uploadContractDocument(
             contractId: contractRecord.id,
             assignmentId: eoi.package_assignment_id,
+            clientId: eoi.client_id,
             fileData: data,
             fileName: url.lastPathComponent,
             uploadedBy: viewModel.currentUser.id
