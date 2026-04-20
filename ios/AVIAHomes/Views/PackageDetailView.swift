@@ -61,19 +61,6 @@ struct PackageDetailView: View {
                 }
             }
         }
-        .confirmationDialog(
-            "Decline this house & land package?",
-            isPresented: $showDeclineConfirmation,
-            titleVisibility: .visible
-        ) {
-            Button("Decline Package", role: .destructive) {
-                print("[PackageDetailView] Declining package \(package.id)")
-                viewModel.respondToPackage(packageId: package.id, status: .declined)
-            }
-            Button("Cancel", role: .cancel) { }
-        } message: {
-            Text("You can change your response later.")
-        }
         .sheet(isPresented: $showEOIForm) {
             if let assign = assignment {
                 EOIFormView(package: package, assignment: assign)
@@ -1322,6 +1309,19 @@ struct PackageDetailView: View {
                     .foregroundStyle(AVIATheme.destructive)
                     .background(AVIATheme.destructive.opacity(0.08))
                     .clipShape(.rect(cornerRadius: 14))
+                }
+                .confirmationDialog(
+                    "Decline this house & land package?",
+                    isPresented: $showDeclineConfirmation,
+                    titleVisibility: .visible
+                ) {
+                    Button("Decline Package", role: .destructive) {
+                        print("[PackageDetailView] Declining package \(package.id)")
+                        viewModel.respondToPackage(packageId: package.id, status: .declined)
+                    }
+                    Button("Cancel", role: .cancel) { }
+                } message: {
+                    Text("You can change your response later.")
                 }
             }
         }
