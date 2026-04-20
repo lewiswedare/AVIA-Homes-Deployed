@@ -4,6 +4,7 @@ struct BuildColourSelectionView: View {
     @Environment(AppViewModel.self) private var appViewModel
     @State private var viewModel = BuildSpecViewModel()
     @State private var selectedSpecItem: BuildSpecSelection?
+    @State private var showConfirmAlert = false
     let buildId: String
 
     private var catalog: CatalogDataManager { CatalogDataManager.shared }
@@ -73,6 +74,20 @@ struct BuildColourSelectionView: View {
             }
             await viewModel.load(buildId: buildId)
         }
+        .alert("Confirm Colour Selections", isPresented: $showConfirmAlert) {
+            Button("Cancel", role: .cancel) {}
+            Button("Confirm") {
+                AVIAHaptic.success.trigger()
+                Task { await viewModel.submitColourSelectionsForApproval() }
+            }
+        } message: {
+            let missing = approvedItemsNeedingColour.count - completedCount
+            if missing > 0 {
+                Text("Your colour selections will be submitted to the AVIA team for approval. You still have \(missing) item\(missing == 1 ? "" : "s") without a colour — these can be completed later.")
+            } else {
+                Text("Your colour selections will be submitted to the AVIA team for approval. Your AVIA team can reopen them later if changes are needed.")
+            }
+        }
         .sheet(item: $selectedSpecItem) { specItem in
             BuildColourPickerSheet(
                 specItem: specItem,
@@ -134,6 +149,7 @@ struct BuildColourSelectionView: View {
                 }
 
                 if canSubmitColourDrafts {
+                    incompleteWarningCard
                     submitColourButton
                 }
             }
@@ -192,9 +208,14 @@ struct BuildColourSelectionView: View {
     private var submitColourButton: some View {
         let count = viewModel.draftColourSelections.count
         return VStack(spacing: 10) {
+            Text("Submitting \(count) selection\(count == 1 ? "" : "s"). After submit, only the AVIA team can reopen selections for edits.")
+                .font(.neueCaption2)
+                .foregroundStyle(AVIATheme.textSecondary)
+                .multilineTextAlignment(.center)
+                .padding(.horizontal, 8)
+
             Button {
-                AVIAHaptic.success.trigger()
-                Task { await viewModel.submitColourSelectionsForApproval() }
+                showConfirmAlert = true
             } label: {
                 HStack(spacing: 8) {
                     Image(systemName: "checkmark.seal.fill")
@@ -210,12 +231,35 @@ struct BuildColourSelectionView: View {
             }
             .buttonStyle(.pressable(.prominent))
             .disabled(viewModel.isSaving)
+        }
+    }
 
-            Text("Submitting \(count) selection\(count == 1 ? "" : "s"). After submit, only the AVIA team can reopen selections for edits.")
-                .font(.neueCaption2)
-                .foregroundStyle(AVIATheme.textTertiary)
-                .multilineTextAlignment(.center)
-                .frame(maxWidth: .infinity, alignment: .center)
+    @ViewBuilder
+    private var incompleteWarningCard: some View {
+        let missing = approvedItemsNeedingColour.count - completedCount
+        if missing > 0 {
+            HStack(alignment: .top, spacing: 10) {
+                Image(systemName: "exclamationmark.triangle.fill")
+                    .font(.neueSubheadlineMedium)
+                    .foregroundStyle(AVIATheme.warning)
+                VStack(alignment: .leading, spacing: 2) {
+                    Text("\(missing) item\(missing == 1 ? "" : "s") without a colour")
+                        .font(.neueCaptionMedium)
+                        .foregroundStyle(AVIATheme.textPrimary)
+                    Text("You can still submit now — missing colours can be completed later.")
+                        .font(.neueCaption2)
+                        .foregroundStyle(AVIATheme.textSecondary)
+                }
+                Spacer(minLength: 0)
+            }
+            .padding(14)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .background(AVIATheme.warning.opacity(0.08))
+            .clipShape(.rect(cornerRadius: 14))
+            .overlay {
+                RoundedRectangle(cornerRadius: 14)
+                    .stroke(AVIATheme.warning.opacity(0.3), lineWidth: 1)
+            }
         }
     }
 
