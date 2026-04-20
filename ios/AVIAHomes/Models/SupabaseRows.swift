@@ -455,6 +455,8 @@ nonisolated struct PackageAssignmentRow: Codable, Sendable {
     let admin_confirmed_at: String?
     var eoi_status: String
     var contract_status: String
+    let converted_to_build_id: String?
+    let converted_at: String?
     let created_at: String?
     let updated_at: String?
 
@@ -464,6 +466,7 @@ nonisolated struct PackageAssignmentRow: Codable, Sendable {
         case assigned_by, deposit_status, deposit_amount, deposit_due_date
         case admin_confirmed_by, admin_confirmed_at
         case eoi_status, contract_status
+        case converted_to_build_id, converted_at
         case created_at, updated_at
     }
 
@@ -483,6 +486,8 @@ nonisolated struct PackageAssignmentRow: Codable, Sendable {
         admin_confirmed_at = try? container.decode(String.self, forKey: .admin_confirmed_at)
         eoi_status = (try? container.decode(String.self, forKey: .eoi_status)) ?? "none"
         contract_status = (try? container.decode(String.self, forKey: .contract_status)) ?? "none"
+        converted_to_build_id = try? container.decode(String.self, forKey: .converted_to_build_id)
+        converted_at = try? container.decode(String.self, forKey: .converted_at)
         created_at = try? container.decode(String.self, forKey: .created_at)
         updated_at = try? container.decode(String.self, forKey: .updated_at)
     }
@@ -503,6 +508,8 @@ nonisolated struct PackageAssignmentRow: Codable, Sendable {
         try container.encodeIfPresent(admin_confirmed_at, forKey: .admin_confirmed_at)
         try container.encode(eoi_status, forKey: .eoi_status)
         try container.encode(contract_status, forKey: .contract_status)
+        try container.encodeIfPresent(converted_to_build_id, forKey: .converted_to_build_id)
+        try container.encodeIfPresent(converted_at, forKey: .converted_at)
         try container.encodeIfPresent(updated_at, forKey: .updated_at)
     }
 
@@ -522,6 +529,8 @@ nonisolated struct PackageAssignmentRow: Codable, Sendable {
         admin_confirmed_at = assignment.adminConfirmedAt
         eoi_status = assignment.eoiStatus
         contract_status = assignment.contractStatus
+        converted_to_build_id = assignment.convertedToBuildId
+        converted_at = assignment.convertedAt
         created_at = nil
         updated_at = iso.string(from: .now)
     }
@@ -541,7 +550,9 @@ nonisolated struct PackageAssignmentRow: Codable, Sendable {
             adminConfirmedBy: admin_confirmed_by,
             adminConfirmedAt: admin_confirmed_at,
             eoiStatus: eoi_status,
-            contractStatus: contract_status
+            contractStatus: contract_status,
+            convertedToBuildId: converted_to_build_id,
+            convertedAt: converted_at
         )
     }
 }

@@ -7,6 +7,22 @@ struct PackageManagementView: View {
     @State private var showCreatePackage = false
     @State private var quickAssignPackage: HouseLandPackage?
     @State private var searchText = ""
+    @State private var selectedFilter: ResponseFilter = .all
+    @State private var convertContext: ConvertBuildContext?
+    @State private var packageToDelete: HouseLandPackage?
+
+    enum ResponseFilter: String {
+        case all, pending, accepted, declined
+    }
+
+    /// Carries all the info needed to launch AddBuildSheet prefilled from an accepted package.
+    struct ConvertBuildContext: Identifiable {
+        let id = UUID()
+        let package: HouseLandPackage
+        let clientId: String
+        let assignmentId: String
+        let designId: String?
+    }
 
     private var filteredPackages: [HouseLandPackage] {
         var packages = viewModel.allPackages
@@ -15,6 +31,21 @@ struct PackageManagementView: View {
                 $0.title.localizedStandardContains(searchText) ||
                 $0.location.localizedStandardContains(searchText) ||
                 $0.estate.localizedStandardContains(searchText)
+            }
+        }
+
+        if selectedFilter != .all {
+            let targetStatus: PackageResponseStatus = {
+                switch selectedFilter {
+                case .pending: return .pending
+                case .accepted: return .accepted
+                case .declined: return .declined
+                case .all: return .pending
+                }
+            }()
+            packages = packages.filter { pkg in
+                guard let assignment = viewModel.assignmentForPackage(pkg.id) else { return false }
+                return assignment.clientResponses.contains { $0.status == targetStatus }
             }
         }
         return packages
@@ -58,6 +89,26 @@ struct PackageManagementView: View {
         }
         .sheet(item: $quickAssignPackage) { pkg in
             QuickAssignSheet(package: pkg)
+        }
+        .sheet(item: $convertContext) { ctx in
+            AddBuildSheet(
+                prefillFrom: ctx.package,
+                clientId: ctx.clientId,
+                assignmentId: ctx.assignmentId,
+                designId: ctx.designId
+            )
+        }
+        .alert("Delete package?", isPresented: Binding(
+            get: { packageToDelete != nil },
+            set: { if !$0 { packageToDelete = nil } }
+        ), presenting: packageToDelete) { pkg in
+            Button("Delete", role: .destructive) {
+                viewModel.deletePackage(pkg.id)
+                packageToDelete = nil
+            }
+            Button("Cancel", role: .cancel) { packageToDelete = nil }
+        } message: { pkg in
+            Text("\"\(pkg.title)\" will be permanently removed along with all its assignments. This cannot be undone.")
         }
     }
 
@@ -127,50 +178,66 @@ struct PackageManagementView: View {
             }
 
             HStack(spacing: 12) {
-                BentoCard(cornerRadius: 16) {
-                    VStack(alignment: .leading, spacing: 6) {
-                        BentoIconCircle(icon: "clock.fill", color: AVIATheme.warning)
-                        Text("\(pendingCount)")
-                            .font(.neueCorpMedium(32))
-                            .foregroundStyle(AVIATheme.textPrimary)
-                        Text("Pending")
-                            .font(.neueCaption)
-                            .foregroundStyle(AVIATheme.textSecondary)
-                    }
-                    .padding(16)
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                }
+                statFilterCard(filter: .pending, label: "Pending", count: pendingCount, icon: "clock.fill", color: AVIATheme.warning)
+                statFilterCard(filter: .accepted, label: "Accepted", count: acceptedCount, icon: "checkmark.circle.fill", color: AVIATheme.success)
+                statFilterCard(filter: .declined, label: "Declined", count: declinedCount, icon: "xmark.circle.fill", color: AVIATheme.destructive)
+            }
 
-                BentoCard(cornerRadius: 16) {
-                    VStack(alignment: .leading, spacing: 6) {
-                        BentoIconCircle(icon: "checkmark.circle.fill", color: AVIATheme.success)
-                        Text("\(acceptedCount)")
-                            .font(.neueCorpMedium(32))
-                            .foregroundStyle(AVIATheme.textPrimary)
-                        Text("Accepted")
-                            .font(.neueCaption)
-                            .foregroundStyle(AVIATheme.textSecondary)
+            if selectedFilter != .all {
+                HStack(spacing: 8) {
+                    Image(systemName: "line.3.horizontal.decrease.circle.fill")
+                        .font(.neueCaption2)
+                        .foregroundStyle(AVIATheme.timelessBrown)
+                    Text("Filtered by \(selectedFilter.rawValue.capitalized)")
+                        .font(.neueCaption2)
+                        .foregroundStyle(AVIATheme.textSecondary)
+                    Spacer()
+                    Button {
+                        withAnimation(.spring(response: 0.3)) { selectedFilter = .all }
+                    } label: {
+                        Text("Clear")
+                            .font(.neueCorpMedium(10))
+                            .foregroundStyle(AVIATheme.timelessBrown)
+                            .padding(.horizontal, 10)
+                            .padding(.vertical, 4)
+                            .background(AVIATheme.timelessBrown.opacity(0.1))
+                            .clipShape(Capsule())
                     }
-                    .padding(16)
-                    .frame(maxWidth: .infinity, alignment: .leading)
                 }
-
-                BentoCard(cornerRadius: 16) {
-                    VStack(alignment: .leading, spacing: 6) {
-                        BentoIconCircle(icon: "xmark.circle.fill", color: AVIATheme.destructive)
-                        Text("\(declinedCount)")
-                            .font(.neueCorpMedium(32))
-                            .foregroundStyle(AVIATheme.textPrimary)
-                        Text("Declined")
-                            .font(.neueCaption)
-                            .foregroundStyle(AVIATheme.textSecondary)
-                    }
-                    .padding(16)
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                }
+                .padding(.horizontal, 4)
+                .transition(.opacity.combined(with: .move(edge: .top)))
             }
         }
         .fixedSize(horizontal: false, vertical: true)
+    }
+
+    private func statFilterCard(filter: ResponseFilter, label: String, count: Int, icon: String, color: Color) -> some View {
+        let isActive = selectedFilter == filter
+        return Button {
+            withAnimation(.spring(response: 0.3)) {
+                selectedFilter = isActive ? .all : filter
+            }
+        } label: {
+            BentoCard(cornerRadius: 16) {
+                VStack(alignment: .leading, spacing: 6) {
+                    BentoIconCircle(icon: icon, color: color)
+                    Text("\(count)")
+                        .font(.neueCorpMedium(32))
+                        .foregroundStyle(AVIATheme.textPrimary)
+                    Text(label)
+                        .font(.neueCaption)
+                        .foregroundStyle(isActive ? color : AVIATheme.textSecondary)
+                }
+                .padding(16)
+                .frame(maxWidth: .infinity, alignment: .leading)
+            }
+            .overlay(
+                RoundedRectangle(cornerRadius: 16)
+                    .stroke(isActive ? color : Color.clear, lineWidth: 2)
+            )
+        }
+        .buttonStyle(.plain)
+        .sensoryFeedback(.selection, trigger: isActive)
     }
 
     private var eoiReviewsLink: some View {
@@ -336,12 +403,42 @@ struct PackageManagementView: View {
                                 .padding(.vertical, 3)
                                 .background(eoiStatusColor(assignment.eoiStatus).opacity(0.1))
                                 .clipShape(Capsule())
+
+                            if assignment.convertedToBuildId != nil {
+                                Text("Confirmed • Build Created")
+                                    .font(.neueCorpMedium(9))
+                                    .foregroundStyle(AVIATheme.timelessBrown)
+                                    .padding(.horizontal, 8)
+                                    .padding(.vertical, 3)
+                                    .background(AVIATheme.timelessBrown.opacity(0.1))
+                                    .clipShape(Capsule())
+                            }
+                            Spacer()
+                        }
+                        .padding(.horizontal, 14)
+                        .padding(.vertical, 8)
+                    } else if assignment.convertedToBuildId != nil {
+                        Rectangle().fill(AVIATheme.surfaceBorder).frame(height: 1)
+                        HStack(spacing: 8) {
+                            Image(systemName: "hammer.fill")
+                                .font(.system(size: 10))
+                                .foregroundStyle(AVIATheme.timelessBrown)
+                            Text("Confirmed • Build Created")
+                                .font(.neueCorpMedium(9))
+                                .foregroundStyle(AVIATheme.timelessBrown)
+                                .padding(.horizontal, 8)
+                                .padding(.vertical, 3)
+                                .background(AVIATheme.timelessBrown.opacity(0.1))
+                                .clipShape(Capsule())
                             Spacer()
                         }
                         .padding(.horizontal, 14)
                         .padding(.vertical, 8)
                     }
                 }
+
+                // Contextual action row driven by the selected filter.
+                contextualActionRow(package: package, assignment: viewModel.assignmentForPackage(package.id))
 
                 Rectangle().fill(AVIATheme.surfaceBorder).frame(height: 1)
 
@@ -392,6 +489,58 @@ struct PackageManagementView: View {
                         .frame(maxWidth: .infinity)
                         .padding(.vertical, 11)
                     }
+                }
+            }
+        }
+    }
+
+    @ViewBuilder
+    private func contextualActionRow(package: HouseLandPackage, assignment: PackageAssignment?) -> some View {
+        // Only show the contextual row when the admin has selected a status filter.
+        if selectedFilter == .accepted,
+           let assignment,
+           assignment.convertedToBuildId == nil,
+           let acceptingResponse = assignment.clientResponses.first(where: { $0.status == .accepted }) {
+            Rectangle().fill(AVIATheme.surfaceBorder).frame(height: 1)
+            HStack(spacing: 0) {
+                Button {
+                    let designId = viewModel.findDesign(byName: package.homeDesign)?.id
+                    convertContext = ConvertBuildContext(
+                        package: package,
+                        clientId: acceptingResponse.clientId,
+                        assignmentId: assignment.id,
+                        designId: designId
+                    )
+                } label: {
+                    HStack(spacing: 6) {
+                        Image(systemName: "hammer.fill")
+                            .font(.system(size: 12, weight: .semibold))
+                        Text("Convert to Build")
+                            .font(.neueCaptionMedium)
+                    }
+                    .foregroundStyle(AVIATheme.aviaWhite)
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, 12)
+                    .background(AVIATheme.primaryGradient)
+                }
+                .sensoryFeedback(.impact(weight: .medium), trigger: convertContext?.id)
+            }
+        } else if selectedFilter == .declined, assignment?.convertedToBuildId == nil {
+            Rectangle().fill(AVIATheme.surfaceBorder).frame(height: 1)
+            HStack(spacing: 0) {
+                Button(role: .destructive) {
+                    packageToDelete = package
+                } label: {
+                    HStack(spacing: 6) {
+                        Image(systemName: "trash.fill")
+                            .font(.system(size: 12, weight: .semibold))
+                        Text("Delete Package")
+                            .font(.neueCaptionMedium)
+                    }
+                    .foregroundStyle(AVIATheme.destructive)
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, 12)
+                    .background(AVIATheme.destructive.opacity(0.08))
                 }
             }
         }

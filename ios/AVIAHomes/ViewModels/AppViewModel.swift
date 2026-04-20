@@ -1,4 +1,5 @@
 import SwiftUI
+import Supabase
 
 extension Notification.Name {
     /// Posted when a realtime event or push notification indicates the
@@ -1619,6 +1620,33 @@ class AppViewModel {
             let success = await SupabaseService.shared.deleteHouseLandPackage(id: packageId)
             if !success {
                 print("[AppViewModel] deletePackage: delete failed for id=\(packageId)")
+            }
+        }
+    }
+
+    /// Marks a package assignment as having been converted into a build.
+    /// The assignment + package are preserved (clients can still reference the original package);
+    /// this just records the link and hides the assignment from the 'Accepted' convert action.
+    func markAssignmentConverted(assignmentId: String, buildId: String) {
+        let iso = ISO8601DateFormatter()
+        let nowStr = iso.string(from: .now)
+
+        // Optimistic local update
+        if let idx = packageAssignments.firstIndex(where: { $0.id == assignmentId }) {
+            packageAssignments[idx].convertedToBuildId = buildId
+            packageAssignments[idx].convertedAt = nowStr
+        }
+
+        Task {
+            let fields: [String: AnyJSON] = [
+                "converted_to_build_id": .string(buildId),
+                "converted_at": .string(nowStr)
+            ]
+            let success = await SupabaseService.shared.updatePackageAssignmentFields(
+                assignmentId: assignmentId, fields: fields
+            )
+            if !success {
+                print("[AppViewModel] markAssignmentConverted: update failed for assignment=\(assignmentId)")
             }
         }
     }

@@ -27,6 +27,41 @@ struct AddBuildSheet: View {
     @State private var estimatedRegistrationDate = Calendar.current.date(byAdding: .month, value: 2, to: .now) ?? .now
     @State private var registrationNotes = ""
 
+    /// When non-nil, the source package assignment will be marked as
+    /// "converted to build" once the build is successfully created.
+    private let sourceAssignmentId: String?
+
+    /// Default init — blank form.
+    init() {
+        self.sourceAssignmentId = nil
+    }
+
+    /// Prefilled init — used when converting an accepted package into a build.
+    /// The matching `HouseLandPackage` supplies lot number / estate / spec tier / facade / design,
+    /// and the accepting `clientId` is pre-selected. The assignment row will be marked
+    /// as converted once the build is created successfully.
+    init(prefillFrom package: HouseLandPackage, clientId: String, assignmentId: String, designId: String? = nil) {
+        self.sourceAssignmentId = assignmentId
+        _homeDesign = State(initialValue: package.homeDesign)
+        _lotNumber = State(initialValue: package.lotNumber)
+        _estate = State(initialValue: package.location)
+        _selectedClientId = State(initialValue: clientId)
+        _selectedSpecTier = State(initialValue: package.specTier)
+        _selectedFacadeId = State(initialValue: package.selectedFacadeId ?? "")
+        _selectedDesignId = State(initialValue: designId ?? "")
+        _isCustomHome = State(initialValue: package.isCustom)
+        if package.isCustom {
+            _customDesignName = State(initialValue: package.homeDesign)
+            if let b = package.customBedrooms { _customBedrooms = State(initialValue: b) }
+            if let b = package.customBathrooms { _customBathrooms = State(initialValue: b) }
+            if let g = package.customGarages { _customGarages = State(initialValue: g) }
+            if let sq = package.customSquareMeters {
+                _customSquareMeters = State(initialValue: String(Int(sq)))
+            }
+            if let s = package.customStoreys { _customStoreys = State(initialValue: s) }
+        }
+    }
+
     private var designs: [HomeDesign] {
         let d = viewModel.allHomeDesigns
         return d
@@ -771,6 +806,14 @@ struct AddBuildSheet: View {
                 estimatedRegistrationDate: awaitingRegistration ? estimatedRegistrationDate : nil,
                 registrationNotes: awaitingRegistration && !registrationNotes.trimmingCharacters(in: .whitespaces).isEmpty ? registrationNotes : nil
             )
+
+            // If this sheet was opened from an accepted package assignment,
+            // link the newly-created build back so the package stays visible
+            // to the client as their confirmed selection.
+            if let assignmentId = sourceAssignmentId, let newBuild = viewModel.allClientBuilds.last {
+                viewModel.markAssignmentConverted(assignmentId: assignmentId, buildId: newBuild.id)
+            }
+
             isSaving = false
             dismiss()
         }
