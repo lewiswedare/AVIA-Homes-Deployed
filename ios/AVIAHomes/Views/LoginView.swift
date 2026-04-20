@@ -58,7 +58,7 @@ struct LoginView: View {
                                 Text("Email")
                                     .font(.neueCaptionMedium)
                                     .foregroundStyle(AVIATheme.textSecondary)
-                                TextField("your@email.com", text: $email)
+                                TextField("Email", text: $email)
                                     .font(.neueSubheadline)
                                     .textContentType(.emailAddress)
                                     .keyboardType(.emailAddress)

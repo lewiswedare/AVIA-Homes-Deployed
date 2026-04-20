@@ -63,7 +63,7 @@ struct SignUpView: View {
 
                         VStack(spacing: 14) {
                             fieldGroup(label: "Email") {
-                                TextField("your@email.com", text: $email)
+                                TextField("Email", text: $email)
                                     .font(.neueSubheadline)
                                     .textContentType(.emailAddress)
                                     .keyboardType(.emailAddress)
