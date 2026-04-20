@@ -160,44 +160,27 @@ struct BuildColourSelectionView: View {
     }
 
     private var colourUpgradeSummarySection: some View {
-        VStack(alignment: .leading, spacing: 10) {
-            HStack(spacing: 8) {
-                Text("Colour Upgrades")
-                    .font(.neueCorpMedium(18))
-                    .foregroundStyle(AVIATheme.textPrimary)
-                    .padding(.leading, 12)
-                    .overlay(alignment: .leading) {
-                        Rectangle()
-                            .fill(AVIATheme.timelessBrown)
-                            .frame(width: 3)
+        BentoCard(cornerRadius: 14) {
+            VStack(alignment: .leading, spacing: 14) {
+                HStack(spacing: 10) {
+                    Image(systemName: "tag.fill")
+                        .font(.neueCorpMedium(18))
+                        .foregroundStyle(AVIATheme.timelessBrown)
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text("Colour Upgrades")
+                            .font(.neueCaptionMedium)
+                            .foregroundStyle(AVIATheme.textPrimary)
+                        Text("Total added to your selections")
+                            .font(.neueCaption2)
+                            .foregroundStyle(AVIATheme.textSecondary)
                     }
-                Spacer()
-                Text(AVIATheme.formatCost(colourUpgradeTotal))
-                    .font(.neueCorpMedium(14))
-                    .foregroundStyle(AVIATheme.timelessBrown)
-                    .padding(.horizontal, 10)
-                    .padding(.vertical, 5)
-                    .background(AVIATheme.timelessBrown.opacity(0.08))
-                    .clipShape(Capsule())
-            }
-
-            HStack(spacing: 10) {
-                Image(systemName: "tag.fill")
-                    .font(.neueCaptionMedium)
-                    .foregroundStyle(AVIATheme.timelessBrown)
-                VStack(alignment: .leading, spacing: 2) {
-                    Text("Total colour upgrade cost")
-                        .font(.neueCaptionMedium)
-                        .foregroundStyle(AVIATheme.textPrimary)
-                    Text("Included in your selections below")
-                        .font(.neueCaption2)
-                        .foregroundStyle(AVIATheme.textSecondary)
+                    Spacer()
+                    Text(AVIATheme.formatCost(colourUpgradeTotal))
+                        .font(.neueCorpMedium(18))
+                        .foregroundStyle(AVIATheme.timelessBrown)
                 }
-                Spacer()
             }
             .padding(14)
-            .background(AVIATheme.cardBackground)
-            .clipShape(.rect(cornerRadius: 14))
         }
     }
 
