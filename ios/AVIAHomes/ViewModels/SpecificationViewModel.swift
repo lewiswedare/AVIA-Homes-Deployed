@@ -43,6 +43,14 @@ class SpecificationViewModel {
     var upgradeRequests: [UpgradeRequest] = []
     var selectedComparisonTier: SpecTier = .portobello
 
+    var notificationService: NotificationService?
+    var adminRecipientIds: [String] = []
+    var clientId: String = ""
+    var clientName: String = ""
+    var buildAddress: String = ""
+    var isSubmittingRequests = false
+    var submitMessage: String?
+
     private(set) var buildId: String = ""
     private var cachedSelections: [BuildSpecSelection] = []
 
@@ -215,6 +223,59 @@ class SpecificationViewModel {
         let item = cachedSelections[idx]
         Task { @MainActor in
             _ = await SupabaseService.shared.upsertBuildSpecSelection(item)
+        }
+    }
+
+    /// Removes a draft upgrade request (one the client has not yet submitted to admin).
+    /// Reverts the underlying selection back to `.included`.
+    func removeUpgradeRequest(requestId: String) {
+        upgradeRequests.removeAll { $0.id == requestId }
+        guard let idx = cachedSelections.firstIndex(where: { $0.id == requestId }) else { return }
+        guard cachedSelections[idx].selectionType == .upgradeDraft else { return }
+        cachedSelections[idx].selectionType = .included
+        cachedSelections[idx].clientNotes = nil
+        cachedSelections[idx].upgradeCost = nil
+        cachedSelections[idx].upgradeCostNote = nil
+        let item = cachedSelections[idx]
+        Task { @MainActor in
+            _ = await SupabaseService.shared.upsertBuildSpecSelection(item)
+        }
+    }
+
+    /// Submits all draft upgrade requests to admin for review. Converts
+    /// `.upgradeDraft` selections to `.upgradeRequested` and notifies admins.
+    func submitAllUpgradeRequests() async {
+        let drafts = cachedSelections.filter { $0.selectionType == .upgradeDraft }
+        guard !drafts.isEmpty else { return }
+        isSubmittingRequests = true
+        defer { isSubmittingRequests = false }
+
+        var successCount = 0
+        for draft in drafts {
+            guard let idx = cachedSelections.firstIndex(where: { $0.id == draft.id }) else { continue }
+            cachedSelections[idx].selectionType = .upgradeRequested
+            let toSave = cachedSelections[idx]
+            let ok = await SupabaseService.shared.upsertBuildSpecSelection(toSave)
+            if ok { successCount += 1 }
+        }
+
+        if successCount > 0, let ns = notificationService {
+            let sender = clientName.isEmpty ? "Client" : clientName
+            let addressPart = buildAddress.isEmpty ? "" : " for \(buildAddress)"
+            let message = "\(sender) submitted \(successCount) upgrade request\(successCount == 1 ? "" : "s")\(addressPart)"
+            for recipientId in adminRecipientIds {
+                await ns.createNotification(
+                    recipientId: recipientId,
+                    senderId: clientId,
+                    senderName: sender,
+                    type: .buildUpdate,
+                    title: "Upgrade Requests Submitted",
+                    message: message,
+                    referenceId: buildId,
+                    referenceType: "build"
+                )
+            }
+            submitMessage = "Submitted \(successCount) upgrade request\(successCount == 1 ? "" : "s")"
         }
     }
 

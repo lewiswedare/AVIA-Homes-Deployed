@@ -2,10 +2,13 @@ import SwiftUI
 
 struct SpecificationsOverviewView: View {
     @Environment(SpecificationViewModel.self) private var specVM
+    @Environment(AppViewModel.self) private var appViewModel
     @Environment(CustomerJourneyViewModel.self) private var journeyVM
     @State private var showConfirmAlert = false
     @State private var selectedCategory: SpecCategory?
     @State private var selectedUpgradeRequest: UpgradeRequest?
+    @State private var requestToRemove: UpgradeRequest?
+    @State private var submitToast: String?
 
     var body: some View {
         NavigationStack {
@@ -43,6 +46,51 @@ struct SpecificationsOverviewView: View {
                     selectedUpgradeRequest = nil
                 }
             }
+            .alert("Remove Upgrade Request?", isPresented: .init(
+                get: { requestToRemove != nil },
+                set: { if !$0 { requestToRemove = nil } }
+            )) {
+                Button("Cancel", role: .cancel) { requestToRemove = nil }
+                Button("Remove", role: .destructive) {
+                    if let req = requestToRemove {
+                        specVM.removeUpgradeRequest(requestId: req.id)
+                    }
+                    requestToRemove = nil
+                }
+            } message: {
+                if let req = requestToRemove {
+                    Text("Remove the upgrade request for \(req.itemName)? You can add it again later.")
+                }
+            }
+            .overlay(alignment: .bottom) {
+                if let msg = submitToast {
+                    Text(msg)
+                        .font(.neueCaptionMedium)
+                        .foregroundStyle(AVIATheme.aviaWhite)
+                        .padding(.horizontal, 20)
+                        .padding(.vertical, 12)
+                        .background(AVIATheme.success, in: Capsule())
+                        .padding(.bottom, 20)
+                        .transition(.move(edge: .bottom).combined(with: .opacity))
+                        .onAppear {
+                            DispatchQueue.main.asyncAfter(deadline: .now() + 2.5) {
+                                withAnimation { submitToast = nil }
+                            }
+                        }
+                }
+            }
+            .task {
+                specVM.notificationService = appViewModel.notificationService
+                specVM.clientId = appViewModel.currentUser.id
+                specVM.clientName = appViewModel.currentUser.fullName
+                specVM.adminRecipientIds = appViewModel.allRegisteredUsers.filter { $0.role.isAnyStaffRole }.map(\.id)
+                if let build = appViewModel.clientBuildsForCurrentUser.first {
+                    let lot = build.lotNumber.isEmpty ? "" : "Lot \(build.lotNumber)"
+                    let estate = build.estate
+                    let combined = [lot, estate].filter { !$0.isEmpty }.joined(separator: ", ")
+                    specVM.buildAddress = combined.isEmpty ? build.homeDesign : combined
+                }
+            }
             .alert("Confirm Specifications", isPresented: $showConfirmAlert) {
                 Button("Confirm") {
                     withAnimation(.spring(response: 0.4)) {
@@ -56,43 +104,59 @@ struct SpecificationsOverviewView: View {
         }
     }
 
+    private var draftUpgradeCount: Int {
+        specVM.upgradeRequests.filter { $0.status == .pending }.count
+    }
+
     private var confirmSpecsSection: some View {
         VStack(spacing: 10) {
-            let pendingCount = specVM.upgradeRequests.filter { $0.status == .pending }.count
-
-            if pendingCount > 0 {
-                HStack(spacing: 8) {
-                    Image(systemName: "exclamationmark.triangle.fill")
-                        .font(.neueCorp(12))
-                        .foregroundStyle(AVIATheme.warning)
-                    Text("You have \(pendingCount) pending upgrade request\(pendingCount == 1 ? "" : "s"). Resolve these before confirming.")
-                        .font(.neueCaption)
-                        .foregroundStyle(AVIATheme.textSecondary)
+            if draftUpgradeCount > 0 {
+                Button {
+                    Task {
+                        await specVM.submitAllUpgradeRequests()
+                        if let msg = specVM.submitMessage {
+                            withAnimation { submitToast = msg }
+                            specVM.submitMessage = nil
+                        }
+                    }
+                } label: {
+                    HStack(spacing: 8) {
+                        if specVM.isSubmittingRequests {
+                            ProgressView()
+                                .tint(AVIATheme.aviaWhite)
+                        } else {
+                            Image(systemName: "paperplane.fill")
+                                .font(.neueSubheadlineMedium)
+                        }
+                        Text("Request \(draftUpgradeCount) Upgrade\(draftUpgradeCount == 1 ? "" : "s")")
+                            .font(.neueSubheadlineMedium)
+                    }
+                    .foregroundStyle(AVIATheme.aviaWhite)
+                    .frame(maxWidth: .infinity)
+                    .frame(height: 52)
+                    .background(AVIATheme.primaryGradient)
+                    .clipShape(.rect(cornerRadius: 14))
                 }
-                .padding(14)
-                .frame(maxWidth: .infinity, alignment: .leading)
-                .background(AVIATheme.warning.opacity(0.08))
-                .clipShape(.rect(cornerRadius: 12))
-            }
-
-            Button {
-                showConfirmAlert = true
-            } label: {
-                HStack(spacing: 8) {
-                    Image(systemName: "checkmark.seal.fill")
-                        .font(.neueSubheadlineMedium)
-                    Text("Confirm My Specifications")
-                        .font(.neueSubheadlineMedium)
+                .disabled(specVM.isSubmittingRequests)
+                .sensoryFeedback(.success, trigger: specVM.submitMessage)
+            } else {
+                Button {
+                    showConfirmAlert = true
+                } label: {
+                    HStack(spacing: 8) {
+                        Image(systemName: "checkmark.seal.fill")
+                            .font(.neueSubheadlineMedium)
+                        Text("Confirm My Specifications")
+                            .font(.neueSubheadlineMedium)
+                    }
+                    .foregroundStyle(AVIATheme.aviaWhite)
+                    .frame(maxWidth: .infinity)
+                    .frame(height: 52)
+                    .background(AVIATheme.primaryGradient)
+                    .clipShape(.rect(cornerRadius: 14))
                 }
-                .foregroundStyle(AVIATheme.aviaWhite)
-                .frame(maxWidth: .infinity)
-                .frame(height: 52)
-                .background(AVIATheme.primaryGradient)
-                .clipShape(.rect(cornerRadius: 14))
+                .sensoryFeedback(.impact(flexibility: .soft), trigger: showConfirmAlert)
             }
-            .disabled(pendingCount > 0)
-            .opacity(pendingCount > 0 ? 0.5 : 1)
-            .sensoryFeedback(.impact(flexibility: .soft), trigger: showConfirmAlert)
         }
     }
 
@@ -383,12 +447,14 @@ struct SpecificationsOverviewView: View {
                 Button {
                     if request.status == .quoted {
                         selectedUpgradeRequest = request
+                    } else if request.status == .pending {
+                        requestToRemove = request
                     }
                 } label: {
                     upgradeRequestRow(request)
                 }
                 .buttonStyle(.pressable(.subtle))
-                .disabled(request.status != .quoted)
+                .disabled(request.status != .quoted && request.status != .pending)
             }
 
             if specVM.upgradeRequests.count > 3 {
@@ -456,6 +522,14 @@ struct SpecificationsOverviewView: View {
                     Text("Under Review")
                         .font(.neueCaption2)
                         .foregroundStyle(AVIATheme.textTertiary)
+                    Spacer()
+                    HStack(spacing: 4) {
+                        Image(systemName: "xmark.circle")
+                            .font(.neueCaption2)
+                        Text("Tap to remove")
+                            .font(.neueCaption2Medium)
+                    }
+                    .foregroundStyle(AVIATheme.destructive)
                 }
             }
 
