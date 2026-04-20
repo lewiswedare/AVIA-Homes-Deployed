@@ -26,6 +26,7 @@ class MessagingService {
                 .select("id, participant_ids, last_message, last_message_date, last_sender_id, unread_count, created_at, conversation_type")
                 .contains("participant_ids", value: [userId])
                 .order("last_message_date", ascending: false)
+                .limit(100)
                 .execute()
                 .value
             var result: [Conversation] = []

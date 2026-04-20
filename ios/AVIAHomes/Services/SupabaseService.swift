@@ -127,6 +127,7 @@ class SupabaseService {
                 // TODO: narrow .select() columns
                 .select()
                 .order("created_at", ascending: false)
+                .limit(100)
                 .execute()
                 .value
             return rows.map { $0.toClientUser() }
@@ -187,6 +188,7 @@ class SupabaseService {
                 .select()
                 .eq("build_id", value: buildId)
                 .order("sort_order", ascending: true)
+                .limit(100)
                 .execute()
                 .value
             return rows.map { $0.toBuildStage() }
@@ -338,6 +340,7 @@ class SupabaseService {
                 .select("id, build_stage_id, build_id, title, description, due_date, completed_at, status, requires_client_action, client_action_description, created_at")
                 .eq("build_id", value: buildId)
                 .order("due_date", ascending: true)
+                .limit(100)
                 .execute()
                 .value
             return rows.map { $0.toBuildMilestone() }
@@ -355,6 +358,7 @@ class SupabaseService {
                 .select("id, build_stage_id, build_id, title, description, due_date, completed_at, status, requires_client_action, client_action_description, created_at")
                 .eq("build_stage_id", value: stageId)
                 .order("due_date", ascending: true)
+                .limit(100)
                 .execute()
                 .value
             return rows.map { $0.toBuildMilestone() }
@@ -422,6 +426,7 @@ class SupabaseService {
                 .select("id, build_id, milestone_id, client_id, title, message, reminder_date, is_read, created_at")
                 .eq("client_id", value: clientId)
                 .order("reminder_date", ascending: true)
+                .limit(100)
                 .execute()
                 .value
             return rows.map { $0.toBuildReminder() }
@@ -439,6 +444,7 @@ class SupabaseService {
                 .select("id, build_id, milestone_id, client_id, title, message, reminder_date, is_read, created_at")
                 .eq("build_id", value: buildId)
                 .order("reminder_date", ascending: true)
+                .limit(100)
                 .execute()
                 .value
             return rows.map { $0.toBuildReminder() }
@@ -505,6 +511,7 @@ class SupabaseService {
                 .from("package_assignments")
                 // TODO: narrow .select() columns
                 .select()
+                .limit(100)
                 .execute()
                 .value
             return rows.map { $0.toPackageAssignment() }
@@ -623,6 +630,7 @@ class SupabaseService {
                 // TODO: narrow .select() columns
                 .select()
                 .order("name", ascending: true)
+                .limit(100)
                 .execute()
                 .value
             return rows.map { $0.toHomeDesign() }
@@ -640,6 +648,7 @@ class SupabaseService {
                 // TODO: narrow .select() columns
                 .select()
                 .order("id", ascending: true)
+                .limit(100)
                 .execute()
                 .value
             return rows.map { $0.toHouseLandPackage() }
@@ -657,6 +666,7 @@ class SupabaseService {
                 // TODO: narrow .select() columns
                 .select()
                 .order("date", ascending: false)
+                .limit(100)
                 .execute()
                 .value
             return rows.map { $0.toBlogPost() }
@@ -674,6 +684,7 @@ class SupabaseService {
                 // TODO: narrow .select() columns
                 .select()
                 .order("name", ascending: true)
+                .limit(100)
                 .execute()
                 .value
             return rows.map { $0.toLandEstate() }
@@ -691,6 +702,7 @@ class SupabaseService {
                 // TODO: narrow .select() columns
                 .select()
                 .order("name", ascending: true)
+                .limit(100)
                 .execute()
                 .value
             return rows.map { $0.toFacade() }
@@ -709,6 +721,7 @@ class SupabaseService {
                 .select()
                 .eq("client_id", value: clientId)
                 .order("date_added", ascending: false)
+                .limit(100)
                 .execute()
                 .value
             return rows.map { $0.toClientDocument() }
@@ -726,6 +739,7 @@ class SupabaseService {
                 // TODO: narrow .select() columns
                 .select()
                 .order("date_added", ascending: false)
+                .limit(100)
                 .execute()
                 .value
             return rows.map { $0.toClientDocument() }
@@ -848,6 +862,7 @@ class SupabaseService {
                 .select()
                 .eq("client_id", value: clientId)
                 .order("date", ascending: true)
+                .limit(100)
                 .execute()
                 .value
             return rows.map { $0.toScheduleItem() }
@@ -897,6 +912,7 @@ class SupabaseService {
                 // TODO: narrow .select() columns
                 .select()
                 .eq("role", value: role)
+                .limit(100)
                 .execute()
                 .value
             return rows.map { $0.toClientUser() }
@@ -946,6 +962,7 @@ class SupabaseService {
                 // TODO: narrow .select() columns
                 .select()
                 .order("sort_order", ascending: true)
+                .limit(100)
                 .execute()
                 .value
             return rows.map { $0.toColourCategory() }
@@ -969,6 +986,7 @@ class SupabaseService {
                 // TODO: narrow .select() columns
                 .select()
                 .order("sort_order", ascending: true)
+                .limit(100)
                 .execute()
                 .value
             return rows.map { $0.toSpecCategory() }
@@ -986,6 +1004,7 @@ class SupabaseService {
                 // TODO: narrow .select() columns
                 .select()
                 .order("sort_order", ascending: true)
+                .limit(100)
                 .execute()
                 .value
             return rows
@@ -1028,6 +1047,7 @@ class SupabaseService {
                 .from("spec_range_tiers")
                 // TODO: narrow .select() columns
                 .select()
+                .limit(100)
                 .execute()
                 .value
             var result: [String: SpecRangeTierRow] = [:]
@@ -1060,6 +1080,7 @@ class SupabaseService {
                 // TODO: narrow .select() columns
                 .select()
                 .order("sort_order", ascending: true)
+                .limit(100)
                 .execute()
                 .value
             return rows.map { $0.toHomeFastScheme() }
@@ -1076,6 +1097,7 @@ class SupabaseService {
                 .from("spec_to_colour_mapping")
                 // TODO: narrow .select() columns
                 .select()
+                .limit(100)
                 .execute()
                 .value
             var result: [String: [String]] = [:]
@@ -1096,6 +1118,7 @@ class SupabaseService {
                 .from("spec_item_images")
                 // TODO: narrow .select() columns
                 .select()
+                .limit(100)
                 .execute()
                 .value
             var baseMap: [String: String] = [:]
@@ -1127,6 +1150,7 @@ class SupabaseService {
                 // TODO: narrow .select() columns
                 .select()
                 .eq("spec_item_id", value: specItemId)
+                .limit(100)
                 .execute()
                 .value
             return rows.first
@@ -1236,6 +1260,7 @@ class SupabaseService {
                 // TODO: narrow .select() columns
                 .select()
                 .order("created_at", ascending: false)
+                .limit(100)
                 .execute()
                 .value
             return rows.map { $0.toModel() }
@@ -1300,6 +1325,7 @@ class SupabaseService {
                 // TODO: narrow .select() columns
                 .select()
                 .eq("build_id", value: buildId)
+                .limit(100)
                 .execute()
                 .value
             return rows.map { $0.toModel() }
@@ -1425,6 +1451,7 @@ class SupabaseService {
                 .eq("status", value: "awaiting_admin")
                 .neq("selection_type", value: "upgrade_draft")
                 .order("updated_at", ascending: false)
+                .limit(100)
                 .execute()
                 .value
             return rows.map { $0.toModel() }
@@ -1443,6 +1470,7 @@ class SupabaseService {
                 .select()
                 .eq("build_id", value: buildId)
                 .order("sort_order", ascending: true)
+                .limit(100)
                 .execute()
                 .value
             return rows.map { $0.toModel() }
@@ -1594,6 +1622,7 @@ class SupabaseService {
                 .select()
                 .eq("selection_status", value: "upgrade_accepted_by_client")
                 .order("updated_at", ascending: false)
+                .limit(100)
                 .execute()
                 .value
             return rows.map { $0.toModel() }
@@ -1611,6 +1640,7 @@ class SupabaseService {
                 // TODO: narrow .select() columns
                 .select()
                 .eq("build_id", value: buildId)
+                .limit(100)
                 .execute()
                 .value
             return rows.map { $0.toModel() }
@@ -1685,6 +1715,7 @@ class SupabaseService {
                 .select()
                 .eq("build_id", value: buildId)
                 .order("version", ascending: false)
+                .limit(100)
                 .execute()
                 .value
             return rows.map { $0.toModel() }
@@ -1969,6 +2000,7 @@ class SupabaseService {
                 .select()
                 .eq("package_id", value: packageId)
                 .order("created_at", ascending: false)
+                .limit(100)
                 .execute()
                 .value
             return rows
@@ -2252,6 +2284,7 @@ class SupabaseService {
                 .select()
                 .eq("client_id", value: clientId)
                 .order("created_at", ascending: false)
+                .limit(100)
                 .execute()
                 .value
             return rows
@@ -2268,6 +2301,7 @@ class SupabaseService {
                 // TODO: narrow .select() columns
                 .select()
                 .order("created_at", ascending: false)
+                .limit(100)
                 .execute()
                 .value
             return rows
@@ -2395,6 +2429,7 @@ class SupabaseService {
                 .select()
                 .eq("client_id", value: clientId)
                 .order("created_at", ascending: false)
+                .limit(100)
                 .execute()
                 .value
             return rows
@@ -2411,6 +2446,7 @@ class SupabaseService {
                 // TODO: narrow .select() columns
                 .select()
                 .order("created_at", ascending: false)
+                .limit(100)
                 .execute()
                 .value
             return rows
@@ -2529,6 +2565,7 @@ class SupabaseService {
                 .select()
                 .eq("is_active", value: true)
                 .order("sort_order")
+                .limit(100)
                 .execute().value
             return rows
         } catch {
@@ -2560,6 +2597,7 @@ class SupabaseService {
                 // TODO: narrow .select() columns
                 .select()
                 .in("stocklist_item_id", values: itemIds)
+                .limit(100)
                 .execute().value
             return rows
         } catch {
