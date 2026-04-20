@@ -310,6 +310,21 @@ struct ClientDiscoverTabView: View {
             Tab("Packages", systemImage: "square.grid.2x2.fill", value: 1) {
                 NavigationStack {
                     ClientPackageReviewView()
+                        .navigationDestination(for: HouseLandPackage.self) { pkg in
+                            PackageDetailView(package: pkg)
+                        }
+                        .navigationDestination(for: HomeDesign.self) { design in
+                            HomeDesignDetailView(design: design)
+                        }
+                        .navigationDestination(for: LandEstate.self) { estate in
+                            EstateDetailView(estate: estate)
+                        }
+                        .navigationDestination(for: SpecTier.self) { tier in
+                            SpecRangeDetailView(tier: tier)
+                        }
+                        .navigationDestination(for: Facade.self) { facade in
+                            FacadeDetailView(facade: facade)
+                        }
                 }
             }
             Tab("Messages", systemImage: "message.fill", value: 2) {
