@@ -101,6 +101,7 @@ struct AdminBuildSpecReviewView: View {
     private var specContent: some View {
         ScrollView {
             VStack(spacing: 16) {
+                adminActionNeededCard
                 adminStatusBanner
                 clientInfoCard
 
@@ -782,6 +783,123 @@ struct AdminBuildSpecReviewView: View {
                 showShareSheet = true
             }
         }
+    }
+
+    // MARK: - Action Needed Summary
+
+    /// Loud, top-of-page summary of exactly what the admin must do on this build.
+    /// Hidden entirely when there's nothing pending so it never becomes noise.
+    @ViewBuilder
+    private var adminActionNeededCard: some View {
+        let newSubmissions = viewModel.selections.filter {
+            $0.status == .awaitingAdmin &&
+            $0.selectionType != .upgradeRequested &&
+            $0.selectionType != .upgradeAccepted &&
+            $0.selectionType != .upgradeDraft
+        }.count
+        let toPrice = viewModel.selections.filter { $0.selectionType == .upgradeRequested }.count
+        let specToApprove = viewModel.selections.filter { $0.selectionType == .upgradeAccepted }.count
+        let colourToApprove = viewModel.colourSelections.filter {
+            $0.isUpgrade && $0.selectionStatus == .upgradeAcceptedByClient
+        }.count
+        let rangeUpgradePending = viewModel.rangeUpgradeRequests.filter { $0.status == .clientAccepted }.count
+        let total = newSubmissions + toPrice + specToApprove + colourToApprove + rangeUpgradePending
+
+        if total > 0 {
+            VStack(alignment: .leading, spacing: 10) {
+                HStack(spacing: 10) {
+                    Image(systemName: "bell.badge.fill")
+                        .font(.neueCorpMedium(20))
+                        .foregroundStyle(AVIATheme.warning)
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text("\(total) item\(total == 1 ? "" : "s") need your review")
+                            .font(.neueSubheadlineMedium)
+                            .foregroundStyle(AVIATheme.textPrimary)
+                        Text("Tap a category below to jump to the items.")
+                            .font(.neueCaption2)
+                            .foregroundStyle(AVIATheme.textSecondary)
+                    }
+                    Spacer()
+                    Text("\(total)")
+                        .font(.neueCorpMedium(16))
+                        .foregroundStyle(AVIATheme.aviaWhite)
+                        .frame(minWidth: 28, minHeight: 28)
+                        .padding(.horizontal, 6)
+                        .background(AVIATheme.warning)
+                        .clipShape(Capsule())
+                }
+
+                VStack(spacing: 6) {
+                    if toPrice > 0 {
+                        actionRow(icon: "dollarsign.circle.fill",
+                                  text: "\(toPrice) upgrade request\(toPrice == 1 ? "" : "s") to price",
+                                  color: AVIATheme.accent) {
+                            activeTab = .quote
+                        }
+                    }
+                    if specToApprove > 0 {
+                        actionRow(icon: "hand.thumbsup.fill",
+                                  text: "\(specToApprove) spec upgrade\(specToApprove == 1 ? "" : "s") to confirm",
+                                  color: AVIATheme.heritageBlue) {
+                            activeTab = .specRange
+                        }
+                    }
+                    if colourToApprove > 0 {
+                        actionRow(icon: "paintpalette.fill",
+                                  text: "\(colourToApprove) colour upgrade\(colourToApprove == 1 ? "" : "s") to confirm",
+                                  color: AVIATheme.heritageBlue) {
+                            activeTab = .colours
+                        }
+                    }
+                    if rangeUpgradePending > 0 {
+                        actionRow(icon: "arrow.up.forward.circle.fill",
+                                  text: "\(rangeUpgradePending) spec range upgrade\(rangeUpgradePending == 1 ? "" : "s") to confirm",
+                                  color: AVIATheme.timelessBrown) {
+                            activeTab = .specRange
+                        }
+                    }
+                    if newSubmissions > 0 {
+                        actionRow(icon: "checklist.checked",
+                                  text: "\(newSubmissions) spec item\(newSubmissions == 1 ? "" : "s") newly submitted",
+                                  color: AVIATheme.warning) {
+                            activeTab = .specRange
+                        }
+                    }
+                }
+            }
+            .padding(14)
+            .background(AVIATheme.warning.opacity(0.08))
+            .clipShape(.rect(cornerRadius: 14))
+            .overlay {
+                RoundedRectangle(cornerRadius: 14)
+                    .stroke(AVIATheme.warning.opacity(0.35), lineWidth: 1)
+            }
+        }
+    }
+
+    private func actionRow(icon: String, text: String, color: Color, onTap: @escaping () -> Void) -> some View {
+        Button(action: onTap) {
+            HStack(spacing: 10) {
+                Image(systemName: icon)
+                    .font(.neueCorp(12))
+                    .foregroundStyle(color)
+                    .frame(width: 28, height: 28)
+                    .background(color.opacity(0.12))
+                    .clipShape(Circle())
+                Text(text)
+                    .font(.neueCaption)
+                    .foregroundStyle(AVIATheme.textPrimary)
+                    .multilineTextAlignment(.leading)
+                Spacer()
+                Image(systemName: "chevron.right")
+                    .font(.neueCorp(9))
+                    .foregroundStyle(AVIATheme.textTertiary)
+            }
+            .padding(10)
+            .background(AVIATheme.cardBackground)
+            .clipShape(.rect(cornerRadius: 10))
+        }
+        .buttonStyle(.pressable(.subtle))
     }
 
     // MARK: - Existing Components

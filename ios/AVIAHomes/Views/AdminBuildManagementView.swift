@@ -151,10 +151,8 @@ struct AdminBuildManagementView: View {
                 .frame(maxWidth: .infinity)
                 .padding(.vertical, 60)
             } else {
-                let pendingBuildIds = Set(viewModel.pendingSpecReviews.map(\.buildId))
-                let upgradeBuildIds = Set(viewModel.pendingSpecReviews.filter { $0.selectionType == .upgradeRequested || $0.selectionType == .upgradeAccepted }.map(\.buildId))
                 ForEach(filteredBuilds) { build in
-                    let badge: BuildSpecReviewBadge = upgradeBuildIds.contains(build.id) ? .upgradeRequested : (pendingBuildIds.contains(build.id) ? .awaitingReview : .none)
+                    let badge = BuildReviewBadgeResolver.resolve(for: build.id, viewModel: viewModel)
                     Button {
                         selectedBuildForEdit = build
                     } label: {
@@ -183,12 +181,16 @@ struct AdminBuildRow: View {
                             .background(AVIATheme.primaryGradient)
                             .clipShape(Circle())
 
-                        if specReviewStatus != .none {
-                            Circle()
-                                .fill(specReviewStatus == .upgradeRequested ? AVIATheme.warning : AVIATheme.warning)
-                                .frame(width: 12, height: 12)
-                                .overlay { Circle().stroke(AVIATheme.cardBackground, lineWidth: 2) }
-                                .offset(x: 2, y: -2)
+                        if specReviewStatus.totalCount > 0 {
+                            Text("\(specReviewStatus.totalCount)")
+                                .font(.neueCorpMedium(9))
+                                .foregroundStyle(AVIATheme.aviaWhite)
+                                .frame(minWidth: 16, minHeight: 16)
+                                .padding(.horizontal, 3)
+                                .background(specReviewStatus.pillColor)
+                                .clipShape(Capsule())
+                                .overlay { Capsule().stroke(AVIATheme.cardBackground, lineWidth: 2) }
+                                .offset(x: 4, y: -4)
                         }
                     }
 
@@ -198,19 +200,26 @@ struct AdminBuildRow: View {
                                 .font(.neueSubheadlineMedium)
                                 .foregroundStyle(AVIATheme.textPrimary)
 
-                            if specReviewStatus != .none {
-                                Text(specReviewStatus == .upgradeRequested ? "UPGRADE REQ" : "SPEC REVIEW")
+                            if specReviewStatus.totalCount > 0 {
+                                Text(specReviewStatus.pillLabel)
                                     .font(.neueCorpMedium(7))
                                     .foregroundStyle(AVIATheme.aviaWhite)
                                     .padding(.horizontal, 6)
                                     .padding(.vertical, 2)
-                                    .background(specReviewStatus == .upgradeRequested ? AVIATheme.warning : AVIATheme.warning)
+                                    .background(specReviewStatus.pillColor)
                                     .clipShape(Capsule())
                             }
                         }
                         Text("\(build.homeDesign) · \(build.lotNumber)")
                             .font(.neueCaption)
                             .foregroundStyle(AVIATheme.textSecondary)
+
+                        if let summary = specReviewStatus.summaryLine {
+                            Text(summary)
+                                .font(.neueCaption2)
+                                .foregroundStyle(specReviewStatus.pillColor)
+                                .lineLimit(1)
+                        }
                     }
 
                     Spacer()
@@ -244,8 +253,75 @@ struct AdminBuildRow: View {
     }
 }
 
-enum BuildSpecReviewBadge {
-    case none
-    case awaitingReview
-    case upgradeRequested
+/// Rich badge describing what the admin needs to review on a particular build.
+/// Aggregates spec submissions, upgrade requests, upgrade responses, and colour
+/// upgrade approvals into a single count + label so the build list makes it
+/// obvious where attention is needed.
+struct BuildSpecReviewBadge: Equatable {
+    var newSpecSubmissions: Int = 0     // client has submitted spec items to review
+    var newUpgradeRequests: Int = 0     // client asked for an upgrade — admin needs to quote
+    var acceptedUpgrades: Int = 0       // client accepted a quoted upgrade — admin final approval
+    var colourUpgrades: Int = 0         // colour upgrade accepted by client — admin final approval
+
+    static let none = BuildSpecReviewBadge()
+
+    var totalCount: Int {
+        newSpecSubmissions + newUpgradeRequests + acceptedUpgrades + colourUpgrades
+    }
+
+    /// Highest-priority action wins the pill label (upgrades + approvals are
+    /// always more time-sensitive than a fresh submission).
+    var pillLabel: String {
+        if newUpgradeRequests > 0 { return "\(newUpgradeRequests) TO PRICE" }
+        if acceptedUpgrades + colourUpgrades > 0 {
+            return "\(acceptedUpgrades + colourUpgrades) TO APPROVE"
+        }
+        if newSpecSubmissions > 0 { return "SPEC REVIEW" }
+        return ""
+    }
+
+    var pillColor: Color {
+        if newUpgradeRequests > 0 { return AVIATheme.accent }
+        if acceptedUpgrades + colourUpgrades > 0 { return AVIATheme.heritageBlue }
+        return AVIATheme.warning
+    }
+
+    /// One-line detail of what kinds of items are pending (used under the name).
+    var summaryLine: String? {
+        var parts: [String] = []
+        if newUpgradeRequests > 0 {
+            parts.append("\(newUpgradeRequests) new upgrade req\(newUpgradeRequests == 1 ? "" : "s")")
+        }
+        if acceptedUpgrades > 0 {
+            parts.append("\(acceptedUpgrades) spec upgrade\(acceptedUpgrades == 1 ? "" : "s") to approve")
+        }
+        if colourUpgrades > 0 {
+            parts.append("\(colourUpgrades) colour upgrade\(colourUpgrades == 1 ? "" : "s") to approve")
+        }
+        if newSpecSubmissions > 0 && parts.isEmpty {
+            parts.append("\(newSpecSubmissions) spec item\(newSpecSubmissions == 1 ? "" : "s") submitted")
+        }
+        return parts.isEmpty ? nil : parts.joined(separator: " \u{2022} ")
+    }
+}
+
+/// Builds a `BuildSpecReviewBadge` from the app-level pending caches for a
+/// specific build. Centralised so every surface (build list, overview alerts,
+/// spec review banner) uses the same numbers.
+enum BuildReviewBadgeResolver {
+    static func resolve(for buildId: String, viewModel: AppViewModel) -> BuildSpecReviewBadge {
+        let reviews = viewModel.pendingSpecReviews.filter { $0.buildId == buildId }
+        let newSubmissions = reviews.filter { $0.selectionType != .upgradeRequested
+            && $0.selectionType != .upgradeAccepted
+            && $0.selectionType != .upgradeCosted }.count
+        let newUpgradeRequests = reviews.filter { $0.selectionType == .upgradeRequested }.count
+        let acceptedUpgrades = reviews.filter { $0.selectionType == .upgradeAccepted }.count
+        let colourUpgrades = viewModel.pendingColourUpgrades.filter { $0.buildId == buildId }.count
+        return BuildSpecReviewBadge(
+            newSpecSubmissions: newSubmissions,
+            newUpgradeRequests: newUpgradeRequests,
+            acceptedUpgrades: acceptedUpgrades,
+            colourUpgrades: colourUpgrades
+        )
+    }
 }

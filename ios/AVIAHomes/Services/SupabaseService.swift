@@ -1546,6 +1546,25 @@ class SupabaseService {
 
     // MARK: - Build Colour Selections
 
+    /// Returns colour selections where the client has accepted an upgrade cost and
+    /// the build admin still needs to give final approval (`upgradeAcceptedByClient`).
+    func fetchAllPendingColourUpgrades() async -> [BuildColourSelection] {
+        guard isConfigured else { return [] }
+        do {
+            let rows: [BuildColourSelectionRow] = try await client
+                .from("build_colour_selections")
+                .select()
+                .eq("selection_status", value: "upgrade_accepted_by_client")
+                .order("updated_at", ascending: false)
+                .execute()
+                .value
+            return rows.map { $0.toModel() }
+        } catch {
+            print("[SupabaseService] fetchAllPendingColourUpgrades FAILED: \(error)")
+            return []
+        }
+    }
+
     func fetchBuildColourSelections(buildId: String) async -> [BuildColourSelection] {
         guard isConfigured else { return [] }
         do {

@@ -70,6 +70,7 @@ struct ClientSpecConfirmationView: View {
     private var specContent: some View {
         ScrollView {
             VStack(spacing: 16) {
+                clientActionNeededCard
                 statusBanner
                 tierInfoBanner
                 upgradeDraftBasketCard
@@ -106,6 +107,91 @@ struct ClientSpecConfirmationView: View {
             .padding(.bottom, 40)
         }
         .hapticRefresh { await appViewModel.refreshAllData() }
+    }
+
+    /// Loud, top-of-page summary of what the client must do next. Shown when
+    /// there are quoted upgrades awaiting response, or when an admin has
+    /// reopened/amended their selections.
+    @ViewBuilder
+    private var clientActionNeededCard: some View {
+        let quoted = viewModel.selections.filter { $0.selectionType == .upgradeCosted }.count
+        let rangeAwaitingClient = viewModel.rangeUpgradeRequests.filter { $0.status == .pendingClient }.count
+        let reopenedOrAmended = (viewModel.overallStatus == .reopenedByAdmin || viewModel.overallStatus == .amendedByAdmin)
+        let total = quoted + rangeAwaitingClient + (reopenedOrAmended ? 1 : 0)
+
+        if total > 0 {
+            VStack(alignment: .leading, spacing: 10) {
+                HStack(spacing: 10) {
+                    Image(systemName: "bell.badge.fill")
+                        .font(.neueCorpMedium(20))
+                        .foregroundStyle(AVIATheme.accent)
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text("Action required")
+                            .font(.neueSubheadlineMedium)
+                            .foregroundStyle(AVIATheme.textPrimary)
+                        Text("Your AVIA team is waiting on your response.")
+                            .font(.neueCaption2)
+                            .foregroundStyle(AVIATheme.textSecondary)
+                    }
+                    Spacer()
+                    if quoted + rangeAwaitingClient > 0 {
+                        Text("\(quoted + rangeAwaitingClient)")
+                            .font(.neueCorpMedium(16))
+                            .foregroundStyle(AVIATheme.aviaWhite)
+                            .frame(minWidth: 28, minHeight: 28)
+                            .padding(.horizontal, 6)
+                            .background(AVIATheme.accent)
+                            .clipShape(Capsule())
+                    }
+                }
+
+                VStack(spacing: 6) {
+                    if quoted > 0 {
+                        clientActionRow(icon: "dollarsign.circle.fill",
+                                        text: "\(quoted) upgrade quote\(quoted == 1 ? "" : "s") ready for your response",
+                                        color: AVIATheme.accent)
+                    }
+                    if rangeAwaitingClient > 0 {
+                        clientActionRow(icon: "arrow.up.forward.circle.fill",
+                                        text: "\(rangeAwaitingClient) spec range upgrade awaiting your confirmation",
+                                        color: AVIATheme.timelessBrown)
+                    }
+                    if reopenedOrAmended {
+                        clientActionRow(icon: "arrow.uturn.backward.circle.fill",
+                                        text: viewModel.overallStatus == .amendedByAdmin
+                                            ? "Your admin made amendments \u2014 review and resubmit"
+                                            : "Your specs were reopened \u2014 review and resubmit",
+                                        color: AVIATheme.heritageBlue)
+                    }
+                }
+            }
+            .padding(14)
+            .background(AVIATheme.accent.opacity(0.08))
+            .clipShape(.rect(cornerRadius: 14))
+            .overlay {
+                RoundedRectangle(cornerRadius: 14)
+                    .stroke(AVIATheme.accent.opacity(0.35), lineWidth: 1)
+            }
+        }
+    }
+
+    private func clientActionRow(icon: String, text: String, color: Color) -> some View {
+        HStack(spacing: 10) {
+            Image(systemName: icon)
+                .font(.neueCorp(12))
+                .foregroundStyle(color)
+                .frame(width: 28, height: 28)
+                .background(color.opacity(0.12))
+                .clipShape(Circle())
+            Text(text)
+                .font(.neueCaption)
+                .foregroundStyle(AVIATheme.textPrimary)
+                .multilineTextAlignment(.leading)
+            Spacer(minLength: 8)
+        }
+        .padding(10)
+        .background(AVIATheme.cardBackground)
+        .clipShape(.rect(cornerRadius: 10))
     }
 
     private var statusBanner: some View {

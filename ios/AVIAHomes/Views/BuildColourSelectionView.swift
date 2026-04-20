@@ -106,6 +106,7 @@ struct BuildColourSelectionView: View {
         ZStack(alignment: .bottom) {
             ScrollView {
                 VStack(spacing: 16) {
+                    colourUpgradeQuotesCard
                     colourStatusBanner
                     colourDraftBasketCard
                     progressCard
@@ -193,6 +194,88 @@ struct BuildColourSelectionView: View {
         .padding(14)
         .background(AVIATheme.cardBackground)
         .clipShape(.rect(cornerRadius: 14))
+    }
+
+    /// Loud, top-of-page summary of colour upgrades that the admin has priced
+    /// and the client still needs to respond to. Mirrors the spec confirmation
+    /// view's action-required card so both surfaces feel consistent.
+    @ViewBuilder
+    private var colourUpgradeQuotesCard: some View {
+        let pending = viewModel.colourSelections.filter {
+            $0.isUpgrade && $0.selectionStatus == .upgradePendingClient
+        }
+        if !pending.isEmpty {
+            let pendingNames: [String] = pending.compactMap { sel in
+                approvedItemsNeedingColour.first { $0.id == sel.buildSpecSelectionId }?.snapshotName
+            }
+            VStack(alignment: .leading, spacing: 10) {
+                HStack(spacing: 10) {
+                    Image(systemName: "bell.badge.fill")
+                        .font(.neueCorpMedium(20))
+                        .foregroundStyle(AVIATheme.accent)
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text("Colour upgrade quotes ready")
+                            .font(.neueSubheadlineMedium)
+                            .foregroundStyle(AVIATheme.textPrimary)
+                        Text("Confirm or decline each quote below.")
+                            .font(.neueCaption2)
+                            .foregroundStyle(AVIATheme.textSecondary)
+                    }
+                    Spacer()
+                    Text("\(pending.count)")
+                        .font(.neueCorpMedium(16))
+                        .foregroundStyle(AVIATheme.aviaWhite)
+                        .frame(minWidth: 28, minHeight: 28)
+                        .padding(.horizontal, 6)
+                        .background(AVIATheme.accent)
+                        .clipShape(Capsule())
+                }
+
+                if !pendingNames.isEmpty {
+                    VStack(spacing: 6) {
+                        ForEach(pendingNames.prefix(4), id: \.self) { name in
+                            colourQuoteRow(name)
+                        }
+                        if pendingNames.count > 4 {
+                            Text("+\(pendingNames.count - 4) more")
+                                .font(.neueCaption2)
+                                .foregroundStyle(AVIATheme.textSecondary)
+                                .frame(maxWidth: .infinity, alignment: .leading)
+                                .padding(.horizontal, 10)
+                        }
+                    }
+                }
+            }
+            .padding(14)
+            .background(AVIATheme.accent.opacity(0.08))
+            .clipShape(.rect(cornerRadius: 14))
+            .overlay {
+                RoundedRectangle(cornerRadius: 14)
+                    .stroke(AVIATheme.accent.opacity(0.35), lineWidth: 1)
+            }
+        }
+    }
+
+    private func colourQuoteRow(_ name: String) -> some View {
+        HStack(spacing: 10) {
+            Image(systemName: "paintpalette.fill")
+                .font(.neueCorp(12))
+                .foregroundStyle(AVIATheme.accent)
+                .frame(width: 28, height: 28)
+                .background(AVIATheme.accent.opacity(0.12))
+                .clipShape(Circle())
+            Text(name)
+                .font(.neueCaption)
+                .foregroundStyle(AVIATheme.textPrimary)
+                .multilineTextAlignment(.leading)
+            Spacer(minLength: 8)
+            Text("Review")
+                .font(.neueCaption2Medium)
+                .foregroundStyle(AVIATheme.accent)
+        }
+        .padding(10)
+        .background(AVIATheme.cardBackground)
+        .clipShape(.rect(cornerRadius: 10))
     }
 
     private var colourStatusBanner: some View {

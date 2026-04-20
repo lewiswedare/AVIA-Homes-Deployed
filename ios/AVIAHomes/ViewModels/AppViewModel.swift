@@ -26,6 +26,9 @@ class AppViewModel {
 
     var cachedUsers: [ClientUser] = []
     var pendingSpecReviews: [BuildSpecSelection] = []
+    /// Colour upgrades where the client has accepted the cost and admin still
+    /// needs to give final approval (selection_status = upgrade_accepted_by_client).
+    var pendingColourUpgrades: [BuildColourSelection] = []
     var buildMilestones: [String: [BuildMilestone]] = [:]
     var buildReminders: [BuildReminder] = []
 
@@ -331,8 +334,10 @@ class AppViewModel {
 
     func loadPendingSpecReviews() async {
         guard currentRole.isAnyStaffRole else { return }
-        let reviews = await SupabaseService.shared.fetchAllPendingSpecReviews()
-        pendingSpecReviews = reviews
+        async let reviews = SupabaseService.shared.fetchAllPendingSpecReviews()
+        async let colourUpgrades = SupabaseService.shared.fetchAllPendingColourUpgrades()
+        pendingSpecReviews = await reviews
+        pendingColourUpgrades = await colourUpgrades
     }
 
     func loadScheduleItemsFromSupabase() async {
@@ -711,6 +716,7 @@ class AppViewModel {
         scheduleItems = []
         buildStages = []
         pendingSpecReviews = []
+        pendingColourUpgrades = []
         buildMilestones = [:]
         buildReminders = []
         allHomeDesigns = []

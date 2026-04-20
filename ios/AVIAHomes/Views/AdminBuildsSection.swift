@@ -26,14 +26,11 @@ struct AdminBuildsSection: View {
             }
             .fixedSize(horizontal: false, vertical: true)
 
-            let pendingBuildIds = Set(viewModel.pendingSpecReviews.map(\.buildId))
-            let upgradeBuildIds = Set(viewModel.pendingSpecReviews.filter { $0.selectionType == .upgradeRequested || $0.selectionType == .upgradeAccepted }.map(\.buildId))
-
             if filteredBuilds.isEmpty {
                 AdminEmptyState(icon: "building.2", title: "No builds found", subtitle: "Try adjusting your search")
             } else {
                 ForEach(filteredBuilds) { build in
-                    let badge: BuildSpecReviewBadge = upgradeBuildIds.contains(build.id) ? .upgradeRequested : (pendingBuildIds.contains(build.id) ? .awaitingReview : .none)
+                    let badge = BuildReviewBadgeResolver.resolve(for: build.id, viewModel: viewModel)
                     Button { selectedBuildForEdit = build } label: {
                         AdminBuildRow(build: build, specReviewStatus: badge)
                     }

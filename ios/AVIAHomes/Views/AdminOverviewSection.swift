@@ -22,14 +22,22 @@ struct AdminOverviewSection: View {
     private var alertsBanner: some View {
         let pendingUsers = viewModel.allRegisteredUsers.filter { $0.role == .pending }.count
         let openRequests = viewModel.requests.filter { $0.status == .open }.count
-        let pendingSpecBuildIds = Set(viewModel.pendingSpecReviews.map(\.buildId))
-        let pendingSpecCount = pendingSpecBuildIds.count
-        let upgradeRequestCount = viewModel.pendingSpecReviews.filter { $0.selectionType == .upgradeRequested || $0.selectionType == .upgradeAccepted }.count
+
+        // Break spec review pipeline into concrete action buckets so admins
+        // see what's actually waiting on them.
+        let newSpecSubmissionBuildIds = Set(viewModel.pendingSpecReviews
+            .filter { $0.selectionType != .upgradeRequested && $0.selectionType != .upgradeAccepted }
+            .map(\.buildId))
+        let specSubmissionBuildCount = newSpecSubmissionBuildIds.count
+        let specUpgradesToPrice = viewModel.pendingSpecReviews.filter { $0.selectionType == .upgradeRequested }.count
+        let specUpgradesToApprove = viewModel.pendingSpecReviews.filter { $0.selectionType == .upgradeAccepted }.count
+        let colourUpgradesToApprove = viewModel.pendingColourUpgrades.count
+
         let recentAccepted = viewModel.packageAssignments.flatMap(\.clientResponses).filter { $0.status == .accepted }.count
         let recentDeclined = viewModel.packageAssignments.flatMap(\.clientResponses).filter { $0.status == .declined }.count
         let pendingPkgResponses = viewModel.packageAssignments.flatMap(\.clientResponses).filter { $0.status == .pending }.count
         let pendingEOIs = viewModel.packageAssignments.filter { $0.eoiStatus == "submitted" || $0.eoiStatus == "resubmitted" }.count
-        let totalAlerts = pendingUsers + openRequests + pendingSpecCount + pendingPkgResponses + pendingEOIs
+        let totalAlerts = pendingUsers + openRequests + specSubmissionBuildCount + specUpgradesToPrice + specUpgradesToApprove + colourUpgradesToApprove + pendingPkgResponses + pendingEOIs
 
         if totalAlerts > 0 {
             BentoCard(cornerRadius: 16) {
@@ -76,8 +84,23 @@ struct AdminOverviewSection: View {
                                 PackageManagementView()
                             }
                         }
-                        if pendingSpecCount > 0 {
-                            alertNavRow(icon: "checklist.checked", text: "\(pendingSpecCount) build\(pendingSpecCount == 1 ? "" : "s") awaiting spec review" + (upgradeRequestCount > 0 ? " (\(upgradeRequestCount) upgrade req\(upgradeRequestCount == 1 ? "" : "s"))" : ""), color: AVIATheme.warning) {
+                        if specSubmissionBuildCount > 0 {
+                            alertNavRow(icon: "checklist.checked", text: "\(specSubmissionBuildCount) build\(specSubmissionBuildCount == 1 ? "" : "s") awaiting spec review", color: AVIATheme.warning) {
+                                AdminBuildManagementView()
+                            }
+                        }
+                        if specUpgradesToPrice > 0 {
+                            alertNavRow(icon: "dollarsign.circle.fill", text: "\(specUpgradesToPrice) upgrade request\(specUpgradesToPrice == 1 ? "" : "s") to price", color: AVIATheme.accent) {
+                                AdminBuildManagementView()
+                            }
+                        }
+                        if specUpgradesToApprove > 0 {
+                            alertNavRow(icon: "hand.thumbsup.fill", text: "\(specUpgradesToApprove) spec upgrade\(specUpgradesToApprove == 1 ? "" : "s") to approve", color: AVIATheme.heritageBlue) {
+                                AdminBuildManagementView()
+                            }
+                        }
+                        if colourUpgradesToApprove > 0 {
+                            alertNavRow(icon: "paintpalette.fill", text: "\(colourUpgradesToApprove) colour upgrade\(colourUpgradesToApprove == 1 ? "" : "s") to approve", color: AVIATheme.heritageBlue) {
                                 AdminBuildManagementView()
                             }
                         }
@@ -200,10 +223,8 @@ struct AdminOverviewSection: View {
                         .foregroundStyle(AVIATheme.timelessBrown)
                 }
             }
-            let pendingBuildIds = Set(viewModel.pendingSpecReviews.map(\.buildId))
-            let upgradeBuildIds = Set(viewModel.pendingSpecReviews.filter { $0.selectionType == .upgradeRequested || $0.selectionType == .upgradeAccepted }.map(\.buildId))
             ForEach(Array(viewModel.allClientBuilds.prefix(3))) { build in
-                let badge: BuildSpecReviewBadge = upgradeBuildIds.contains(build.id) ? .upgradeRequested : (pendingBuildIds.contains(build.id) ? .awaitingReview : .none)
+                let badge = BuildReviewBadgeResolver.resolve(for: build.id, viewModel: viewModel)
                 Button { selectedBuildForEdit = build } label: {
                     AdminBuildRow(build: build, specReviewStatus: badge)
                 }
@@ -303,10 +324,20 @@ struct AdminOverviewSection: View {
                     Rectangle().fill(AVIATheme.surfaceBorder).frame(height: 1).padding(.leading, 52)
                     AdminPendingRow(icon: "doc.text.magnifyingglass", label: "EOIs Awaiting Review", count: viewModel.packageAssignments.filter { $0.eoiStatus == "submitted" || $0.eoiStatus == "resubmitted" }.count, color: AVIATheme.warning)
                     Rectangle().fill(AVIATheme.surfaceBorder).frame(height: 1).padding(.leading, 52)
-                    AdminPendingRow(icon: "checklist.checked", label: "Spec Reviews Pending", count: Set(viewModel.pendingSpecReviews.map(\.buildId)).count, color: AVIATheme.warning)
-                    if !viewModel.pendingSpecReviews.filter({ $0.selectionType == .upgradeRequested || $0.selectionType == .upgradeAccepted }).isEmpty {
+                    AdminPendingRow(icon: "checklist.checked", label: "Spec Reviews Pending", count: Set(viewModel.pendingSpecReviews.filter { $0.selectionType != .upgradeRequested && $0.selectionType != .upgradeAccepted }.map(\.buildId)).count, color: AVIATheme.warning)
+                    let toPrice = viewModel.pendingSpecReviews.filter { $0.selectionType == .upgradeRequested }.count
+                    if toPrice > 0 {
                         Rectangle().fill(AVIATheme.surfaceBorder).frame(height: 1).padding(.leading, 52)
-                        AdminPendingRow(icon: "arrow.up.circle.fill", label: "Upgrade Requests", count: viewModel.pendingSpecReviews.filter { $0.selectionType == .upgradeRequested || $0.selectionType == .upgradeAccepted }.count, color: AVIATheme.warning)
+                        AdminPendingRow(icon: "dollarsign.circle.fill", label: "Upgrades to Price", count: toPrice, color: AVIATheme.accent)
+                    }
+                    let toApprove = viewModel.pendingSpecReviews.filter { $0.selectionType == .upgradeAccepted }.count
+                    if toApprove > 0 {
+                        Rectangle().fill(AVIATheme.surfaceBorder).frame(height: 1).padding(.leading, 52)
+                        AdminPendingRow(icon: "hand.thumbsup.fill", label: "Spec Upgrades to Approve", count: toApprove, color: AVIATheme.heritageBlue)
+                    }
+                    if viewModel.pendingColourUpgrades.count > 0 {
+                        Rectangle().fill(AVIATheme.surfaceBorder).frame(height: 1).padding(.leading, 52)
+                        AdminPendingRow(icon: "paintpalette.fill", label: "Colour Upgrades to Approve", count: viewModel.pendingColourUpgrades.count, color: AVIATheme.heritageBlue)
                     }
                 }
             }
