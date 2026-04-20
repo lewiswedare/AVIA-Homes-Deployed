@@ -19,7 +19,8 @@ class ImageUploadService {
         isUploading = true
         defer { isUploading = false }
 
-        let path = "\(folder)/\(fileName)"
+        let uniqueFileName = uniquify(fileName: fileName)
+        let path = "\(folder)/\(uniqueFileName)"
 
         do {
             try await client.storage
@@ -30,7 +31,7 @@ class ImageUploadService {
                     options: FileOptions(
                         cacheControl: "3600",
                         contentType: contentType,
-                        upsert: true
+                        upsert: false
                     )
                 )
 
@@ -43,6 +44,12 @@ class ImageUploadService {
             print("[ImageUploadService] Upload failed: \(error)")
             return nil
         }
+    }
+
+    private func uniquify(fileName: String) -> String {
+        let uuid = UUID().uuidString
+        let ext = (fileName as NSString).pathExtension
+        return ext.isEmpty ? uuid : "\(uuid).\(ext)"
     }
 
     func loadTransferable(from item: PhotosPickerItem) async -> Data? {
