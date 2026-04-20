@@ -103,45 +103,85 @@ struct BuildColourSelectionView: View {
     }
 
     private var colourContent: some View {
-        ZStack(alignment: .bottom) {
-            ScrollView {
-                VStack(spacing: 16) {
-                    colourUpgradeQuotesCard
-                    colourStatusBanner
-                    progressCard
-                    tierInfoBanner
+        ScrollView {
+            VStack(spacing: 16) {
+                colourUpgradeQuotesCard
+                colourStatusBanner
+                progressCard
+                tierInfoBanner
 
-                    ForEach(groupedItems, id: \.category) { group in
-                        VStack(alignment: .leading, spacing: 8) {
-                            Text(group.category.uppercased())
-                                .font(.neueCaption2Medium)
-                                .kerning(1.0)
-                                .foregroundStyle(AVIATheme.timelessBrown)
-                                .padding(.leading, 12)
-                                .overlay(alignment: .leading) {
-                                    Rectangle()
-                                        .fill(AVIATheme.timelessBrown)
-                                        .frame(width: 3)
-                                }
-
-                            ForEach(group.items) { item in
-                                colourItemCard(item)
+                ForEach(groupedItems, id: \.category) { group in
+                    VStack(alignment: .leading, spacing: 8) {
+                        Text(group.category.uppercased())
+                            .font(.neueCaption2Medium)
+                            .kerning(1.0)
+                            .foregroundStyle(AVIATheme.timelessBrown)
+                            .padding(.leading, 12)
+                            .overlay(alignment: .leading) {
+                                Rectangle()
+                                    .fill(AVIATheme.timelessBrown)
+                                    .frame(width: 3)
                             }
+
+                        ForEach(group.items) { item in
+                            colourItemCard(item)
                         }
                     }
-
-                    if canSubmitColourDrafts {
-                        submitColourButton
-                    }
                 }
-                .padding(.horizontal, 16)
-                .padding(.bottom, colourUpgradeTotal > 0 ? 80 : 40)
-            }
-            .hapticRefresh { await appViewModel.refreshAllData() }
 
-            if colourUpgradeTotal > 0 {
-                upgradeTotalBar
+                if colourUpgradeTotal > 0 {
+                    colourUpgradeSummarySection
+                }
+
+                if canSubmitColourDrafts {
+                    submitColourButton
+                }
             }
+            .padding(.horizontal, 16)
+            .padding(.bottom, 40)
+        }
+        .hapticRefresh { await appViewModel.refreshAllData() }
+    }
+
+    private var colourUpgradeSummarySection: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            HStack(spacing: 8) {
+                Text("Colour Upgrades")
+                    .font(.neueCorpMedium(18))
+                    .foregroundStyle(AVIATheme.textPrimary)
+                    .padding(.leading, 12)
+                    .overlay(alignment: .leading) {
+                        Rectangle()
+                            .fill(AVIATheme.timelessBrown)
+                            .frame(width: 3)
+                    }
+                Spacer()
+                Text(AVIATheme.formatCost(colourUpgradeTotal))
+                    .font(.neueCorpMedium(14))
+                    .foregroundStyle(AVIATheme.timelessBrown)
+                    .padding(.horizontal, 10)
+                    .padding(.vertical, 5)
+                    .background(AVIATheme.timelessBrown.opacity(0.08))
+                    .clipShape(Capsule())
+            }
+
+            HStack(spacing: 10) {
+                Image(systemName: "tag.fill")
+                    .font(.neueCaptionMedium)
+                    .foregroundStyle(AVIATheme.timelessBrown)
+                VStack(alignment: .leading, spacing: 2) {
+                    Text("Total colour upgrade cost")
+                        .font(.neueCaptionMedium)
+                        .foregroundStyle(AVIATheme.textPrimary)
+                    Text("Included in your selections below")
+                        .font(.neueCaption2)
+                        .foregroundStyle(AVIATheme.textSecondary)
+                }
+                Spacer()
+            }
+            .padding(14)
+            .background(AVIATheme.cardBackground)
+            .clipShape(.rect(cornerRadius: 14))
         }
     }
 
@@ -151,28 +191,30 @@ struct BuildColourSelectionView: View {
 
     private var submitColourButton: some View {
         let count = viewModel.draftColourSelections.count
-        return VStack(spacing: 8) {
+        return VStack(spacing: 10) {
             Button {
                 AVIAHaptic.success.trigger()
                 Task { await viewModel.submitColourSelectionsForApproval() }
             } label: {
                 HStack(spacing: 8) {
-                    Image(systemName: "paperplane.fill")
-                    Text("Submit \(count) Colour Selection\(count == 1 ? "" : "s")")
+                    Image(systemName: "checkmark.seal.fill")
+                        .font(.neueSubheadlineMedium)
+                    Text("Confirm My Colour Selections")
+                        .font(.neueSubheadlineMedium)
                 }
-                .font(.neueSubheadlineMedium)
+                .foregroundStyle(AVIATheme.aviaWhite)
                 .frame(maxWidth: .infinity)
                 .frame(height: 52)
-                .foregroundStyle(AVIATheme.aviaWhite)
                 .background(AVIATheme.primaryGradient)
                 .clipShape(.rect(cornerRadius: 14))
             }
             .buttonStyle(.pressable(.prominent))
             .disabled(viewModel.isSaving)
 
-            Text("After submit, only the AVIA team can reopen selections for edits.")
+            Text("Submitting \(count) selection\(count == 1 ? "" : "s"). After submit, only the AVIA team can reopen selections for edits.")
                 .font(.neueCaption2)
                 .foregroundStyle(AVIATheme.textTertiary)
+                .multilineTextAlignment(.center)
                 .frame(maxWidth: .infinity, alignment: .center)
         }
     }
