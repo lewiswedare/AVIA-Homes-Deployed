@@ -14,12 +14,7 @@ struct ClientDiscoverDashboardView: View {
 
                     VStack(spacing: 32) {
                         headerRow
-                        sharedPackagesBanner
-                        latestNewsSection
-                        ourDesignsSection
-                        specRangesSlider
-                        facadesSlider
-                        socialFollowBlock
+                        DiscoverFeedView()
                     }
                     .padding(.horizontal, 16)
                     .padding(.bottom, 40)
@@ -36,26 +31,11 @@ struct ClientDiscoverDashboardView: View {
             .navigationDestination(for: LandEstate.self) { estate in
                 EstateDetailView(estate: estate)
             }
-            .fullScreenCover(isPresented: $showDesignDirectory) {
-                HomeDesignDirectoryView()
-            }
-            .navigationDestination(isPresented: $showAllNews) {
-                AllNewsView()
-            }
-            .navigationDestination(for: BlogPost.self) { post in
-                NewsArticleDetailView(post: post)
-            }
             .navigationDestination(for: SpecTier.self) { tier in
                 SpecRangeDetailView(tier: tier)
             }
-            .navigationDestination(for: AllFacadesRoute.self) { _ in
-                AllFacadesView()
-            }
             .navigationDestination(for: Facade.self) { facade in
                 FacadeDetailView(facade: facade)
-            }
-            .navigationDestination(isPresented: $showSpecComparison) {
-                SpecRangeComparisonOverviewView()
             }
         }
     }

@@ -971,13 +971,7 @@ struct DashboardView: View {
     }
 
     private var discoverContent: some View {
-        VStack(spacing: 24) {
-            latestNewsSection
-            ourDesignsSection
-            specRangesSlider
-            facadesSlider
-            companyHighlightsSection
-        }
+        DiscoverFeedView()
     }
 
     private var aboutUsSection: some View {
