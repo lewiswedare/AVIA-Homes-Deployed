@@ -313,7 +313,7 @@ struct AdminPackageEditorView: View {
                                         Color(AVIATheme.surfaceElevated)
                                             .frame(width: 48, height: 48)
                                             .overlay {
-                                                AsyncImage(url: URL(string: design.imageURL)) { phase in
+                                                AsyncImage(url: URL(string: design.imageURL)?.supabaseImageTransform(width: 144, height: 144)) { phase in
                                                     if let image = phase.image {
                                                         image.resizable().aspectRatio(contentMode: .fill)
                                                     }
@@ -475,7 +475,7 @@ struct AdminPackageEditorView: View {
                                     Color(AVIATheme.surfaceElevated)
                                         .frame(width: 48, height: 48)
                                         .overlay {
-                                            AsyncImage(url: URL(string: facade.heroImageURL)) { phase in
+                                            AsyncImage(url: URL(string: facade.heroImageURL)?.supabaseImageTransform(width: 144, height: 144)) { phase in
                                                 if let image = phase.image {
                                                     image.resizable().aspectRatio(contentMode: .fill)
                                                 }
@@ -605,7 +605,7 @@ struct AdminPackageEditorView: View {
                 Color(AVIATheme.surfaceElevated)
                     .frame(width: 64, height: 64)
                     .overlay {
-                        AsyncImage(url: URL(string: design.imageURL)) { phase in
+                        AsyncImage(url: URL(string: design.imageURL)?.supabaseImageTransform(width: 192, height: 192)) { phase in
                             if let image = phase.image {
                                 image.resizable().aspectRatio(contentMode: .fill)
                             }

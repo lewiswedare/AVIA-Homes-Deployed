@@ -229,7 +229,7 @@ struct AdminBuildSelectionsTab: View {
                     Color(.secondarySystemBackground)
                         .frame(width: 32, height: 32)
                         .overlay {
-                            AsyncImage(url: imgURL) { phase in
+                            AsyncImage(url: imgURL.supabaseImageTransform(width: 96, height: 96)) { phase in
                                 if let image = phase.image {
                                     image.resizable().aspectRatio(contentMode: .fill)
                                 } else {
@@ -403,7 +403,7 @@ struct AdminBuildSelectionsTab: View {
                         Color(.secondarySystemBackground)
                             .frame(width: 28, height: 28)
                             .overlay {
-                                AsyncImage(url: URL(string: imgURL)) { phase in
+                                AsyncImage(url: URL(string: imgURL)?.supabaseImageTransform(width: 84, height: 84)) { phase in
                                     if let image = phase.image {
                                         image.resizable().aspectRatio(contentMode: .fill)
                                     }

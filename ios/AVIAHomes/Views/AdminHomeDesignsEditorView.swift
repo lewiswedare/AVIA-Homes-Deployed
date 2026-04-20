@@ -132,7 +132,7 @@ struct AdminHomeDesignsEditorView: View {
                     Color(.secondarySystemBackground)
                         .frame(width: 72, height: 72)
                         .overlay {
-                            AsyncImage(url: URL(string: design.imageURL)) { phase in
+                            AsyncImage(url: URL(string: design.imageURL)?.supabaseImageTransform(width: 216, height: 216)) { phase in
                                 if let image = phase.image {
                                     image.resizable().aspectRatio(contentMode: .fill)
                                 }
