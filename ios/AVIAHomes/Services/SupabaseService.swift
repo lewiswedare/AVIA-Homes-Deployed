@@ -55,16 +55,22 @@ class SupabaseService {
             return nil
         }
         let normalizedId = userId.lowercased()
+        let c = client
         do {
-            let row: ProfileRow = try await client
-                .from("profiles")
-                .select(Self.profilesColumns)
-                .eq("id", value: normalizedId)
-                .single()
-                .execute()
-                .value
-            print("[SupabaseService] fetchProfile SUCCESS for id=\(normalizedId), profileCompleted=\(row.profile_completed), role=\(row.role)")
-            return row.toClientUser()
+            return try await SupabaseCache.shared.cachedQuery(
+                key: "profiles:byId:\(normalizedId)",
+                ttlOverride: 60
+            ) {
+                let row: ProfileRow = try await c
+                    .from("profiles")
+                    .select(Self.profilesColumns)
+                    .eq("id", value: normalizedId)
+                    .single()
+                    .execute()
+                    .value
+                print("[SupabaseService] fetchProfile SUCCESS for id=\(normalizedId), profileCompleted=\(row.profile_completed), role=\(row.role)")
+                return row.toClientUser()
+            }
         } catch {
             print("[SupabaseService] fetchProfile FAILED for id=\(normalizedId) — error: \(error)")
             return nil
@@ -90,6 +96,7 @@ class SupabaseService {
                 .from("profiles")
                 .upsert(row)
                 .execute()
+            await SupabaseCache.shared.invalidate(prefix: "profiles:")
             print("[SupabaseService] upsertProfile SUCCESS for id=\(normalizedUser.id)")
             return true
         } catch {
@@ -121,6 +128,7 @@ class SupabaseService {
                 .update(payload)
                 .eq("id", value: normalizedId)
                 .execute()
+            await SupabaseCache.shared.invalidate(prefix: "profiles:")
             print("[SupabaseService] updateProfileFields SUCCESS for id=\(normalizedId)")
             return true
         } catch {
@@ -131,15 +139,21 @@ class SupabaseService {
 
     func fetchAllProfiles() async -> [ClientUser] {
         guard isConfigured else { return [] }
+        let c = client
         do {
-            let rows: [ProfileRow] = try await client
-                .from("profiles")
-                .select(Self.profilesColumns)
-                .order("created_at", ascending: false)
-                .limit(100)
-                .execute()
-                .value
-            return rows.map { $0.toClientUser() }
+            return try await SupabaseCache.shared.cachedQuery(
+                key: "profiles:all",
+                ttlOverride: 60
+            ) {
+                let rows: [ProfileRow] = try await c
+                    .from("profiles")
+                    .select(Self.profilesColumns)
+                    .order("created_at", ascending: false)
+                    .limit(100)
+                    .execute()
+                    .value
+                return rows.map { $0.toClientUser() }
+            }
         } catch {
             return []
         }
@@ -153,6 +167,7 @@ class SupabaseService {
                 .update(fields)
                 .eq("id", value: userId)
                 .execute()
+            await SupabaseCache.shared.invalidate(prefix: "profiles:")
         } catch {
             print("[SupabaseService] updateProfileField FAILED for user: \(userId) — \(error)")
         }
@@ -162,26 +177,33 @@ class SupabaseService {
 
     func fetchBuilds() async -> [ClientBuild] {
         guard isConfigured else { return [] }
+        let c = client
+        let service = self
         do {
-            let buildRows: [BuildRow] = try await client
-                .from("builds")
-                .select("id, client_id, additional_client_ids, home_design, lot_number, estate, contract_date, assigned_staff_id, sales_partner_id, preconstruction_staff_id, building_support_staff_id, handover_triggered_at, status, created_at, updated_at, is_custom, selected_facade_id, custom_bedrooms, custom_bathrooms, custom_garages, custom_square_meters, custom_storeys, eoi_id, spec_tier, estimated_start_date, estimated_completion_date, actual_start_date, actual_completion_date")
-                .order("created_at", ascending: false)
-                .execute()
-                .value
-            var builds: [ClientBuild] = []
-            for row in buildRows {
-                let stages = await fetchBuildStages(buildId: row.id)
-                let clientUser = await fetchProfile(userId: row.client_id) ?? .empty
-                var additionalClients: [ClientUser] = []
-                for additionalId in (row.additional_client_ids ?? []) where !additionalId.isEmpty {
-                    if let user = await fetchProfile(userId: additionalId) {
-                        additionalClients.append(user)
+            return try await SupabaseCache.shared.cachedQuery(
+                key: "builds:all",
+                ttlOverride: 30
+            ) {
+                let buildRows: [BuildRow] = try await c
+                    .from("builds")
+                    .select("id, client_id, additional_client_ids, home_design, lot_number, estate, contract_date, assigned_staff_id, sales_partner_id, preconstruction_staff_id, building_support_staff_id, handover_triggered_at, status, created_at, updated_at, is_custom, selected_facade_id, custom_bedrooms, custom_bathrooms, custom_garages, custom_square_meters, custom_storeys, eoi_id, spec_tier, estimated_start_date, estimated_completion_date, actual_start_date, actual_completion_date")
+                    .order("created_at", ascending: false)
+                    .execute()
+                    .value
+                var builds: [ClientBuild] = []
+                for row in buildRows {
+                    let stages = await service.fetchBuildStages(buildId: row.id)
+                    let clientUser = await service.fetchProfile(userId: row.client_id) ?? .empty
+                    var additionalClients: [ClientUser] = []
+                    for additionalId in (row.additional_client_ids ?? []) where !additionalId.isEmpty {
+                        if let user = await service.fetchProfile(userId: additionalId) {
+                            additionalClients.append(user)
+                        }
                     }
+                    builds.append(row.toClientBuild(client: clientUser, stages: stages, additionalClients: additionalClients))
                 }
-                builds.append(row.toClientBuild(client: clientUser, stages: stages, additionalClients: additionalClients))
+                return builds
             }
-            return builds
         } catch {
             return []
         }
@@ -189,16 +211,22 @@ class SupabaseService {
 
     func fetchBuildStages(buildId: String) async -> [BuildStage] {
         guard isConfigured else { return [] }
+        let c = client
         do {
-            let rows: [BuildStageRow] = try await client
-                .from("build_stages")
-                .select("id, build_id, name, description, status, progress, start_date, completion_date, notes, photo_count, sort_order, estimated_start_date, estimated_end_date, actual_start_date, actual_end_date")
-                .eq("build_id", value: buildId)
-                .order("sort_order", ascending: true)
-                .limit(100)
-                .execute()
-                .value
-            return rows.map { $0.toBuildStage() }
+            return try await SupabaseCache.shared.cachedQuery(
+                key: "build_stages:byBuild:\(buildId)",
+                ttlOverride: 30
+            ) {
+                let rows: [BuildStageRow] = try await c
+                    .from("build_stages")
+                    .select("id, build_id, name, description, status, progress, start_date, completion_date, notes, photo_count, sort_order, estimated_start_date, estimated_end_date, actual_start_date, actual_end_date")
+                    .eq("build_id", value: buildId)
+                    .order("sort_order", ascending: true)
+                    .limit(100)
+                    .execute()
+                    .value
+                return rows.map { $0.toBuildStage() }
+            }
         } catch {
             return []
         }
@@ -232,6 +260,8 @@ class SupabaseService {
                 print("[SupabaseService] upsertBuildStage FAILED for stage=\(stage.id) — error: \(error)")
             }
         }
+        await SupabaseCache.shared.invalidate(prefix: "builds:")
+        await SupabaseCache.shared.invalidate(prefix: "build_stages:")
         return true
     }
 
@@ -264,6 +294,12 @@ class SupabaseService {
                 .delete()
                 .eq("id", value: buildId)
                 .execute()
+            await SupabaseCache.shared.invalidate(prefix: "builds:")
+            await SupabaseCache.shared.invalidate(prefix: "build_stages:")
+            await SupabaseCache.shared.invalidate(prefix: "milestones:")
+            await SupabaseCache.shared.invalidate(prefix: "reminders:")
+            await SupabaseCache.shared.invalidate(prefix: "build_spec_selections:")
+            await SupabaseCache.shared.invalidate(prefix: "build_colour_selections:")
             print("[SupabaseService] deleteBuild SUCCESS for id=\(buildId)")
             return true
         } catch {
@@ -284,6 +320,7 @@ class SupabaseService {
                 .update(patch)
                 .eq("id", value: buildId)
                 .execute()
+            await SupabaseCache.shared.invalidate(prefix: "builds:")
             print("[SupabaseService] removeClientFromBuild SUCCESS for buildId=\(buildId), removed=\(clientId)")
             return true
         } catch {
@@ -311,6 +348,12 @@ class SupabaseService {
         _ = try? await client.from("notifications").delete().eq("reference_id", value: buildId).execute()
         do {
             try await client.from("builds").delete().eq("id", value: buildId).execute()
+            await SupabaseCache.shared.invalidate(prefix: "builds:")
+            await SupabaseCache.shared.invalidate(prefix: "build_stages:")
+            await SupabaseCache.shared.invalidate(prefix: "milestones:")
+            await SupabaseCache.shared.invalidate(prefix: "reminders:")
+            await SupabaseCache.shared.invalidate(prefix: "build_spec_selections:")
+            await SupabaseCache.shared.invalidate(prefix: "build_colour_selections:")
             print("[SupabaseService] deleteBuildForce SUCCESS for id=\(buildId)")
             return true
         } catch {
@@ -326,6 +369,8 @@ class SupabaseService {
             .from("build_stages")
             .upsert(row)
             .execute()
+        await SupabaseCache.shared.invalidate(prefix: "build_stages:")
+        await SupabaseCache.shared.invalidate(prefix: "builds:")
     }
 
     func deleteBuildStage(stageId: String) async {
@@ -335,22 +380,30 @@ class SupabaseService {
             .delete()
             .eq("id", value: stageId)
             .execute()
+        await SupabaseCache.shared.invalidate(prefix: "build_stages:")
+        await SupabaseCache.shared.invalidate(prefix: "builds:")
     }
 
     // MARK: - Build Milestones
 
     func fetchMilestonesForBuild(buildId: String) async -> [BuildMilestone] {
         guard isConfigured else { return [] }
+        let c = client
         do {
-            let rows: [BuildMilestoneRow] = try await client
-                .from("build_milestones")
-                .select("id, build_stage_id, build_id, title, description, due_date, completed_at, status, requires_client_action, client_action_description, created_at")
-                .eq("build_id", value: buildId)
-                .order("due_date", ascending: true)
-                .limit(100)
-                .execute()
-                .value
-            return rows.map { $0.toBuildMilestone() }
+            return try await SupabaseCache.shared.cachedQuery(
+                key: "milestones:byBuild:\(buildId)",
+                ttlOverride: 30
+            ) {
+                let rows: [BuildMilestoneRow] = try await c
+                    .from("build_milestones")
+                    .select("id, build_stage_id, build_id, title, description, due_date, completed_at, status, requires_client_action, client_action_description, created_at")
+                    .eq("build_id", value: buildId)
+                    .order("due_date", ascending: true)
+                    .limit(100)
+                    .execute()
+                    .value
+                return rows.map { $0.toBuildMilestone() }
+            }
         } catch {
             print("[SupabaseService] fetchMilestonesForBuild FAILED: \(error)")
             return []
@@ -359,16 +412,22 @@ class SupabaseService {
 
     func fetchMilestonesForStage(stageId: String) async -> [BuildMilestone] {
         guard isConfigured else { return [] }
+        let c = client
         do {
-            let rows: [BuildMilestoneRow] = try await client
-                .from("build_milestones")
-                .select("id, build_stage_id, build_id, title, description, due_date, completed_at, status, requires_client_action, client_action_description, created_at")
-                .eq("build_stage_id", value: stageId)
-                .order("due_date", ascending: true)
-                .limit(100)
-                .execute()
-                .value
-            return rows.map { $0.toBuildMilestone() }
+            return try await SupabaseCache.shared.cachedQuery(
+                key: "milestones:byStage:\(stageId)",
+                ttlOverride: 30
+            ) {
+                let rows: [BuildMilestoneRow] = try await c
+                    .from("build_milestones")
+                    .select("id, build_stage_id, build_id, title, description, due_date, completed_at, status, requires_client_action, client_action_description, created_at")
+                    .eq("build_stage_id", value: stageId)
+                    .order("due_date", ascending: true)
+                    .limit(100)
+                    .execute()
+                    .value
+                return rows.map { $0.toBuildMilestone() }
+            }
         } catch {
             print("[SupabaseService] fetchMilestonesForStage FAILED: \(error)")
             return []
@@ -384,6 +443,7 @@ class SupabaseService {
                 .from("build_milestones")
                 .upsert(row)
                 .execute()
+            await SupabaseCache.shared.invalidate(prefix: "milestones:")
             return true
         } catch {
             print("[SupabaseService] upsertMilestone FAILED: \(error)")
@@ -400,6 +460,7 @@ class SupabaseService {
                 .delete()
                 .eq("id", value: id)
                 .execute()
+            await SupabaseCache.shared.invalidate(prefix: "milestones:")
             return true
         } catch {
             print("[SupabaseService] deleteMilestone FAILED: \(error)")
@@ -416,6 +477,7 @@ class SupabaseService {
                 .update(["status": "completed", "completed_at": ISO8601DateFormatter().string(from: .now)])
                 .eq("id", value: id)
                 .execute()
+            await SupabaseCache.shared.invalidate(prefix: "milestones:")
             return true
         } catch {
             print("[SupabaseService] completeMilestone FAILED: \(error)")
@@ -427,16 +489,22 @@ class SupabaseService {
 
     func fetchRemindersForClient(clientId: String) async -> [BuildReminder] {
         guard isConfigured else { return [] }
+        let c = client
         do {
-            let rows: [BuildReminderRow] = try await client
-                .from("build_reminders")
-                .select("id, build_id, milestone_id, client_id, title, message, reminder_date, is_read, created_at")
-                .eq("client_id", value: clientId)
-                .order("reminder_date", ascending: true)
-                .limit(100)
-                .execute()
-                .value
-            return rows.map { $0.toBuildReminder() }
+            return try await SupabaseCache.shared.cachedQuery(
+                key: "reminders:byClient:\(clientId)",
+                ttlOverride: 30
+            ) {
+                let rows: [BuildReminderRow] = try await c
+                    .from("build_reminders")
+                    .select("id, build_id, milestone_id, client_id, title, message, reminder_date, is_read, created_at")
+                    .eq("client_id", value: clientId)
+                    .order("reminder_date", ascending: true)
+                    .limit(100)
+                    .execute()
+                    .value
+                return rows.map { $0.toBuildReminder() }
+            }
         } catch {
             print("[SupabaseService] fetchRemindersForClient FAILED: \(error)")
             return []
@@ -445,16 +513,22 @@ class SupabaseService {
 
     func fetchRemindersForBuild(buildId: String) async -> [BuildReminder] {
         guard isConfigured else { return [] }
+        let c = client
         do {
-            let rows: [BuildReminderRow] = try await client
-                .from("build_reminders")
-                .select("id, build_id, milestone_id, client_id, title, message, reminder_date, is_read, created_at")
-                .eq("build_id", value: buildId)
-                .order("reminder_date", ascending: true)
-                .limit(100)
-                .execute()
-                .value
-            return rows.map { $0.toBuildReminder() }
+            return try await SupabaseCache.shared.cachedQuery(
+                key: "reminders:byBuild:\(buildId)",
+                ttlOverride: 30
+            ) {
+                let rows: [BuildReminderRow] = try await c
+                    .from("build_reminders")
+                    .select("id, build_id, milestone_id, client_id, title, message, reminder_date, is_read, created_at")
+                    .eq("build_id", value: buildId)
+                    .order("reminder_date", ascending: true)
+                    .limit(100)
+                    .execute()
+                    .value
+                return rows.map { $0.toBuildReminder() }
+            }
         } catch {
             print("[SupabaseService] fetchRemindersForBuild FAILED: \(error)")
             return []
@@ -470,6 +544,7 @@ class SupabaseService {
                 .from("build_reminders")
                 .upsert(row)
                 .execute()
+            await SupabaseCache.shared.invalidate(prefix: "reminders:")
             return true
         } catch {
             print("[SupabaseService] upsertReminder FAILED: \(error)")
@@ -486,6 +561,7 @@ class SupabaseService {
                 .delete()
                 .eq("id", value: id)
                 .execute()
+            await SupabaseCache.shared.invalidate(prefix: "reminders:")
             return true
         } catch {
             print("[SupabaseService] deleteReminder FAILED: \(error)")
@@ -502,6 +578,7 @@ class SupabaseService {
                 .update(["is_read": "true"])
                 .eq("id", value: id)
                 .execute()
+            await SupabaseCache.shared.invalidate(prefix: "reminders:")
             return true
         } catch {
             print("[SupabaseService] markReminderRead FAILED: \(error)")
@@ -513,14 +590,20 @@ class SupabaseService {
 
     func fetchPackageAssignments() async -> [PackageAssignment] {
         guard isConfigured else { return [] }
+        let c = client
         do {
-            let rows: [PackageAssignmentRow] = try await client
-                .from("package_assignments")
-                .select("id, package_id, assigned_partner_ids, shared_with_client_ids, client_responses, is_exclusive, assigned_by, deposit_status, deposit_amount, deposit_due_date, admin_confirmed_by, admin_confirmed_at, eoi_status, contract_status, converted_to_build_id, converted_at, created_at, updated_at")
-                .limit(100)
-                .execute()
-                .value
-            return rows.map { $0.toPackageAssignment() }
+            return try await SupabaseCache.shared.cachedQuery(
+                key: "package_assignments:all",
+                ttlOverride: 30
+            ) {
+                let rows: [PackageAssignmentRow] = try await c
+                    .from("package_assignments")
+                    .select("id, package_id, assigned_partner_ids, shared_with_client_ids, client_responses, is_exclusive, assigned_by, deposit_status, deposit_amount, deposit_due_date, admin_confirmed_by, admin_confirmed_at, eoi_status, contract_status, converted_to_build_id, converted_at, created_at, updated_at")
+                    .limit(100)
+                    .execute()
+                    .value
+                return rows.map { $0.toPackageAssignment() }
+            }
         } catch {
             return []
         }
@@ -568,6 +651,7 @@ class SupabaseService {
                     .execute()
                 print("[SupabaseService] upsertPackageAssignment UPDATE SUCCESS for pkg=\(assignment.packageId)")
             }
+            await SupabaseCache.shared.invalidate("package_assignments:all")
             return true
         } catch {
             print("[SupabaseService] upsertPackageAssignment FAILED for pkg=\(assignment.packageId) — error: \(error)")
@@ -627,15 +711,21 @@ class SupabaseService {
 
     func fetchHomeDesigns() async -> [HomeDesign] {
         guard isConfigured else { return [] }
+        let c = client
         do {
-            let rows: [HomeDesignRow] = try await client
-                .from("home_designs")
-                .select("id, name, bedrooms, bathrooms, garages, square_meters, image_url, price_from, storeys, lot_width, slug, description, house_width, house_length, living_areas, floorplan_image_url, room_highlights, inclusions")
-                .order("name", ascending: true)
-                .limit(100)
-                .execute()
-                .value
-            return rows.map { $0.toHomeDesign() }
+            return try await SupabaseCache.shared.cachedQuery(
+                key: "home_designs:all",
+                ttlOverride: 300
+            ) {
+                let rows: [HomeDesignRow] = try await c
+                    .from("home_designs")
+                    .select("id, name, bedrooms, bathrooms, garages, square_meters, image_url, price_from, storeys, lot_width, slug, description, house_width, house_length, living_areas, floorplan_image_url, room_highlights, inclusions")
+                    .order("name", ascending: true)
+                    .limit(100)
+                    .execute()
+                    .value
+                return rows.map { $0.toHomeDesign() }
+            }
         } catch {
             print("[SupabaseService] fetchHomeDesigns FAILED: \(error)")
             return []
@@ -644,15 +734,21 @@ class SupabaseService {
 
     func fetchHouseLandPackages() async -> [HouseLandPackage] {
         guard isConfigured else { return [] }
+        let c = client
         do {
-            let rows: [HouseLandPackageRow] = try await client
-                .from("house_land_packages")
-                .select("id, title, location, lot_size, home_design, price, image_url, is_new, lot_number, lot_frontage, lot_depth, land_price, house_price, spec_tier, title_date, council, zoning, build_time_estimate, inclusions, is_custom, custom_bedrooms, custom_bathrooms, custom_garages, custom_square_meters, custom_storeys, selected_facade_id")
-                .order("id", ascending: true)
-                .limit(100)
-                .execute()
-                .value
-            return rows.map { $0.toHouseLandPackage() }
+            return try await SupabaseCache.shared.cachedQuery(
+                key: "house_land_packages:all",
+                ttlOverride: 300
+            ) {
+                let rows: [HouseLandPackageRow] = try await c
+                    .from("house_land_packages")
+                    .select("id, title, location, lot_size, home_design, price, image_url, is_new, lot_number, lot_frontage, lot_depth, land_price, house_price, spec_tier, title_date, council, zoning, build_time_estimate, inclusions, is_custom, custom_bedrooms, custom_bathrooms, custom_garages, custom_square_meters, custom_storeys, selected_facade_id")
+                    .order("id", ascending: true)
+                    .limit(100)
+                    .execute()
+                    .value
+                return rows.map { $0.toHouseLandPackage() }
+            }
         } catch {
             print("[SupabaseService] fetchHouseLandPackages FAILED: \(error)")
             return []
@@ -661,15 +757,21 @@ class SupabaseService {
 
     func fetchBlogPosts() async -> [BlogPost] {
         guard isConfigured else { return [] }
+        let c = client
         do {
-            let rows: [BlogPostRow] = try await client
-                .from("blog_posts")
-                .select("id, title, subtitle, category, image_url, date, read_time, content")
-                .order("date", ascending: false)
-                .limit(100)
-                .execute()
-                .value
-            return rows.map { $0.toBlogPost() }
+            return try await SupabaseCache.shared.cachedQuery(
+                key: "blog_posts:all",
+                ttlOverride: 300
+            ) {
+                let rows: [BlogPostRow] = try await c
+                    .from("blog_posts")
+                    .select("id, title, subtitle, category, image_url, date, read_time, content")
+                    .order("date", ascending: false)
+                    .limit(100)
+                    .execute()
+                    .value
+                return rows.map { $0.toBlogPost() }
+            }
         } catch {
             print("[SupabaseService] fetchBlogPosts FAILED: \(error)")
             return []
@@ -678,15 +780,21 @@ class SupabaseService {
 
     func fetchLandEstates() async -> [LandEstate] {
         guard isConfigured else { return [] }
+        let c = client
         do {
-            let rows: [LandEstateRow] = try await client
-                .from("land_estates")
-                .select("id, name, location, suburb, status, total_lots, available_lots, price_from, image_url, description, features, expected_completion, logo_url, logo_asset_name, brochure_url, site_map_url, site_map_asset_name")
-                .order("name", ascending: true)
-                .limit(100)
-                .execute()
-                .value
-            return rows.map { $0.toLandEstate() }
+            return try await SupabaseCache.shared.cachedQuery(
+                key: "land_estates:all",
+                ttlOverride: 300
+            ) {
+                let rows: [LandEstateRow] = try await c
+                    .from("land_estates")
+                    .select("id, name, location, suburb, status, total_lots, available_lots, price_from, image_url, description, features, expected_completion, logo_url, logo_asset_name, brochure_url, site_map_url, site_map_asset_name")
+                    .order("name", ascending: true)
+                    .limit(100)
+                    .execute()
+                    .value
+                return rows.map { $0.toLandEstate() }
+            }
         } catch {
             print("[SupabaseService] fetchLandEstates FAILED: \(error)")
             return []
@@ -695,15 +803,21 @@ class SupabaseService {
 
     func fetchFacades() async -> [Facade] {
         guard isConfigured else { return [] }
+        let c = client
         do {
-            let rows: [FacadeRow] = try await client
-                .from("facades")
-                .select("id, name, style, description, hero_image_url, gallery_image_urls, features, pricing_type, pricing_amount, storeys")
-                .order("name", ascending: true)
-                .limit(100)
-                .execute()
-                .value
-            return rows.map { $0.toFacade() }
+            return try await SupabaseCache.shared.cachedQuery(
+                key: "facades:all",
+                ttlOverride: 300
+            ) {
+                let rows: [FacadeRow] = try await c
+                    .from("facades")
+                    .select("id, name, style, description, hero_image_url, gallery_image_urls, features, pricing_type, pricing_amount, storeys")
+                    .order("name", ascending: true)
+                    .limit(100)
+                    .execute()
+                    .value
+                return rows.map { $0.toFacade() }
+            }
         } catch {
             print("[SupabaseService] fetchFacades FAILED: \(error)")
             return []
@@ -876,6 +990,7 @@ class SupabaseService {
                 .update(fields)
                 .eq("id", value: buildId)
                 .execute()
+            await SupabaseCache.shared.invalidate(prefix: "builds:")
             return true
         } catch {
             print("[SupabaseService] updateBuildFields FAILED for buildId=\(buildId) — \(error)")
@@ -891,6 +1006,7 @@ class SupabaseService {
                 .update(fields)
                 .eq("id", value: assignmentId)
                 .execute()
+            await SupabaseCache.shared.invalidate("package_assignments:all")
             return true
         } catch {
             print("[SupabaseService] updatePackageAssignmentFields FAILED — \(error)")
@@ -900,15 +1016,21 @@ class SupabaseService {
 
     func fetchProfilesByRole(role: String) async -> [ClientUser] {
         guard isConfigured else { return [] }
+        let c = client
         do {
-            let rows: [ProfileRow] = try await client
-                .from("profiles")
-                .select(Self.profilesColumns)
-                .eq("role", value: role)
-                .limit(100)
-                .execute()
-                .value
-            return rows.map { $0.toClientUser() }
+            return try await SupabaseCache.shared.cachedQuery(
+                key: "profiles:byRole:\(role)",
+                ttlOverride: 60
+            ) {
+                let rows: [ProfileRow] = try await c
+                    .from("profiles")
+                    .select(Self.profilesColumns)
+                    .eq("role", value: role)
+                    .limit(100)
+                    .execute()
+                    .value
+                return rows.map { $0.toClientUser() }
+            }
         } catch {
             print("[SupabaseService] fetchProfilesByRole FAILED: \(error)")
             return []
@@ -949,15 +1071,21 @@ class SupabaseService {
 
     func fetchColourCategories() async -> [ColourCategory] {
         guard isConfigured else { return [] }
+        let c = client
         do {
-            let rows: [ColourCategoryRow] = try await client
-                .from("colour_categories")
-                .select("id, name, icon, section, note, image_url, sort_order, options, default_option_cost, applicable_tiers")
-                .order("sort_order", ascending: true)
-                .limit(100)
-                .execute()
-                .value
-            return rows.map { $0.toColourCategory() }
+            return try await SupabaseCache.shared.cachedQuery(
+                key: "colour_categories:all",
+                ttlOverride: 300
+            ) {
+                let rows: [ColourCategoryRow] = try await c
+                    .from("colour_categories")
+                    .select("id, name, icon, section, note, image_url, sort_order, options, default_option_cost, applicable_tiers")
+                    .order("sort_order", ascending: true)
+                    .limit(100)
+                    .execute()
+                    .value
+                return rows.map { $0.toColourCategory() }
+            }
         } catch {
             print("[SupabaseService] fetchColourCategories FAILED: \(error)")
             return []
@@ -966,21 +1094,27 @@ class SupabaseService {
 
     func fetchSpecCategories() async -> [SpecCategory] {
         guard isConfigured else { return [] }
-
-        let flatItems = await fetchSpecItemsFlat()
-        if !flatItems.isEmpty {
-            return assembleCategories(from: flatItems)
-        }
-
+        let c = client
+        let service = self
         do {
-            let rows: [SpecCategoryRow] = try await client
-                .from("spec_categories")
-                .select("id, name, icon, sort_order, items")
-                .order("sort_order", ascending: true)
-                .limit(100)
-                .execute()
-                .value
-            return rows.map { $0.toSpecCategory() }
+            return try await SupabaseCache.shared.cachedQuery(
+                key: "spec_categories:all",
+                ttlOverride: 300
+            ) {
+                let flatItems = await service.fetchSpecItemsFlat()
+                if !flatItems.isEmpty {
+                    return service.assembleCategories(from: flatItems)
+                }
+
+                let rows: [SpecCategoryRow] = try await c
+                    .from("spec_categories")
+                    .select("id, name, icon, sort_order, items")
+                    .order("sort_order", ascending: true)
+                    .limit(100)
+                    .execute()
+                    .value
+                return rows.map { $0.toSpecCategory() }
+            }
         } catch {
             print("[SupabaseService] fetchSpecCategories FAILED: \(error)")
             return []
@@ -989,15 +1123,21 @@ class SupabaseService {
 
     func fetchSpecItemsFlat() async -> [SpecItemFlatRow] {
         guard isConfigured else { return [] }
+        let c = client
         do {
-            let rows: [SpecItemFlatRow] = try await client
-                .from("spec_items")
-                .select("id, category_id, name, volos_description, messina_description, portobello_description, is_upgradeable, image_url, sort_order, volos_cost, messina_cost, portobello_cost, volos_to_messina_cost, volos_to_portobello_cost, messina_to_portobello_cost")
-                .order("sort_order", ascending: true)
-                .limit(100)
-                .execute()
-                .value
-            return rows
+            return try await SupabaseCache.shared.cachedQuery(
+                key: "spec_items:flat:all",
+                ttlOverride: 300
+            ) {
+                let rows: [SpecItemFlatRow] = try await c
+                    .from("spec_items")
+                    .select("id, category_id, name, volos_description, messina_description, portobello_description, is_upgradeable, image_url, sort_order, volos_cost, messina_cost, portobello_cost, volos_to_messina_cost, volos_to_portobello_cost, messina_to_portobello_cost")
+                    .order("sort_order", ascending: true)
+                    .limit(100)
+                    .execute()
+                    .value
+                return rows
+            }
         } catch {
             print("[SupabaseService] fetchSpecItemsFlat FAILED: \(error)")
             return []
@@ -1032,18 +1172,24 @@ class SupabaseService {
 
     func fetchSpecRangeTiers() async -> [String: SpecRangeTierRow] {
         guard isConfigured else { return [:] }
+        let c = client
         do {
-            let rows: [SpecRangeTierRow] = try await client
-                .from("spec_range_tiers")
-                .select("tier, hero_image_url, summary, highlights, room_images")
-                .limit(100)
-                .execute()
-                .value
-            var result: [String: SpecRangeTierRow] = [:]
-            for row in rows {
-                result[row.tier] = row
+            return try await SupabaseCache.shared.cachedQuery(
+                key: "spec_range_tiers:all",
+                ttlOverride: 300
+            ) {
+                let rows: [SpecRangeTierRow] = try await c
+                    .from("spec_range_tiers")
+                    .select("tier, hero_image_url, summary, highlights, room_images")
+                    .limit(100)
+                    .execute()
+                    .value
+                var result: [String: SpecRangeTierRow] = [:]
+                for row in rows {
+                    result[row.tier] = row
+                }
+                return result
             }
-            return result
         } catch {
             print("[SupabaseService] fetchSpecRangeTiers FAILED: \(error)")
             return [:]
@@ -1054,6 +1200,7 @@ class SupabaseService {
         guard isConfigured else { return false }
         do {
             try await client.from("spec_range_tiers").upsert(row, onConflict: "tier").execute()
+            await SupabaseCache.shared.invalidate("spec_range_tiers:all")
             return true
         } catch {
             print("[SupabaseService] upsertSpecRangeTier FAILED: \(error)")
@@ -1063,15 +1210,21 @@ class SupabaseService {
 
     func fetchHomeFastSchemes() async -> [HomeFastScheme] {
         guard isConfigured else { return [] }
+        let c = client
         do {
-            let rows: [HomeFastSchemeRow] = try await client
-                .from("homefast_schemes")
-                .select("id, name, subtitle, preview_colors, selections, room_images, sort_order")
-                .order("sort_order", ascending: true)
-                .limit(100)
-                .execute()
-                .value
-            return rows.map { $0.toHomeFastScheme() }
+            return try await SupabaseCache.shared.cachedQuery(
+                key: "homefast_schemes:all",
+                ttlOverride: 300
+            ) {
+                let rows: [HomeFastSchemeRow] = try await c
+                    .from("homefast_schemes")
+                    .select("id, name, subtitle, preview_colors, selections, room_images, sort_order")
+                    .order("sort_order", ascending: true)
+                    .limit(100)
+                    .execute()
+                    .value
+                return rows.map { $0.toHomeFastScheme() }
+            }
         } catch {
             print("[SupabaseService] fetchHomeFastSchemes FAILED: \(error)")
             return []
@@ -1080,18 +1233,24 @@ class SupabaseService {
 
     func fetchSpecToColourMapping() async -> [String: [String]] {
         guard isConfigured else { return [:] }
+        let c = client
         do {
-            let rows: [SpecToColourMappingRow] = try await client
-                .from("spec_to_colour_mapping")
-                .select("spec_item_id, colour_category_ids")
-                .limit(100)
-                .execute()
-                .value
-            var result: [String: [String]] = [:]
-            for row in rows {
-                result[row.spec_item_id] = row.colour_category_ids
+            return try await SupabaseCache.shared.cachedQuery(
+                key: "spec_to_colour_mapping:all",
+                ttlOverride: 300
+            ) {
+                let rows: [SpecToColourMappingRow] = try await c
+                    .from("spec_to_colour_mapping")
+                    .select("spec_item_id, colour_category_ids")
+                    .limit(100)
+                    .execute()
+                    .value
+                var result: [String: [String]] = [:]
+                for row in rows {
+                    result[row.spec_item_id] = row.colour_category_ids
+                }
+                return result
             }
-            return result
         } catch {
             print("[SupabaseService] fetchSpecToColourMapping FAILED: \(error)")
             return [:]
@@ -1100,26 +1259,33 @@ class SupabaseService {
 
     func fetchSpecItemImages() async -> (base: [String: String], tier: [String: String]) {
         guard isConfigured else { return ([:], [:]) }
+        let c = client
         do {
-            let rows: [SpecItemImageRow] = try await client
-                .from("spec_item_images")
-                .select("spec_item_id, base_image_url, tier_images")
-                .limit(100)
-                .execute()
-                .value
-            var baseMap: [String: String] = [:]
-            var tierMap: [String: String] = [:]
-            for row in rows {
-                if let base = row.base_image_url {
-                    baseMap[row.spec_item_id] = base
-                }
-                if let tiers = row.tier_images {
-                    for (tier, url) in tiers {
-                        tierMap["\(row.spec_item_id)_\(tier)"] = url
+            let maps: [[String: String]] = try await SupabaseCache.shared.cachedQuery(
+                key: "spec_item_images:all",
+                ttlOverride: 300
+            ) {
+                let rows: [SpecItemImageRow] = try await c
+                    .from("spec_item_images")
+                    .select("spec_item_id, base_image_url, tier_images")
+                    .limit(100)
+                    .execute()
+                    .value
+                var baseMap: [String: String] = [:]
+                var tierMap: [String: String] = [:]
+                for row in rows {
+                    if let base = row.base_image_url {
+                        baseMap[row.spec_item_id] = base
+                    }
+                    if let tiers = row.tier_images {
+                        for (tier, url) in tiers {
+                            tierMap["\(row.spec_item_id)_\(tier)"] = url
+                        }
                     }
                 }
+                return [baseMap, tierMap]
             }
-            return (baseMap, tierMap)
+            return (maps[0], maps[1])
         } catch {
             print("[SupabaseService] fetchSpecItemImages FAILED: \(error)")
             return ([:], [:])
@@ -1149,6 +1315,7 @@ class SupabaseService {
         guard isConfigured else { return false }
         do {
             try await client.from("spec_item_images").upsert(row).execute()
+            await SupabaseCache.shared.invalidate("spec_item_images:all")
             return true
         } catch {
             print("[SupabaseService] upsertSpecItemImageRow FAILED: \(error)")
@@ -1160,6 +1327,8 @@ class SupabaseService {
         guard isConfigured else { return false }
         do {
             try await client.from("spec_items").upsert(row).execute()
+            await SupabaseCache.shared.invalidate("spec_items:flat:all")
+            await SupabaseCache.shared.invalidate("spec_categories:all")
             return true
         } catch {
             print("[SupabaseService] upsertSpecItem FAILED: \(error)")
@@ -1184,6 +1353,7 @@ class SupabaseService {
                 )
                 try await client.from("spec_to_colour_mapping").upsert(row).execute()
             }
+            await SupabaseCache.shared.invalidate("spec_to_colour_mapping:all")
             return true
         } catch {
             print("[SupabaseService] upsertSpecToColourMapping FAILED: \(error)")
@@ -1195,6 +1365,8 @@ class SupabaseService {
         guard isConfigured else { return false }
         do {
             try await client.from("spec_items").delete().eq("id", value: id).execute()
+            await SupabaseCache.shared.invalidate("spec_items:flat:all")
+            await SupabaseCache.shared.invalidate("spec_categories:all")
             return true
         } catch {
             print("[SupabaseService] deleteSpecItem FAILED: \(error)")
@@ -1206,6 +1378,7 @@ class SupabaseService {
         guard isConfigured else { return false }
         do {
             try await client.from("colour_categories").upsert(row).execute()
+            await SupabaseCache.shared.invalidate("colour_categories:all")
             return true
         } catch {
             print("[SupabaseService] upsertColourCategory FAILED: \(error)")
@@ -1217,6 +1390,7 @@ class SupabaseService {
         guard isConfigured else { return false }
         do {
             try await client.from("colour_categories").delete().eq("id", value: id).execute()
+            await SupabaseCache.shared.invalidate("colour_categories:all")
             return true
         } catch {
             print("[SupabaseService] deleteColourCategory FAILED: \(error)")
@@ -1230,6 +1404,8 @@ class SupabaseService {
         guard isConfigured else { return false }
         do {
             try await client.from("spec_items").upsert(row).execute()
+            await SupabaseCache.shared.invalidate("spec_items:flat:all")
+            await SupabaseCache.shared.invalidate("spec_categories:all")
             return true
         } catch {
             print("[SupabaseService] updateSpecItemCosts FAILED: \(error)")
@@ -1239,15 +1415,21 @@ class SupabaseService {
 
     func fetchUpgradePricing() async -> [UpgradePricing] {
         guard isConfigured else { return [] }
+        let c = client
         do {
-            let rows: [UpgradePricingRow] = try await client
-                .from("upgrade_pricing")
-                .select("id, spec_item_id, colour_category_id, colour_option_id, from_tier, to_tier, cost, description, is_active, created_at, updated_at, storey_type")
-                .order("created_at", ascending: false)
-                .limit(100)
-                .execute()
-                .value
-            return rows.map { $0.toModel() }
+            return try await SupabaseCache.shared.cachedQuery(
+                key: "upgrade_pricing:all",
+                ttlOverride: 300
+            ) {
+                let rows: [UpgradePricingRow] = try await c
+                    .from("upgrade_pricing")
+                    .select("id, spec_item_id, colour_category_id, colour_option_id, from_tier, to_tier, cost, description, is_active, created_at, updated_at, storey_type")
+                    .order("created_at", ascending: false)
+                    .limit(100)
+                    .execute()
+                    .value
+                return rows.map { $0.toModel() }
+            }
         } catch {
             print("[SupabaseService] fetchUpgradePricing FAILED: \(error)")
             return []
@@ -1258,6 +1440,7 @@ class SupabaseService {
         guard isConfigured else { return false }
         do {
             try await client.from("upgrade_pricing").upsert(row).execute()
+            await SupabaseCache.shared.invalidate("upgrade_pricing:all")
             return true
         } catch {
             print("[SupabaseService] upsertUpgradePricing FAILED: \(error)")
@@ -1269,6 +1452,7 @@ class SupabaseService {
         guard isConfigured else { return false }
         do {
             try await client.from("upgrade_pricing").delete().eq("id", value: id).execute()
+            await SupabaseCache.shared.invalidate("upgrade_pricing:all")
             return true
         } catch {
             print("[SupabaseService] deleteUpgradePricing FAILED: \(error)")
@@ -1344,6 +1528,7 @@ class SupabaseService {
         do {
             struct TierPatch: Codable { let spec_tier: String }
             try await client.from("builds").update(TierPatch(spec_tier: newTier)).eq("id", value: buildId).execute()
+            await SupabaseCache.shared.invalidate(prefix: "builds:")
             return true
         } catch {
             print("[SupabaseService] updateBuildSpecTier FAILED: \(error)")
@@ -1355,6 +1540,7 @@ class SupabaseService {
         guard isConfigured else { return false }
         do {
             try await client.from("home_designs").upsert(row).execute()
+            await SupabaseCache.shared.invalidate("home_designs:all")
             return true
         } catch {
             print("[SupabaseService] upsertHomeDesign FAILED: \(error)")
@@ -1366,6 +1552,7 @@ class SupabaseService {
         guard isConfigured else { return false }
         do {
             try await client.from("home_designs").delete().eq("id", value: id).execute()
+            await SupabaseCache.shared.invalidate("home_designs:all")
             return true
         } catch {
             print("[SupabaseService] deleteHomeDesign FAILED: \(error)")
@@ -1379,6 +1566,7 @@ class SupabaseService {
         guard isConfigured else { return false }
         do {
             try await client.from("facades").upsert(row).execute()
+            await SupabaseCache.shared.invalidate("facades:all")
             return true
         } catch {
             print("[SupabaseService] upsertFacade FAILED: \(error)")
@@ -1390,6 +1578,7 @@ class SupabaseService {
         guard isConfigured else { return false }
         do {
             try await client.from("facades").delete().eq("id", value: id).execute()
+            await SupabaseCache.shared.invalidate("facades:all")
             return true
         } catch {
             print("[SupabaseService] deleteFacade FAILED: \(error)")
@@ -1403,6 +1592,7 @@ class SupabaseService {
         guard isConfigured else { return false }
         do {
             try await client.from("house_land_packages").upsert(row, onConflict: "id").execute()
+            await SupabaseCache.shared.invalidate("house_land_packages:all")
             return true
         } catch {
             print("[SupabaseService] upsertHouseLandPackage FAILED: \(error)")
@@ -1414,6 +1604,7 @@ class SupabaseService {
         guard isConfigured else { return false }
         do {
             try await client.from("house_land_packages").delete().eq("id", value: id).execute()
+            await SupabaseCache.shared.invalidate("house_land_packages:all")
             return true
         } catch {
             print("[SupabaseService] deleteHouseLandPackage FAILED: \(error)")
@@ -1444,16 +1635,22 @@ class SupabaseService {
 
     func fetchBuildSpecSelections(buildId: String) async -> [BuildSpecSelection] {
         guard isConfigured else { return [] }
+        let c = client
         do {
-            let rows: [BuildSpecSelectionRow] = try await client
-                .from("build_spec_selections")
-                .select("id, build_id, category_id, spec_item_id, spec_tier, selection_type, client_notes, admin_notes, client_confirmed, admin_confirmed, client_confirmed_at, admin_confirmed_at, locked_for_client, status, snapshot_name, snapshot_description, snapshot_image_url, snapshot_category_name, sort_order, created_at, updated_at, upgrade_cost, upgrade_cost_note")
-                .eq("build_id", value: buildId)
-                .order("sort_order", ascending: true)
-                .limit(100)
-                .execute()
-                .value
-            return rows.map { $0.toModel() }
+            return try await SupabaseCache.shared.cachedQuery(
+                key: "build_spec_selections:byBuild:\(buildId)",
+                ttlOverride: 30
+            ) {
+                let rows: [BuildSpecSelectionRow] = try await c
+                    .from("build_spec_selections")
+                    .select("id, build_id, category_id, spec_item_id, spec_tier, selection_type, client_notes, admin_notes, client_confirmed, admin_confirmed, client_confirmed_at, admin_confirmed_at, locked_for_client, status, snapshot_name, snapshot_description, snapshot_image_url, snapshot_category_name, sort_order, created_at, updated_at, upgrade_cost, upgrade_cost_note")
+                    .eq("build_id", value: buildId)
+                    .order("sort_order", ascending: true)
+                    .limit(100)
+                    .execute()
+                    .value
+                return rows.map { $0.toModel() }
+            }
         } catch {
             print("[SupabaseService] fetchBuildSpecSelections FAILED: \(error)")
             return []
@@ -1464,6 +1661,7 @@ class SupabaseService {
         guard isConfigured else { return false }
         do {
             try await client.from("build_spec_selections").upsert(selection.toRow()).execute()
+            await SupabaseCache.shared.invalidate(prefix: "build_spec_selections:")
             return true
         } catch {
             print("[SupabaseService] upsertBuildSpecSelection FAILED: \(error)")
@@ -1476,6 +1674,7 @@ class SupabaseService {
         let rows = selections.map { $0.toRow() }
         do {
             try await client.from("build_spec_selections").upsert(rows).execute()
+            await SupabaseCache.shared.invalidate(prefix: "build_spec_selections:")
             return true
         } catch {
             print("[SupabaseService] upsertBuildSpecSelections FAILED: \(error)")
@@ -1613,15 +1812,21 @@ class SupabaseService {
 
     func fetchBuildColourSelections(buildId: String) async -> [BuildColourSelection] {
         guard isConfigured else { return [] }
+        let c = client
         do {
-            let rows: [BuildColourSelectionRow] = try await client
-                .from("build_colour_selections")
-                .select("id, build_id, build_spec_selection_id, spec_item_id, colour_category_id, colour_option_id, selection_status, client_notes, admin_notes, created_at, updated_at, cost, is_upgrade, spec_tier")
-                .eq("build_id", value: buildId)
-                .limit(100)
-                .execute()
-                .value
-            return rows.map { $0.toModel() }
+            return try await SupabaseCache.shared.cachedQuery(
+                key: "build_colour_selections:byBuild:\(buildId)",
+                ttlOverride: 30
+            ) {
+                let rows: [BuildColourSelectionRow] = try await c
+                    .from("build_colour_selections")
+                    .select("id, build_id, build_spec_selection_id, spec_item_id, colour_category_id, colour_option_id, selection_status, client_notes, admin_notes, created_at, updated_at, cost, is_upgrade, spec_tier")
+                    .eq("build_id", value: buildId)
+                    .limit(100)
+                    .execute()
+                    .value
+                return rows.map { $0.toModel() }
+            }
         } catch {
             print("[SupabaseService] fetchBuildColourSelections FAILED: \(error)")
             return []
@@ -1664,6 +1869,7 @@ class SupabaseService {
         guard isConfigured else { return false }
         do {
             try await client.from("build_colour_selections").upsert(selection.toRow()).execute()
+            await SupabaseCache.shared.invalidate(prefix: "build_colour_selections:")
             return true
         } catch {
             print("[SupabaseService] upsertBuildColourSelection FAILED: \(error)")
@@ -1675,6 +1881,7 @@ class SupabaseService {
         guard isConfigured else { return false }
         do {
             try await client.from("build_colour_selections").delete().eq("id", value: id).execute()
+            await SupabaseCache.shared.invalidate(prefix: "build_colour_selections:")
             return true
         } catch {
             print("[SupabaseService] deleteBuildColourSelection FAILED: \(error)")
@@ -2526,14 +2733,20 @@ class SupabaseService {
 
     func fetchStocklistEstates() async -> [StocklistEstateRow] {
         guard isConfigured else { return [] }
+        let c = client
         do {
-            let rows: [StocklistEstateRow] = try await client.from("stocklist_estates")
-                .select("id, name, region, sub_region, deposit_terms, estate_brochure_url, rental_appraisal_url, eoi_form_url, sort_order, is_active, created_at, updated_at")
-                .eq("is_active", value: true)
-                .order("sort_order")
-                .limit(100)
-                .execute().value
-            return rows
+            return try await SupabaseCache.shared.cachedQuery(
+                key: "stocklist_estates:all",
+                ttlOverride: 300
+            ) {
+                let rows: [StocklistEstateRow] = try await c.from("stocklist_estates")
+                    .select("id, name, region, sub_region, deposit_terms, estate_brochure_url, rental_appraisal_url, eoi_form_url, sort_order, is_active, created_at, updated_at")
+                    .eq("is_active", value: true)
+                    .order("sort_order")
+                    .limit(100)
+                    .execute().value
+                return rows
+            }
         } catch {
             print("[SupabaseService] fetchStocklistEstates error: \(error)")
             return []
@@ -2576,6 +2789,7 @@ class SupabaseService {
         guard isConfigured else { return false }
         do {
             try await client.from("stocklist_estates").upsert(row, onConflict: "id").execute()
+            await SupabaseCache.shared.invalidate("stocklist_estates:all")
             return true
         } catch {
             print("[SupabaseService] upsertStocklistEstate error: \(error)")
@@ -2588,6 +2802,7 @@ class SupabaseService {
         guard isConfigured else { return false }
         do {
             try await client.from("stocklist_estates").delete().eq("id", value: id).execute()
+            await SupabaseCache.shared.invalidate("stocklist_estates:all")
             return true
         } catch {
             print("[SupabaseService] deleteStocklistEstate error: \(error)")
