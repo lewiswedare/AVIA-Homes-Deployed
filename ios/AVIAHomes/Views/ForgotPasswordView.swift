@@ -39,24 +39,17 @@ struct ForgotPasswordView: View {
                             Text("Email")
                                 .font(.neueCaptionMedium)
                                 .foregroundStyle(AVIATheme.textSecondary)
-                            ZStack(alignment: .leading) {
-                                if email.isEmpty {
-                                    Text("your@email.com")
-                                        .font(.neueSubheadline)
-                                        .foregroundStyle(AVIATheme.textTertiary)
-                                }
-                                TextField("", text: $email)
-                                    .font(.neueSubheadline)
-                                    .textContentType(.emailAddress)
-                                    .keyboardType(.emailAddress)
-                                    .autocorrectionDisabled()
-                                    .textInputAutocapitalization(.never)
-                                    .focused($emailFocused)
-                                    .submitLabel(.go)
-                                    .onSubmit { sendReset() }
-                                    .foregroundStyle(AVIATheme.textPrimary)
-                                    .tint(AVIATheme.textPrimary)
-                            }
+                            TextField("your@email.com", text: $email)
+                                .font(.neueSubheadline)
+                                .textContentType(.emailAddress)
+                                .keyboardType(.emailAddress)
+                                .autocorrectionDisabled()
+                                .textInputAutocapitalization(.never)
+                                .focused($emailFocused)
+                                .submitLabel(.go)
+                                .onSubmit { sendReset() }
+                                .foregroundStyle(AVIATheme.textPrimary)
+                                .tint(AVIATheme.textPrimary)
                             .padding(.horizontal, 16)
                             .padding(.vertical, 14)
                             .background(AVIATheme.cardBackground)

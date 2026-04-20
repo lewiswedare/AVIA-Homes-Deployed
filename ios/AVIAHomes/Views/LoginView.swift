@@ -58,24 +58,17 @@ struct LoginView: View {
                                 Text("Email")
                                     .font(.neueCaptionMedium)
                                     .foregroundStyle(AVIATheme.textSecondary)
-                                ZStack(alignment: .leading) {
-                                    if email.isEmpty {
-                                        Text("your@email.com")
-                                            .font(.neueSubheadline)
-                                            .foregroundStyle(Color(.placeholderText))
-                                    }
-                                    TextField("", text: $email)
-                                        .font(.neueSubheadline)
-                                        .textContentType(.emailAddress)
-                                        .keyboardType(.emailAddress)
-                                        .autocorrectionDisabled()
-                                        .textInputAutocapitalization(.never)
-                                        .focused($focusedField, equals: .email)
-                                        .submitLabel(.next)
-                                        .onSubmit { focusedField = .password }
-                                        .foregroundStyle(AVIATheme.textPrimary)
-                                        .tint(AVIATheme.textPrimary)
-                                }
+                                TextField("your@email.com", text: $email)
+                                    .font(.neueSubheadline)
+                                    .textContentType(.emailAddress)
+                                    .keyboardType(.emailAddress)
+                                    .autocorrectionDisabled()
+                                    .textInputAutocapitalization(.never)
+                                    .focused($focusedField, equals: .email)
+                                    .submitLabel(.next)
+                                    .onSubmit { focusedField = .password }
+                                    .foregroundStyle(AVIATheme.textPrimary)
+                                    .tint(AVIATheme.textPrimary)
                                 .padding(.horizontal, 16)
                                 .padding(.vertical, 14)
                                 .background(AVIATheme.cardBackground)
