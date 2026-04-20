@@ -208,24 +208,29 @@ class BuildSpecViewModel {
         errorMessage = nil
         let success = await SupabaseService.shared.submitClientSpecConfirmation(buildId: buildId)
         if success {
-            successMessage = "Specifications submitted for review"
+            successMessage = "Specifications confirmed — you can now move on to colours"
             await load(buildId: buildId)
+            if isFullyApproved {
+                await generatePDF()
+            }
             if let ns = notificationService {
+                let sender = clientName.isEmpty ? "Client" : clientName
+                let addressPart = buildAddress.isEmpty ? "" : " for \(buildAddress)"
                 for recipientId in adminRecipientIds {
                     await ns.createNotification(
                         recipientId: recipientId,
                         senderId: clientId,
-                        senderName: "Client",
+                        senderName: sender,
                         type: .buildUpdate,
-                        title: "Spec Review Required",
-                        message: "Client has submitted their spec range for review",
+                        title: "Specifications Confirmed",
+                        message: "\(sender) has confirmed their specifications\(addressPart) and moved on to colour selections.",
                         referenceId: buildId,
                         referenceType: "build"
                     )
                 }
             }
         } else {
-            errorMessage = "Failed to submit confirmation"
+            errorMessage = "Failed to confirm specifications"
         }
         isSaving = false
     }
@@ -299,10 +304,12 @@ class BuildSpecViewModel {
 
     func clientAcceptUpgrade(selectionId: String) {
         guard let idx = selections.firstIndex(where: { $0.id == selectionId }) else { return }
-        selections[idx].selectionType = .upgradeAccepted
-        selections[idx].status = .awaitingAdmin
+        selections[idx].selectionType = .upgradeApproved
+        selections[idx].status = .approved
         selections[idx].clientConfirmed = true
         selections[idx].clientConfirmedAt = .now
+        selections[idx].adminConfirmed = true
+        selections[idx].adminConfirmedAt = .now
         selections[idx].lockedForClient = true
         let item = selections[idx]
         Task {
@@ -312,7 +319,7 @@ class BuildSpecViewModel {
                 await load(buildId: buildId)
                 return
             }
-            successMessage = "Upgrade accepted — awaiting admin confirmation"
+            successMessage = "Upgrade accepted"
             await load(buildId: buildId)
             if let ns = notificationService {
                 for recipientId in adminRecipientIds {
@@ -337,7 +344,9 @@ class BuildSpecViewModel {
         selections[idx].status = .approved
         selections[idx].clientConfirmed = true
         selections[idx].clientConfirmedAt = .now
-        selections[idx].lockedForClient = false
+        selections[idx].adminConfirmed = true
+        selections[idx].adminConfirmedAt = .now
+        selections[idx].lockedForClient = true
         selections[idx].upgradeCost = nil
         selections[idx].upgradeCostNote = nil
         let item = selections[idx]

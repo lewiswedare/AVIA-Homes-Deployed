@@ -1502,14 +1502,20 @@ class SupabaseService {
         guard !selections.isEmpty else { return false }
         let now = Date.now
         for i in selections.indices {
-            // Only update items that are standard included — upgrades stay in their own flow
-            guard selections[i].selectionType == .included else { continue }
+            // Skip draft/quoted upgrades still awaiting a client decision.
+            if selections[i].selectionType == .upgradeDraft ||
+                selections[i].selectionType == .upgradeCosted ||
+                selections[i].selectionType == .upgradeRequested {
+                continue
+            }
+            // Self-approve everything else — admin review is not required; admin
+            // can reopen later if changes are needed.
             selections[i].clientConfirmed = true
             selections[i].clientConfirmedAt = now
+            selections[i].adminConfirmed = true
+            selections[i].adminConfirmedAt = now
             selections[i].lockedForClient = true
-            if !selections[i].adminConfirmed {
-                selections[i].status = .awaitingAdmin
-            }
+            selections[i].status = .approved
         }
         return await upsertBuildSpecSelections(selections)
     }

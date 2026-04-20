@@ -51,11 +51,11 @@ struct ClientSpecConfirmationView: View {
         }
         .alert("Confirm Specifications", isPresented: $showConfirmAlert) {
             Button("Cancel", role: .cancel) {}
-            Button("Submit") {
+            Button("Confirm") {
                 Task { await viewModel.submitClientConfirmation() }
             }
         } message: {
-            Text("Once submitted, your specifications will be locked for admin review. You won't be able to make changes until an admin reopens them.")
+            Text("Your specifications will be locked in and you'll move on to colour selections. Your AVIA team can always reopen them later if changes are needed.")
         }
         .sheet(item: $upgradeSelectionId) { selId in
             UpgradeRequestSheet(notes: $upgradeNotes) {
@@ -95,7 +95,7 @@ struct ClientSpecConfirmationView: View {
                     )
                 }
 
-                if !viewModel.isLockedForClient && viewModel.hasSelections {
+                if canConfirmSpecs {
                     confirmButton
                 }
 
@@ -651,22 +651,45 @@ struct ClientSpecConfirmationView: View {
         return formatter.string(from: NSNumber(value: value)) ?? String(format: "$%.0f", value)
     }
 
-    private var confirmButton: some View {
-        Button {
-            showConfirmAlert = true
-        } label: {
-            HStack(spacing: 8) {
-                Image(systemName: "checkmark.seal.fill")
-                Text("Confirm Specifications")
-            }
-            .font(.neueSubheadlineMedium)
-            .frame(maxWidth: .infinity)
-            .frame(height: 52)
-            .foregroundStyle(AVIATheme.aviaWhite)
-            .background(AVIATheme.primaryGradient)
-            .clipShape(.rect(cornerRadius: 14))
+    /// Client can confirm their full spec range once they've resolved every
+    /// outstanding upgrade request/quote. Draft upgrades still in their basket,
+    /// or quoted upgrades awaiting a decision, must be cleared first.
+    private var canConfirmSpecs: Bool {
+        guard viewModel.hasSelections else { return false }
+        if viewModel.overallStatus == .approved { return false }
+        let hasOutstanding = viewModel.selections.contains { sel in
+            sel.selectionType == .upgradeDraft ||
+            sel.selectionType == .upgradeCosted ||
+            sel.selectionType == .upgradeRequested
         }
-        .disabled(viewModel.isSaving)
+        return !hasOutstanding
+    }
+
+    @ViewBuilder
+    private var confirmButton: some View {
+        VStack(spacing: 10) {
+            Text("Once confirmed, you’ll move on to colour selections. Your AVIA team can reopen your specs anytime if you need to make a change.")
+                .font(.neueCaption2)
+                .foregroundStyle(AVIATheme.textSecondary)
+                .multilineTextAlignment(.center)
+                .padding(.horizontal, 8)
+
+            Button {
+                showConfirmAlert = true
+            } label: {
+                HStack(spacing: 8) {
+                    Image(systemName: "checkmark.seal.fill")
+                    Text("Confirm Specs & Move to Colours")
+                }
+                .font(.neueSubheadlineMedium)
+                .frame(maxWidth: .infinity)
+                .frame(height: 52)
+                .foregroundStyle(AVIATheme.aviaWhite)
+                .background(AVIATheme.primaryGradient)
+                .clipShape(.rect(cornerRadius: 14))
+            }
+            .disabled(viewModel.isSaving)
+        }
     }
 
     @ViewBuilder
