@@ -62,7 +62,7 @@ struct LoginView: View {
                                     if email.isEmpty {
                                         Text("your@email.com")
                                             .font(.neueSubheadline)
-                                            .foregroundStyle(AVIATheme.textTertiary)
+                                            .foregroundStyle(Color(.placeholderText))
                                     }
                                     TextField("", text: $email)
                                         .font(.neueSubheadline)
