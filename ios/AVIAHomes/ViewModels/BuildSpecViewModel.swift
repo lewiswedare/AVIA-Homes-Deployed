@@ -499,10 +499,15 @@ class BuildSpecViewModel {
 
     var pendingRangeUpgrade: BuildRangeUpgradeRequest? {
         rangeUpgradeRequests.first {
-            $0.status == .pendingClient || $0.status == .clientAccepted
+            $0.status == .pendingAdminCost ||
+            $0.status == .pendingClient ||
+            $0.status == .clientAccepted
         }
     }
 
+    /// Client requests a full spec range upgrade at the catalog estimate. The
+    /// admin must still confirm the final cost before the client is asked to
+    /// accept or decline.
     func clientRequestRangeUpgrade(toTier: String, cost: Double, notes: String?) {
         if let existing = pendingRangeUpgrade {
             Task { _ = await SupabaseService.shared.deleteBuildRangeUpgradeRequest(id: existing.id) }
@@ -514,7 +519,7 @@ class BuildSpecViewModel {
             fromTier: specTier,
             toTier: toTier,
             cost: cost,
-            status: .pendingClient,
+            status: .pendingAdminCost,
             clientNotes: notes,
             adminNotes: nil
         )
@@ -523,8 +528,56 @@ class BuildSpecViewModel {
             let ok = await SupabaseService.shared.upsertBuildRangeUpgradeRequest(request)
             if !ok {
                 errorMessage = "Failed to save range upgrade request"
+                return
+            }
+            successMessage = "Upgrade requested — awaiting AVIA to confirm the final cost."
+            if let ns = notificationService {
+                let sender = clientName.isEmpty ? "Client" : clientName
+                let addressPart = buildAddress.isEmpty ? "" : " for \(buildAddress)"
+                for recipientId in adminRecipientIds {
+                    await ns.createNotification(
+                        recipientId: recipientId,
+                        senderId: clientId,
+                        senderName: sender,
+                        type: .buildUpdate,
+                        title: "Spec Range Upgrade Requested",
+                        message: "\(sender) requested an upgrade to \(toTier.capitalized)\(addressPart). Please confirm the final cost.",
+                        referenceId: buildId,
+                        referenceType: "build"
+                    )
+                }
             }
         }
+    }
+
+    /// Admin confirms (or revises) the final cost of a client-requested range
+    /// upgrade, then sends it back to the client for acceptance.
+    func adminConfirmRangeUpgradeCost(requestId: String, cost: Double, note: String?) async {
+        guard let idx = rangeUpgradeRequests.firstIndex(where: { $0.id == requestId }) else { return }
+        isSaving = true
+        rangeUpgradeRequests[idx].cost = cost
+        rangeUpgradeRequests[idx].adminNotes = note
+        rangeUpgradeRequests[idx].status = .pendingClient
+        let req = rangeUpgradeRequests[idx]
+        let ok = await SupabaseService.shared.upsertBuildRangeUpgradeRequest(req)
+        if ok {
+            successMessage = "Cost confirmed — sent to client for acceptance."
+            if let ns = notificationService, !clientId.isEmpty {
+                await ns.createNotification(
+                    recipientId: clientId,
+                    senderId: nil,
+                    senderName: "AVIA Homes",
+                    type: .upgradeQuoted,
+                    title: "Range Upgrade Cost Confirmed",
+                    message: "AVIA has confirmed the cost for your \(req.toTier.capitalized) range upgrade. Please review and accept or decline.",
+                    referenceId: buildId,
+                    referenceType: "build"
+                )
+            }
+        } else {
+            errorMessage = "Failed to confirm upgrade cost"
+        }
+        isSaving = false
     }
 
     func clientAcceptRangeUpgrade(requestId: String) {
@@ -640,6 +693,38 @@ class BuildSpecViewModel {
     }
 
     // MARK: - Colour Upgrade Flow
+
+    /// Admin confirms (or revises) the final cost of a client-requested colour
+    /// upgrade, then sends it back to the client for acceptance.
+    func adminConfirmColourUpgradeCost(selectionId: String, cost: Double, note: String?) {
+        guard let idx = colourSelections.firstIndex(where: { $0.id == selectionId }) else { return }
+        colourSelections[idx].cost = cost
+        colourSelections[idx].adminNotes = note
+        colourSelections[idx].isUpgrade = true
+        colourSelections[idx].selectionStatus = .upgradePendingClient
+        let item = colourSelections[idx]
+        Task {
+            let ok = await SupabaseService.shared.upsertBuildColourSelection(item)
+            if !ok {
+                errorMessage = "Failed to confirm colour upgrade cost"
+                return
+            }
+            successMessage = "Cost confirmed — sent to client for acceptance."
+            if let ns = notificationService, !clientId.isEmpty {
+                await ns.createNotification(
+                    recipientId: clientId,
+                    senderId: nil,
+                    senderName: "AVIA Homes",
+                    type: .upgradeQuoted,
+                    title: "Colour Upgrade Cost Confirmed",
+                    message: "AVIA has confirmed the cost for your colour upgrade. Please review and accept or decline.",
+                    referenceId: buildId,
+                    referenceType: "build"
+                )
+            }
+            await load(buildId: buildId)
+        }
+    }
 
     func clientAcceptColourUpgrade(selectionId: String) {
         guard let idx = colourSelections.firstIndex(where: { $0.id == selectionId }) else { return }
@@ -1014,7 +1099,27 @@ class BuildSpecViewModel {
     }
 
     func saveColourSelection(buildSpecSelectionId: String, specItemId: String, colourCategoryId: String, colourOptionId: String, cost: Double? = nil, isUpgrade: Bool = false) async {
-        let initialStatus: ColourSelectionStatus = (isUpgrade && (cost ?? 0) > 0) ? .upgradePendingClient : .draft
+        // Client-triggered upgrade picks start as a request the admin must
+        // confirm the cost on, mirroring the spec item upgrade flow.
+        let initialStatus: ColourSelectionStatus = (isUpgrade && (cost ?? 0) > 0) ? .upgradeRequested : .draft
+        if isUpgrade && (cost ?? 0) > 0 {
+            if let ns = notificationService {
+                let sender = clientName.isEmpty ? "Client" : clientName
+                let addressPart = buildAddress.isEmpty ? "" : " for \(buildAddress)"
+                for recipientId in adminRecipientIds {
+                    await ns.createNotification(
+                        recipientId: recipientId,
+                        senderId: clientId,
+                        senderName: sender,
+                        type: .buildUpdate,
+                        title: "Colour Upgrade Requested",
+                        message: "\(sender) picked a colour upgrade\(addressPart). Please confirm the final cost.",
+                        referenceId: buildId,
+                        referenceType: "build"
+                    )
+                }
+            }
+        }
         if let idx = colourSelections.firstIndex(where: { $0.buildSpecSelectionId == buildSpecSelectionId && $0.colourCategoryId == colourCategoryId }) {
             var updated = colourSelections[idx]
             updated = BuildColourSelection(

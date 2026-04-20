@@ -86,6 +86,9 @@ nonisolated enum ColourSelectionStatus: String, Codable, Sendable {
     case submitted
     case approved
     case reopened
+    /// Client has requested the upgrade with the catalog estimate; admin still needs to confirm the final cost.
+    case upgradeRequested = "upgrade_requested"
+    /// Admin has confirmed the final upgrade cost; client must accept or decline the confirmed price.
     case upgradePendingClient = "upgrade_pending_client"
     case upgradeAcceptedByClient = "upgrade_accepted_by_client"
     case upgradeDeclinedByClient = "upgrade_declined_by_client"
@@ -102,6 +105,7 @@ nonisolated enum ColourSelectionStatus: String, Codable, Sendable {
         case .submitted: "Submitted"
         case .approved: "Approved"
         case .reopened: "Reopened"
+        case .upgradeRequested: "Awaiting Admin Cost Confirmation"
         case .upgradePendingClient: "Awaiting Your Confirmation"
         case .upgradeAcceptedByClient: "Awaiting Admin Approval"
         case .upgradeDeclinedByClient: "Upgrade Declined"

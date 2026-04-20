@@ -513,7 +513,6 @@ struct ClientSpecConfirmationView: View {
                         if let toTier = pricing.toTier, let tier = SpecTier(rawValue: toTier) {
                             Button {
                                 viewModel.clientRequestRangeUpgrade(toTier: toTier, cost: pricing.cost, notes: nil)
-                                viewModel.clientAcceptRangeUpgrade(requestId: viewModel.pendingRangeUpgrade?.id ?? "")
                             } label: {
                                 HStack(spacing: 10) {
                                     Image(systemName: tier.icon)
@@ -535,10 +534,10 @@ struct ClientSpecConfirmationView: View {
                                     Spacer()
 
                                     VStack(alignment: .trailing, spacing: 2) {
-                                        Text(formatCurrency(pricing.cost))
+                                        Text("from \(formatCurrency(pricing.cost))")
                                             .font(.neueCorpMedium(16))
                                             .foregroundStyle(AVIATheme.timelessBrown)
-                                        Text("Tap to request")
+                                        Text("Estimated — AVIA confirms final cost")
                                             .font(.neueCaption2)
                                             .foregroundStyle(AVIATheme.textTertiary)
                                     }
@@ -563,12 +562,32 @@ struct ClientSpecConfirmationView: View {
     @ViewBuilder
     private func pendingRangeUpgradeCard(_ request: BuildRangeUpgradeRequest) -> some View {
         let toTier = SpecTier(rawValue: request.toTier.lowercased()) ?? .messina
+        let headerIcon: String = {
+            switch request.status {
+            case .pendingAdminCost: return "clock.badge.questionmark.fill"
+            case .clientAccepted: return "clock.fill"
+            default: return "arrow.up.forward.circle.fill"
+            }
+        }()
+        let headerColor: Color = {
+            switch request.status {
+            case .pendingAdminCost: return AVIATheme.accent
+            case .clientAccepted: return AVIATheme.warning
+            default: return AVIATheme.timelessBrown
+            }
+        }()
+        let priceLabel: String = {
+            switch request.status {
+            case .pendingAdminCost: return "Estimated \(formatCurrency(request.cost))"
+            default: return formatCurrency(request.cost)
+            }
+        }()
         BentoCard(cornerRadius: 14) {
             VStack(alignment: .leading, spacing: 14) {
                 HStack(spacing: 10) {
-                    Image(systemName: request.status == .clientAccepted ? "clock.fill" : "arrow.up.forward.circle.fill")
+                    Image(systemName: headerIcon)
                         .font(.neueCorpMedium(18))
-                        .foregroundStyle(request.status == .clientAccepted ? AVIATheme.warning : AVIATheme.timelessBrown)
+                        .foregroundStyle(headerColor)
                     VStack(alignment: .leading, spacing: 2) {
                         Text("Upgrade to \(toTier.displayName)")
                             .font(.neueCaptionMedium)
@@ -578,12 +597,53 @@ struct ClientSpecConfirmationView: View {
                             .foregroundStyle(AVIATheme.textSecondary)
                     }
                     Spacer()
-                    Text(formatCurrency(request.cost))
-                        .font(.neueCorpMedium(18))
-                        .foregroundStyle(AVIATheme.timelessBrown)
+                    VStack(alignment: .trailing, spacing: 2) {
+                        Text(priceLabel)
+                            .font(.neueCorpMedium(16))
+                            .foregroundStyle(AVIATheme.timelessBrown)
+                        if request.status == .pendingClient {
+                            Text("Confirmed by AVIA")
+                                .font(.neueCaption2)
+                                .foregroundStyle(AVIATheme.success)
+                        }
+                    }
                 }
 
-                if request.status == .pendingClient {
+                if let note = request.adminNotes, !note.isEmpty, request.status != .pendingAdminCost {
+                    Text(note)
+                        .font(.neueCaption2)
+                        .foregroundStyle(AVIATheme.textSecondary)
+                }
+
+                if request.status == .pendingAdminCost {
+                    HStack(spacing: 8) {
+                        Image(systemName: "hourglass")
+                            .font(.neueCorp(10))
+                        Text("Your request has been sent. AVIA will confirm the final cost and send it back for your acceptance.")
+                            .font(.neueCaption2)
+                    }
+                    .foregroundStyle(AVIATheme.accent)
+                    .padding(10)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .background(AVIATheme.accent.opacity(0.08))
+                    .clipShape(.rect(cornerRadius: 10))
+
+                    Button {
+                        Task { await SupabaseService.shared.deleteBuildRangeUpgradeRequest(id: request.id) }
+                        viewModel.rangeUpgradeRequests.removeAll { $0.id == request.id }
+                    } label: {
+                        HStack(spacing: 6) {
+                            Image(systemName: "xmark.circle")
+                            Text("Cancel Request")
+                        }
+                        .font(.neueCaption2Medium)
+                        .frame(maxWidth: .infinity)
+                        .frame(height: 36)
+                        .foregroundStyle(AVIATheme.destructive)
+                        .background(AVIATheme.destructive.opacity(0.1))
+                        .clipShape(Capsule())
+                    }
+                } else if request.status == .pendingClient {
                     HStack(spacing: 10) {
                         Button {
                             viewModel.clientAcceptRangeUpgrade(requestId: request.id)

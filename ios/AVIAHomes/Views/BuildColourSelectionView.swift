@@ -584,8 +584,16 @@ struct BuildColourSelectionView: View {
     @ViewBuilder
     private func colourUpgradeStatusLabel(_ sel: BuildColourSelection) -> some View {
         switch sel.selectionStatus {
+        case .upgradeRequested:
+            HStack(spacing: 4) {
+                Image(systemName: "hourglass")
+                    .font(.neueCorp(9))
+                Text("Awaiting AVIA cost confirmation")
+                    .font(.neueCaption2)
+            }
+            .foregroundStyle(AVIATheme.accent)
         case .upgradePendingClient:
-            Text("Confirm this upgrade below")
+            Text("Cost confirmed — respond below")
                 .font(.neueCaption2)
                 .foregroundStyle(AVIATheme.warning)
         case .upgradeAcceptedByClient:

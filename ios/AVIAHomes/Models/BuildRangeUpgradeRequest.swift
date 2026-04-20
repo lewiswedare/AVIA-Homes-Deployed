@@ -1,6 +1,9 @@
 import Foundation
 
 nonisolated enum RangeUpgradeStatus: String, Codable, Sendable {
+    /// Client has requested the upgrade at the estimated package cost; admin still needs to confirm the final cost.
+    case pendingAdminCost = "pending_admin_cost"
+    /// Admin has confirmed the cost; client must accept or decline the confirmed amount.
     case pendingClient = "pending_client"
     case clientAccepted = "client_accepted"
     case clientDeclined = "client_declined"
@@ -8,6 +11,7 @@ nonisolated enum RangeUpgradeStatus: String, Codable, Sendable {
 
     var displayLabel: String {
         switch self {
+        case .pendingAdminCost: "Awaiting Admin Cost Confirmation"
         case .pendingClient: "Awaiting Your Confirmation"
         case .clientAccepted: "Awaiting Admin Approval"
         case .clientDeclined: "Declined"
@@ -48,7 +52,7 @@ extension BuildRangeUpgradeRequestRow {
             fromTier: from_tier,
             toTier: to_tier,
             cost: cost,
-            status: RangeUpgradeStatus(rawValue: status) ?? .pendingClient,
+            status: RangeUpgradeStatus(rawValue: status) ?? .pendingAdminCost,
             clientNotes: client_notes,
             adminNotes: admin_notes
         )
