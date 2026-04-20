@@ -19,7 +19,7 @@ class NotificationService {
         do {
             let rows: [NotificationRow] = try await supabase.client
                 .from("notifications")
-                .select()
+                .select("id, recipient_id, sender_id, sender_name, type, title, message, reference_id, reference_type, created_at, is_read")
                 .eq("recipient_id", value: userId)
                 .order("created_at", ascending: false)
                 .limit(100)
