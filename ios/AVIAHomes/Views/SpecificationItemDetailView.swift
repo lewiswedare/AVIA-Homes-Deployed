@@ -111,10 +111,10 @@ struct SpecificationItemDetailView: View {
                 } label: {
                     Text(tier.displayName)
                         .font(.neueCaption2Medium)
-                    .foregroundStyle(activeTier == tier ? AVIATheme.aviaBlack : AVIATheme.aviaWhite)
+                    .foregroundStyle(AVIATheme.aviaWhite)
                     .padding(.horizontal, activeTier == tier ? 12 : 10)
                     .padding(.vertical, 7)
-                    .background(activeTier == tier ? AVIATheme.aviaWhite : AVIATheme.aviaWhite.opacity(0.25))
+                    .background(activeTier == tier ? AVIATheme.timelessBrown : AVIATheme.timelessBrown.opacity(0.45))
                     .clipShape(Capsule())
                 }
             }
