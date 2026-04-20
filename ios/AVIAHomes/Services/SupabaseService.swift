@@ -1996,6 +1996,9 @@ class SupabaseService {
                 eoi_id: eoiId,
                 package_assignment_id: assignmentId,
                 client_id: clientId,
+                original_contract_url: nil,
+                original_contract_uploaded_by: nil,
+                original_contract_uploaded_at: nil,
                 contract_document_url: nil,
                 contract_uploaded_by: nil,
                 contract_uploaded_at: nil,
@@ -2020,7 +2023,39 @@ class SupabaseService {
         }
     }
 
-    /// Uploads a signed contract PDF. Either the owning client or an admin
+    /// Uploads the ORIGINAL (unsigned) contract PDF. Admins call this to give
+    /// the client a PDF to download and sign. Status moves to `awaiting_signature`.
+    func uploadOriginalContract(contractId: String, assignmentId: String, clientId: String, fileData: Data, fileName: String, uploadedBy: String) async -> String? {
+        do {
+            let safeName = fileName.replacingOccurrences(of: " ", with: "_")
+            let path = "\(clientId)/\(contractId)/original_\(safeName)"
+            try await client.storage.from("contracts").upload(
+                path: path,
+                file: fileData,
+                options: .init(contentType: "application/pdf", upsert: true)
+            )
+            let url = try client.storage.from("contracts").getPublicURL(path: path).absoluteString
+            try await client.from("contract_signatures")
+                .update([
+                    "original_contract_url": url,
+                    "original_contract_uploaded_by": uploadedBy,
+                    "original_contract_uploaded_at": ISO8601DateFormatter().string(from: .now),
+                    "status": "awaiting_signature"
+                ])
+                .eq("id", value: contractId)
+                .execute()
+            try await client.from("package_assignments")
+                .update(["contract_status": "awaiting_signature"])
+                .eq("id", value: assignmentId)
+                .execute()
+            return url
+        } catch {
+            print("[SupabaseService] uploadOriginalContract error: \(error)")
+            return nil
+        }
+    }
+
+    /// Uploads a SIGNED contract PDF. Either the owning client or an admin
     /// can call this. The storage path starts with `<client_id>/` so the
     /// existing per-client storage RLS policies apply.
     ///
@@ -2029,7 +2064,7 @@ class SupabaseService {
     func uploadContractDocument(contractId: String, assignmentId: String, clientId: String, fileData: Data, fileName: String, uploadedBy: String) async -> String? {
         do {
             let safeName = fileName.replacingOccurrences(of: " ", with: "_")
-            let path = "\(clientId)/\(contractId)/\(safeName)"
+            let path = "\(clientId)/\(contractId)/signed_\(safeName)"
             try await client.storage.from("contracts").upload(
                 path: path,
                 file: fileData,

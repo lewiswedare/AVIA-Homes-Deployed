@@ -6,6 +6,12 @@ nonisolated struct ContractSignatureRow: Identifiable, Codable, Sendable {
     let package_assignment_id: String
     let client_id: String
 
+    // Original (unsigned) contract uploaded by admin for the client to download & sign.
+    var original_contract_url: String?
+    var original_contract_uploaded_by: String?
+    var original_contract_uploaded_at: String?
+
+    // Signed copy uploaded by the client (or admin) after in-person signing.
     var contract_document_url: String?
     var contract_uploaded_by: String?
     var contract_uploaded_at: String?
@@ -34,6 +40,11 @@ nonisolated struct ContractSignatureRow: Identifiable, Codable, Sendable {
 
     var hasDocument: Bool {
         if let url = contract_document_url, !url.isEmpty { return true }
+        return false
+    }
+
+    var hasOriginalContract: Bool {
+        if let url = original_contract_url, !url.isEmpty { return true }
         return false
     }
 

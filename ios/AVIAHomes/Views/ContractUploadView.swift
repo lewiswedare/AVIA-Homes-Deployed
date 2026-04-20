@@ -14,10 +14,16 @@ struct ContractUploadView: View {
     @Environment(AppViewModel.self) private var viewModel
     @Environment(\.dismiss) private var dismiss
 
+    enum UploadTarget {
+        case original
+        case signed
+    }
+
     @State private var contract: ContractSignatureRow?
     @State private var isLoading = true
     @State private var isWorking = false
     @State private var showFileImporter = false
+    @State private var uploadTarget: UploadTarget = .signed
     @State private var errorMessage: String?
 
     private var isAdmin: Bool { viewModel.currentRole.isAnyStaffRole }
@@ -31,6 +37,7 @@ struct ContractUploadView: View {
                     if isLoading {
                         ProgressView().padding(40)
                     } else {
+                        originalContractCard
                         documentCard
                         confirmationCard
                         if let msg = errorMessage {
@@ -76,11 +83,110 @@ struct ContractUploadView: View {
                 Text("Contract for \(package.title)")
                     .font(.neueHeadline)
                     .foregroundStyle(AVIATheme.textPrimary)
-                Text("Upload a PDF of the signed contract, then both the client and admin need to confirm it’s signed.")
+                Text("Admin uploads the contract PDF. The client downloads it, signs it in person, then uploads the signed copy. Both parties confirm once signed.")
                     .font(.neueSubheadline)
                     .foregroundStyle(AVIATheme.textSecondary)
             }
             .frame(maxWidth: .infinity, alignment: .leading)
+            .padding(16)
+        }
+    }
+
+    // MARK: - Original Contract Card
+
+    private var originalContractCard: some View {
+        BentoCard(cornerRadius: 14) {
+            VStack(alignment: .leading, spacing: 12) {
+                HStack(spacing: 8) {
+                    Image(systemName: "doc.text")
+                        .foregroundStyle(AVIATheme.timelessBrown)
+                    Text("Contract to Sign")
+                        .font(.neueSubheadlineMedium)
+                        .foregroundStyle(AVIATheme.textPrimary)
+                    Spacer()
+                }
+
+                if let contract = contract, let urlString = contract.original_contract_url, let url = URL(string: urlString) {
+                    PDFThumbnailView(url: url)
+                        .frame(height: 200)
+                        .clipShape(RoundedRectangle(cornerRadius: 10))
+                    HStack(spacing: 8) {
+                        if let uploadedAt = contract.original_contract_uploaded_at {
+                            Label("Uploaded \(formatDate(uploadedAt))", systemImage: "checkmark.circle.fill")
+                                .font(.neueCaption)
+                                .foregroundStyle(AVIATheme.success)
+                        }
+                        Spacer()
+                    }
+                    HStack(spacing: 10) {
+                        Link(destination: url) {
+                            HStack(spacing: 6) {
+                                Image(systemName: "arrow.down.doc.fill")
+                                    .font(.neueSubheadlineMedium)
+                                Text("Download")
+                                    .font(.neueSubheadlineMedium)
+                            }
+                            .frame(maxWidth: .infinity)
+                            .frame(height: 44)
+                            .foregroundStyle(AVIATheme.aviaWhite)
+                            .background(AVIATheme.primaryGradient)
+                            .clipShape(.rect(cornerRadius: 10))
+                        }
+                        if isAdmin {
+                            Button {
+                                uploadTarget = .original
+                                showFileImporter = true
+                            } label: {
+                                HStack(spacing: 6) {
+                                    Image(systemName: "arrow.triangle.2.circlepath")
+                                        .font(.neueSubheadlineMedium)
+                                    Text("Replace")
+                                        .font(.neueSubheadlineMedium)
+                                }
+                                .frame(maxWidth: .infinity)
+                                .frame(height: 44)
+                                .foregroundStyle(AVIATheme.timelessBrown)
+                                .background(AVIATheme.timelessBrown.opacity(0.1))
+                                .clipShape(.rect(cornerRadius: 10))
+                            }
+                            .disabled(isWorking || contract.isFullyConfirmed)
+                        }
+                    }
+                } else if isAdmin {
+                    VStack(spacing: 8) {
+                        Image(systemName: "tray.and.arrow.up.fill")
+                            .font(.system(size: 32))
+                            .foregroundStyle(AVIATheme.textTertiary)
+                        Text("No contract uploaded yet")
+                            .font(.neueSubheadline)
+                            .foregroundStyle(AVIATheme.textSecondary)
+                        Text("Upload the contract PDF for the client to download and sign.")
+                            .font(.neueCaption)
+                            .foregroundStyle(AVIATheme.textTertiary)
+                            .multilineTextAlignment(.center)
+                    }
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, 16)
+
+                    PremiumButton("Upload Contract PDF", icon: "arrow.up.doc.fill", style: .primary) {
+                        uploadTarget = .original
+                        showFileImporter = true
+                    }
+                    .disabled(isWorking)
+                } else {
+                    VStack(spacing: 8) {
+                        Image(systemName: "hourglass")
+                            .font(.system(size: 28))
+                            .foregroundStyle(AVIATheme.textTertiary)
+                        Text("Waiting for admin to upload the contract")
+                            .font(.neueSubheadline)
+                            .foregroundStyle(AVIATheme.textSecondary)
+                            .multilineTextAlignment(.center)
+                    }
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, 16)
+                }
+            }
             .padding(16)
         }
     }
@@ -91,7 +197,7 @@ struct ContractUploadView: View {
         BentoCard(cornerRadius: 14) {
             VStack(alignment: .leading, spacing: 12) {
                 HStack(spacing: 8) {
-                    Image(systemName: "doc.text.fill")
+                    Image(systemName: "signature")
                         .foregroundStyle(AVIATheme.timelessBrown)
                     Text("Signed Contract PDF")
                         .font(.neueSubheadlineMedium)
@@ -115,7 +221,8 @@ struct ContractUploadView: View {
                                 .font(.neueCaption)
                         }
                     }
-                    PremiumButton("Replace PDF", icon: "arrow.triangle.2.circlepath", style: .secondary) {
+                    PremiumButton("Replace Signed PDF", icon: "arrow.triangle.2.circlepath", style: .secondary) {
+                        uploadTarget = .signed
                         showFileImporter = true
                     }
                     .disabled(isWorking || contract.isFullyConfirmed)
@@ -124,17 +231,24 @@ struct ContractUploadView: View {
                         Image(systemName: "tray.and.arrow.up.fill")
                             .font(.system(size: 32))
                             .foregroundStyle(AVIATheme.textTertiary)
-                        Text("No PDF uploaded yet")
+                        Text("No signed PDF uploaded yet")
                             .font(.neueSubheadline)
                             .foregroundStyle(AVIATheme.textSecondary)
+                        if contract?.hasOriginalContract != true {
+                            Text("The admin needs to upload the contract first.")
+                                .font(.neueCaption)
+                                .foregroundStyle(AVIATheme.textTertiary)
+                                .multilineTextAlignment(.center)
+                        }
                     }
                     .frame(maxWidth: .infinity)
                     .padding(.vertical, 24)
 
                     PremiumButton("Upload Signed Contract PDF", icon: "arrow.up.doc.fill", style: .primary) {
+                        uploadTarget = .signed
                         showFileImporter = true
                     }
-                    .disabled(isWorking)
+                    .disabled(isWorking || contract?.hasOriginalContract != true)
                 }
             }
             .padding(16)
@@ -268,14 +382,27 @@ struct ContractUploadView: View {
         isWorking = true
         defer { isWorking = false }
 
-        let uploadedURL = await SupabaseService.shared.uploadContractDocument(
-            contractId: contract.id,
-            assignmentId: assignment.id,
-            clientId: contract.client_id,
-            fileData: data,
-            fileName: url.lastPathComponent,
-            uploadedBy: viewModel.currentUser.id
-        )
+        let uploadedURL: String?
+        switch uploadTarget {
+        case .original:
+            uploadedURL = await SupabaseService.shared.uploadOriginalContract(
+                contractId: contract.id,
+                assignmentId: assignment.id,
+                clientId: contract.client_id,
+                fileData: data,
+                fileName: url.lastPathComponent,
+                uploadedBy: viewModel.currentUser.id
+            )
+        case .signed:
+            uploadedURL = await SupabaseService.shared.uploadContractDocument(
+                contractId: contract.id,
+                assignmentId: assignment.id,
+                clientId: contract.client_id,
+                fileData: data,
+                fileName: url.lastPathComponent,
+                uploadedBy: viewModel.currentUser.id
+            )
+        }
         if uploadedURL == nil {
             errorMessage = "Upload failed. Please try again."
             AVIAHaptic.error.trigger()
