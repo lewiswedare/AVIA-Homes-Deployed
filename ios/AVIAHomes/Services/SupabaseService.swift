@@ -38,6 +38,17 @@ class SupabaseService {
         realtimeChannels.removeAll()
     }
 
+    // MARK: - Column lists for narrowed .select() queries
+    //
+    // These column strings mirror the fields on the corresponding Row structs in
+    // `ios/AVIAHomes/Models/`. Keep them in sync if a column is added/removed on
+    // either side — PostgREST will silently omit unknown columns.
+
+    private static let profilesColumns = "id, first_name, last_name, email, phone, address, home_design, lot_number, contract_date, profile_completed, role, assigned_client_ids, assigned_staff_id, sales_partner_id, display_title, avatar_url, is_active, created_at, updated_at"
+    private static let serviceRequestsColumns = "id, client_id, build_id, title, description, category, status, date_created, last_updated, responses, created_at, updated_at"
+    private static let contractsColumns = "id, eoi_id, package_assignment_id, build_id, client_id, admin_id, contract_url, signed_contract_url, status, sent_at, signed_at, notes, created_at, updated_at"
+    private static let invoicesColumns = "id, contract_id, client_id, admin_id, invoice_number, description, amount, package_price, status, due_date, paid_at, invoice_url, notes, created_at, updated_at"
+
     func fetchProfile(userId: String) async -> ClientUser? {
         guard isConfigured else {
             print("[SupabaseService] fetchProfile: not configured")
@@ -47,8 +58,7 @@ class SupabaseService {
         do {
             let row: ProfileRow = try await client
                 .from("profiles")
-                // TODO: narrow .select() columns
-                .select()
+                .select(Self.profilesColumns)
                 .eq("id", value: normalizedId)
                 .single()
                 .execute()
@@ -124,8 +134,7 @@ class SupabaseService {
         do {
             let rows: [ProfileRow] = try await client
                 .from("profiles")
-                // TODO: narrow .select() columns
-                .select()
+                .select(Self.profilesColumns)
                 .order("created_at", ascending: false)
                 .limit(100)
                 .execute()
@@ -156,8 +165,7 @@ class SupabaseService {
         do {
             let buildRows: [BuildRow] = try await client
                 .from("builds")
-                // TODO: narrow .select() columns
-                .select()
+                .select("id, client_id, additional_client_ids, home_design, lot_number, estate, contract_date, assigned_staff_id, sales_partner_id, preconstruction_staff_id, building_support_staff_id, handover_triggered_at, status, created_at, updated_at, is_custom, selected_facade_id, custom_bedrooms, custom_bathrooms, custom_garages, custom_square_meters, custom_storeys, eoi_id, spec_tier, estimated_start_date, estimated_completion_date, actual_start_date, actual_completion_date")
                 .order("created_at", ascending: false)
                 .execute()
                 .value
@@ -184,8 +192,7 @@ class SupabaseService {
         do {
             let rows: [BuildStageRow] = try await client
                 .from("build_stages")
-                // TODO: narrow .select() columns
-                .select()
+                .select("id, build_id, name, description, status, progress, start_date, completion_date, notes, photo_count, sort_order, estimated_start_date, estimated_end_date, actual_start_date, actual_end_date")
                 .eq("build_id", value: buildId)
                 .order("sort_order", ascending: true)
                 .limit(100)
@@ -509,8 +516,7 @@ class SupabaseService {
         do {
             let rows: [PackageAssignmentRow] = try await client
                 .from("package_assignments")
-                // TODO: narrow .select() columns
-                .select()
+                .select("id, package_id, assigned_partner_ids, shared_with_client_ids, client_responses, is_exclusive, assigned_by, deposit_status, deposit_amount, deposit_due_date, admin_confirmed_by, admin_confirmed_at, eoi_status, contract_status, converted_to_build_id, converted_at, created_at, updated_at")
                 .limit(100)
                 .execute()
                 .value
@@ -542,8 +548,7 @@ class SupabaseService {
             // partners and staff), so this is safe.
             let existing: [PackageAssignmentRow] = try await client
                 .from("package_assignments")
-                // TODO: narrow .select() columns
-                .select()
+                .select("id, package_id, assigned_partner_ids, shared_with_client_ids, client_responses, is_exclusive, assigned_by, deposit_status, deposit_amount, deposit_due_date, admin_confirmed_by, admin_confirmed_at, eoi_status, contract_status, converted_to_build_id, converted_at, created_at, updated_at")
                 .eq("id", value: assignment.id)
                 .limit(1)
                 .execute()
@@ -579,8 +584,7 @@ class SupabaseService {
             if let clientId {
                 rows = try await client
                     .from("service_requests")
-                    // TODO: narrow .select() columns
-                    .select()
+                    .select(Self.serviceRequestsColumns)
                     .eq("client_id", value: clientId)
                     .order("date_created", ascending: false)
                     .execute()
@@ -588,8 +592,7 @@ class SupabaseService {
             } else {
                 rows = try await client
                     .from("service_requests")
-                    // TODO: narrow .select() columns
-                    .select()
+                    .select(Self.serviceRequestsColumns)
                     .order("date_created", ascending: false)
                     .execute()
                     .value
@@ -627,8 +630,7 @@ class SupabaseService {
         do {
             let rows: [HomeDesignRow] = try await client
                 .from("home_designs")
-                // TODO: narrow .select() columns
-                .select()
+                .select("id, name, bedrooms, bathrooms, garages, square_meters, image_url, price_from, storeys, lot_width, slug, description, house_width, house_length, living_areas, floorplan_image_url, room_highlights, inclusions")
                 .order("name", ascending: true)
                 .limit(100)
                 .execute()
@@ -645,8 +647,7 @@ class SupabaseService {
         do {
             let rows: [HouseLandPackageRow] = try await client
                 .from("house_land_packages")
-                // TODO: narrow .select() columns
-                .select()
+                .select("id, title, location, lot_size, home_design, price, image_url, is_new, lot_number, lot_frontage, lot_depth, land_price, house_price, spec_tier, title_date, council, zoning, build_time_estimate, inclusions, is_custom, custom_bedrooms, custom_bathrooms, custom_garages, custom_square_meters, custom_storeys, selected_facade_id")
                 .order("id", ascending: true)
                 .limit(100)
                 .execute()
@@ -663,8 +664,7 @@ class SupabaseService {
         do {
             let rows: [BlogPostRow] = try await client
                 .from("blog_posts")
-                // TODO: narrow .select() columns
-                .select()
+                .select("id, title, subtitle, category, image_url, date, read_time, content")
                 .order("date", ascending: false)
                 .limit(100)
                 .execute()
@@ -681,8 +681,7 @@ class SupabaseService {
         do {
             let rows: [LandEstateRow] = try await client
                 .from("land_estates")
-                // TODO: narrow .select() columns
-                .select()
+                .select("id, name, location, suburb, status, total_lots, available_lots, price_from, image_url, description, features, expected_completion, logo_url, logo_asset_name, brochure_url, site_map_url, site_map_asset_name")
                 .order("name", ascending: true)
                 .limit(100)
                 .execute()
@@ -699,8 +698,7 @@ class SupabaseService {
         do {
             let rows: [FacadeRow] = try await client
                 .from("facades")
-                // TODO: narrow .select() columns
-                .select()
+                .select("id, name, style, description, hero_image_url, gallery_image_urls, features, pricing_type, pricing_amount, storeys")
                 .order("name", ascending: true)
                 .limit(100)
                 .execute()
@@ -717,8 +715,7 @@ class SupabaseService {
         do {
             let rows: [ClientDocumentRow] = try await client
                 .from("documents")
-                // TODO: narrow .select() columns
-                .select()
+                .select("id, client_id, name, category, date_added, file_size, is_new, file_url, build_id, build_stage_id, created_at")
                 .eq("client_id", value: clientId)
                 .order("date_added", ascending: false)
                 .limit(100)
@@ -736,8 +733,7 @@ class SupabaseService {
         do {
             let rows: [ClientDocumentRow] = try await client
                 .from("documents")
-                // TODO: narrow .select() columns
-                .select()
+                .select("id, client_id, name, category, date_added, file_size, is_new, file_url, build_id, build_stage_id, created_at")
                 .order("date_added", ascending: false)
                 .limit(100)
                 .execute()
@@ -841,8 +837,7 @@ class SupabaseService {
         do {
             let rows: [ServiceRequestRow] = try await client
                 .from("service_requests")
-                // TODO: narrow .select() columns
-                .select()
+                .select(Self.serviceRequestsColumns)
                 .eq("id", value: requestId)
                 .limit(1)
                 .execute()
@@ -858,8 +853,7 @@ class SupabaseService {
         do {
             let rows: [ScheduleItemRow] = try await client
                 .from("schedule_items")
-                // TODO: narrow .select() columns
-                .select()
+                .select("id, client_id, title, subtitle, icon, date, type")
                 .eq("client_id", value: clientId)
                 .order("date", ascending: true)
                 .limit(100)
@@ -909,8 +903,7 @@ class SupabaseService {
         do {
             let rows: [ProfileRow] = try await client
                 .from("profiles")
-                // TODO: narrow .select() columns
-                .select()
+                .select(Self.profilesColumns)
                 .eq("role", value: role)
                 .limit(100)
                 .execute()
@@ -959,8 +952,7 @@ class SupabaseService {
         do {
             let rows: [ColourCategoryRow] = try await client
                 .from("colour_categories")
-                // TODO: narrow .select() columns
-                .select()
+                .select("id, name, icon, section, note, image_url, sort_order, options, default_option_cost, applicable_tiers")
                 .order("sort_order", ascending: true)
                 .limit(100)
                 .execute()
@@ -983,8 +975,7 @@ class SupabaseService {
         do {
             let rows: [SpecCategoryRow] = try await client
                 .from("spec_categories")
-                // TODO: narrow .select() columns
-                .select()
+                .select("id, name, icon, sort_order, items")
                 .order("sort_order", ascending: true)
                 .limit(100)
                 .execute()
@@ -1001,8 +992,7 @@ class SupabaseService {
         do {
             let rows: [SpecItemFlatRow] = try await client
                 .from("spec_items")
-                // TODO: narrow .select() columns
-                .select()
+                .select("id, category_id, name, volos_description, messina_description, portobello_description, is_upgradeable, image_url, sort_order, volos_cost, messina_cost, portobello_cost, volos_to_messina_cost, volos_to_portobello_cost, messina_to_portobello_cost")
                 .order("sort_order", ascending: true)
                 .limit(100)
                 .execute()
@@ -1045,8 +1035,7 @@ class SupabaseService {
         do {
             let rows: [SpecRangeTierRow] = try await client
                 .from("spec_range_tiers")
-                // TODO: narrow .select() columns
-                .select()
+                .select("tier, hero_image_url, summary, highlights, room_images")
                 .limit(100)
                 .execute()
                 .value
@@ -1077,8 +1066,7 @@ class SupabaseService {
         do {
             let rows: [HomeFastSchemeRow] = try await client
                 .from("homefast_schemes")
-                // TODO: narrow .select() columns
-                .select()
+                .select("id, name, subtitle, preview_colors, selections, room_images, sort_order")
                 .order("sort_order", ascending: true)
                 .limit(100)
                 .execute()
@@ -1095,8 +1083,7 @@ class SupabaseService {
         do {
             let rows: [SpecToColourMappingRow] = try await client
                 .from("spec_to_colour_mapping")
-                // TODO: narrow .select() columns
-                .select()
+                .select("spec_item_id, colour_category_ids")
                 .limit(100)
                 .execute()
                 .value
@@ -1116,8 +1103,7 @@ class SupabaseService {
         do {
             let rows: [SpecItemImageRow] = try await client
                 .from("spec_item_images")
-                // TODO: narrow .select() columns
-                .select()
+                .select("spec_item_id, base_image_url, tier_images")
                 .limit(100)
                 .execute()
                 .value
@@ -1147,8 +1133,7 @@ class SupabaseService {
         do {
             let rows: [SpecItemImageRow] = try await client
                 .from("spec_item_images")
-                // TODO: narrow .select() columns
-                .select()
+                .select("spec_item_id, base_image_url, tier_images")
                 .eq("spec_item_id", value: specItemId)
                 .limit(100)
                 .execute()
@@ -1257,8 +1242,7 @@ class SupabaseService {
         do {
             let rows: [UpgradePricingRow] = try await client
                 .from("upgrade_pricing")
-                // TODO: narrow .select() columns
-                .select()
+                .select("id, spec_item_id, colour_category_id, colour_option_id, from_tier, to_tier, cost, description, is_active, created_at, updated_at, storey_type")
                 .order("created_at", ascending: false)
                 .limit(100)
                 .execute()
@@ -1297,8 +1281,7 @@ class SupabaseService {
         do {
             let allRows: [UpgradePricingRow] = try await client
                 .from("upgrade_pricing")
-                // TODO: narrow .select() columns
-                .select()
+                .select("id, spec_item_id, colour_category_id, colour_option_id, from_tier, to_tier, cost, description, is_active, created_at, updated_at, storey_type")
                 .execute()
                 .value
             let fullRange = allRows.filter {
@@ -1322,8 +1305,7 @@ class SupabaseService {
         do {
             let rows: [BuildRangeUpgradeRequestRow] = try await client
                 .from("build_range_upgrade_requests")
-                // TODO: narrow .select() columns
-                .select()
+                .select("id, build_id, from_tier, to_tier, cost, status, client_notes, admin_notes, created_at, updated_at")
                 .eq("build_id", value: buildId)
                 .limit(100)
                 .execute()
@@ -1446,8 +1428,7 @@ class SupabaseService {
         do {
             let rows: [BuildSpecSelectionRow] = try await client
                 .from("build_spec_selections")
-                // TODO: narrow .select() columns
-                .select()
+                .select("id, build_id, category_id, spec_item_id, spec_tier, selection_type, client_notes, admin_notes, client_confirmed, admin_confirmed, client_confirmed_at, admin_confirmed_at, locked_for_client, status, snapshot_name, snapshot_description, snapshot_image_url, snapshot_category_name, sort_order, created_at, updated_at, upgrade_cost, upgrade_cost_note")
                 .eq("status", value: "awaiting_admin")
                 .neq("selection_type", value: "upgrade_draft")
                 .order("updated_at", ascending: false)
@@ -1466,8 +1447,7 @@ class SupabaseService {
         do {
             let rows: [BuildSpecSelectionRow] = try await client
                 .from("build_spec_selections")
-                // TODO: narrow .select() columns
-                .select()
+                .select("id, build_id, category_id, spec_item_id, spec_tier, selection_type, client_notes, admin_notes, client_confirmed, admin_confirmed, client_confirmed_at, admin_confirmed_at, locked_for_client, status, snapshot_name, snapshot_description, snapshot_image_url, snapshot_category_name, sort_order, created_at, updated_at, upgrade_cost, upgrade_cost_note")
                 .eq("build_id", value: buildId)
                 .order("sort_order", ascending: true)
                 .limit(100)
@@ -1618,8 +1598,7 @@ class SupabaseService {
         do {
             let rows: [BuildColourSelectionRow] = try await client
                 .from("build_colour_selections")
-                // TODO: narrow .select() columns
-                .select()
+                .select("id, build_id, build_spec_selection_id, spec_item_id, colour_category_id, colour_option_id, selection_status, client_notes, admin_notes, created_at, updated_at, cost, is_upgrade, spec_tier")
                 .eq("selection_status", value: "upgrade_accepted_by_client")
                 .order("updated_at", ascending: false)
                 .limit(100)
@@ -1637,8 +1616,7 @@ class SupabaseService {
         do {
             let rows: [BuildColourSelectionRow] = try await client
                 .from("build_colour_selections")
-                // TODO: narrow .select() columns
-                .select()
+                .select("id, build_id, build_spec_selection_id, spec_item_id, colour_category_id, colour_option_id, selection_status, client_notes, admin_notes, created_at, updated_at, cost, is_upgrade, spec_tier")
                 .eq("build_id", value: buildId)
                 .limit(100)
                 .execute()
@@ -1711,8 +1689,7 @@ class SupabaseService {
         do {
             let rows: [BuildSpecDocumentRow] = try await client
                 .from("build_spec_documents")
-                // TODO: narrow .select() columns
-                .select()
+                .select("id, build_id, storage_path, public_url, version, generated_at, generated_by")
                 .eq("build_id", value: buildId)
                 .order("version", ascending: false)
                 .limit(100)
@@ -1937,8 +1914,7 @@ class SupabaseService {
     func fetchEOI(forAssignment assignmentId: String) async -> EOISubmissionRow? {
         do {
             let rows: [EOISubmissionRow] = try await client.from("eoi_submissions")
-                // TODO: narrow .select() columns
-                .select()
+                .select("id, package_assignment_id, package_id, client_id, lot_number, estate_name, street_suburb, occupancy_type, specification_tier, facade_selection, buyer1_name, buyer1_email, buyer1_address, buyer1_phone, buyer2_name, buyer2_email, buyer2_address, buyer2_phone, solicitor_company, solicitor_name, solicitor_email, solicitor_address, solicitor_phone, status, admin_notes, reviewed_by, reviewed_at, created_at, updated_at")
                 .eq("package_assignment_id", value: assignmentId)
                 .order("created_at", ascending: false)
                 .limit(1)
@@ -1996,8 +1972,7 @@ class SupabaseService {
     func fetchEOIsForPackage(packageId: String) async -> [EOISubmissionRow] {
         do {
             let rows: [EOISubmissionRow] = try await client.from("eoi_submissions")
-                // TODO: narrow .select() columns
-                .select()
+                .select("id, package_assignment_id, package_id, client_id, lot_number, estate_name, street_suburb, occupancy_type, specification_tier, facade_selection, buyer1_name, buyer1_email, buyer1_address, buyer1_phone, buyer2_name, buyer2_email, buyer2_address, buyer2_phone, solicitor_company, solicitor_name, solicitor_email, solicitor_address, solicitor_phone, status, admin_notes, reviewed_by, reviewed_at, created_at, updated_at")
                 .eq("package_id", value: packageId)
                 .order("created_at", ascending: false)
                 .limit(100)
@@ -2162,8 +2137,7 @@ class SupabaseService {
     func fetchContractSignature(forAssignment assignmentId: String) async -> ContractSignatureRow? {
         do {
             let rows: [ContractSignatureRow] = try await client.from("contract_signatures")
-                // TODO: narrow .select() columns
-                .select()
+                .select("id, eoi_id, package_assignment_id, client_id, original_contract_url, original_contract_uploaded_by, original_contract_uploaded_at, contract_document_url, contract_uploaded_by, contract_uploaded_at, signature_image_url, signed_at, signer_name, signer_ip, signed_document_url, client_confirmed_at, admin_confirmed_at, admin_confirmed_by, status, created_at, updated_at")
                 .eq("package_assignment_id", value: assignmentId)
                 .order("created_at", ascending: false)
                 .limit(1)
@@ -2202,8 +2176,7 @@ class SupabaseService {
 
             // Re-fetch to decide the new aggregate status atomically.
             let rows: [ContractSignatureRow] = try await client.from("contract_signatures")
-                // TODO: narrow .select() columns
-                .select()
+                .select("id, eoi_id, package_assignment_id, client_id, original_contract_url, original_contract_uploaded_by, original_contract_uploaded_at, contract_document_url, contract_uploaded_by, contract_uploaded_at, signature_image_url, signed_at, signer_name, signer_ip, signed_document_url, client_confirmed_at, admin_confirmed_at, admin_confirmed_by, status, created_at, updated_at")
                 .eq("id", value: contractId)
                 .limit(1)
                 .execute()
@@ -2280,8 +2253,7 @@ class SupabaseService {
         guard isConfigured else { return [] }
         do {
             let rows: [ContractRow] = try await client.from("contracts")
-                // TODO: narrow .select() columns
-                .select()
+                .select(Self.contractsColumns)
                 .eq("client_id", value: clientId)
                 .order("created_at", ascending: false)
                 .limit(100)
@@ -2298,8 +2270,7 @@ class SupabaseService {
         guard isConfigured else { return [] }
         do {
             let rows: [ContractRow] = try await client.from("contracts")
-                // TODO: narrow .select() columns
-                .select()
+                .select(Self.contractsColumns)
                 .order("created_at", ascending: false)
                 .limit(100)
                 .execute()
@@ -2315,8 +2286,7 @@ class SupabaseService {
         guard isConfigured else { return nil }
         do {
             let rows: [ContractRow] = try await client.from("contracts")
-                // TODO: narrow .select() columns
-                .select()
+                .select(Self.contractsColumns)
                 .eq("eoi_id", value: eoiId)
                 .order("created_at", ascending: false)
                 .limit(1)
@@ -2425,8 +2395,7 @@ class SupabaseService {
         guard isConfigured else { return [] }
         do {
             let rows: [InvoiceRow] = try await client.from("invoices")
-                // TODO: narrow .select() columns
-                .select()
+                .select(Self.invoicesColumns)
                 .eq("client_id", value: clientId)
                 .order("created_at", ascending: false)
                 .limit(100)
@@ -2443,8 +2412,7 @@ class SupabaseService {
         guard isConfigured else { return [] }
         do {
             let rows: [InvoiceRow] = try await client.from("invoices")
-                // TODO: narrow .select() columns
-                .select()
+                .select(Self.invoicesColumns)
                 .order("created_at", ascending: false)
                 .limit(100)
                 .execute()
@@ -2460,8 +2428,7 @@ class SupabaseService {
         guard isConfigured else { return nil }
         do {
             let rows: [InvoiceRow] = try await client.from("invoices")
-                // TODO: narrow .select() columns
-                .select()
+                .select(Self.invoicesColumns)
                 .eq("contract_id", value: contractId)
                 .order("created_at", ascending: false)
                 .limit(1)
@@ -2561,8 +2528,7 @@ class SupabaseService {
         guard isConfigured else { return [] }
         do {
             let rows: [StocklistEstateRow] = try await client.from("stocklist_estates")
-                // TODO: narrow .select() columns
-                .select()
+                .select("id, name, region, sub_region, deposit_terms, estate_brochure_url, rental_appraisal_url, eoi_form_url, sort_order, is_active, created_at, updated_at")
                 .eq("is_active", value: true)
                 .order("sort_order")
                 .limit(100)
@@ -2594,8 +2560,7 @@ class SupabaseService {
         guard !itemIds.isEmpty else { return [] }
         do {
             let rows: [StocklistAltDesignRow] = try await client.from("stocklist_alternative_designs")
-                // TODO: narrow .select() columns
-                .select()
+                .select("id, stocklist_item_id, design_facade, build_size, bedrooms, bathrooms, garages, theatre, build_price, package_price, specification")
                 .in("stocklist_item_id", values: itemIds)
                 .limit(100)
                 .execute().value
