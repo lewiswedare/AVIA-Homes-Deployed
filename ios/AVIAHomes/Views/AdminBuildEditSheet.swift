@@ -962,7 +962,11 @@ struct AdminBuildEditSheet: View {
     }
 
     private var selectionsSection: some View {
-        AdminBuildSelectionsTab(build: latestBuild)
+        AdminBuildSpecReviewView(
+            buildId: latestBuild.id,
+            clientName: latestBuild.clientDisplayName,
+            clientId: latestBuild.client.id
+        )
     }
 
     private var savedConfirmation: some View {
