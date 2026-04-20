@@ -155,6 +155,7 @@ nonisolated struct UpgradeRequest: Identifiable, Sendable {
 
 nonisolated enum UpgradeStatus: String, Sendable {
     case pending = "Pending"
+    case submitted = "Awaiting Admin"
     case quoted = "Quoted"
     case approved = "Approved"
     case declined = "Declined"

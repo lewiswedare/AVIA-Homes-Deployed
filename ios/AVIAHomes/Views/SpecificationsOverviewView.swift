@@ -452,6 +452,7 @@ struct SpecificationsOverviewView: View {
                     }
                 } label: {
                     upgradeRequestRow(request)
+                        .opacity(request.status == .submitted ? 0.5 : 1)
                 }
                 .buttonStyle(.pressable(.subtle))
                 .disabled(request.status != .quoted && request.status != .pending)
@@ -519,7 +520,7 @@ struct SpecificationsOverviewView: View {
                     Circle()
                         .fill(AVIATheme.warning)
                         .frame(width: 6, height: 6)
-                    Text("Under Review")
+                    Text("Draft")
                         .font(.neueCaption2)
                         .foregroundStyle(AVIATheme.textTertiary)
                     Spacer()
@@ -531,6 +532,18 @@ struct SpecificationsOverviewView: View {
                     }
                     .foregroundStyle(AVIATheme.destructive)
                 }
+            }
+
+            if request.status == .submitted {
+                HStack(spacing: 6) {
+                    Image(systemName: "hourglass")
+                        .font(.neueCaption2)
+                    Text("Awaiting admin review")
+                        .font(.neueCaption2Medium)
+                    Spacer()
+                }
+                .foregroundStyle(AVIATheme.textTertiary)
+                .padding(.top, 2)
             }
 
             if request.status == .quoted {
@@ -561,6 +574,7 @@ struct SpecificationsOverviewView: View {
     private func upgradeStatusColor(_ status: UpgradeStatus) -> Color {
         switch status {
         case .pending: AVIATheme.warning
+        case .submitted: AVIATheme.textTertiary
         case .quoted: AVIATheme.timelessBrown
         case .approved: AVIATheme.success
         case .declined: AVIATheme.destructive

@@ -88,14 +88,15 @@ class SpecificationViewModel {
             let status: UpgradeStatus = {
                 switch row.selectionType {
                 case .upgradeDraft: return .pending
+                case .upgradeRequested: return .submitted
                 case .upgradeCosted: return .quoted
-                case .upgradeAccepted: return .pending
+                case .upgradeAccepted: return .submitted
                 case .upgradeDeclined: return .declined
                 case .upgradeApproved: return .approved
                 case .substituted: return .approved
                 default:
                     switch row.status {
-                    case .awaitingAdmin: return .pending
+                    case .awaitingAdmin: return .submitted
                     case .awaitingClient: return .quoted
                     case .approved: return .approved
                     case .amendedByAdmin: return .quoted
@@ -193,7 +194,7 @@ class SpecificationViewModel {
 
     func clientAcceptUpgradeCost(requestId: String) {
         if let reqIdx = upgradeRequests.firstIndex(where: { $0.id == requestId }) {
-            upgradeRequests[reqIdx].status = .pending
+            upgradeRequests[reqIdx].status = .submitted
         }
         guard let idx = cachedSelections.firstIndex(where: { $0.id == requestId }) else { return }
         cachedSelections[idx].selectionType = .upgradeAccepted

@@ -29,6 +29,7 @@ struct AllUpgradeRequestsView: View {
                         }
                     } label: {
                         requestCard(request)
+                            .opacity(request.status == .submitted ? 0.5 : 1)
                     }
                     .buttonStyle(.pressable(.subtle))
                     .disabled(request.status != .quoted)
@@ -114,6 +115,18 @@ struct AllUpgradeRequestsView: View {
                 .foregroundStyle(AVIATheme.timelessBrown)
                 .padding(.top, 2)
             }
+
+            if request.status == .submitted {
+                HStack(spacing: 6) {
+                    Image(systemName: "hourglass")
+                        .font(.neueCaption2)
+                    Text("Awaiting admin review")
+                        .font(.neueCaption2Medium)
+                    Spacer()
+                }
+                .foregroundStyle(AVIATheme.textTertiary)
+                .padding(.top, 2)
+            }
         }
         .padding(14)
         .background(AVIATheme.cardBackground)
@@ -170,6 +183,7 @@ struct AllUpgradeRequestsView: View {
     private func upgradeStatusColor(_ status: UpgradeStatus) -> Color {
         switch status {
         case .pending: AVIATheme.warning
+        case .submitted: AVIATheme.textTertiary
         case .quoted: AVIATheme.timelessBrown
         case .approved: AVIATheme.success
         case .declined: AVIATheme.destructive
