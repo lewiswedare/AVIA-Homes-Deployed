@@ -27,7 +27,14 @@ struct ClientSpecConfirmationView: View {
         .task {
             viewModel.notificationService = appViewModel.notificationService
             viewModel.clientId = appViewModel.currentUser.id
+            viewModel.clientName = appViewModel.currentUser.fullName
             viewModel.adminRecipientIds = appViewModel.allRegisteredUsers.filter { $0.role.isAnyStaffRole }.map(\.id)
+            if let build = appViewModel.allClientBuilds.first(where: { $0.id == buildId }) {
+                let lot = build.lotNumber.isEmpty ? "" : "Lot \(build.lotNumber)"
+                let estate = build.estate
+                let combined = [lot, estate].filter { !$0.isEmpty }.joined(separator: ", ")
+                viewModel.buildAddress = combined.isEmpty ? build.homeDesign : combined
+            }
             async let specLoad: Void = viewModel.load(buildId: buildId)
 
             let storeyType: String
@@ -65,6 +72,7 @@ struct ClientSpecConfirmationView: View {
             VStack(spacing: 16) {
                 statusBanner
                 tierInfoBanner
+                upgradeDraftBasketCard
                 specRangeUpgradeCard
                 upgradeQuotesAwaitingResponseCard
 
@@ -171,6 +179,99 @@ struct ClientSpecConfirmationView: View {
         case .amendedByAdmin:
             "An admin has made changes to your specifications."
         }
+    }
+
+    @ViewBuilder
+    private var upgradeDraftBasketCard: some View {
+        let drafts = viewModel.upgradeDraftItems
+        if !drafts.isEmpty {
+            VStack(alignment: .leading, spacing: 12) {
+                HStack(spacing: 10) {
+                    Image(systemName: "tray.full.fill")
+                        .font(.neueCorpMedium(18))
+                        .foregroundStyle(AVIATheme.timelessBrown)
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text("My Upgrade Requests")
+                            .font(.neueCaptionMedium)
+                            .foregroundStyle(AVIATheme.textPrimary)
+                        Text("\(drafts.count) draft\(drafts.count == 1 ? "" : "s") ready to submit")
+                            .font(.neueCaption2)
+                            .foregroundStyle(AVIATheme.textSecondary)
+                    }
+                    Spacer()
+                }
+
+                ForEach(drafts, id: \.id) { item in
+                    draftUpgradeRow(item)
+                }
+
+                Button {
+                    AVIAHaptic.success.trigger()
+                    Task { await viewModel.submitAllUpgradeRequests() }
+                } label: {
+                    HStack(spacing: 8) {
+                        Image(systemName: "paperplane.fill")
+                        Text("Submit \(drafts.count) Upgrade Request\(drafts.count == 1 ? "" : "s")")
+                    }
+                    .font(.neueSubheadlineMedium)
+                    .frame(maxWidth: .infinity)
+                    .frame(height: 48)
+                    .foregroundStyle(AVIATheme.aviaWhite)
+                    .background(AVIATheme.primaryGradient)
+                    .clipShape(.rect(cornerRadius: 12))
+                }
+                .buttonStyle(.pressable(.prominent))
+                .disabled(viewModel.isSaving)
+            }
+            .padding(14)
+            .background(AVIATheme.cardBackground)
+            .clipShape(.rect(cornerRadius: 14))
+            .overlay {
+                RoundedRectangle(cornerRadius: 14)
+                    .stroke(AVIATheme.timelessBrown.opacity(0.25), lineWidth: 1)
+            }
+        }
+    }
+
+    private func draftUpgradeRow(_ item: BuildSpecSelection) -> some View {
+        HStack(alignment: .top, spacing: 10) {
+            VStack(alignment: .leading, spacing: 2) {
+                Text(item.snapshotName)
+                    .font(.neueCaptionMedium)
+                    .foregroundStyle(AVIATheme.textPrimary)
+                Text(item.snapshotCategoryName)
+                    .font(.neueCaption2)
+                    .foregroundStyle(AVIATheme.textTertiary)
+                if let notes = item.clientNotes, !notes.isEmpty {
+                    Text(notes)
+                        .font(.neueCaption2)
+                        .foregroundStyle(AVIATheme.textSecondary)
+                        .lineLimit(2)
+                }
+            }
+            Spacer()
+            Button {
+                AVIAHaptic.lightTap.trigger()
+                viewModel.removeUpgradeDraft(selectionId: item.id)
+            } label: {
+                HStack(spacing: 4) {
+                    Image(systemName: "xmark.circle")
+                        .font(.neueCorp(10))
+                    Text("Remove")
+                        .font(.neueCaption2Medium)
+                }
+                .foregroundStyle(AVIATheme.destructive)
+                .padding(.horizontal, 10)
+                .padding(.vertical, 6)
+                .background(AVIATheme.destructive.opacity(0.1))
+                .clipShape(Capsule())
+            }
+            .buttonStyle(.pressable(.subtle))
+            .disabled(viewModel.isSaving)
+        }
+        .padding(12)
+        .background(AVIATheme.timelessBrown.opacity(0.04))
+        .clipShape(.rect(cornerRadius: 10))
     }
 
     @ViewBuilder

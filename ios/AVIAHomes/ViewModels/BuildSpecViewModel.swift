@@ -18,6 +18,8 @@ class BuildSpecViewModel {
     var notificationService: NotificationService?
     var adminRecipientIds: [String] = []
     var clientId: String = ""
+    var clientName: String = ""
+    var buildAddress: String = ""
 
     var groupedSelections: [(category: String, categoryId: String, items: [BuildSpecSelection])] {
         let grouped = Dictionary(grouping: selections) { $0.snapshotCategoryName }
@@ -62,6 +64,10 @@ class BuildSpecViewModel {
             $0.selectionType == .upgradeCosted ||
             $0.selectionType == .upgradeAccepted
         }
+    }
+
+    var upgradeDraftItems: [BuildSpecSelection] {
+        selections.filter { $0.selectionType == .upgradeDraft }
     }
 
     var upgradePendingClientResponseItems: [BuildSpecSelection] {
@@ -126,13 +132,65 @@ class BuildSpecViewModel {
 
     func requestUpgrade(selectionId: String, notes: String?) {
         guard let idx = selections.firstIndex(where: { $0.id == selectionId }) else { return }
-        selections[idx].selectionType = .upgradeRequested
+        // Add to client-side draft basket (not sent to admin until client submits all)
+        selections[idx].selectionType = .upgradeDraft
         selections[idx].clientNotes = notes
         Task {
             let success = await SupabaseService.shared.upsertBuildSpecSelection(selections[idx])
-            if !success { errorMessage = "Failed to save upgrade request" }
+            if !success { errorMessage = "Failed to save upgrade draft" }
             await load(buildId: buildId)
         }
+    }
+
+    func removeUpgradeDraft(selectionId: String) {
+        guard let idx = selections.firstIndex(where: { $0.id == selectionId }) else { return }
+        guard selections[idx].selectionType == .upgradeDraft else { return }
+        selections[idx].selectionType = .included
+        selections[idx].clientNotes = nil
+        let item = selections[idx]
+        Task {
+            let success = await SupabaseService.shared.upsertBuildSpecSelection(item)
+            if !success { errorMessage = "Failed to remove upgrade draft" }
+            await load(buildId: buildId)
+        }
+    }
+
+    func submitAllUpgradeRequests() async {
+        let drafts = upgradeDraftItems
+        guard !drafts.isEmpty else { return }
+        isSaving = true
+        errorMessage = nil
+        var successCount = 0
+        for item in drafts {
+            guard let idx = selections.firstIndex(where: { $0.id == item.id }) else { continue }
+            selections[idx].selectionType = .upgradeRequested
+            let toSave = selections[idx]
+            let ok = await SupabaseService.shared.upsertBuildSpecSelection(toSave)
+            if ok { successCount += 1 }
+        }
+        if successCount > 0, let ns = notificationService {
+            let count = successCount
+            let sender = clientName.isEmpty ? "Client" : clientName
+            let addressPart = buildAddress.isEmpty ? "" : " for \(buildAddress)"
+            let message = "\(sender) submitted \(count) upgrade request\(count == 1 ? "" : "s")\(addressPart)"
+            for recipientId in adminRecipientIds {
+                await ns.createNotification(
+                    recipientId: recipientId,
+                    senderId: clientId,
+                    senderName: sender,
+                    type: .buildUpdate,
+                    title: "Upgrade Requests Submitted",
+                    message: message,
+                    referenceId: buildId,
+                    referenceType: "build"
+                )
+            }
+            successMessage = "Submitted \(count) upgrade request\(count == 1 ? "" : "s")"
+        } else if successCount == 0 {
+            errorMessage = "Failed to submit upgrade requests"
+        }
+        await load(buildId: buildId)
+        isSaving = false
     }
 
     func updateClientNotes(selectionId: String, notes: String) {

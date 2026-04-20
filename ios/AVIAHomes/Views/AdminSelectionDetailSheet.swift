@@ -121,6 +121,7 @@ struct AdminSelectionDetailSheet: View {
     private var selectionTypeBadge: some View {
         let (label, color): (String, Color) = switch selection.selectionType {
         case .included: ("Included", AVIATheme.success)
+        case .upgradeDraft: ("Upgrade Draft", AVIATheme.textTertiary)
         case .upgradeRequested: ("Upgrade Requested", AVIATheme.warning)
         case .upgradeCosted: ("Upgrade Costed", AVIATheme.accent)
         case .upgradeAccepted: ("Upgrade Accepted", AVIATheme.heritageBlue)

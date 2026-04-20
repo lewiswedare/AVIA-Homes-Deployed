@@ -69,7 +69,8 @@ class SpecificationViewModel {
         }
 
         upgradeRequests = rows.compactMap { row -> UpgradeRequest? in
-            guard row.selectionType == .upgradeRequested
+            guard row.selectionType == .upgradeDraft
+               || row.selectionType == .upgradeRequested
                || row.selectionType == .upgradeCosted
                || row.selectionType == .upgradeAccepted
                || row.selectionType == .upgradeDeclined
@@ -78,6 +79,7 @@ class SpecificationViewModel {
 
             let status: UpgradeStatus = {
                 switch row.selectionType {
+                case .upgradeDraft: return .pending
                 case .upgradeCosted: return .quoted
                 case .upgradeAccepted: return .pending
                 case .upgradeDeclined: return .declined
@@ -139,8 +141,9 @@ class SpecificationViewModel {
         Task { @MainActor in
             if let idx = cachedSelections.firstIndex(where: { $0.specItemId == item.id }) {
                 var sel = cachedSelections[idx]
-                sel.selectionType = .upgradeRequested
-                sel.status = .awaitingAdmin
+                // Add to client-side draft basket; batched submission happens
+                // from ClientSpecConfirmationView's "My Upgrade Requests" card.
+                sel.selectionType = .upgradeDraft
                 sel.clientNotes = nil
                 sel.upgradeCost = estimatedCost
                 cachedSelections[idx] = sel
@@ -152,7 +155,8 @@ class SpecificationViewModel {
                     categoryId: "",
                     specItemId: item.id,
                     specTier: currentTier.rawValue,
-                    selectionType: .upgradeRequested,
+                    // Add to client-side draft basket (see ClientSpecConfirmationView)
+                    selectionType: .upgradeDraft,
                     clientNotes: nil,
                     adminNotes: nil,
                     clientConfirmed: false,
@@ -160,7 +164,7 @@ class SpecificationViewModel {
                     clientConfirmedAt: nil,
                     adminConfirmedAt: nil,
                     lockedForClient: false,
-                    status: .awaitingAdmin,
+                    status: .draft,
                     snapshotName: item.name,
                     snapshotDescription: item.description(for: toTier),
                     snapshotImageURL: nil,

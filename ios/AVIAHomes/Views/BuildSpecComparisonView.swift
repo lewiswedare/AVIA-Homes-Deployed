@@ -123,6 +123,14 @@ struct BuildSpecItemRow: View {
         switch selection.selectionType {
         case .included:
             EmptyView()
+        case .upgradeDraft:
+            Text("DRAFT")
+                .font(.neueCorpMedium(7))
+                .foregroundStyle(AVIATheme.textTertiary)
+                .padding(.horizontal, 6)
+                .padding(.vertical, 2)
+                .background(AVIATheme.textTertiary.opacity(0.12))
+                .clipShape(Capsule())
         case .upgradeRequested:
             Text("UPGRADE REQ.")
                 .font(.neueCorpMedium(7))

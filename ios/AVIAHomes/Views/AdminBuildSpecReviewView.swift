@@ -520,6 +520,7 @@ struct AdminBuildSpecReviewView: View {
     private func selectionTypePill(_ type: SelectionType) -> some View {
         let (label, color): (String, Color) = switch type {
         case .included: ("STD", AVIATheme.textTertiary)
+        case .upgradeDraft: ("DRAFT", AVIATheme.textTertiary)
         case .upgradeRequested: ("UPG REQ", AVIATheme.warning)
         case .upgradeCosted: ("COSTED", AVIATheme.accent)
         case .upgradeAccepted: ("ACCEPTED", AVIATheme.heritageBlue)

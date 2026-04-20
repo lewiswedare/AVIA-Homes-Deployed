@@ -286,6 +286,7 @@ struct AdminBuildSelectionsTab: View {
     private func typePill(_ type: SelectionType) -> some View {
         let (label, color): (String, Color) = switch type {
         case .included: ("STD", AVIATheme.textTertiary)
+        case .upgradeDraft: ("DRAFT", AVIATheme.textTertiary)
         case .upgradeRequested: ("UPG", AVIATheme.warning)
         case .upgradeCosted: ("UPG $", AVIATheme.timelessBrown)
         case .upgradeAccepted: ("UPG ✓", AVIATheme.success)

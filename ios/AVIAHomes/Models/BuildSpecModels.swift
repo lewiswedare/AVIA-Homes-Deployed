@@ -51,6 +51,7 @@ nonisolated enum BuildSpecStatus: String, Codable, Sendable, CaseIterable {
 
 nonisolated enum SelectionType: String, Codable, Sendable {
     case included
+    case upgradeDraft = "upgrade_draft"
     case upgradeRequested = "upgrade_requested"
     case upgradeCosted = "upgrade_costed"
     case upgradeAccepted = "upgrade_accepted"
@@ -68,6 +69,7 @@ nonisolated enum SelectionType: String, Codable, Sendable {
     var displayLabel: String {
         switch self {
         case .included: "Included"
+        case .upgradeDraft: "Upgrade Draft"
         case .upgradeRequested: "Upgrade Requested"
         case .upgradeCosted: "Upgrade Costed"
         case .upgradeAccepted: "Upgrade Accepted"

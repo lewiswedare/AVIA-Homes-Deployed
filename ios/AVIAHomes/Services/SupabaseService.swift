@@ -1393,6 +1393,7 @@ class SupabaseService {
                 .from("build_spec_selections")
                 .select()
                 .eq("status", value: "awaiting_admin")
+                .neq("selection_type", value: "upgrade_draft")
                 .order("updated_at", ascending: false)
                 .execute()
                 .value
