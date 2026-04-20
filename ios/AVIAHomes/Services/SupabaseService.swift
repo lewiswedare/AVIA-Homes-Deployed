@@ -1624,6 +1624,17 @@ class SupabaseService {
         }
     }
 
+    func deleteBuildColourSelection(id: String) async -> Bool {
+        guard isConfigured else { return false }
+        do {
+            try await client.from("build_colour_selections").delete().eq("id", value: id).execute()
+            return true
+        } catch {
+            print("[SupabaseService] deleteBuildColourSelection FAILED: \(error)")
+            return false
+        }
+    }
+
     // MARK: - Build Spec Documents
 
     func fetchBuildSpecDocuments(buildId: String) async -> [BuildSpecDocument] {

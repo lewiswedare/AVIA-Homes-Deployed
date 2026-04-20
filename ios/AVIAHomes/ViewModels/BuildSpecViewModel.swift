@@ -886,6 +886,20 @@ class BuildSpecViewModel {
         colourSelections.filter { $0.selectionStatus == .draft }
     }
 
+    /// Removes a draft colour selection so the client can re-pick or skip.
+    func removeColourDraft(selectionId: String) {
+        guard let idx = colourSelections.firstIndex(where: { $0.id == selectionId }) else { return }
+        guard colourSelections[idx].selectionStatus == .draft else { return }
+        colourSelections.remove(at: idx)
+        Task {
+            let ok = await SupabaseService.shared.deleteBuildColourSelection(id: selectionId)
+            if !ok {
+                errorMessage = "Failed to remove colour draft"
+                await load(buildId: buildId)
+            }
+        }
+    }
+
     func submitColourSelectionsForApproval() async {
         isSaving = true
         errorMessage = nil
