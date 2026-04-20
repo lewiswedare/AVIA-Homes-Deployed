@@ -58,13 +58,26 @@ struct BuildProgressView: View {
                     .allowsHitTesting(false)
             }
             .overlay(alignment: .bottom) {
+                LinearGradient(
+                    stops: [
+                        .init(color: Color.clear, location: 0.0),
+                        .init(color: AVIATheme.background.opacity(0.15), location: 0.25),
+                        .init(color: AVIATheme.background.opacity(0.4), location: 0.45),
+                        .init(color: AVIATheme.background.opacity(0.7), location: 0.65),
+                        .init(color: AVIATheme.background.opacity(0.9), location: 0.8),
+                        .init(color: AVIATheme.background, location: 1.0)
+                    ],
+                    startPoint: .top,
+                    endPoint: .bottom
+                )
+                .frame(height: 200)
+            }
+            .overlay(alignment: .bottomLeading) {
                 Text("Build Progress")
                     .font(.neueCorpMedium(28))
-                    .foregroundStyle(AVIATheme.aviaWhite)
-                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .foregroundStyle(AVIATheme.textPrimary)
                     .padding(.horizontal, 20)
-                    .padding(.vertical, 16)
-                    .background(.ultraThinMaterial)
+                    .padding(.bottom, 16)
             }
             .clipped()
     }
