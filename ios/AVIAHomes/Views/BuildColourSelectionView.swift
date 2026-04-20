@@ -63,7 +63,14 @@ struct BuildColourSelectionView: View {
         .task {
             viewModel.notificationService = appViewModel.notificationService
             viewModel.clientId = appViewModel.currentUser.id
+            viewModel.clientName = appViewModel.currentUser.fullName
             viewModel.adminRecipientIds = appViewModel.allRegisteredUsers.filter { $0.role.isAnyStaffRole }.map(\.id)
+            if let build = appViewModel.allClientBuilds.first(where: { $0.id == buildId }) {
+                let lot = build.lotNumber.isEmpty ? "" : "Lot \(build.lotNumber)"
+                let estate = build.estate
+                let combined = [lot, estate].filter { !$0.isEmpty }.joined(separator: ", ")
+                viewModel.buildAddress = combined.isEmpty ? build.homeDesign : combined
+            }
             await viewModel.load(buildId: buildId)
         }
         .sheet(item: $selectedSpecItem) { specItem in
@@ -72,6 +79,7 @@ struct BuildColourSelectionView: View {
                 specTier: viewModel.specTier,
                 existingSelection: viewModel.colourSelections.first { $0.buildSpecSelectionId == specItem.id },
                 onSelect: { colourCatId, colourOptId, cost, isUpgrade in
+                    AVIAHaptic.lightTap.trigger()
                     Task {
                         await viewModel.saveColourSelection(
                             buildSpecSelectionId: specItem.id,
@@ -98,6 +106,8 @@ struct BuildColourSelectionView: View {
         ZStack(alignment: .bottom) {
             ScrollView {
                 VStack(spacing: 16) {
+                    colourStatusBanner
+                    colourDraftBasketCard
                     progressCard
                     tierInfoBanner
 
@@ -183,6 +193,131 @@ struct BuildColourSelectionView: View {
         .padding(14)
         .background(AVIATheme.cardBackground)
         .clipShape(.rect(cornerRadius: 14))
+    }
+
+    private var colourStatusBanner: some View {
+        let status = viewModel.colourSelectionOverallStatus
+        let (title, subtitle, color, label): (String, String, Color, String) = {
+            switch status {
+            case .submitted:
+                return (
+                    "Submitted \u2014 Awaiting Review",
+                    "Your colour selections are with the AVIA team for approval.",
+                    AVIATheme.warning,
+                    "Submitted"
+                )
+            case .approved:
+                return (
+                    "Colour Selections Approved",
+                    "Your colour palette is finalised. Your summary PDF is ready.",
+                    AVIATheme.success,
+                    "Approved"
+                )
+            case .reopened:
+                return (
+                    "Reopened for Changes",
+                    "An admin has reopened your colour selections. Review and resubmit.",
+                    AVIATheme.heritageBlue,
+                    "Reopened"
+                )
+            default:
+                return (
+                    "Pick Your Colours",
+                    "Save selections as drafts and submit when you\u2019re ready.",
+                    AVIATheme.timelessBrown,
+                    "Draft"
+                )
+            }
+        }()
+        let icon: String = {
+            switch status {
+            case .submitted: return "paperplane.fill"
+            case .approved: return "checkmark.seal.fill"
+            case .reopened: return "arrow.uturn.backward.circle.fill"
+            default: return "paintpalette.fill"
+            }
+        }()
+        return HStack(spacing: 10) {
+            Image(systemName: icon)
+                .font(.neueSubheadlineMedium)
+                .foregroundStyle(color)
+            VStack(alignment: .leading, spacing: 2) {
+                Text(title)
+                    .font(.neueCaptionMedium)
+                    .foregroundStyle(AVIATheme.textPrimary)
+                Text(subtitle)
+                    .font(.neueCaption2)
+                    .foregroundStyle(AVIATheme.textSecondary)
+            }
+            Spacer()
+            Text(label)
+                .font(.neueCorpMedium(9))
+                .foregroundStyle(AVIATheme.aviaWhite)
+                .padding(.horizontal, 10)
+                .padding(.vertical, 4)
+                .background(color)
+                .clipShape(Capsule())
+        }
+        .padding(14)
+        .background(color.opacity(0.06))
+        .clipShape(.rect(cornerRadius: 14))
+        .overlay {
+            RoundedRectangle(cornerRadius: 14)
+                .stroke(color.opacity(0.2), lineWidth: 1)
+        }
+    }
+
+    @ViewBuilder
+    private var colourDraftBasketCard: some View {
+        let drafts = viewModel.draftColourSelections
+        if !drafts.isEmpty {
+            VStack(alignment: .leading, spacing: 12) {
+                HStack(spacing: 10) {
+                    Image(systemName: "tray.full.fill")
+                        .font(.neueCorpMedium(18))
+                        .foregroundStyle(AVIATheme.timelessBrown)
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text("My Colour Selections")
+                            .font(.neueCaptionMedium)
+                            .foregroundStyle(AVIATheme.textPrimary)
+                        Text("\(drafts.count) draft\(drafts.count == 1 ? "" : "s") ready to submit")
+                            .font(.neueCaption2)
+                            .foregroundStyle(AVIATheme.textSecondary)
+                    }
+                    Spacer()
+                }
+
+                Button {
+                    AVIAHaptic.success.trigger()
+                    Task { await viewModel.submitColourSelectionsForApproval() }
+                } label: {
+                    HStack(spacing: 8) {
+                        Image(systemName: "paperplane.fill")
+                        Text("Submit \(drafts.count) Colour Selection\(drafts.count == 1 ? "" : "s")")
+                    }
+                    .font(.neueSubheadlineMedium)
+                    .frame(maxWidth: .infinity)
+                    .frame(height: 48)
+                    .foregroundStyle(AVIATheme.aviaWhite)
+                    .background(AVIATheme.primaryGradient)
+                    .clipShape(.rect(cornerRadius: 12))
+                }
+                .buttonStyle(.pressable(.prominent))
+                .disabled(viewModel.isSaving)
+
+                Text("After submit, only the AVIA team can reopen selections for edits.")
+                    .font(.neueCaption2)
+                    .foregroundStyle(AVIATheme.textTertiary)
+                    .frame(maxWidth: .infinity, alignment: .center)
+            }
+            .padding(14)
+            .background(AVIATheme.cardBackground)
+            .clipShape(.rect(cornerRadius: 14))
+            .overlay {
+                RoundedRectangle(cornerRadius: 14)
+                    .stroke(AVIATheme.timelessBrown.opacity(0.25), lineWidth: 1)
+            }
+        }
     }
 
     private var tierInfoBanner: some View {

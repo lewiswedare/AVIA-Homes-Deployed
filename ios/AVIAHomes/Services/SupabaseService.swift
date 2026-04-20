@@ -1562,19 +1562,21 @@ class SupabaseService {
         }
     }
 
-    func submitClientColourSelections(buildId: String) async -> Bool {
-        guard isConfigured else { return false }
-        var selections = await fetchBuildColourSelections(buildId: buildId)
-        guard !selections.isEmpty else { return false }
-        for i in selections.indices {
-            selections[i].selectionStatus = .submitted
-        }
-        var success = true
-        for s in selections {
+    /// Submits only rows currently in `.draft` state (preserves `.approved`,
+    /// `.upgradePendingClient`, `.upgradeAcceptedByClient`, etc.).
+    /// Returns the number of rows successfully flipped to `.submitted`, or nil on failure.
+    func submitClientColourSelections(buildId: String) async -> Int? {
+        guard isConfigured else { return nil }
+        let selections = await fetchBuildColourSelections(buildId: buildId)
+        let drafts = selections.filter { $0.selectionStatus == .draft }
+        guard !drafts.isEmpty else { return 0 }
+        var successCount = 0
+        for var s in drafts {
+            s.selectionStatus = .submitted
             let ok = await upsertBuildColourSelection(s)
-            if !ok { success = false }
+            if ok { successCount += 1 }
         }
-        return success
+        return successCount
     }
 
     func approveClientColourSelections(buildId: String) async -> Bool {

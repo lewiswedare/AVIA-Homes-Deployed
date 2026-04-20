@@ -881,27 +881,37 @@ class BuildSpecViewModel {
         return .draft
     }
 
+    /// Colour selections the client has saved but not yet submitted for admin review.
+    var draftColourSelections: [BuildColourSelection] {
+        colourSelections.filter { $0.selectionStatus == .draft }
+    }
+
     func submitColourSelectionsForApproval() async {
         isSaving = true
         errorMessage = nil
-        let success = await SupabaseService.shared.submitClientColourSelections(buildId: buildId)
-        if success {
-            successMessage = "Colour selections submitted for approval"
+        let result = await SupabaseService.shared.submitClientColourSelections(buildId: buildId)
+        if let count = result, count > 0 {
+            successMessage = "Submitted \(count) colour selection\(count == 1 ? "" : "s") for approval"
             await load(buildId: buildId)
             if let ns = notificationService {
+                let sender = clientName.isEmpty ? "Client" : clientName
+                let addressPart = buildAddress.isEmpty ? "" : " for \(buildAddress)"
+                let message = "\(sender) submitted \(count) colour selection\(count == 1 ? "" : "s")\(addressPart)"
                 for recipientId in adminRecipientIds {
                     await ns.createNotification(
                         recipientId: recipientId,
                         senderId: clientId,
-                        senderName: "Client",
+                        senderName: sender,
                         type: .colourSelectionSubmitted,
                         title: "Colour Selections Submitted",
-                        message: "Client has submitted their colour selections for approval",
+                        message: message,
                         referenceId: buildId,
                         referenceType: "build"
                     )
                 }
             }
+        } else if result == 0 {
+            errorMessage = "No draft colour selections to submit"
         } else {
             errorMessage = "Failed to submit colour selections"
         }
@@ -1018,20 +1028,7 @@ class BuildSpecViewModel {
             colourSelections.append(new)
             _ = await SupabaseService.shared.upsertBuildColourSelection(new)
         }
-
-        if let ns = notificationService, !adminRecipientIds.isEmpty {
-            for adminId in adminRecipientIds {
-                await ns.createNotification(
-                    recipientId: adminId,
-                    senderId: clientId,
-                    senderName: "Client",
-                    type: .colourSelectionSubmitted,
-                    title: "Colour Selection Saved",
-                    message: "Client has updated a colour selection.",
-                    referenceId: buildId,
-                    referenceType: "build"
-                )
-            }
-        }
+        // Per-save notifications intentionally omitted — admins are notified when the
+        // client taps Submit via submitColourSelectionsForApproval() (one batched alert).
     }
 }
