@@ -1265,9 +1265,16 @@ class AppViewModel {
                 .map(\.packageId)
             return allPackages.filter { assignedPackageIds.contains($0.id) }
         case .client:
-            let sharedPackageIds = packageAssignments
-                .filter { $0.sharedWithClientIds.contains(currentUser.id) }
-                .map(\.packageId)
+            // Client can see packages shared with them UNLESS they have declined.
+            // Once declined, the package is removed from their view and stays hidden
+            // until an admin re-shares it (which clears the client's response on
+            // the server side via the admin flow).
+            let visibleAssignments = packageAssignments.filter { assignment in
+                guard assignment.sharedWithClientIds.contains(currentUser.id) else { return false }
+                let myResponse = assignment.clientResponses.first { $0.clientId == currentUser.id }
+                return myResponse?.status != .declined
+            }
+            let sharedPackageIds = visibleAssignments.map(\.packageId)
             return allPackages.filter { sharedPackageIds.contains($0.id) }
         default:
             return []
