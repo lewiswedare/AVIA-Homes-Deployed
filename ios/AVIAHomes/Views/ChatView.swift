@@ -301,7 +301,7 @@ struct ChatView: View {
                         }
                         .clipShape(iMessageBubbleShape(isMine: isMine, hasTail: showTail && message.content.isEmpty))
                 }
-                .buttonStyle(.plain)
+                .buttonStyle(.pressable(.subtle))
             }
 
             if !message.content.isEmpty {

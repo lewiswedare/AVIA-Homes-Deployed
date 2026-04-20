@@ -21,7 +21,7 @@ struct BuildJourneyCard: View {
             .background(AVIATheme.cardBackground)
             .clipShape(.rect(cornerRadius: 20))
         }
-        .buttonStyle(.plain)
+        .buttonStyle(.pressable(.subtle))
     }
 
     private var headerSection: some View {

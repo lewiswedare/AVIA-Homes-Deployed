@@ -72,7 +72,7 @@ struct AdminActivitySection: View {
                             } label: {
                                 activityRow(item)
                             }
-                            .buttonStyle(.plain)
+                            .buttonStyle(.pressable(.subtle))
                         }
                     }
                 }

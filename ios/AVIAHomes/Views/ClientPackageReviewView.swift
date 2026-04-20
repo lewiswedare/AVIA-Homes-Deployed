@@ -25,7 +25,7 @@ struct ClientPackageReviewView: View {
             .padding(.horizontal, 16)
             .padding(.bottom, 40)
         }
-        .refreshable { await viewModel.refreshAllData() }
+        .hapticRefresh { await viewModel.refreshAllData() }
         .background(AVIATheme.background)
         .navigationTitle("Shared Packages")
         .navigationBarTitleDisplayMode(.large)
@@ -145,7 +145,7 @@ struct ClientPackageReviewView: View {
                         .frame(maxWidth: .infinity, alignment: .leading)
                     }
                 }
-                .buttonStyle(.plain)
+                .buttonStyle(.pressable(.subtle))
 
                 VStack(alignment: .leading, spacing: 10) {
                     Divider()
@@ -157,7 +157,7 @@ struct ClientPackageReviewView: View {
                             } label: {
                                 detailRow(icon: "house.fill", title: design.name, subtitle: "Home Design · \(design.bedrooms) Bed · \(design.bathrooms) Bath")
                             }
-                            .buttonStyle(.plain)
+                            .buttonStyle(.pressable(.subtle))
                         }
 
                         NavigationLink {
@@ -165,7 +165,7 @@ struct ClientPackageReviewView: View {
                         } label: {
                             detailRow(icon: "square.stack.3d.up.fill", title: "\(tier.displayName) Spec Range", subtitle: tier.tagline)
                         }
-                        .buttonStyle(.plain)
+                        .buttonStyle(.pressable(.subtle))
 
                         if let facade {
                             NavigationLink {
@@ -173,7 +173,7 @@ struct ClientPackageReviewView: View {
                             } label: {
                                 detailRow(icon: "building.2.fill", title: facade.name, subtitle: "Facade · \(facade.style)")
                             }
-                            .buttonStyle(.plain)
+                            .buttonStyle(.pressable(.subtle))
                         }
                     }
 
@@ -191,7 +191,7 @@ struct ClientPackageReviewView: View {
                                     .foregroundStyle(AVIATheme.timelessBrown)
                             }
                         }
-                        .buttonStyle(.plain)
+                        .buttonStyle(.pressable(.subtle))
                     }
                 }
                 .padding(.horizontal, 14)

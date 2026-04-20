@@ -228,6 +228,7 @@ struct PremiumButton: View {
                 }
             }
         }
+        .buttonStyle(.pressable(style == .primary ? .prominent : .standard))
     }
 
     private var foregroundColor: Color {

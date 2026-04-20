@@ -109,7 +109,7 @@ struct SpecificationCategoryDetailView: View {
             .background(AVIATheme.timelessBrown)
             .clipShape(.rect(cornerRadius: 16))
         }
-        .buttonStyle(.plain)
+        .buttonStyle(.pressable(.subtle))
     }
 
     private func specImageSection(item: SpecItem, selectedTier: SpecTier, hasPending: Bool, canUpgrade: Bool) -> some View {

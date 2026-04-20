@@ -278,9 +278,11 @@ struct ContractUploadView: View {
         )
         if uploadedURL == nil {
             errorMessage = "Upload failed. Please try again."
+            AVIAHaptic.error.trigger()
             return
         }
         errorMessage = nil
+        AVIAHaptic.success.trigger()
         await loadContract()
     }
 
@@ -296,9 +298,11 @@ struct ContractUploadView: View {
         )
         if !ok {
             errorMessage = "Couldn’t record confirmation. Please try again."
+            AVIAHaptic.error.trigger()
             return
         }
         errorMessage = nil
+        AVIAHaptic.success.trigger()
         await loadContract()
     }
 

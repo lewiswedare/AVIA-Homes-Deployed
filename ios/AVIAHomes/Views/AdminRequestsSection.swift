@@ -115,7 +115,7 @@ struct AdminRequestRow: View {
                 }
             }
         }
-        .buttonStyle(.plain)
+        .buttonStyle(.pressable(.subtle))
     }
 }
 

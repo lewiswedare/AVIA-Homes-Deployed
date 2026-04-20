@@ -37,7 +37,7 @@ struct AdminBuildsSection: View {
                     Button { selectedBuildForEdit = build } label: {
                         AdminBuildRow(build: build, specReviewStatus: badge)
                     }
-                    .buttonStyle(.plain)
+                    .buttonStyle(.pressable(.subtle))
                 }
             }
         }

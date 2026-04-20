@@ -296,7 +296,7 @@ struct ColourSwatchView: View {
             .padding(.vertical, 8)
             .opacity(isTierUpgrade ? 0.7 : 1.0)
         }
-        .buttonStyle(.plain)
+        .buttonStyle(.pressable(.subtle))
     }
 
     private func imageSwatchContent(_ urlString: String) -> some View {

@@ -54,7 +54,7 @@ struct AdminEOIReviewView: View {
             AdminEOIDetailSheet(eoi: eoi, onUpdate: { await loadEOIs() })
         }
         .task { await loadEOIs() }
-        .refreshable { await loadEOIs() }
+        .hapticRefresh { await loadEOIs() }
         .onChange(of: selectedFilter) { _, _ in
             Task { await loadEOIs() }
         }

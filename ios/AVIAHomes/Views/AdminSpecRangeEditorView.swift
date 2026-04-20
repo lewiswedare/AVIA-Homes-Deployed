@@ -126,7 +126,7 @@ struct AdminSpecRangeEditorView: View {
                 }
             }
         }
-        .buttonStyle(.plain)
+        .buttonStyle(.pressable(.subtle))
     }
 
     private func stat(icon: String, value: String) -> some View {

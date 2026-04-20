@@ -327,7 +327,7 @@ struct SpecificationItemDetailView: View {
                     .padding(.vertical, 4)
                     .contentShape(Rectangle())
                 }
-                .buttonStyle(.plain)
+                .buttonStyle(.pressable(.subtle))
             }
         }
         .padding(16)

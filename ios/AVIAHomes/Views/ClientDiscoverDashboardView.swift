@@ -177,14 +177,14 @@ struct ClientDiscoverDashboardView: View {
                 NavigationLink(value: featuredPost) {
                     featuredBlogCard(post: featuredPost)
                 }
-                .buttonStyle(.plain)
+                .buttonStyle(.pressable(.subtle))
             }
 
             ForEach(viewModel.allBlogPosts.dropFirst().prefix(2)) { post in
                 NavigationLink(value: post) {
                     compactBlogRow(post: post)
                 }
-                .buttonStyle(.plain)
+                .buttonStyle(.pressable(.subtle))
             }
         }
     }
@@ -467,7 +467,7 @@ struct ClientDiscoverDashboardView: View {
                     NavigationLink(value: tier) {
                         specRangeCard(tier: tier, index: index)
                     }
-                    .buttonStyle(.plain)
+                    .buttonStyle(.pressable(.subtle))
                 }
             }
         }
@@ -573,7 +573,7 @@ struct ClientDiscoverDashboardView: View {
                         NavigationLink(value: facade) {
                             facadeShowcaseCard(facade: facade)
                         }
-                        .buttonStyle(.plain)
+                        .buttonStyle(.pressable(.subtle))
                     }
                 }
             }
@@ -640,7 +640,7 @@ struct ClientDiscoverDashboardView: View {
                     Link(destination: URL(string: "https://www.instagram.com/aviahomes")!) {
                         AVIAPill("Instagram", icon: "arrow.up.right", style: .onImage)
                     }
-                    .buttonStyle(.plain)
+                    .buttonStyle(.pressable(.subtle))
                 }
                 .padding(20)
             }
@@ -813,7 +813,7 @@ struct ClientDiscoverDashboardView: View {
                         NavigationLink(value: pkg) {
                             sharedPackageMiniCard(package: pkg)
                         }
-                        .buttonStyle(.plain)
+                        .buttonStyle(.pressable(.subtle))
                     }
 
                     if sharedPackages.count > 3 {

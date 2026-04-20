@@ -64,7 +64,7 @@ struct DashboardView: View {
             .navigationDestination(for: Facade.self) { facade in
                 FacadeDetailView(facade: facade)
             }
-            .refreshable {
+            .hapticRefresh {
                 await viewModel.refreshAllData()
             }
             .onReceive(countdownTimer) { _ in
@@ -352,7 +352,7 @@ struct DashboardView: View {
                     .padding(16)
                 }
             }
-            .buttonStyle(.plain)
+            .buttonStyle(.pressable(.subtle))
         }
     }
 
@@ -1148,7 +1148,7 @@ struct DashboardView: View {
                         NavigationLink(value: tier) {
                             specRangeCard(tier: tier)
                         }
-                        .buttonStyle(.plain)
+                        .buttonStyle(.pressable(.subtle))
                     }
                 }
             }

@@ -299,6 +299,6 @@ struct SchemeCard: View {
             }
             .shadow(color: isSelected ? AVIATheme.timelessBrown.opacity(0.12) : .clear, radius: 8, y: 4)
         }
-        .buttonStyle(.plain)
+        .buttonStyle(.pressable(.subtle))
     }
 }

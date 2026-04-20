@@ -293,7 +293,7 @@ struct EstateDetailView: View {
                             }
                             .padding(16)
                         }
-                        .buttonStyle(.plain)
+                        .buttonStyle(.pressable(.subtle))
                     }
                 }
             }
@@ -366,7 +366,7 @@ struct EstateDetailView: View {
                         }
                     }
                 }
-                .buttonStyle(.plain)
+                .buttonStyle(.pressable(.subtle))
             }
         }
     }

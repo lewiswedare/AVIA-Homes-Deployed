@@ -24,7 +24,7 @@ struct ClientBuildTimelineView: View {
             .padding(.horizontal, 16)
             .padding(.bottom, 40)
         }
-        .refreshable { await viewModel.refreshAllData() }
+        .hapticRefresh { await viewModel.refreshAllData() }
         .background(AVIATheme.background)
         .task {
             milestones = await SupabaseService.shared.fetchMilestonesForBuild(buildId: build.id)
@@ -398,7 +398,7 @@ struct ClientTimelineStageRow: View {
                     .padding(14)
                 }
             }
-            .buttonStyle(.plain)
+            .buttonStyle(.pressable(.subtle))
             .padding(.top, 4)
             .padding(.bottom, isLast ? 0 : 4)
         }

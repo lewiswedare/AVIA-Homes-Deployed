@@ -104,14 +104,14 @@ struct AllNewsView: View {
                 NavigationLink(value: featured) {
                     featuredCard(post: featured)
                 }
-                .buttonStyle(.plain)
+                .buttonStyle(.pressable(.subtle))
             }
 
             ForEach(filteredPosts.dropFirst()) { post in
                 NavigationLink(value: post) {
                     compactNewsRow(post: post)
                 }
-                .buttonStyle(.plain)
+                .buttonStyle(.pressable(.subtle))
             }
 
             if filteredPosts.isEmpty {

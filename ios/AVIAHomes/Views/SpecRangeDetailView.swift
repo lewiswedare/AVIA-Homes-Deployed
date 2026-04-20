@@ -225,7 +225,7 @@ struct SpecRangeDetailView: View {
                         .padding(.horizontal, 14)
                         .contentShape(Rectangle())
                     }
-                    .buttonStyle(.plain)
+                    .buttonStyle(.pressable(.subtle))
 
                     if index < specData.highlights.count - 1 {
                         Divider()

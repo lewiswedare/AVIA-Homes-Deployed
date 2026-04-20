@@ -138,7 +138,7 @@ struct AdminCatalogHubView: View {
             .padding(.horizontal, 16)
             .padding(.bottom, 40)
         }
-        .refreshable { await appViewModel.refreshAllData() }
+        .hapticRefresh { await appViewModel.refreshAllData() }
         .background(AVIATheme.background)
         .navigationTitle("Catalog Management")
         .navigationBarTitleDisplayMode(.large)

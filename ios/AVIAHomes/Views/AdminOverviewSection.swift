@@ -111,7 +111,7 @@ struct AdminOverviewSection: View {
             .background(AVIATheme.cardBackgroundAlt)
             .clipShape(.rect(cornerRadius: 10))
         }
-        .buttonStyle(.plain)
+        .buttonStyle(.pressable(.subtle))
     }
 
     private var metricsGrid: some View {
@@ -207,7 +207,7 @@ struct AdminOverviewSection: View {
                 Button { selectedBuildForEdit = build } label: {
                     AdminBuildRow(build: build, specReviewStatus: badge)
                 }
-                .buttonStyle(.plain)
+                .buttonStyle(.pressable(.subtle))
             }
         }
     }

@@ -97,7 +97,7 @@ struct ClientSpecConfirmationView: View {
             .padding(.horizontal, 16)
             .padding(.bottom, 40)
         }
-        .refreshable { await appViewModel.refreshAllData() }
+        .hapticRefresh { await appViewModel.refreshAllData() }
     }
 
     private var statusBanner: some View {
@@ -364,7 +364,7 @@ struct ClientSpecConfirmationView: View {
                                         .stroke(tierColor(tier).opacity(0.15), lineWidth: 1)
                                 }
                             }
-                            .buttonStyle(.plain)
+                            .buttonStyle(.pressable(.subtle))
                         }
                     }
                 }

@@ -38,7 +38,7 @@ struct AllFacadesView: View {
                             NavigationLink(value: facade) {
                                 facadeCard(facade: facade)
                             }
-                            .buttonStyle(.plain)
+                            .buttonStyle(.pressable(.subtle))
                         }
                     }
                 }

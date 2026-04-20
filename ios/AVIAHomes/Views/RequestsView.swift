@@ -35,7 +35,7 @@ struct RequestsView: View {
                                 Button { selectedRequest = request } label: {
                                     RequestRow(request: request)
                                 }
-                                .buttonStyle(.plain)
+                                .buttonStyle(.pressable(.subtle))
                                 if index < filteredRequests.count - 1 {
                                     Rectangle().fill(AVIATheme.surfaceBorder).frame(height: 1).padding(.leading, 64)
                                 }
@@ -195,7 +195,7 @@ struct RequestDetailView: View {
                                                 }
                                                 .clipShape(.rect(cornerRadius: 12))
                                         }
-                                        .buttonStyle(.plain)
+                                        .buttonStyle(.pressable(.subtle))
                                     }
                                 }
                             }
@@ -403,7 +403,7 @@ struct NewRequestView: View {
                                 }
                             }
                         }
-                        .buttonStyle(.plain)
+                        .buttonStyle(.pressable(.subtle))
                     }
                 }
             }
@@ -489,7 +489,7 @@ struct NewRequestView: View {
                     }
                     .clipShape(.rect(cornerRadius: 10))
             }
-            .buttonStyle(.plain)
+            .buttonStyle(.pressable(.subtle))
 
             Button {
                 removeImage(at: index)

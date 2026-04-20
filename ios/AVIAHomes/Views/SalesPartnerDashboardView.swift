@@ -127,7 +127,7 @@ struct PartnerDashboardView: View {
                     NavigationLink(value: build) {
                         salesClientCard(build: build)
                     }
-                    .buttonStyle(.plain)
+                    .buttonStyle(.pressable(.subtle))
                 }
             }
         }

@@ -34,7 +34,7 @@ struct ClientInvoiceListContent: View {
             .padding(.bottom, 40)
         }
         .task { await loadInvoices() }
-        .refreshable { await loadInvoices() }
+        .hapticRefresh { await loadInvoices() }
         .sheet(item: $selectedInvoice) { invoice in
             ClientInvoiceDetailSheet(invoice: invoice)
         }

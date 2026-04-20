@@ -253,7 +253,7 @@ struct TimelineStageRow: View {
                 .padding(14)
             }
         }
-        .buttonStyle(.plain)
+        .buttonStyle(.pressable(.subtle))
         .padding(.top, 4)
         .padding(.bottom, isLast ? 0 : 4)
     }

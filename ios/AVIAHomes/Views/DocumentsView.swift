@@ -151,7 +151,7 @@ struct FilterChip: View {
                     }
                 }
         }
-        .buttonStyle(.plain)
+        .buttonStyle(.pressable(.subtle))
         .animation(.spring(response: 0.2), value: isSelected)
     }
 }

@@ -192,7 +192,7 @@ struct SalesAdminDashboardView: View {
                     NavigationLink(value: build) {
                         ClientBuildCardView(build: build)
                     }
-                    .buttonStyle(.plain)
+                    .buttonStyle(.pressable(.subtle))
                 }
             }
         }

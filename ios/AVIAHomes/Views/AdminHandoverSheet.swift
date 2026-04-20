@@ -61,7 +61,7 @@ struct AdminHandoverSheet: View {
                                         }
                                         .padding(.vertical, 6)
                                     }
-                                    .buttonStyle(.plain)
+                                    .buttonStyle(.pressable(.subtle))
                                 }
                             }
                         }

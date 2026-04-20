@@ -556,7 +556,7 @@ struct PackageDetailView: View {
                 }
             }
         }
-        .buttonStyle(.plain)
+        .buttonStyle(.pressable(.subtle))
     }
 
     // MARK: - Facade
@@ -633,7 +633,7 @@ struct PackageDetailView: View {
                 }
             }
             }
-            .buttonStyle(.plain)
+            .buttonStyle(.pressable(.subtle))
 
             NavigationLink(value: facade) {
                 HStack(spacing: 8) {
@@ -717,7 +717,7 @@ struct PackageDetailView: View {
                 }
             }
             }
-            .buttonStyle(.plain)
+            .buttonStyle(.pressable(.subtle))
 
             NavigationLink(value: tier) {
                 HStack(spacing: 8) {

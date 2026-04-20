@@ -30,7 +30,7 @@ struct AllUpgradeRequestsView: View {
                     } label: {
                         requestCard(request)
                     }
-                    .buttonStyle(.plain)
+                    .buttonStyle(.pressable(.subtle))
                     .disabled(request.status != .quoted)
                 }
             }

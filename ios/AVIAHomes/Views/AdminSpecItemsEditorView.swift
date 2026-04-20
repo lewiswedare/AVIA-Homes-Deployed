@@ -475,7 +475,7 @@ struct SpecItemEditSheet: View {
             )
             .clipShape(.rect(cornerRadius: 8))
         }
-        .buttonStyle(.plain)
+        .buttonStyle(.pressable(.subtle))
     }
 
     private func sectionHeader(_ title: String) -> some View {

@@ -598,7 +598,7 @@ struct AdminBuildEditSheet: View {
                         .padding(14)
                     }
                 }
-                .buttonStyle(.plain)
+                .buttonStyle(.pressable(.subtle))
             }
         }
     }

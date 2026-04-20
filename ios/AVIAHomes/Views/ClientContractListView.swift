@@ -34,7 +34,7 @@ struct ClientContractListContent: View {
             .padding(.bottom, 40)
         }
         .task { await loadContracts() }
-        .refreshable { await loadContracts() }
+        .hapticRefresh { await loadContracts() }
         .sheet(item: $selectedContract) { contract in
             ClientContractDetailSheet(contract: contract, onUpdate: { await loadContracts() })
         }

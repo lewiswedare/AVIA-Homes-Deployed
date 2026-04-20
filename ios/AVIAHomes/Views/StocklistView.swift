@@ -62,7 +62,7 @@ struct StocklistView: View {
             .task {
                 await stocklistVM.loadAll()
             }
-            .refreshable {
+            .hapticRefresh {
                 await stocklistVM.loadAll()
             }
             .sheet(isPresented: $showEstateEditor) {
@@ -439,7 +439,7 @@ struct StocklistView: View {
                                 } label: {
                                     lotCard(lot: lot, estate: estate)
                                 }
-                                .buttonStyle(.plain)
+                                .buttonStyle(.pressable(.subtle))
                                 .contextMenu {
                                     Button {
                                         lotToEdit = lot
@@ -459,7 +459,7 @@ struct StocklistView: View {
                                 NavigationLink(value: lot.toHouseLandPackage(estateName: estate.name)) {
                                     lotCard(lot: lot, estate: estate)
                                 }
-                                .buttonStyle(.plain)
+                                .buttonStyle(.pressable(.subtle))
                             }
                         }
                     }

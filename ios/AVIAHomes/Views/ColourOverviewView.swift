@@ -173,7 +173,7 @@ struct ColourOverviewView: View {
                 }
             }
         }
-        .buttonStyle(.plain)
+        .buttonStyle(.pressable(.subtle))
     }
 
     private var guidedTourButton: some View {
@@ -323,6 +323,6 @@ struct CategoryCard: View {
                     .stroke(selection != nil ? AVIATheme.timelessBrown.opacity(0.2) : Color.clear, lineWidth: 1)
             }
         }
-        .buttonStyle(.plain)
+        .buttonStyle(.pressable(.subtle))
     }
 }

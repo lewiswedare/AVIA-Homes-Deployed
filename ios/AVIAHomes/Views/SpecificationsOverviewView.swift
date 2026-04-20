@@ -285,7 +285,7 @@ struct SpecificationsOverviewView: View {
                 } label: {
                     categoryRow(category)
                 }
-                .buttonStyle(.plain)
+                .buttonStyle(.pressable(.subtle))
 
                 if index < specVM.categories.count - 1 {
                     Divider()
@@ -387,7 +387,7 @@ struct SpecificationsOverviewView: View {
                 } label: {
                     upgradeRequestRow(request)
                 }
-                .buttonStyle(.plain)
+                .buttonStyle(.pressable(.subtle))
                 .disabled(request.status != .quoted)
             }
 

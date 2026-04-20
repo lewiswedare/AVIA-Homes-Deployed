@@ -19,7 +19,7 @@ struct ConversationsView: View {
                         NavigationLink(value: conversation) {
                             conversationRow(conversation)
                         }
-                        .buttonStyle(.plain)
+                        .buttonStyle(.pressable(.subtle))
                     }
                 }
             }
@@ -44,7 +44,7 @@ struct ConversationsView: View {
         .sheet(isPresented: $showNewMessage) {
             NewConversationSheet()
         }
-        .refreshable {
+        .hapticRefresh {
             await viewModel.messagingService.loadConversations(for: viewModel.currentUser.id)
         }
     }

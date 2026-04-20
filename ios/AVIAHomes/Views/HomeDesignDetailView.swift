@@ -243,7 +243,7 @@ struct HomeDesignDetailView: View {
                         .stroke(AVIATheme.surfaceBorder, lineWidth: 1)
                 )
             }
-            .buttonStyle(.plain)
+            .buttonStyle(.pressable(.subtle))
         }
     }
 

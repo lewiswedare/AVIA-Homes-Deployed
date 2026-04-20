@@ -63,7 +63,7 @@ struct AdminBuildManagementView: View {
                 }
             }
         }
-        .refreshable {
+        .hapticRefresh {
             await viewModel.refreshBuildsAndAssignments()
         }
         .sheet(isPresented: $showingAddBuild) {
@@ -160,7 +160,7 @@ struct AdminBuildManagementView: View {
                     } label: {
                         AdminBuildRow(build: build, specReviewStatus: badge)
                     }
-                    .buttonStyle(.plain)
+                    .buttonStyle(.pressable(.subtle))
                 }
             }
         }

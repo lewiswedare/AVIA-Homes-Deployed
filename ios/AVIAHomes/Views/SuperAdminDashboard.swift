@@ -45,7 +45,7 @@ struct SuperAdminDashboard: View {
             .background(AVIATheme.background)
             .navigationTitle("Super Admin")
             .navigationBarTitleDisplayMode(.large)
-            .refreshable {
+            .hapticRefresh {
                 await viewModel.refreshAllData()
             }
             .navigationDestination(for: ClientUser.self) { user in
@@ -100,7 +100,7 @@ struct SuperAdminDashboard: View {
                         NavigationLink(value: user) {
                             staffCard(user: user, countType: countType)
                         }
-                        .buttonStyle(.plain)
+                        .buttonStyle(.pressable(.subtle))
                     }
                 }
             }

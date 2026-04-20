@@ -76,7 +76,7 @@ struct AddClientToBuildSheet: View {
                                         .padding(10)
                                         .clipShape(.rect(cornerRadius: 10))
                                     }
-                                    .buttonStyle(.plain)
+                                    .buttonStyle(.pressable(.subtle))
                                 }
                             }
                             .padding(16)

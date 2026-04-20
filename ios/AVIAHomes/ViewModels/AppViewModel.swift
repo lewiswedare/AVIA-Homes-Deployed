@@ -1240,6 +1240,7 @@ class AppViewModel {
         if let build = allClientBuilds.last {
             Task {
                 await SupabaseService.shared.createBuildSpecSnapshot(buildId: build.id, specTier: specTier)
+                await MainActor.run { AVIAHaptic.success.trigger() }
             }
         }
     }
@@ -1425,7 +1426,17 @@ class AppViewModel {
         guard success else {
             print("[AppViewModel] respondToPackage: DB write failed, reverting local state")
             packageAssignments[index].clientResponses.removeAll { $0.clientId == currentUser.id }
+            await MainActor.run { AVIAHaptic.error.trigger() }
             return
+        }
+
+        // Microinteraction: success for accept, warning for decline.
+        await MainActor.run {
+            switch status {
+            case .accepted: AVIAHaptic.success.trigger()
+            case .declined: AVIAHaptic.warning.trigger()
+            case .pending: break
+            }
         }
 
         await loadAssignmentsFromSupabase()

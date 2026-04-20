@@ -54,7 +54,7 @@ struct NotificationsView: View {
                 }
             }
         }
-        .refreshable {
+        .hapticRefresh {
             await viewModel.notificationService.loadNotifications(for: viewModel.currentUser.id)
         }
     }
@@ -81,7 +81,7 @@ struct NotificationsView: View {
             } label: {
                 notificationRowContent(notification)
             }
-            .buttonStyle(.plain)
+            .buttonStyle(.pressable(.subtle))
             .simultaneousGesture(TapGesture().onEnded {
                 markAsRead(notification)
             })
@@ -91,7 +91,7 @@ struct NotificationsView: View {
             } label: {
                 notificationRowContent(notification)
             }
-            .buttonStyle(.plain)
+            .buttonStyle(.pressable(.subtle))
         }
     }
 

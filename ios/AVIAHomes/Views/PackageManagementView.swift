@@ -75,7 +75,7 @@ struct PackageManagementView: View {
                 }
             }
         }
-        .refreshable {
+        .hapticRefresh {
             await viewModel.refreshBuildsAndAssignments()
         }
         .sheet(isPresented: $showCreatePackage) {
@@ -236,8 +236,7 @@ struct PackageManagementView: View {
                     .stroke(isActive ? color : Color.clear, lineWidth: 2)
             )
         }
-        .buttonStyle(.plain)
-        .sensoryFeedback(.selection, trigger: isActive)
+        .buttonStyle(.pressable(.standard))
     }
 
     private var eoiReviewsLink: some View {
@@ -276,7 +275,7 @@ struct PackageManagementView: View {
                 .padding(16)
             }
         }
-        .buttonStyle(.plain)
+        .buttonStyle(.pressable(.subtle))
     }
 
     private var packagesList: some View {
