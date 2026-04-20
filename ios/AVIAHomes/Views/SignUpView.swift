@@ -63,24 +63,17 @@ struct SignUpView: View {
 
                         VStack(spacing: 14) {
                             fieldGroup(label: "Email") {
-                                ZStack(alignment: .leading) {
-                                    if email.isEmpty {
-                                        Text("your@email.com")
-                                            .font(.neueSubheadline)
-                                            .foregroundStyle(AVIATheme.textTertiary)
-                                    }
-                                    TextField("", text: $email)
-                                        .font(.neueSubheadline)
-                                        .textContentType(.emailAddress)
-                                        .keyboardType(.emailAddress)
-                                        .autocorrectionDisabled()
-                                        .textInputAutocapitalization(.never)
-                                        .focused($focusedField, equals: .email)
-                                        .submitLabel(.next)
-                                        .onSubmit { focusedField = .password }
-                                        .foregroundStyle(AVIATheme.textPrimary)
-                                        .tint(AVIATheme.textPrimary)
-                                }
+                                TextField("your@email.com", text: $email)
+                                    .font(.neueSubheadline)
+                                    .textContentType(.emailAddress)
+                                    .keyboardType(.emailAddress)
+                                    .autocorrectionDisabled()
+                                    .textInputAutocapitalization(.never)
+                                    .focused($focusedField, equals: .email)
+                                    .submitLabel(.next)
+                                    .onSubmit { focusedField = .password }
+                                    .foregroundStyle(AVIATheme.textPrimary)
+                                    .tint(AVIATheme.textPrimary)
                             }
 
                             fieldGroup(label: "Password") {
