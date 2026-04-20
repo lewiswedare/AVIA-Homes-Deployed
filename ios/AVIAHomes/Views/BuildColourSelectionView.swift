@@ -108,7 +108,6 @@ struct BuildColourSelectionView: View {
                 VStack(spacing: 16) {
                     colourUpgradeQuotesCard
                     colourStatusBanner
-                    colourDraftBasketCard
                     progressCard
                     tierInfoBanner
 
@@ -130,6 +129,10 @@ struct BuildColourSelectionView: View {
                             }
                         }
                     }
+
+                    if canSubmitColourDrafts {
+                        submitColourButton
+                    }
                 }
                 .padding(.horizontal, 16)
                 .padding(.bottom, colourUpgradeTotal > 0 ? 80 : 40)
@@ -139,6 +142,38 @@ struct BuildColourSelectionView: View {
             if colourUpgradeTotal > 0 {
                 upgradeTotalBar
             }
+        }
+    }
+
+    private var canSubmitColourDrafts: Bool {
+        !viewModel.draftColourSelections.isEmpty && viewModel.colourSelectionOverallStatus != .approved
+    }
+
+    private var submitColourButton: some View {
+        let count = viewModel.draftColourSelections.count
+        return VStack(spacing: 8) {
+            Button {
+                AVIAHaptic.success.trigger()
+                Task { await viewModel.submitColourSelectionsForApproval() }
+            } label: {
+                HStack(spacing: 8) {
+                    Image(systemName: "paperplane.fill")
+                    Text("Submit \(count) Colour Selection\(count == 1 ? "" : "s")")
+                }
+                .font(.neueSubheadlineMedium)
+                .frame(maxWidth: .infinity)
+                .frame(height: 52)
+                .foregroundStyle(AVIATheme.aviaWhite)
+                .background(AVIATheme.primaryGradient)
+                .clipShape(.rect(cornerRadius: 14))
+            }
+            .buttonStyle(.pressable(.prominent))
+            .disabled(viewModel.isSaving)
+
+            Text("After submit, only the AVIA team can reopen selections for edits.")
+                .font(.neueCaption2)
+                .foregroundStyle(AVIATheme.textTertiary)
+                .frame(maxWidth: .infinity, alignment: .center)
         }
     }
 
@@ -379,130 +414,6 @@ struct BuildColourSelectionView: View {
             RoundedRectangle(cornerRadius: 14)
                 .stroke(color.opacity(0.2), lineWidth: 1)
         }
-    }
-
-    @ViewBuilder
-    private var colourDraftBasketCard: some View {
-        let drafts = viewModel.draftColourSelections
-        if !drafts.isEmpty {
-            VStack(alignment: .leading, spacing: 12) {
-                HStack(spacing: 10) {
-                    Image(systemName: "tray.full.fill")
-                        .font(.neueCorpMedium(18))
-                        .foregroundStyle(AVIATheme.timelessBrown)
-                    VStack(alignment: .leading, spacing: 2) {
-                        Text("My Colour Selections")
-                            .font(.neueCaptionMedium)
-                            .foregroundStyle(AVIATheme.textPrimary)
-                        Text("\(drafts.count) draft\(drafts.count == 1 ? "" : "s") ready to submit")
-                            .font(.neueCaption2)
-                            .foregroundStyle(AVIATheme.textSecondary)
-                    }
-                    Spacer()
-                }
-
-                ForEach(drafts, id: \.id) { sel in
-                    draftColourRow(sel)
-                }
-
-                Button {
-                    AVIAHaptic.success.trigger()
-                    Task { await viewModel.submitColourSelectionsForApproval() }
-                } label: {
-                    HStack(spacing: 8) {
-                        Image(systemName: "paperplane.fill")
-                        Text("Submit \(drafts.count) Colour Selection\(drafts.count == 1 ? "" : "s")")
-                    }
-                    .font(.neueSubheadlineMedium)
-                    .frame(maxWidth: .infinity)
-                    .frame(height: 48)
-                    .foregroundStyle(AVIATheme.aviaWhite)
-                    .background(AVIATheme.primaryGradient)
-                    .clipShape(.rect(cornerRadius: 12))
-                }
-                .buttonStyle(.pressable(.prominent))
-                .disabled(viewModel.isSaving)
-
-                Text("After submit, only the AVIA team can reopen selections for edits.")
-                    .font(.neueCaption2)
-                    .foregroundStyle(AVIATheme.textTertiary)
-                    .frame(maxWidth: .infinity, alignment: .center)
-            }
-            .padding(14)
-            .background(AVIATheme.cardBackground)
-            .clipShape(.rect(cornerRadius: 14))
-            .overlay {
-                RoundedRectangle(cornerRadius: 14)
-                    .stroke(AVIATheme.timelessBrown.opacity(0.25), lineWidth: 1)
-            }
-        }
-    }
-
-    private func draftColourRow(_ sel: BuildColourSelection) -> some View {
-        let specItem = approvedItemsNeedingColour.first { $0.id == sel.buildSpecSelectionId }
-        let name = specItem?.snapshotName ?? "Colour selection"
-        let categoryName = specItem?.snapshotCategoryName ?? ""
-        let cat = catalog.allColourCategories.first { $0.id == sel.colourCategoryId }
-        let opt = cat?.options.first { $0.id == sel.colourOptionId }
-        return HStack(alignment: .top, spacing: 10) {
-            if let opt {
-                if let imgURL = opt.imageURL, !imgURL.isEmpty {
-                    Color(.secondarySystemBackground)
-                        .frame(width: 36, height: 36)
-                        .overlay {
-                            AsyncImage(url: URL(string: imgURL)) { phase in
-                                if let image = phase.image {
-                                    image.resizable().aspectRatio(contentMode: .fill)
-                                }
-                            }
-                            .allowsHitTesting(false)
-                        }
-                        .clipShape(.rect(cornerRadius: 8))
-                } else {
-                    Circle()
-                        .fill(Color(hex: opt.hexColor))
-                        .frame(width: 32, height: 32)
-                        .overlay { Circle().stroke(AVIATheme.surfaceBorder, lineWidth: 1) }
-                }
-            }
-            VStack(alignment: .leading, spacing: 2) {
-                Text(name)
-                    .font(.neueCaptionMedium)
-                    .foregroundStyle(AVIATheme.textPrimary)
-                if !categoryName.isEmpty {
-                    Text(categoryName)
-                        .font(.neueCaption2)
-                        .foregroundStyle(AVIATheme.textTertiary)
-                }
-                if let opt {
-                    Text(opt.name)
-                        .font(.neueCaption2)
-                        .foregroundStyle(AVIATheme.textSecondary)
-                }
-            }
-            Spacer()
-            Button {
-                AVIAHaptic.lightTap.trigger()
-                viewModel.removeColourDraft(selectionId: sel.id)
-            } label: {
-                HStack(spacing: 4) {
-                    Image(systemName: "xmark.circle")
-                        .font(.neueCorp(10))
-                    Text("Remove")
-                        .font(.neueCaption2Medium)
-                }
-                .foregroundStyle(AVIATheme.destructive)
-                .padding(.horizontal, 10)
-                .padding(.vertical, 6)
-                .background(AVIATheme.destructive.opacity(0.1))
-                .clipShape(Capsule())
-            }
-            .buttonStyle(.pressable(.subtle))
-            .disabled(viewModel.isSaving)
-        }
-        .padding(12)
-        .background(AVIATheme.timelessBrown.opacity(0.04))
-        .clipShape(.rect(cornerRadius: 10))
     }
 
     private var tierInfoBanner: some View {
