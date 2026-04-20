@@ -284,7 +284,7 @@ struct BuildColourSelectionView: View {
             switch status {
             case .submitted:
                 return (
-                    "Submitted \u{2014} Awaiting Review",
+                    "Submitted — Awaiting Review",
                     "Your colour selections are with the AVIA team for approval.",
                     AVIATheme.warning,
                     "Submitted"
@@ -306,7 +306,7 @@ struct BuildColourSelectionView: View {
             default:
                 return (
                     "Pick Your Colours",
-                    "Save selections as drafts and submit when you\u{2019}re ready.",
+                    "Save selections as drafts and submit when you’re ready.",
                     AVIATheme.timelessBrown,
                     "Draft"
                 )

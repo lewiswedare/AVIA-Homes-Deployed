@@ -159,8 +159,8 @@ struct ClientSpecConfirmationView: View {
                     if reopenedOrAmended {
                         clientActionRow(icon: "arrow.uturn.backward.circle.fill",
                                         text: viewModel.overallStatus == .amendedByAdmin
-                                            ? "Your admin made amendments \u{2014} review and resubmit"
-                                            : "Your specs were reopened \u{2014} review and resubmit",
+                                            ? "Your admin made amendments — review and resubmit"
+                                            : "Your specs were reopened — review and resubmit",
                                         color: AVIATheme.heritageBlue)
                     }
                 }
