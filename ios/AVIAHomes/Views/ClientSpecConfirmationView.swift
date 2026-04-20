@@ -434,7 +434,7 @@ struct ClientSpecConfirmationView: View {
                     .foregroundStyle(AVIATheme.aviaWhite)
                     .frame(maxWidth: .infinity)
                     .frame(height: 36)
-                    .background(AVIATheme.success)
+                    .background(AVIATheme.timelessBrown)
                     .clipShape(Capsule())
                 }
 
@@ -596,7 +596,7 @@ struct ClientSpecConfirmationView: View {
                             .frame(maxWidth: .infinity)
                             .frame(height: 40)
                             .foregroundStyle(AVIATheme.aviaWhite)
-                            .background(AVIATheme.success)
+                            .background(AVIATheme.timelessBrown)
                             .clipShape(Capsule())
                         }
 

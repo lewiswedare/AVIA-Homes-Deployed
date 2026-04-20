@@ -595,7 +595,7 @@ struct AdminSelectionDetailSheet: View {
                     .frame(maxWidth: .infinity)
                     .frame(height: 48)
                     .foregroundStyle(AVIATheme.aviaWhite)
-                    .background(AVIATheme.success)
+                    .background(AVIATheme.timelessBrown)
                     .clipShape(.rect(cornerRadius: 14))
                 }
             } else if selection.selectionType == .upgradeDeclined {
@@ -622,7 +622,7 @@ struct AdminSelectionDetailSheet: View {
                     .frame(maxWidth: .infinity)
                     .frame(height: 48)
                     .foregroundStyle(AVIATheme.aviaWhite)
-                    .background(AVIATheme.success)
+                    .background(AVIATheme.timelessBrown)
                     .clipShape(.rect(cornerRadius: 14))
                 }
             } else {

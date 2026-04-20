@@ -217,7 +217,7 @@ struct BuildSpecItemRow: View {
                         .foregroundStyle(AVIATheme.aviaWhite)
                         .padding(.horizontal, 12)
                         .padding(.vertical, 8)
-                        .background(AVIATheme.success)
+                        .background(AVIATheme.timelessBrown)
                         .clipShape(Capsule())
                     }
 

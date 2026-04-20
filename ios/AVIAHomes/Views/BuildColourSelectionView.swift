@@ -359,7 +359,7 @@ struct BuildColourSelectionView: View {
                     .foregroundStyle(AVIATheme.aviaWhite)
                     .frame(maxWidth: .infinity)
                     .frame(height: 36)
-                    .background(AVIATheme.success)
+                    .background(AVIATheme.timelessBrown)
                     .clipShape(Capsule())
                 }
 

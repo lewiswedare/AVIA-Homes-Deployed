@@ -200,7 +200,7 @@ struct AdminBuildSpecReviewView: View {
                             .frame(maxWidth: .infinity)
                             .frame(height: 40)
                             .foregroundStyle(AVIATheme.aviaWhite)
-                            .background(AVIATheme.success)
+                            .background(AVIATheme.timelessBrown)
                             .clipShape(Capsule())
                         }
 
@@ -294,7 +294,7 @@ struct AdminBuildSpecReviewView: View {
                         .frame(maxWidth: .infinity)
                         .frame(height: 40)
                         .foregroundStyle(AVIATheme.aviaWhite)
-                        .background(AVIATheme.success)
+                        .background(AVIATheme.timelessBrown)
                         .clipShape(Capsule())
                     }
 
@@ -376,7 +376,7 @@ struct AdminBuildSpecReviewView: View {
                         .frame(maxWidth: .infinity)
                         .frame(height: 40)
                         .foregroundStyle(AVIATheme.aviaWhite)
-                        .background(AVIATheme.success)
+                        .background(AVIATheme.timelessBrown)
                         .clipShape(Capsule())
                     }
 
@@ -1030,7 +1030,7 @@ struct AdminBuildSpecReviewView: View {
                     .frame(maxWidth: .infinity)
                     .frame(height: 52)
                     .foregroundStyle(AVIATheme.aviaWhite)
-                    .background(AVIATheme.success)
+                    .background(AVIATheme.timelessBrown)
                     .clipShape(.rect(cornerRadius: 14))
                 }
                 .disabled(viewModel.isSaving)

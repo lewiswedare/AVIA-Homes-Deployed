@@ -259,7 +259,7 @@ struct UpgradeResponseSheet: View {
                             .foregroundStyle(AVIATheme.aviaWhite)
                             .frame(maxWidth: .infinity)
                             .frame(height: 52)
-                            .background(AVIATheme.success)
+                            .background(AVIATheme.timelessBrown)
                             .clipShape(.rect(cornerRadius: 14))
                         }
 
