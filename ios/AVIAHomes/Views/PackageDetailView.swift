@@ -71,13 +71,23 @@ struct PackageDetailView: View {
                 ContractUploadView(assignment: assign, package: package)
             }
         }
-        .task {
+        .task(id: assignment?.contractStatus ?? "") {
             if let assign = assignment,
                assign.contractStatus == "awaiting_contract"
                 || assign.contractStatus == "awaiting_signature"
                 || assign.contractStatus == "awaiting_confirmation"
                 || assign.contractStatus == "signed" {
                 contractRecord = await SupabaseService.shared.fetchContractSignature(forAssignment: assign.id)
+            }
+        }
+        .onChange(of: showContractSigning) { _, isShowing in
+            if !isShowing {
+                Task {
+                    await viewModel.loadAssignmentsFromSupabase()
+                    if let assign = assignment {
+                        contractRecord = await SupabaseService.shared.fetchContractSignature(forAssignment: assign.id)
+                    }
+                }
             }
         }
         .sheet(isPresented: $showPackageSharing) {
@@ -916,6 +926,65 @@ struct PackageDetailView: View {
         viewModel.assignmentForPackage(package.id)
     }
 
+    @ViewBuilder
+    private var adminContractBanner: some View {
+        if viewModel.currentRole.isAnyStaffRole,
+           let assign = assignment,
+           assign.contractStatus == "awaiting_contract"
+            || assign.contractStatus == "awaiting_signature"
+            || assign.contractStatus == "awaiting_confirmation" {
+            let isUploadStep = contractRecord?.hasDocument != true
+            let needsAdminTick = contractRecord?.isAdminConfirmed == false
+            let title = isUploadStep
+                ? "Upload Signed Contract"
+                : (needsAdminTick ? "Admin Confirmation Needed" : "Awaiting Client Confirmation")
+            let body = isUploadStep
+                ? "Upload the PDF of the signed contract."
+                : (needsAdminTick
+                    ? "Tick ‘I confirm this is signed’ to complete your side."
+                    : "Waiting for the client to tick their confirmation.")
+            let buttonLabel = isUploadStep
+                ? "Open Contract Upload"
+                : (needsAdminTick ? "Review & Confirm Contract" : "View Contract Status")
+
+            VStack(spacing: 10) {
+                BentoCard(cornerRadius: 16) {
+                    HStack(spacing: 12) {
+                        Image(systemName: isUploadStep ? "arrow.up.doc.fill" : "checkmark.seal")
+                            .font(.system(size: 24))
+                            .foregroundStyle(AVIATheme.warning)
+                        VStack(alignment: .leading, spacing: 3) {
+                            Text(title)
+                                .font(.neueSubheadlineMedium)
+                                .foregroundStyle(AVIATheme.textPrimary)
+                            Text(body)
+                                .font(.neueCaption)
+                                .foregroundStyle(AVIATheme.textSecondary)
+                        }
+                        Spacer()
+                    }
+                    .padding(16)
+                }
+
+                Button {
+                    showContractSigning = true
+                } label: {
+                    HStack(spacing: 8) {
+                        Image(systemName: isUploadStep ? "arrow.up.doc.fill" : "checkmark.seal")
+                            .font(.neueSubheadlineMedium)
+                        Text(buttonLabel)
+                            .font(.neueSubheadlineMedium)
+                    }
+                    .frame(maxWidth: .infinity)
+                    .frame(height: 52)
+                    .foregroundStyle(AVIATheme.aviaWhite)
+                    .background(AVIATheme.primaryGradient)
+                    .clipShape(.rect(cornerRadius: 14))
+                }
+            }
+        }
+    }
+
     private var ctaSection: some View {
         VStack(spacing: 10) {
             buildTimelineRow
@@ -923,6 +992,7 @@ struct PackageDetailView: View {
             if isClientWithAssignedPackage {
                 clientResponseSection
             } else if canSharePackages {
+                adminContractBanner
                 staffActionsSection
             } else {
                 if let phoneURL = URL(string: "tel:0756545123") {

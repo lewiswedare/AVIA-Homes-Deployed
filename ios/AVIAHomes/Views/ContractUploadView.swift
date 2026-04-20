@@ -284,6 +284,7 @@ struct ContractUploadView: View {
         errorMessage = nil
         AVIAHaptic.success.trigger()
         await loadContract()
+        await viewModel.loadAssignmentsFromSupabase()
     }
 
     private func tapConfirm(as role: SupabaseService.ContractConfirmationRole) async {
@@ -304,6 +305,7 @@ struct ContractUploadView: View {
         errorMessage = nil
         AVIAHaptic.success.trigger()
         await loadContract()
+        await viewModel.loadAssignmentsFromSupabase()
     }
 
     private func formatDate(_ iso: String) -> String {
