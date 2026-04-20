@@ -1066,7 +1066,7 @@ struct DashboardView: View {
             }
 
             ScrollView(.horizontal) {
-                HStack(spacing: 12) {
+                LazyHStack(spacing: 12) {
                     ForEach(Array(facadeShowcaseItems.enumerated()), id: \.offset) { _, item in
                         facadeShowcaseCard(item: item)
                     }

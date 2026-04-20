@@ -548,7 +548,7 @@ struct ClientDiscoverDashboardView: View {
             }
 
             ScrollView(.horizontal) {
-                HStack(spacing: 12) {
+                LazyHStack(spacing: 12) {
                     ForEach(viewModel.allFacades) { facade in
                         NavigationLink(value: facade) {
                             facadeShowcaseCard(facade: facade)
