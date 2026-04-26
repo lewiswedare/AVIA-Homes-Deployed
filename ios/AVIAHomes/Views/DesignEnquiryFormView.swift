@@ -182,9 +182,38 @@ struct DesignEnquiryFormView: View {
 
         let success = await SupabaseService.shared.submitDesignEnquiry(row)
         if success {
+            await notifyAdmins(enquiryId: row.id)
             showSuccess = true
         } else {
             errorMessage = "Something went wrong. Please try again."
+        }
+    }
+
+    private func notifyAdmins(enquiryId: String) async {
+        var recipientIdSet = Set<String>()
+        for user in viewModel.allRegisteredUsers where user.role.isAnyStaffRole {
+            recipientIdSet.insert(user.id)
+        }
+        for user in viewModel.allRegisteredUsers where user.role == .admin {
+            recipientIdSet.insert(user.id)
+        }
+        recipientIdSet.remove(viewModel.currentUser.id)
+
+        let senderName = fullName.trimmingCharacters(in: .whitespaces).isEmpty
+            ? (viewModel.currentUser.fullName.isEmpty ? "A client" : viewModel.currentUser.fullName)
+            : fullName.trimmingCharacters(in: .whitespaces)
+
+        for recipientId in recipientIdSet {
+            await viewModel.notificationService.createNotification(
+                recipientId: recipientId,
+                senderId: viewModel.currentUser.id.isEmpty ? nil : viewModel.currentUser.id,
+                senderName: senderName,
+                type: .designEnquiry,
+                title: "Price Enquiry: \(designName)",
+                message: "\(senderName) has requested pricing for \(designName)",
+                referenceId: enquiryId,
+                referenceType: "design_enquiry"
+            )
         }
     }
 }

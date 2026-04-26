@@ -25,6 +25,7 @@ nonisolated enum NotificationType: String, Codable, Sendable {
     case contractRaised = "contract_raised"
     case invoiceRaised = "invoice_raised"
     case invoicePaid = "invoice_paid"
+    case designEnquiry = "design_enquiry"
 
     var icon: String {
         switch self {
@@ -52,6 +53,7 @@ nonisolated enum NotificationType: String, Codable, Sendable {
         case .contractRaised: "doc.richtext.fill"
         case .invoiceRaised: "dollarsign.circle.fill"
         case .invoicePaid: "checkmark.seal.fill"
+        case .designEnquiry: "dollarsign.circle.fill"
         }
     }
 
@@ -81,6 +83,7 @@ nonisolated enum NotificationType: String, Codable, Sendable {
         case .contractRaised: "teal"
         case .invoiceRaised: "warning"
         case .invoicePaid: "success"
+        case .designEnquiry: "warning"
         }
     }
 }
@@ -133,6 +136,7 @@ nonisolated struct AppNotification: Identifiable, Sendable, Hashable {
         case .contractRaised: return "Contract Ready"
         case .invoiceRaised: return "Invoice Ready"
         case .invoicePaid: return "Invoice Paid"
+        case .designEnquiry: return "Design Price Enquiry"
         }
     }
 
@@ -163,6 +167,7 @@ nonisolated struct AppNotification: Identifiable, Sendable, Hashable {
         case .contractRaised: return "A contract has been raised for your review"
         case .invoiceRaised: return "An invoice has been raised for your package"
         case .invoicePaid: return "Your invoice has been marked as paid"
+        case .designEnquiry: return "A client has enquired about pricing for a design"
         }
     }
 

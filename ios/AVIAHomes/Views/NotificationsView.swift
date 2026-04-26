@@ -129,6 +129,8 @@ struct NotificationsView: View {
             return true
         case .roleAssigned:
             return false
+        case .designEnquiry:
+            return isAdminOrStaff
         }
     }
 
@@ -195,6 +197,8 @@ struct NotificationsView: View {
                 ClientPackageReviewView()
             }
         case .roleAssigned:
+            EmptyView()
+        case .designEnquiry:
             EmptyView()
         }
     }
