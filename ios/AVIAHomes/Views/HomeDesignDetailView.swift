@@ -38,49 +38,44 @@ struct HomeDesignDetailView: View {
     }
 
     private var heroSection: some View {
-        GeometryReader { geo in
-            Color(AVIATheme.surfaceElevated)
-                .overlay {
-                    AsyncImage(url: URL(string: design.imageURL)) { phase in
-                        if let image = phase.image {
-                            image.resizable().aspectRatio(contentMode: .fill)
-                        } else if phase.error != nil {
-                            VStack(spacing: 12) {
-                                Image(systemName: "house.fill")
-                                    .font(.neueCorpMedium(56))
-                                    .foregroundStyle(AVIATheme.timelessBrown.opacity(0.2))
-                                Text(design.name)
-                                    .font(.neueCorpMedium(24))
-                                    .foregroundStyle(AVIATheme.timelessBrown.opacity(0.15))
-                            }
-                        } else {
-                            ProgressView()
+        Color(AVIATheme.surfaceElevated)
+            .frame(height: 440)
+            .overlay {
+                AsyncImage(url: URL(string: design.imageURL)) { phase in
+                    if let image = phase.image {
+                        image.resizable().aspectRatio(contentMode: .fill)
+                    } else if phase.error != nil {
+                        VStack(spacing: 12) {
+                            Image(systemName: "house.fill")
+                                .font(.neueCorpMedium(56))
+                                .foregroundStyle(AVIATheme.timelessBrown.opacity(0.2))
+                            Text(design.name)
+                                .font(.neueCorpMedium(24))
+                                .foregroundStyle(AVIATheme.timelessBrown.opacity(0.15))
                         }
+                    } else {
+                        ProgressView()
                     }
-                    .allowsHitTesting(false)
                 }
-                .overlay(alignment: .bottom) {
-                    VStack(alignment: .leading, spacing: 6) {
-                        Text(design.name)
-                            .font(.neueCorpMedium(28))
-                            .foregroundStyle(AVIATheme.aviaWhite)
-                        HStack(spacing: 16) {
-                            Text("\(design.bedrooms) Bed")
-                            Text("\(design.bathrooms) Bath")
-                            Text("\(design.garages) Car")
-                            Text(String(format: "%.0fm²", design.squareMeters))
-                        }
-                        .font(.neueCaption)
-                        .foregroundStyle(AVIATheme.aviaWhite.opacity(0.85))
-                    }
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                    .padding(.horizontal, 20)
-                    .padding(.vertical, 16)
-                    .background(.ultraThinMaterial)
-                }
-                .clipped()
-        }
-        .frame(height: 440)
+                .allowsHitTesting(false)
+            }
+            .overlay(alignment: .bottom) {
+                LinearGradient(
+                    stops: [
+                        .init(color: Color.clear, location: 0.0),
+                        .init(color: AVIATheme.timelessBrown.opacity(0.10), location: 0.20),
+                        .init(color: AVIATheme.background.opacity(0.4), location: 0.45),
+                        .init(color: AVIATheme.background.opacity(0.7), location: 0.65),
+                        .init(color: AVIATheme.background.opacity(0.9), location: 0.8),
+                        .init(color: AVIATheme.background, location: 1.0)
+                    ],
+                    startPoint: .top,
+                    endPoint: .bottom
+                )
+                .frame(height: 240)
+                .allowsHitTesting(false)
+            }
+            .clipped()
     }
 
     private var contentSection: some View {
