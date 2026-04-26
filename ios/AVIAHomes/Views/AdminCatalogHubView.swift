@@ -6,6 +6,7 @@ struct AdminCatalogHubView: View {
     @State private var colourCount: Int = 0
     @State private var designCount: Int = 0
     @State private var facadeCount: Int = 0
+    @State private var newsCount: Int = 0
 
     var body: some View {
         ScrollView {
@@ -62,6 +63,19 @@ struct AdminCatalogHubView: View {
                             count: facadeCount,
                             countLabel: "facades",
                             color: AVIATheme.heritageBlue
+                        )
+                    }
+
+                    NavigationLink {
+                        AdminNewsEditorView()
+                    } label: {
+                        catalogCard(
+                            icon: "newspaper.fill",
+                            title: "News Articles",
+                            subtitle: "Publish, edit & manage news articles shown in the app",
+                            count: newsCount,
+                            countLabel: "articles",
+                            color: AVIATheme.timelessBrown
                         )
                     }
 
@@ -239,5 +253,7 @@ struct AdminCatalogHubView: View {
         designCount = designs.count
         let facades = await SupabaseService.shared.fetchFacades()
         facadeCount = facades.count
+        let posts = await SupabaseService.shared.fetchBlogPosts()
+        newsCount = posts.count
     }
 }

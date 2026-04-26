@@ -655,6 +655,28 @@ class SupabaseService {
         }
     }
 
+    func upsertBlogPost(_ row: BlogPostRow) async -> Bool {
+        guard isConfigured else { return false }
+        do {
+            try await client.from("blog_posts").upsert(row).execute()
+            return true
+        } catch {
+            print("[SupabaseService] upsertBlogPost FAILED: \(error)")
+            return false
+        }
+    }
+
+    func deleteBlogPost(id: String) async -> Bool {
+        guard isConfigured else { return false }
+        do {
+            try await client.from("blog_posts").delete().eq("id", value: id).execute()
+            return true
+        } catch {
+            print("[SupabaseService] deleteBlogPost FAILED: \(error)")
+            return false
+        }
+    }
+
     func fetchLandEstates() async -> [LandEstate] {
         guard isConfigured else { return [] }
         do {

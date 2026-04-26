@@ -6,6 +6,7 @@ class AdminCatalogViewModel {
     var colourCategories: [ColourCategory] = []
     var homeDesigns: [HomeDesign] = []
     var facades: [Facade] = []
+    var blogPosts: [BlogPost] = []
     var isLoading = false
     var errorMessage: String?
     var successMessage: String?
@@ -55,6 +56,35 @@ class AdminCatalogViewModel {
         isLoading = true
         facades = await SupabaseService.shared.fetchFacades()
         isLoading = false
+    }
+
+    func loadBlogPosts() async {
+        isLoading = true
+        blogPosts = await SupabaseService.shared.fetchBlogPosts()
+        isLoading = false
+    }
+
+    func saveBlogPost(_ post: BlogPost) async {
+        errorMessage = nil
+        let row = BlogPostRow(from: post)
+        let success = await SupabaseService.shared.upsertBlogPost(row)
+        if success {
+            successMessage = "Article saved"
+            await loadBlogPosts()
+        } else {
+            errorMessage = "Failed to save article"
+        }
+    }
+
+    func deleteBlogPost(id: String) async {
+        errorMessage = nil
+        let success = await SupabaseService.shared.deleteBlogPost(id: id)
+        if success {
+            successMessage = "Article deleted"
+            await loadBlogPosts()
+        } else {
+            errorMessage = "Failed to delete article"
+        }
     }
 
     func saveFacade(_ facade: Facade) async {
