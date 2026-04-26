@@ -229,9 +229,12 @@ struct NewConversationSheet: View {
                         }
                     } label: {
                         HStack(spacing: 12) {
-                            Text("A")
-                                .font(.neueCorpMedium(16))
+                            Image("AVIALogo")
+                                .resizable()
+                                .renderingMode(.template)
+                                .aspectRatio(contentMode: .fit)
                                 .foregroundStyle(AVIATheme.aviaWhite)
+                                .padding(10)
                                 .frame(width: 40, height: 40)
                                 .background(AVIATheme.primaryGradient)
                                 .clipShape(Circle())
@@ -248,7 +251,15 @@ struct NewConversationSheet: View {
                                     .foregroundStyle(AVIATheme.textSecondary)
                             }
                         }
+                        .padding(.horizontal, 14)
+                        .padding(.vertical, 12)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .background(AVIATheme.cardBackground)
+                        .clipShape(.rect(cornerRadius: 14))
                     }
+                    .listRowSeparator(.hidden)
+                    .listRowBackground(Color.clear)
+                    .listRowInsets(EdgeInsets(top: 6, leading: 16, bottom: 6, trailing: 16))
                 }
 
                 ForEach(availableUsers, id: \.id) { user in
@@ -273,10 +284,20 @@ struct NewConversationSheet: View {
                                     .foregroundStyle(AVIATheme.textSecondary)
                             }
                         }
+                        .padding(.horizontal, 14)
+                        .padding(.vertical, 12)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .background(AVIATheme.cardBackground)
+                        .clipShape(.rect(cornerRadius: 14))
                     }
+                    .listRowSeparator(.hidden)
+                    .listRowBackground(Color.clear)
+                    .listRowInsets(EdgeInsets(top: 6, leading: 16, bottom: 6, trailing: 16))
                 }
             }
             .listStyle(.plain)
+            .scrollContentBackground(.hidden)
+            .background(AVIATheme.background)
             .searchable(text: $searchText, prompt: "Search people")
             .navigationTitle("New Message")
             .navigationBarTitleDisplayMode(.inline)
