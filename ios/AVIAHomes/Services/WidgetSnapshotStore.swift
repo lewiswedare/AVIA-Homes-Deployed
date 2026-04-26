@@ -6,6 +6,7 @@ nonisolated enum WidgetSnapshotKind: String, Codable, Sendable {
     case awaitingSpecs
     case awaitingColours
     case buildProgress
+    case packageAssigned
 }
 
 nonisolated struct WidgetNewsItem: Codable, Sendable, Hashable {
@@ -14,6 +15,25 @@ nonisolated struct WidgetNewsItem: Codable, Sendable, Hashable {
     let excerpt: String
     let imageURL: String?
     let publishedAt: Date?
+}
+
+nonisolated struct WidgetStaffContact: Codable, Sendable, Hashable {
+    let name: String
+    let roleLabel: String
+    let phone: String
+    let email: String
+}
+
+nonisolated struct WidgetPackageSummary: Codable, Sendable, Hashable {
+    let title: String
+    let location: String
+    let homeDesign: String
+    let price: String
+    let bedrooms: Int
+    let bathrooms: Int
+    let garages: Int
+    let imageURL: String?
+    let responseStatus: String
 }
 
 nonisolated struct WidgetSnapshot: Codable, Sendable {
@@ -33,6 +53,10 @@ nonisolated struct WidgetSnapshot: Codable, Sendable {
     let specsTotal: Int
     let coloursRemaining: Int
     let coloursTotal: Int
+    let nextStepTitle: String
+    let nextStepDetail: String
+    let staff: WidgetStaffContact?
+    let package: WidgetPackageSummary?
     let news: [WidgetNewsItem]
     let updatedAt: Date
 
@@ -53,6 +77,10 @@ nonisolated struct WidgetSnapshot: Codable, Sendable {
         specsTotal: 0,
         coloursRemaining: 0,
         coloursTotal: 0,
+        nextStepTitle: "",
+        nextStepDetail: "",
+        staff: nil,
+        package: nil,
         news: [],
         updatedAt: .now
     )
@@ -60,7 +88,7 @@ nonisolated struct WidgetSnapshot: Codable, Sendable {
 
 nonisolated enum WidgetSnapshotStore {
     static let appGroupID = "group.com.wedare.aviahomes"
-    static let snapshotKey = "avia_widget_snapshot_v1"
+    static let snapshotKey = "avia_widget_snapshot_v2"
 
     static var sharedDefaults: UserDefaults? {
         UserDefaults(suiteName: appGroupID)
