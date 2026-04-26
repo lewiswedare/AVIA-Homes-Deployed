@@ -4,6 +4,7 @@ struct HomeDesignDetailView: View {
     let design: HomeDesign
     @State private var showingFloorplan: Bool = false
     @State private var showingEnquiryForm: Bool = false
+    @State private var enquirySent: Bool = false
 
     var body: some View {
         ScrollView {
@@ -546,23 +547,31 @@ struct HomeDesignDetailView: View {
 
     private var ctaSection: some View {
         VStack(spacing: 10) {
-            Button {
-                showingEnquiryForm = true
-            } label: {
-                HStack(spacing: 8) {
-                    Image(systemName: "envelope.fill")
-                        .font(.neueSubheadlineMedium)
-                    Text("Enquire for Pricing")
-                        .font(.neueSubheadlineMedium)
+            if enquirySent {
+                enquirySentCard
+            } else {
+                Button {
+                    showingEnquiryForm = true
+                } label: {
+                    HStack(spacing: 8) {
+                        Image(systemName: "envelope.fill")
+                            .font(.neueSubheadlineMedium)
+                        Text("Enquire for Pricing")
+                            .font(.neueSubheadlineMedium)
+                    }
+                    .frame(maxWidth: .infinity)
+                    .frame(height: 52)
+                    .foregroundStyle(AVIATheme.aviaWhite)
+                    .background(AVIATheme.primaryGradient)
+                    .clipShape(.rect(cornerRadius: 11))
                 }
-                .frame(maxWidth: .infinity)
-                .frame(height: 52)
-                .foregroundStyle(AVIATheme.aviaWhite)
-                .background(AVIATheme.primaryGradient)
-                .clipShape(.rect(cornerRadius: 11))
-            }
-            .sheet(isPresented: $showingEnquiryForm) {
-                DesignEnquiryFormView(designName: design.name)
+                .sheet(isPresented: $showingEnquiryForm) {
+                    DesignEnquiryFormView(designName: design.name) {
+                        withAnimation(.spring(response: 0.4, dampingFraction: 0.8)) {
+                            enquirySent = true
+                        }
+                    }
+                }
             }
 
             if let phoneURL = URL(string: "tel:0756545123") {
@@ -583,6 +592,37 @@ struct HomeDesignDetailView: View {
         }
     }
 
+    private var enquirySentCard: some View {
+        HStack(alignment: .top, spacing: 12) {
+            ZStack {
+                Circle()
+                    .fill(AVIATheme.timelessBrown.opacity(0.12))
+                    .frame(width: 40, height: 40)
+                Image(systemName: "checkmark")
+                    .font(.neueSubheadlineMedium)
+                    .foregroundStyle(AVIATheme.timelessBrown)
+            }
+            VStack(alignment: .leading, spacing: 4) {
+                Text("Enquiry Sent")
+                    .font(.neueSubheadlineMedium)
+                    .foregroundStyle(AVIATheme.textPrimary)
+                Text("Thanks for your interest in the \(design.name). Our team will be in touch shortly.")
+                    .font(.neueCaption)
+                    .foregroundStyle(AVIATheme.textSecondary)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+            Spacer(minLength: 0)
+        }
+        .padding(16)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(AVIATheme.timelessBrown.opacity(0.08))
+        .overlay(
+            RoundedRectangle(cornerRadius: 11)
+                .stroke(AVIATheme.timelessBrown.opacity(0.25), lineWidth: 1)
+        )
+        .clipShape(.rect(cornerRadius: 11))
+        .transition(.opacity.combined(with: .scale(scale: 0.98)))
+    }
 }
 
 struct FloorplanFullscreenView: View {

@@ -2,6 +2,7 @@ import SwiftUI
 
 struct DesignEnquiryFormView: View {
     let designName: String
+    var onSubmitted: (() -> Void)? = nil
     @Environment(AppViewModel.self) private var viewModel
     @Environment(\.dismiss) private var dismiss
 
@@ -183,7 +184,8 @@ struct DesignEnquiryFormView: View {
         let success = await SupabaseService.shared.submitDesignEnquiry(row)
         if success {
             await notifyAdmins(enquiryId: row.id)
-            showSuccess = true
+            onSubmitted?()
+            dismiss()
         } else {
             errorMessage = "Something went wrong. Please try again."
         }
