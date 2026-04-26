@@ -249,37 +249,78 @@ struct HomeDesignDetailView: View {
         Group {
             if let url = URL(string: design.floorplanPDFURL) {
                 ShareLink(item: url) {
-                    HStack(spacing: 12) {
-                        Image(systemName: "arrow.down.doc.fill")
-                            .font(.system(size: 18, weight: .medium))
-                            .foregroundStyle(AVIATheme.timelessBrown)
-                            .frame(width: 44, height: 44)
-                            .background(AVIATheme.timelessBrown.opacity(0.12))
-                            .clipShape(.rect(cornerRadius: 10))
-
-                        VStack(alignment: .leading, spacing: 2) {
-                            Text("Download Floor Plan PDF")
-                                .font(.neueCaptionMedium)
-                                .foregroundStyle(AVIATheme.textPrimary)
-                            Text("Save or share the full \(design.name) floor plan")
-                                .font(.neueCaption2)
-                                .foregroundStyle(AVIATheme.textTertiary)
-                                .lineLimit(1)
+                    Color(.secondarySystemBackground)
+                        .frame(height: 200)
+                        .overlay {
+                            AsyncImage(url: URL(string: design.floorplanImageURL)) { phase in
+                                if let image = phase.image {
+                                    image
+                                        .resizable()
+                                        .aspectRatio(contentMode: .fill)
+                                        .blur(radius: 2)
+                                        .allowsHitTesting(false)
+                                }
+                            }
                         }
+                        .overlay {
+                            LinearGradient(
+                                colors: [
+                                    Color.black.opacity(0.15),
+                                    Color.black.opacity(0.55),
+                                    Color.black.opacity(0.85)
+                                ],
+                                startPoint: .top,
+                                endPoint: .bottom
+                            )
+                            .allowsHitTesting(false)
+                        }
+                        .clipShape(.rect(cornerRadius: 18))
+                        .overlay(alignment: .topLeading) {
+                            HStack(spacing: 6) {
+                                Image(systemName: "doc.richtext.fill")
+                                    .font(.system(size: 11, weight: .semibold))
+                                Text("PDF")
+                                    .font(.neueCorpMedium(11))
+                                    .tracking(1.2)
+                            }
+                            .foregroundStyle(.white)
+                            .padding(.horizontal, 10)
+                            .padding(.vertical, 6)
+                            .background(.ultraThinMaterial, in: .capsule)
+                            .environment(\.colorScheme, .dark)
+                            .padding(14)
+                        }
+                        .overlay(alignment: .bottomLeading) {
+                            HStack(alignment: .center, spacing: 12) {
+                                VStack(alignment: .leading, spacing: 4) {
+                                    Text("Floor Plan")
+                                        .font(.neueCorpMedium(20))
+                                        .foregroundStyle(.white)
+                                    Text("Download the full \(design.name) plan")
+                                        .font(.neueCaption)
+                                        .foregroundStyle(.white.opacity(0.85))
+                                        .lineLimit(1)
+                                }
 
-                        Spacer(minLength: 0)
+                                Spacer(minLength: 8)
 
-                        Image(systemName: "square.and.arrow.up")
-                            .font(.system(size: 14, weight: .medium))
-                            .foregroundStyle(AVIATheme.timelessBrown)
-                    }
-                    .padding(14)
-                    .background(AVIATheme.cardBackground)
-                    .clipShape(.rect(cornerRadius: 14))
-                    .overlay(
-                        RoundedRectangle(cornerRadius: 14)
-                            .stroke(AVIATheme.surfaceBorder, lineWidth: 1)
-                    )
+                                HStack(spacing: 6) {
+                                    Image(systemName: "arrow.down.circle.fill")
+                                        .font(.system(size: 14, weight: .semibold))
+                                    Text("Download")
+                                        .font(.neueCaptionMedium)
+                                }
+                                .foregroundStyle(AVIATheme.textPrimary)
+                                .padding(.horizontal, 14)
+                                .padding(.vertical, 10)
+                                .background(.white, in: .capsule)
+                            }
+                            .padding(16)
+                        }
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 18)
+                                .stroke(.white.opacity(0.08), lineWidth: 1)
+                        )
                 }
                 .buttonStyle(.pressable(.subtle))
             }
