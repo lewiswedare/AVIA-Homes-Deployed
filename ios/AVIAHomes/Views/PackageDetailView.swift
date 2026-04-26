@@ -361,8 +361,8 @@ struct PackageDetailView: View {
     @ViewBuilder
     private func homeDesignCard(for design: HomeDesign) -> some View {
         NavigationLink(value: design) {
-            BentoCard(cornerRadius: 20) {
-                VStack(spacing: 0) {
+            VStack(spacing: 0) {
+                Group {
                     Color(AVIATheme.surfaceElevated)
                         .frame(height: 240)
                         .overlay {
@@ -403,9 +403,10 @@ struct PackageDetailView: View {
                                 )
                             )
                         }
-                        .clipShape(.rect(cornerRadii: .init(topLeading: 20, topTrailing: 20)))
+                }
+                .clipShape(.rect(cornerRadii: .init(topLeading: 20, topTrailing: 20)))
 
-                    VStack(spacing: 16) {
+                VStack(spacing: 16) {
                         HStack(spacing: 0) {
                             houseStatPill(value: "\(design.bedrooms)", label: "Bed", icon: "bed.double.fill")
                             houseStatDivider
@@ -545,13 +546,16 @@ struct PackageDetailView: View {
                                                 .padding(.leading, 26)
                                         }
                                     }
-                                }
                             }
                         }
                     }
-                    .padding(16)
                 }
+                .padding(16)
+                .frame(maxWidth: .infinity)
+                .background(Color(hex: "f5f5f5"))
+                .clipShape(.rect(cornerRadii: .init(bottomLeading: 20, bottomTrailing: 20)))
             }
+            .clipShape(.rect(cornerRadius: 20))
         }
         .buttonStyle(.pressable(.subtle))
     }
