@@ -22,10 +22,34 @@ nonisolated struct BuildProvider: TimelineProvider {
     }
 }
 
-private let aviaBrown = Color(red: 0.36, green: 0.27, blue: 0.20)
-private let aviaBrownDark = Color(red: 0.22, green: 0.16, blue: 0.12)
-private let aviaGold = Color(red: 0.78, green: 0.62, blue: 0.36)
-private let aviaCream = Color(red: 0.96, green: 0.94, blue: 0.90)
+// Brand palette — mirrors AVIATheme in the main app
+// aviaBlack #1A1A1A, timelessBrown #37332B, aviaWhite #E1DDDC, heritageBlue #8E9B92
+private let aviaBlack = Color(red: 26/255, green: 26/255, blue: 26/255)
+private let timelessBrown = Color(red: 55/255, green: 51/255, blue: 43/255)
+private let aviaWhite = Color(red: 225/255, green: 221/255, blue: 220/255)
+private let heritageBlue = Color(red: 142/255, green: 155/255, blue: 146/255)
+private let cardBackground = Color(red: 235/255, green: 232/255, blue: 231/255)
+private let cardBackgroundAlt = Color(red: 242/255, green: 240/255, blue: 239/255)
+private let surfaceBorder = Color(red: 205/255, green: 201/255, blue: 199/255)
+
+// Accent used on dark backgrounds — warm off-white from the app palette
+private let onDarkAccent = aviaWhite
+// Background gradient for dark widget cards (app primaryGradient)
+private let darkGradient = LinearGradient(
+    colors: [aviaBlack, timelessBrown],
+    startPoint: .topLeading,
+    endPoint: .bottomTrailing
+)
+private let darkGradientVertical = LinearGradient(
+    colors: [aviaBlack, timelessBrown],
+    startPoint: .top,
+    endPoint: .bottom
+)
+private let lightGradient = LinearGradient(
+    colors: [cardBackgroundAlt, cardBackground],
+    startPoint: .top,
+    endPoint: .bottom
+)
 
 struct AVIAHomesWidgetView: View {
     @Environment(\.widgetFamily) var family
@@ -62,146 +86,146 @@ private struct BuildProgressWidgetView: View {
         case .systemSmall:
             VStack(alignment: .leading, spacing: 6) {
                 HStack(spacing: 6) {
-                    Image(systemName: "house.fill")
+                    Image(systemName: "house")
                         .font(.caption)
-                        .foregroundStyle(aviaGold)
+                        .foregroundStyle(onDarkAccent)
                     Text("AVIA HOMES")
-                        .font(.system(size: 9, weight: .semibold))
-                        .tracking(1.2)
-                        .foregroundStyle(.white.opacity(0.7))
+                        .font(.system(size: 9, weight: .medium))
+                        .tracking(1.6)
+                        .foregroundStyle(aviaWhite.opacity(0.65))
                 }
                 Spacer(minLength: 0)
                 Text(percentText)
-                    .font(.system(size: 34, weight: .bold))
-                    .foregroundStyle(.white)
+                    .font(.system(size: 34, weight: .light))
+                    .foregroundStyle(aviaWhite)
                 ProgressView(value: snapshot.overallProgress)
                     .progressViewStyle(.linear)
-                    .tint(aviaGold)
+                    .tint(aviaWhite)
                 Text(snapshot.currentStageName)
                     .font(.caption2)
                     .fontWeight(.medium)
-                    .foregroundStyle(.white.opacity(0.85))
+                    .foregroundStyle(aviaWhite.opacity(0.75))
                     .lineLimit(2)
             }
             .containerBackground(for: .widget) {
-                LinearGradient(colors: [aviaBrown, aviaBrownDark], startPoint: .top, endPoint: .bottom)
+                darkGradientVertical
             }
         case .systemMedium:
             VStack(alignment: .leading, spacing: 10) {
                 HStack {
                     VStack(alignment: .leading, spacing: 2) {
                         Text("YOUR BUILD")
-                            .font(.system(size: 10, weight: .semibold))
-                            .tracking(1.4)
-                            .foregroundStyle(.white.opacity(0.7))
+                            .font(.system(size: 10, weight: .medium))
+                            .tracking(1.6)
+                            .foregroundStyle(aviaWhite.opacity(0.65))
                         Text(snapshot.homeDesign.isEmpty ? "AVIA Home" : snapshot.homeDesign)
-                            .font(.headline)
-                            .foregroundStyle(.white)
+                            .font(.system(size: 17, weight: .medium))
+                            .foregroundStyle(aviaWhite)
                             .lineLimit(1)
                     }
                     Spacer()
                     Text(percentText)
-                        .font(.system(size: 28, weight: .bold))
-                        .foregroundStyle(aviaGold)
+                        .font(.system(size: 28, weight: .light))
+                        .foregroundStyle(aviaWhite)
                 }
 
                 ProgressView(value: snapshot.overallProgress)
                     .progressViewStyle(.linear)
-                    .tint(aviaGold)
+                    .tint(aviaWhite)
 
                 HStack(spacing: 8) {
-                    Image(systemName: "hammer.fill")
+                    Image(systemName: "hammer")
                         .font(.caption)
-                        .foregroundStyle(aviaGold)
+                        .foregroundStyle(aviaWhite.opacity(0.85))
                     Text(snapshot.currentStageName)
-                        .font(.subheadline.weight(.semibold))
-                        .foregroundStyle(.white)
+                        .font(.subheadline.weight(.medium))
+                        .foregroundStyle(aviaWhite)
                         .lineLimit(1)
                 }
 
                 if !snapshot.nextStepTitle.isEmpty {
                     HStack(spacing: 6) {
-                        Image(systemName: "arrow.forward.circle.fill")
+                        Image(systemName: "arrow.forward")
                             .font(.caption2)
-                            .foregroundStyle(.white.opacity(0.7))
+                            .foregroundStyle(aviaWhite.opacity(0.6))
                         Text(snapshot.nextStepTitle)
                             .font(.caption.weight(.medium))
-                            .foregroundStyle(.white.opacity(0.85))
+                            .foregroundStyle(aviaWhite.opacity(0.8))
                             .lineLimit(1)
                     }
                 } else {
                     Text("\(snapshot.completedStages) of \(snapshot.totalStages) stages complete")
                         .font(.caption)
-                        .foregroundStyle(.white.opacity(0.7))
+                        .foregroundStyle(aviaWhite.opacity(0.6))
                 }
             }
             .containerBackground(for: .widget) {
-                LinearGradient(colors: [aviaBrown, aviaBrownDark], startPoint: .topLeading, endPoint: .bottomTrailing)
+                darkGradient
             }
         default:
             VStack(alignment: .leading, spacing: 10) {
                 HStack {
                     VStack(alignment: .leading, spacing: 2) {
                         Text("YOUR BUILD")
-                            .font(.system(size: 10, weight: .semibold))
-                            .tracking(1.4)
-                            .foregroundStyle(.white.opacity(0.7))
+                            .font(.system(size: 10, weight: .medium))
+                            .tracking(1.6)
+                            .foregroundStyle(aviaWhite.opacity(0.65))
                         Text(snapshot.homeDesign.isEmpty ? "AVIA Home" : snapshot.homeDesign)
-                            .font(.headline)
-                            .foregroundStyle(.white)
+                            .font(.system(size: 17, weight: .medium))
+                            .foregroundStyle(aviaWhite)
                             .lineLimit(1)
                     }
                     Spacer()
                     Text(percentText)
-                        .font(.system(size: 28, weight: .bold))
-                        .foregroundStyle(aviaGold)
+                        .font(.system(size: 28, weight: .light))
+                        .foregroundStyle(aviaWhite)
                 }
 
                 ProgressView(value: snapshot.overallProgress)
                     .progressViewStyle(.linear)
-                    .tint(aviaGold)
+                    .tint(aviaWhite)
 
                 HStack(spacing: 8) {
-                    Image(systemName: "hammer.fill")
+                    Image(systemName: "hammer")
                         .font(.caption)
-                        .foregroundStyle(aviaGold)
+                        .foregroundStyle(aviaWhite.opacity(0.85))
                     Text(snapshot.currentStageName)
-                        .font(.subheadline.weight(.semibold))
-                        .foregroundStyle(.white)
+                        .font(.subheadline.weight(.medium))
+                        .foregroundStyle(aviaWhite)
                         .lineLimit(1)
                     Spacer()
                     Text("\(snapshot.completedStages)/\(snapshot.totalStages)")
-                        .font(.caption.weight(.semibold))
-                        .foregroundStyle(.white.opacity(0.7))
+                        .font(.caption.weight(.medium))
+                        .foregroundStyle(aviaWhite.opacity(0.6))
                 }
 
                 if !snapshot.nextStepTitle.isEmpty {
-                    Divider().background(.white.opacity(0.15))
+                    Divider().background(aviaWhite.opacity(0.12))
                     VStack(alignment: .leading, spacing: 3) {
                         HStack(spacing: 6) {
-                            Image(systemName: "arrow.forward.circle.fill")
+                            Image(systemName: "arrow.forward")
                                 .font(.caption)
-                                .foregroundStyle(aviaGold)
+                                .foregroundStyle(aviaWhite.opacity(0.85))
                             Text("NEXT STEP")
-                                .font(.system(size: 9, weight: .semibold))
-                                .tracking(1.2)
-                                .foregroundStyle(.white.opacity(0.7))
+                                .font(.system(size: 9, weight: .medium))
+                                .tracking(1.6)
+                                .foregroundStyle(aviaWhite.opacity(0.6))
                         }
                         Text(snapshot.nextStepTitle)
-                            .font(.subheadline.weight(.semibold))
-                            .foregroundStyle(.white)
+                            .font(.subheadline.weight(.medium))
+                            .foregroundStyle(aviaWhite)
                             .lineLimit(1)
                         if !snapshot.nextStepDetail.isEmpty {
                             Text(snapshot.nextStepDetail)
                                 .font(.caption2)
-                                .foregroundStyle(.white.opacity(0.75))
+                                .foregroundStyle(aviaWhite.opacity(0.7))
                                 .lineLimit(2)
                         }
                     }
                 }
 
                 if let staff = snapshot.staff, !staff.name.isEmpty {
-                    Divider().background(.white.opacity(0.15))
+                    Divider().background(aviaWhite.opacity(0.12))
                     StaffContactRow(staff: staff)
                 }
 
@@ -215,11 +239,11 @@ private struct BuildProgressWidgetView: View {
                             .font(.caption2.weight(.medium))
                             .lineLimit(1)
                     }
-                    .foregroundStyle(.white.opacity(0.7))
+                    .foregroundStyle(aviaWhite.opacity(0.6))
                 }
             }
             .containerBackground(for: .widget) {
-                LinearGradient(colors: [aviaBrown, aviaBrownDark], startPoint: .topLeading, endPoint: .bottomTrailing)
+                darkGradient
             }
         }
     }
@@ -232,32 +256,32 @@ private struct StaffContactRow: View {
         HStack(spacing: 10) {
             ZStack {
                 Circle()
-                    .fill(aviaGold.opacity(0.25))
+                    .fill(aviaWhite.opacity(0.15))
                     .frame(width: 32, height: 32)
                 Image(systemName: "person.fill")
                     .font(.caption)
-                    .foregroundStyle(aviaGold)
+                    .foregroundStyle(aviaWhite)
             }
             VStack(alignment: .leading, spacing: 1) {
                 Text(staff.name.isEmpty ? "Your AVIA team" : staff.name)
-                    .font(.caption.weight(.semibold))
-                    .foregroundStyle(.white)
+                    .font(.caption.weight(.medium))
+                    .foregroundStyle(aviaWhite)
                     .lineLimit(1)
                 Text(staff.roleLabel)
                     .font(.caption2)
-                    .foregroundStyle(.white.opacity(0.7))
+                    .foregroundStyle(aviaWhite.opacity(0.6))
                     .lineLimit(1)
             }
             Spacer()
             if !staff.phone.isEmpty {
                 Image(systemName: "phone.fill")
                     .font(.caption2)
-                    .foregroundStyle(aviaGold)
+                    .foregroundStyle(aviaWhite.opacity(0.85))
             }
             if !staff.email.isEmpty {
                 Image(systemName: "envelope.fill")
                     .font(.caption2)
-                    .foregroundStyle(aviaGold)
+                    .foregroundStyle(aviaWhite.opacity(0.85))
             }
         }
     }
@@ -317,28 +341,28 @@ private struct PromptCard: View {
             HStack(spacing: 6) {
                 Image(systemName: icon)
                     .font(.caption)
-                    .foregroundStyle(aviaBrown)
+                    .foregroundStyle(timelessBrown)
                 Text(title.uppercased())
                     .font(.system(size: 10, weight: .semibold))
                     .tracking(1.4)
-                    .foregroundStyle(aviaBrown.opacity(0.7))
+                    .foregroundStyle(timelessBrown.opacity(0.7))
             }
 
             Text(heading)
                 .font(family == .systemSmall ? .subheadline.weight(.bold) : .title3.weight(.bold))
-                .foregroundStyle(aviaBrownDark)
+                .foregroundStyle(aviaBlack)
                 .lineLimit(family == .systemSmall ? 3 : 2)
 
             if family != .systemSmall {
                 Text(detail)
                     .font(.footnote)
-                    .foregroundStyle(aviaBrownDark.opacity(0.75))
+                    .foregroundStyle(aviaBlack.opacity(0.75))
                     .lineLimit(3)
             }
 
             ProgressView(value: max(0, min(1, progress)))
                 .progressViewStyle(.linear)
-                .tint(aviaBrown)
+                .tint(timelessBrown)
 
             if family == .systemLarge, let staff, !staff.name.isEmpty {
                 Divider()
@@ -350,16 +374,16 @@ private struct PromptCard: View {
             HStack {
                 Text(family == .systemSmall ? detail : "Tap to open")
                     .font(.caption2.weight(.semibold))
-                    .foregroundStyle(aviaBrown)
+                    .foregroundStyle(timelessBrown)
                     .lineLimit(2)
                 Spacer()
                 Image(systemName: "arrow.up.right")
                     .font(.caption2.weight(.bold))
-                    .foregroundStyle(aviaBrown)
+                    .foregroundStyle(timelessBrown)
             }
         }
         .containerBackground(for: .widget) {
-            LinearGradient(colors: [aviaCream, .white], startPoint: .top, endPoint: .bottom)
+            lightGradient
         }
     }
 }
@@ -371,20 +395,20 @@ private struct LightStaffContactRow: View {
         HStack(spacing: 10) {
             ZStack {
                 Circle()
-                    .fill(aviaBrown.opacity(0.12))
+                    .fill(timelessBrown.opacity(0.12))
                     .frame(width: 32, height: 32)
                 Image(systemName: "person.fill")
                     .font(.caption)
-                    .foregroundStyle(aviaBrown)
+                    .foregroundStyle(timelessBrown)
             }
             VStack(alignment: .leading, spacing: 1) {
                 Text(staff.name.isEmpty ? "Your AVIA team" : staff.name)
                     .font(.caption.weight(.semibold))
-                    .foregroundStyle(aviaBrownDark)
+                    .foregroundStyle(aviaBlack)
                     .lineLimit(1)
                 Text(staff.roleLabel)
                     .font(.caption2)
-                    .foregroundStyle(aviaBrownDark.opacity(0.7))
+                    .foregroundStyle(aviaBlack.opacity(0.7))
                     .lineLimit(1)
             }
             Spacer()
@@ -405,7 +429,7 @@ private struct PackageWidgetView: View {
                 HStack(spacing: 6) {
                     Image(systemName: "shippingbox.fill")
                         .font(.caption)
-                        .foregroundStyle(aviaGold)
+                        .foregroundStyle(aviaWhite)
                     Text("YOUR PACKAGE")
                         .font(.system(size: 9, weight: .semibold))
                         .tracking(1.2)
@@ -424,11 +448,11 @@ private struct PackageWidgetView: View {
                 if let price = snapshot.package?.price, !price.isEmpty {
                     Text(price)
                         .font(.caption.weight(.bold))
-                        .foregroundStyle(aviaGold)
+                        .foregroundStyle(aviaWhite)
                 }
             }
             .containerBackground(for: .widget) {
-                LinearGradient(colors: [aviaBrown, aviaBrownDark], startPoint: .top, endPoint: .bottom)
+                darkGradientVertical
             }
         case .systemMedium:
             HStack(spacing: 12) {
@@ -468,13 +492,13 @@ private struct PackageWidgetView: View {
                     if let price = snapshot.package?.price, !price.isEmpty {
                         Text(price)
                             .font(.subheadline.weight(.bold))
-                            .foregroundStyle(aviaGold)
+                            .foregroundStyle(aviaWhite)
                     }
                 }
                 Spacer(minLength: 0)
             }
             .containerBackground(for: .widget) {
-                LinearGradient(colors: [aviaBrown, aviaBrownDark], startPoint: .topLeading, endPoint: .bottomTrailing)
+                darkGradient
             }
         default:
             VStack(alignment: .leading, spacing: 10) {
@@ -488,10 +512,10 @@ private struct PackageWidgetView: View {
                         Text(status.uppercased())
                             .font(.system(size: 9, weight: .semibold))
                             .tracking(1.0)
-                            .foregroundStyle(aviaGold)
+                            .foregroundStyle(aviaWhite)
                             .padding(.horizontal, 8)
                             .padding(.vertical, 3)
-                            .background(aviaGold.opacity(0.18), in: .capsule)
+                            .background(aviaWhite.opacity(0.18), in: .capsule)
                     }
                 }
                 if let urlString = snapshot.package?.imageURL, let url = URL(string: urlString) {
@@ -523,7 +547,7 @@ private struct PackageWidgetView: View {
                         if !pkg.price.isEmpty {
                             Text(pkg.price)
                                 .font(.subheadline.weight(.bold))
-                                .foregroundStyle(aviaGold)
+                                .foregroundStyle(aviaWhite)
                         }
                     }
                 }
@@ -534,10 +558,10 @@ private struct PackageWidgetView: View {
                     Image(systemName: "arrow.up.right")
                         .font(.caption.weight(.bold))
                 }
-                .foregroundStyle(aviaGold)
+                .foregroundStyle(aviaWhite)
             }
             .containerBackground(for: .widget) {
-                LinearGradient(colors: [aviaBrown, aviaBrownDark], startPoint: .topLeading, endPoint: .bottomTrailing)
+                darkGradient
             }
         }
     }
@@ -571,7 +595,7 @@ private struct NoBuildWidgetView: View {
                 HStack(spacing: 6) {
                     Image(systemName: "newspaper.fill")
                         .font(.caption)
-                        .foregroundStyle(aviaGold)
+                        .foregroundStyle(aviaWhite)
                     Text("LATEST NEWS")
                         .font(.system(size: 9, weight: .semibold))
                         .tracking(1.2)
@@ -593,14 +617,14 @@ private struct NoBuildWidgetView: View {
                 HStack {
                     Text("View more")
                         .font(.caption2.weight(.semibold))
-                        .foregroundStyle(aviaGold)
+                        .foregroundStyle(aviaWhite)
                     Image(systemName: "arrow.up.right")
                         .font(.caption2.weight(.bold))
-                        .foregroundStyle(aviaGold)
+                        .foregroundStyle(aviaWhite)
                 }
             }
             .containerBackground(for: .widget) {
-                LinearGradient(colors: [aviaBrown, aviaBrownDark], startPoint: .top, endPoint: .bottom)
+                darkGradientVertical
             }
         case .systemMedium:
             HStack(alignment: .top, spacing: 12) {
@@ -631,12 +655,12 @@ private struct NoBuildWidgetView: View {
                         Image(systemName: "arrow.up.right")
                             .font(.caption.weight(.bold))
                     }
-                    .foregroundStyle(aviaGold)
+                    .foregroundStyle(aviaWhite)
                 }
                 Spacer(minLength: 0)
             }
             .containerBackground(for: .widget) {
-                LinearGradient(colors: [aviaBrown, aviaBrownDark], startPoint: .topLeading, endPoint: .bottomTrailing)
+                darkGradient
             }
         default:
             VStack(alignment: .leading, spacing: 10) {
@@ -648,7 +672,7 @@ private struct NoBuildWidgetView: View {
                     Spacer()
                     Image(systemName: "newspaper.fill")
                         .font(.caption)
-                        .foregroundStyle(aviaGold)
+                        .foregroundStyle(aviaWhite)
                 }
 
                 if snapshot.news.isEmpty {
@@ -684,10 +708,10 @@ private struct NoBuildWidgetView: View {
                     Image(systemName: "arrow.up.right")
                         .font(.caption.weight(.bold))
                 }
-                .foregroundStyle(aviaGold)
+                .foregroundStyle(aviaWhite)
             }
             .containerBackground(for: .widget) {
-                LinearGradient(colors: [aviaBrown, aviaBrownDark], startPoint: .topLeading, endPoint: .bottomTrailing)
+                darkGradient
             }
         }
     }
