@@ -67,8 +67,8 @@ struct SpecRangeComparisonOverviewView: View {
             }
 
             HStack(spacing: 12) {
-                tierSelector(label: "Range A", selection: $leftTier, other: rightTier)
-                tierSelector(label: "Range B", selection: $rightTier, other: leftTier)
+                tierSelector(selection: $leftTier, other: rightTier)
+                tierSelector(selection: $rightTier, other: leftTier)
             }
         }
         .padding(14)
@@ -76,7 +76,7 @@ struct SpecRangeComparisonOverviewView: View {
         .clipShape(.rect(cornerRadius: 16))
     }
 
-    private func tierSelector(label: String, selection: Binding<SpecTier>, other: SpecTier) -> some View {
+    private func tierSelector(selection: Binding<SpecTier>, other: SpecTier) -> some View {
         Menu {
             ForEach(SpecTier.allCases) { tier in
                 Button {
@@ -92,11 +92,6 @@ struct SpecRangeComparisonOverviewView: View {
             }
         } label: {
             VStack(alignment: .leading, spacing: 6) {
-                Text(label.uppercased())
-                    .font(.neueCorpMedium(9))
-                    .kerning(1.0)
-                    .foregroundStyle(AVIATheme.textTertiary)
-
                 HStack {
                     Text(selection.wrappedValue.displayName)
                         .font(.neueSubheadlineMedium)
