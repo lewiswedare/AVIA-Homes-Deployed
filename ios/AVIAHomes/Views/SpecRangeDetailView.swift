@@ -381,64 +381,74 @@ struct SpecRangeDetailView: View {
     private var downloadSection: some View {
         if let pdfString = specData.pdfURL, !pdfString.isEmpty, let pdfURL = URL(string: pdfString) {
             let previewURL = (specData.pdfPreviewImageURL).flatMap { $0.isEmpty ? nil : URL(string: $0) }
-            VStack(spacing: 12) {
-                BentoCard(cornerRadius: 16) {
-                    HStack(spacing: 14) {
-                        Group {
-                            if let previewURL {
-                                Color(AVIATheme.surfaceElevated)
-                                    .frame(width: 72, height: 88)
-                                    .overlay {
-                                        AsyncImage(url: previewURL) { phase in
-                                            if let image = phase.image {
-                                                image.resizable().aspectRatio(contentMode: .fill)
-                                            } else {
-                                                Image(systemName: "doc.richtext")
-                                                    .font(.neueCorpMedium(22))
-                                                    .foregroundStyle(AVIATheme.timelessBrown)
-                                            }
-                                        }
-                                        .allowsHitTesting(false)
-                                    }
-                                    .clipShape(.rect(cornerRadius: 10))
+            Color(AVIATheme.surfaceElevated)
+                .frame(height: 420)
+                .overlay {
+                    if let previewURL {
+                        AsyncImage(url: previewURL) { phase in
+                            if let image = phase.image {
+                                image.resizable().aspectRatio(contentMode: .fill)
                             } else {
                                 Image(systemName: "doc.richtext")
-                                    .font(.neueCorpMedium(22))
-                                    .foregroundStyle(AVIATheme.timelessBrown)
-                                    .frame(width: 72, height: 88)
-                                    .background(AVIATheme.timelessBrown.opacity(0.1))
-                                    .clipShape(.rect(cornerRadius: 10))
+                                    .font(.system(size: 56))
+                                    .foregroundStyle(AVIATheme.timelessBrown.opacity(0.4))
                             }
                         }
-
-                        VStack(alignment: .leading, spacing: 2) {
-                            Text("\(tier.displayName) Spec Range PDF")
-                                .font(.neueSubheadlineMedium)
-                                .foregroundStyle(AVIATheme.textPrimary)
+                        .allowsHitTesting(false)
+                    } else {
+                        Image(systemName: "doc.richtext")
+                            .font(.system(size: 56))
+                            .foregroundStyle(AVIATheme.timelessBrown.opacity(0.4))
+                    }
+                }
+                .overlay(alignment: .bottom) {
+                    LinearGradient(
+                        colors: [.black.opacity(0), .black.opacity(0.35), .black.opacity(0.78)],
+                        startPoint: .top,
+                        endPoint: .bottom
+                    )
+                    .frame(height: 240)
+                    .allowsHitTesting(false)
+                }
+                .overlay(alignment: .topLeading) {
+                    Text("SPEC RANGE PDF")
+                        .font(.neueCaption)
+                        .tracking(1.4)
+                        .foregroundStyle(.white.opacity(0.95))
+                        .padding(.horizontal, 10)
+                        .padding(.vertical, 6)
+                        .background(.ultraThinMaterial, in: Capsule())
+                        .environment(\.colorScheme, .dark)
+                        .padding(16)
+                }
+                .overlay(alignment: .bottomLeading) {
+                    VStack(alignment: .leading, spacing: 16) {
+                        VStack(alignment: .leading, spacing: 6) {
+                            Text("\(tier.displayName)")
+                                .font(.neueCorpMedium(28))
+                                .foregroundStyle(.white)
                             Text("Download the full specification document")
-                                .font(.neueCaption)
-                                .foregroundStyle(AVIATheme.textTertiary)
+                                .font(.neueSubheadline)
+                                .foregroundStyle(.white.opacity(0.85))
                         }
 
-                        Spacer(minLength: 0)
+                        Link(destination: pdfURL) {
+                            HStack(spacing: 8) {
+                                Image(systemName: "arrow.down.doc.fill")
+                                    .font(.neueSubheadlineMedium)
+                                Text("Download PDF")
+                                    .font(.neueSubheadlineMedium)
+                            }
+                            .frame(maxWidth: .infinity)
+                            .frame(height: 50)
+                            .foregroundStyle(AVIATheme.aviaWhite)
+                            .background(AVIATheme.primaryGradient)
+                            .clipShape(.rect(cornerRadius: 14))
+                        }
                     }
-                    .padding(14)
+                    .padding(20)
                 }
-
-                Link(destination: pdfURL) {
-                    HStack(spacing: 8) {
-                        Image(systemName: "arrow.down.doc.fill")
-                            .font(.neueSubheadlineMedium)
-                        Text("Download PDF")
-                            .font(.neueSubheadlineMedium)
-                    }
-                    .frame(maxWidth: .infinity)
-                    .frame(height: 48)
-                    .foregroundStyle(AVIATheme.timelessBrown)
-                    .background(AVIATheme.timelessBrown.opacity(0.1))
-                    .clipShape(.rect(cornerRadius: 14))
-                }
-            }
+                .clipShape(.rect(cornerRadius: 20))
         }
     }
 }
