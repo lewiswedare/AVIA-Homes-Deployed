@@ -321,7 +321,7 @@ struct DiscoverFeedView: View {
     }
 
     private func designCard(design: HomeDesign) -> some View {
-        Color(AVIATheme.surfaceElevated)
+        Color(hex: "f5f5f5")
             .frame(width: 260, height: 325)
             .overlay {
                 AsyncImage(url: URL(string: design.imageURL)) { phase in
