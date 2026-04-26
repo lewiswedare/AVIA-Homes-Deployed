@@ -183,6 +183,12 @@ struct DesignEnquiryFormView: View {
 
         let success = await SupabaseService.shared.submitDesignEnquiry(row)
         if success {
+            ActivityTrackingService.track(
+                clientId: viewModel.currentUser.id,
+                kind: .enquirySent,
+                referenceId: row.id,
+                referenceName: designName
+            )
             await notifyAdmins(enquiryId: row.id)
             onSubmitted?()
             dismiss()
