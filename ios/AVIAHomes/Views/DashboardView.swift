@@ -1372,7 +1372,7 @@ struct DashboardView: View {
     }
 
     private func designCard(design: HomeDesign) -> some View {
-        Color(AVIATheme.surfaceElevated)
+        Color(red: 245.0/255.0, green: 245.0/255.0, blue: 245.0/255.0)
             .frame(width: 260, height: 325)
             .overlay {
                 AsyncImage(url: URL(string: design.imageURL)) { phase in

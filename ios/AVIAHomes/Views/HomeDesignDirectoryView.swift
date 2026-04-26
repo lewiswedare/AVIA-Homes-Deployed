@@ -342,7 +342,7 @@ struct HomeDesignDirectoryView: View {
     }
 
     private func designGridCard(design: HomeDesign) -> some View {
-        Color(AVIATheme.surfaceElevated)
+        Color(hex: "f5f5f5")
             .aspectRatio(3/4, contentMode: .fit)
             .overlay {
                 AsyncImage(url: URL(string: design.imageURL)) { phase in
