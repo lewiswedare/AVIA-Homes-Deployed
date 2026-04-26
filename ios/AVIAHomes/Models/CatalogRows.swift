@@ -95,11 +95,22 @@ nonisolated struct SpecRangeTierRow: Codable, Sendable {
     let summary: String
     let highlights: [HighlightRow]
     let room_images: [RoomImageRow]
+    let partner_logos: [PartnerLogoRow]?
 
     struct HighlightRow: Codable, Sendable {
         let icon: String
         let title: String
         let subtitle: String
+        let icon_image_url: String?
+        let detail_image_url: String?
+
+        init(icon: String, title: String, subtitle: String, icon_image_url: String? = nil, detail_image_url: String? = nil) {
+            self.icon = icon
+            self.title = title
+            self.subtitle = subtitle
+            self.icon_image_url = icon_image_url
+            self.detail_image_url = detail_image_url
+        }
     }
 
     struct RoomImageRow: Codable, Sendable {
@@ -107,12 +118,42 @@ nonisolated struct SpecRangeTierRow: Codable, Sendable {
         let image_url: String
     }
 
+    struct PartnerLogoRow: Codable, Sendable {
+        let name: String
+        let image_url: String
+    }
+
+    init(
+        tier: String,
+        hero_image_url: String,
+        summary: String,
+        highlights: [HighlightRow],
+        room_images: [RoomImageRow],
+        partner_logos: [PartnerLogoRow]? = nil
+    ) {
+        self.tier = tier
+        self.hero_image_url = hero_image_url
+        self.summary = summary
+        self.highlights = highlights
+        self.room_images = room_images
+        self.partner_logos = partner_logos
+    }
+
     func toSpecRangeData() -> SpecRangeData {
         SpecRangeData(
             heroImageURL: hero_image_url,
             summary: summary,
             highlights: highlights.map {
-                SpecRangeHighlight(icon: $0.icon, title: $0.title, subtitle: $0.subtitle)
+                SpecRangeHighlight(
+                    icon: $0.icon,
+                    title: $0.title,
+                    subtitle: $0.subtitle,
+                    iconImageURL: $0.icon_image_url,
+                    detailImageURL: $0.detail_image_url
+                )
+            },
+            partnerLogos: (partner_logos ?? []).map {
+                SpecRangePartnerLogo(name: $0.name, imageURL: $0.image_url)
             }
         )
     }

@@ -52,40 +52,46 @@ struct SpecRangeDetailView: View {
         }
     }
 
+    @ViewBuilder
     private var brandPartnersSection: some View {
-        VStack(alignment: .leading, spacing: 14) {
-            Text("Trusted Brand Partners")
-                .font(.neueCorpMedium(20))
-                .foregroundStyle(AVIATheme.textPrimary)
+        let logos = specData.partnerLogos
+        if !logos.isEmpty {
+            VStack(alignment: .leading, spacing: 14) {
+                Text("Trusted Brand Partners")
+                    .font(.neueCorpMedium(20))
+                    .foregroundStyle(AVIATheme.textPrimary)
 
-            Text("Products from the brands you trust are included in the \(tier.displayName) range.")
-                .font(.neueCaption)
-                .foregroundStyle(AVIATheme.textSecondary)
+                Text("Products from the brands you trust are included in the \(tier.displayName) range.")
+                    .font(.neueCaption)
+                    .foregroundStyle(AVIATheme.textSecondary)
 
-            LazyVGrid(columns: [GridItem(.flexible(), spacing: 10), GridItem(.flexible(), spacing: 10), GridItem(.flexible(), spacing: 10)], spacing: 16) {
-                ForEach(brandPartners, id: \.self) { _ in
-                    Image(systemName: "building.2.crop.circle.fill")
-                        .font(.system(size: 28))
-                        .foregroundStyle(AVIATheme.timelessBrown.opacity(0.7))
-                        .frame(maxWidth: .infinity)
-                        .frame(height: 64)
+                LazyVGrid(columns: [GridItem(.flexible(), spacing: 10), GridItem(.flexible(), spacing: 10), GridItem(.flexible(), spacing: 10)], spacing: 16) {
+                    ForEach(logos, id: \.self) { logo in
+                        Color(AVIATheme.surfaceElevated)
+                            .frame(height: 64)
+                            .overlay {
+                                AsyncImage(url: URL(string: logo.imageURL)) { phase in
+                                    if let image = phase.image {
+                                        image.resizable().aspectRatio(contentMode: .fit).padding(8)
+                                    } else if phase.error != nil {
+                                        Image(systemName: "building.2.crop.circle.fill")
+                                            .font(.system(size: 24))
+                                            .foregroundStyle(AVIATheme.timelessBrown.opacity(0.5))
+                                    } else {
+                                        ProgressView().controlSize(.small)
+                                    }
+                                }
+                                .allowsHitTesting(false)
+                            }
+                            .clipShape(.rect(cornerRadius: 10))
+                            .accessibilityLabel(logo.name)
+                    }
                 }
+
+                Text("Logos shown are representative. Actual branded products included vary by plan and availability.")
+                    .font(.neueCaption2)
+                    .foregroundStyle(AVIATheme.textTertiary)
             }
-
-            Text("Logos shown are representative. Actual branded products included vary by plan and availability.")
-                .font(.neueCaption2)
-                .foregroundStyle(AVIATheme.textTertiary)
-        }
-    }
-
-    private var brandPartners: [String] {
-        switch tier {
-        case .volos:
-            return ["Colorbond", "Caroma", "James Hardie", "Bosch", "Dulux", "Bristol"]
-        case .messina:
-            return ["Colorbond", "Caesarstone", "Smeg", "Caroma", "Dulux", "Bosch", "James Hardie", "Phoenix", "Clark"]
-        case .portobello:
-            return ["Miele", "Caesarstone", "Fisher & Paykel", "Phoenix", "Colorbond", "Porter's Paints", "Reece", "Franke", "Hafele"]
         }
     }
 
@@ -187,6 +193,34 @@ struct SpecRangeDetailView: View {
         }
     }
 
+    @ViewBuilder
+    private func highlightIcon(for highlight: SpecRangeHighlight) -> some View {
+        if let urlString = highlight.iconImageURL, !urlString.isEmpty, let url = URL(string: urlString) {
+            Color(AVIATheme.timelessBrown.opacity(0.1))
+                .frame(width: 36, height: 36)
+                .overlay {
+                    AsyncImage(url: url) { phase in
+                        if let image = phase.image {
+                            image.resizable().aspectRatio(contentMode: .fill)
+                        } else {
+                            Image(systemName: highlight.icon)
+                                .font(.neueCorpMedium(14))
+                                .foregroundStyle(AVIATheme.timelessBrown)
+                        }
+                    }
+                    .allowsHitTesting(false)
+                }
+                .clipShape(Circle())
+        } else {
+            Image(systemName: highlight.icon)
+                .font(.neueCorpMedium(14))
+                .foregroundStyle(AVIATheme.timelessBrown)
+                .frame(width: 36, height: 36)
+                .background(AVIATheme.timelessBrown.opacity(0.1))
+                .clipShape(Circle())
+        }
+    }
+
     private var highlightsSection: some View {
         VStack(alignment: .leading, spacing: 14) {
             Text(highlightsSectionTitle)
@@ -199,12 +233,7 @@ struct SpecRangeDetailView: View {
                         highlightDetail = highlight
                     } label: {
                         HStack(alignment: .top, spacing: 14) {
-                            Image(systemName: highlight.icon)
-                                .font(.neueCorpMedium(14))
-                                .foregroundStyle(AVIATheme.timelessBrown)
-                                .frame(width: 36, height: 36)
-                                .background(AVIATheme.timelessBrown.opacity(0.1))
-                                .clipShape(Circle())
+                            highlightIcon(for: highlight)
 
                             VStack(alignment: .leading, spacing: 2) {
                                 Text(highlight.title)

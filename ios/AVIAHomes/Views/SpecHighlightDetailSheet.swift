@@ -12,12 +12,7 @@ struct SpecHighlightDetailSheet: View {
 
                 VStack(alignment: .leading, spacing: 14) {
                         HStack(spacing: 12) {
-                            Image(systemName: highlight.icon)
-                                .font(.system(size: 18, weight: .semibold))
-                                .foregroundStyle(AVIATheme.timelessBrown)
-                                .frame(width: 44, height: 44)
-                                .background(AVIATheme.timelessBrown.opacity(0.12))
-                                .clipShape(Circle())
+                            iconView
 
                             VStack(alignment: .leading, spacing: 2) {
                                 Text(tier.displayName.uppercased())
@@ -110,7 +105,38 @@ struct SpecHighlightDetailSheet: View {
             .clipped()
     }
 
+    @ViewBuilder
+    private var iconView: some View {
+        if let urlString = highlight.iconImageURL, !urlString.isEmpty, let url = URL(string: urlString) {
+            Color(AVIATheme.timelessBrown.opacity(0.12))
+                .frame(width: 44, height: 44)
+                .overlay {
+                    AsyncImage(url: url) { phase in
+                        if let image = phase.image {
+                            image.resizable().aspectRatio(contentMode: .fill)
+                        } else {
+                            Image(systemName: highlight.icon)
+                                .font(.system(size: 18, weight: .semibold))
+                                .foregroundStyle(AVIATheme.timelessBrown)
+                        }
+                    }
+                    .allowsHitTesting(false)
+                }
+                .clipShape(Circle())
+        } else {
+            Image(systemName: highlight.icon)
+                .font(.system(size: 18, weight: .semibold))
+                .foregroundStyle(AVIATheme.timelessBrown)
+                .frame(width: 44, height: 44)
+                .background(AVIATheme.timelessBrown.opacity(0.12))
+                .clipShape(Circle())
+        }
+    }
+
     private var imageURL: String {
+        if let detail = highlight.detailImageURL, !detail.isEmpty {
+            return detail
+        }
         let rooms = CatalogDataManager.shared.specRangeRoomImages(for: tier)
         return rooms.first?.imageURL ?? CatalogDataManager.shared.specRangeData(for: tier).heroImageURL
     }

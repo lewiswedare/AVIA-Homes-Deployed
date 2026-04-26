@@ -221,6 +221,7 @@ private struct SpecRangeEditSheet: View {
     @State private var summary: String = ""
     @State private var highlights: [EditableHighlight] = []
     @State private var roomImages: [EditableRoomImage] = []
+    @State private var partnerLogos: [EditablePartnerLogo] = []
 
     var body: some View {
         NavigationStack {
@@ -230,6 +231,7 @@ private struct SpecRangeEditSheet: View {
                     summaryCard
                     highlightsCard
                     roomsCard
+                    partnerLogosCard
                 }
                 .padding(.horizontal, 16)
                 .padding(.vertical, 12)
@@ -329,14 +331,6 @@ private struct SpecRangeEditSheet: View {
                 }
             }
 
-            sheetField("SF Symbol") {
-                TextField("e.g. countertop.fill", text: binding.icon)
-                    .font(.neueCaption)
-                    .textInputAutocapitalization(.never)
-                    .autocorrectionDisabled()
-            }
-            .padding(.horizontal, 0)
-
             sheetField("Title") {
                 TextField("e.g. 20mm Stone Benchtops", text: binding.title)
                     .font(.neueCaption)
@@ -347,6 +341,28 @@ private struct SpecRangeEditSheet: View {
                 TextField("Short description", text: binding.subtitle, axis: .vertical)
                     .font(.neueCaption)
                     .lineLimit(1...3)
+            }
+            .padding(.horizontal, 0)
+
+            AdminImagePickerField(
+                label: "Icon Image (optional, replaces SF Symbol)",
+                imageURL: binding.iconImageURL,
+                folder: "spec-ranges/highlights",
+                itemId: "\(tier.rawValue)_icon_\(hl.id.uuidString.prefix(8))"
+            )
+
+            AdminImagePickerField(
+                label: "Detail Image (shown when highlight is opened)",
+                imageURL: binding.detailImageURL,
+                folder: "spec-ranges/highlights",
+                itemId: "\(tier.rawValue)_detail_\(hl.id.uuidString.prefix(8))"
+            )
+
+            sheetField("SF Symbol (fallback)") {
+                TextField("e.g. countertop.fill", text: binding.icon)
+                    .font(.neueCaption)
+                    .textInputAutocapitalization(.never)
+                    .autocorrectionDisabled()
             }
             .padding(.horizontal, 0)
         }
@@ -424,6 +440,74 @@ private struct SpecRangeEditSheet: View {
         .padding(.horizontal, 14)
     }
 
+    private var partnerLogosCard: some View {
+        BentoCard(cornerRadius: 14) {
+            VStack(alignment: .leading, spacing: 14) {
+                HStack {
+                    sectionHeader("Trusted Brand Partners")
+                    Spacer()
+                    Button {
+                        withAnimation {
+                            partnerLogos.append(EditablePartnerLogo(name: "", imageURL: ""))
+                        }
+                    } label: {
+                        Image(systemName: "plus.circle.fill")
+                            .foregroundStyle(AVIATheme.timelessBrown)
+                    }
+                    .padding(.trailing, 14)
+                }
+
+                if partnerLogos.isEmpty {
+                    Text("No partner logos. Tap + to add one.")
+                        .font(.neueCaption2)
+                        .foregroundStyle(AVIATheme.textTertiary)
+                        .padding(.horizontal, 14)
+                } else {
+                    ForEach(partnerLogos) { logo in
+                        partnerLogoRow(logo)
+                    }
+                }
+            }
+            .padding(.vertical, 14)
+        }
+    }
+
+    private func partnerLogoRow(_ logo: EditablePartnerLogo) -> some View {
+        let binding = bindingForPartnerLogo(logo.id)
+        return VStack(alignment: .leading, spacing: 8) {
+            HStack {
+                Text("Brand Partner")
+                    .font(.neueCaption2Medium)
+                    .foregroundStyle(AVIATheme.textSecondary)
+                Spacer()
+                Button(role: .destructive) {
+                    withAnimation { partnerLogos.removeAll { $0.id == logo.id } }
+                } label: {
+                    Image(systemName: "trash")
+                        .font(.system(size: 12))
+                        .foregroundStyle(AVIATheme.destructive.opacity(0.7))
+                }
+            }
+
+            sheetField("Brand Name") {
+                TextField("e.g. Caesarstone", text: binding.name)
+                    .font(.neueCaption)
+            }
+            .padding(.horizontal, 0)
+
+            AdminImagePickerField(
+                label: "Logo",
+                imageURL: binding.imageURL,
+                folder: "spec-ranges/partners",
+                itemId: "\(tier.rawValue)_partner_\(logo.id.uuidString.prefix(8))"
+            )
+        }
+        .padding(12)
+        .background(AVIATheme.surfaceElevated)
+        .clipShape(.rect(cornerRadius: 10))
+        .padding(.horizontal, 14)
+    }
+
     private func sectionHeader(_ title: String) -> some View {
         Text(title)
             .font(.neueCaptionMedium)
@@ -446,12 +530,14 @@ private struct SpecRangeEditSheet: View {
         .padding(.horizontal, 14)
     }
 
-    private func bindingForHighlight(_ id: UUID) -> (icon: Binding<String>, title: Binding<String>, subtitle: Binding<String>) {
+    private func bindingForHighlight(_ id: UUID) -> (icon: Binding<String>, title: Binding<String>, subtitle: Binding<String>, iconImageURL: Binding<String>, detailImageURL: Binding<String>) {
         let idx = highlights.firstIndex(where: { $0.id == id }) ?? 0
         return (
             Binding(get: { highlights[idx].icon }, set: { highlights[idx].icon = $0 }),
             Binding(get: { highlights[idx].title }, set: { highlights[idx].title = $0 }),
-            Binding(get: { highlights[idx].subtitle }, set: { highlights[idx].subtitle = $0 })
+            Binding(get: { highlights[idx].subtitle }, set: { highlights[idx].subtitle = $0 }),
+            Binding(get: { highlights[idx].iconImageURL }, set: { highlights[idx].iconImageURL = $0 }),
+            Binding(get: { highlights[idx].detailImageURL }, set: { highlights[idx].detailImageURL = $0 })
         )
     }
 
@@ -463,26 +549,44 @@ private struct SpecRangeEditSheet: View {
         )
     }
 
+    private func bindingForPartnerLogo(_ id: UUID) -> (name: Binding<String>, imageURL: Binding<String>) {
+        let idx = partnerLogos.firstIndex(where: { $0.id == id }) ?? 0
+        return (
+            Binding(get: { partnerLogos[idx].name }, set: { partnerLogos[idx].name = $0 }),
+            Binding(get: { partnerLogos[idx].imageURL }, set: { partnerLogos[idx].imageURL = $0 })
+        )
+    }
+
     private func populate() {
         if let existing {
             heroImageURL = existing.hero_image_url
             summary = existing.summary
             highlights = existing.highlights.map {
-                EditableHighlight(icon: $0.icon, title: $0.title, subtitle: $0.subtitle)
+                EditableHighlight(
+                    icon: $0.icon,
+                    title: $0.title,
+                    subtitle: $0.subtitle,
+                    iconImageURL: $0.icon_image_url ?? "",
+                    detailImageURL: $0.detail_image_url ?? ""
+                )
             }
             roomImages = existing.room_images.map {
                 EditableRoomImage(name: $0.name, imageURL: $0.image_url)
+            }
+            partnerLogos = (existing.partner_logos ?? []).map {
+                EditablePartnerLogo(name: $0.name, imageURL: $0.image_url)
             }
         } else {
             let seed = SpecRangeData.seedData(for: tier)
             heroImageURL = seed.heroImageURL
             summary = seed.summary
             highlights = seed.highlights.map {
-                EditableHighlight(icon: $0.icon, title: $0.title, subtitle: $0.subtitle)
+                EditableHighlight(icon: $0.icon, title: $0.title, subtitle: $0.subtitle, iconImageURL: "", detailImageURL: "")
             }
             roomImages = SpecRangeData.roomImages(for: tier).map {
                 EditableRoomImage(name: $0.name, imageURL: $0.imageURL)
             }
+            partnerLogos = []
         }
     }
 
@@ -493,10 +597,21 @@ private struct SpecRangeEditSheet: View {
             summary: summary,
             highlights: highlights
                 .filter { !$0.title.isEmpty }
-                .map { SpecRangeTierRow.HighlightRow(icon: $0.icon, title: $0.title, subtitle: $0.subtitle) },
+                .map {
+                    SpecRangeTierRow.HighlightRow(
+                        icon: $0.icon,
+                        title: $0.title,
+                        subtitle: $0.subtitle,
+                        icon_image_url: $0.iconImageURL.isEmpty ? nil : $0.iconImageURL,
+                        detail_image_url: $0.detailImageURL.isEmpty ? nil : $0.detailImageURL
+                    )
+                },
             room_images: roomImages
                 .filter { !$0.name.isEmpty && !$0.imageURL.isEmpty }
-                .map { SpecRangeTierRow.RoomImageRow(name: $0.name, image_url: $0.imageURL) }
+                .map { SpecRangeTierRow.RoomImageRow(name: $0.name, image_url: $0.imageURL) },
+            partner_logos: partnerLogos
+                .filter { !$0.name.isEmpty && !$0.imageURL.isEmpty }
+                .map { SpecRangeTierRow.PartnerLogoRow(name: $0.name, image_url: $0.imageURL) }
         )
         onSave(row)
         dismiss()
@@ -508,9 +623,17 @@ private struct EditableHighlight: Identifiable {
     var icon: String
     var title: String
     var subtitle: String
+    var iconImageURL: String = ""
+    var detailImageURL: String = ""
 }
 
 private struct EditableRoomImage: Identifiable {
+    let id = UUID()
+    var name: String
+    var imageURL: String
+}
+
+private struct EditablePartnerLogo: Identifiable {
     let id = UUID()
     var name: String
     var imageURL: String
