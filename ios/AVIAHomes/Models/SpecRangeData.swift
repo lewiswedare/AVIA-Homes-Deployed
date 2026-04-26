@@ -19,8 +19,9 @@ struct SpecRangeData: Sendable {
     let highlights: [SpecRangeHighlight]
     var partnerLogos: [SpecRangePartnerLogo] = []
     var pdfURL: String? = nil
+    var pdfPreviewImageURL: String? = nil
 
-    static let empty = SpecRangeData(heroImageURL: "", summary: "", highlights: [], partnerLogos: [], pdfURL: nil)
+    static let empty = SpecRangeData(heroImageURL: "", summary: "", highlights: [], partnerLogos: [], pdfURL: nil, pdfPreviewImageURL: nil)
 
     static func seedData(for tier: SpecTier) -> SpecRangeData {
         switch tier {

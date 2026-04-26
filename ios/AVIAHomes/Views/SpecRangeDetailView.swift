@@ -380,15 +380,36 @@ struct SpecRangeDetailView: View {
     @ViewBuilder
     private var downloadSection: some View {
         if let pdfString = specData.pdfURL, !pdfString.isEmpty, let pdfURL = URL(string: pdfString) {
+            let previewURL = (specData.pdfPreviewImageURL).flatMap { $0.isEmpty ? nil : URL(string: $0) }
             VStack(spacing: 12) {
                 BentoCard(cornerRadius: 16) {
                     HStack(spacing: 14) {
-                        Image(systemName: "doc.richtext")
-                            .font(.neueCorpMedium(22))
-                            .foregroundStyle(AVIATheme.timelessBrown)
-                            .frame(width: 48, height: 48)
-                            .background(AVIATheme.timelessBrown.opacity(0.1))
-                            .clipShape(.rect(cornerRadius: 12))
+                        Group {
+                            if let previewURL {
+                                Color(AVIATheme.surfaceElevated)
+                                    .frame(width: 72, height: 88)
+                                    .overlay {
+                                        AsyncImage(url: previewURL) { phase in
+                                            if let image = phase.image {
+                                                image.resizable().aspectRatio(contentMode: .fill)
+                                            } else {
+                                                Image(systemName: "doc.richtext")
+                                                    .font(.neueCorpMedium(22))
+                                                    .foregroundStyle(AVIATheme.timelessBrown)
+                                            }
+                                        }
+                                        .allowsHitTesting(false)
+                                    }
+                                    .clipShape(.rect(cornerRadius: 10))
+                            } else {
+                                Image(systemName: "doc.richtext")
+                                    .font(.neueCorpMedium(22))
+                                    .foregroundStyle(AVIATheme.timelessBrown)
+                                    .frame(width: 72, height: 88)
+                                    .background(AVIATheme.timelessBrown.opacity(0.1))
+                                    .clipShape(.rect(cornerRadius: 10))
+                            }
+                        }
 
                         VStack(alignment: .leading, spacing: 2) {
                             Text("\(tier.displayName) Spec Range PDF")

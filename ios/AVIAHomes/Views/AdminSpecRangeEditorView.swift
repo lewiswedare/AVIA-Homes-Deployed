@@ -220,6 +220,7 @@ private struct SpecRangeEditSheet: View {
     @State private var heroImageURL: String = ""
     @State private var summary: String = ""
     @State private var pdfURL: String = ""
+    @State private var pdfPreviewImageURL: String = ""
     @State private var highlights: [EditableHighlight] = []
     @State private var roomImages: [EditableRoomImage] = []
     @State private var partnerLogos: [EditablePartnerLogo] = []
@@ -446,12 +447,23 @@ private struct SpecRangeEditSheet: View {
         BentoCard(cornerRadius: 14) {
             VStack(alignment: .leading, spacing: 14) {
                 sectionHeader("Spec Range PDF")
-                AdminPDFPickerField(
-                    label: "PDF Document (shown on spec range detail screen)",
-                    pdfURL: $pdfURL,
-                    folder: "spec-ranges/pdfs",
-                    itemId: "\(tier.rawValue)_pdf"
-                )
+
+                VStack(alignment: .leading, spacing: 12) {
+                    AdminImagePickerField(
+                        label: "PDF Preview Image (shown beside the View/Download buttons)",
+                        imageURL: $pdfPreviewImageURL,
+                        folder: "spec-ranges/pdf-previews",
+                        itemId: "\(tier.rawValue)_pdf_preview"
+                    )
+
+                    AdminPDFPickerField(
+                        label: "PDF Document (shown on spec range detail screen)",
+                        pdfURL: $pdfURL,
+                        folder: "spec-ranges/pdfs",
+                        itemId: "\(tier.rawValue)_pdf"
+                    )
+                }
+                .padding(.horizontal, 14)
             }
             .padding(.vertical, 14)
         }
@@ -579,6 +591,7 @@ private struct SpecRangeEditSheet: View {
             heroImageURL = existing.hero_image_url
             summary = existing.summary
             pdfURL = existing.pdf_url ?? ""
+            pdfPreviewImageURL = existing.pdf_preview_image_url ?? ""
             highlights = existing.highlights.map {
                 EditableHighlight(
                     icon: $0.icon,
@@ -606,6 +619,7 @@ private struct SpecRangeEditSheet: View {
             }
             partnerLogos = []
             pdfURL = ""
+            pdfPreviewImageURL = ""
         }
     }
 
@@ -631,7 +645,8 @@ private struct SpecRangeEditSheet: View {
             partner_logos: partnerLogos
                 .filter { !$0.name.isEmpty && !$0.imageURL.isEmpty }
                 .map { SpecRangeTierRow.PartnerLogoRow(name: $0.name, image_url: $0.imageURL) },
-            pdf_url: pdfURL.isEmpty ? nil : pdfURL
+            pdf_url: pdfURL.isEmpty ? nil : pdfURL,
+            pdf_preview_image_url: pdfPreviewImageURL.isEmpty ? nil : pdfPreviewImageURL
         )
         onSave(row)
         dismiss()
