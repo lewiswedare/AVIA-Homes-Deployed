@@ -1406,7 +1406,7 @@ struct DashboardView: View {
                 }
                 .padding(12)
                 .frame(maxWidth: .infinity, alignment: .leading)
-                .background(.thinMaterial)
+                .background(Color(red: 0xF5/255, green: 0xF5/255, blue: 0xF5/255))
                 .clipShape(.rect(cornerRadii: .init(bottomLeading: 16, bottomTrailing: 16)))
             }
             .clipShape(.rect(cornerRadius: 16))
