@@ -61,7 +61,7 @@ struct AdminBuildSelectionsTab: View {
                     .frame(height: 48)
                     .foregroundStyle(AVIATheme.aviaWhite)
                     .background(AVIATheme.primaryGradient)
-                    .clipShape(.rect(cornerRadius: 14))
+                    .clipShape(.rect(cornerRadius: 11))
                 }
             }
         }
@@ -96,7 +96,7 @@ struct AdminBuildSelectionsTab: View {
     }
 
     private var selectionsSummaryCard: some View {
-        BentoCard(cornerRadius: 16) {
+        BentoCard(cornerRadius: 13) {
             VStack(spacing: 12) {
                 HStack {
                     Label("Selections Overview", systemImage: "checklist.checked")
@@ -176,7 +176,7 @@ struct AdminBuildSelectionsTab: View {
                             .foregroundStyle(AVIATheme.textTertiary)
                             .padding(.horizontal, 4)
 
-                        BentoCard(cornerRadius: 14) {
+                        BentoCard(cornerRadius: 11) {
                             VStack(spacing: 0) {
                                 specTableHeader
 
@@ -240,9 +240,9 @@ struct AdminBuildSelectionsTab: View {
                             }
                             .allowsHitTesting(false)
                         }
-                        .clipShape(.rect(cornerRadius: 6))
+                        .clipShape(.rect(cornerRadius: 5))
                 } else {
-                    RoundedRectangle(cornerRadius: 6)
+                    RoundedRectangle(cornerRadius: 5)
                         .fill(AVIATheme.surfaceElevated)
                         .frame(width: 32, height: 32)
                         .overlay {
@@ -313,7 +313,7 @@ struct AdminBuildSelectionsTab: View {
             } else {
                 colourStatusBanner
 
-                BentoCard(cornerRadius: 14) {
+                BentoCard(cornerRadius: 11) {
                     VStack(spacing: 0) {
                         colourTableHeader
 
@@ -356,9 +356,9 @@ struct AdminBuildSelectionsTab: View {
         }
         .padding(12)
         .background(colourBannerColor.opacity(0.06))
-        .clipShape(.rect(cornerRadius: 12))
+        .clipShape(.rect(cornerRadius: 10))
         .overlay {
-            RoundedRectangle(cornerRadius: 12)
+            RoundedRectangle(cornerRadius: 10)
                 .stroke(colourBannerColor.opacity(0.2), lineWidth: 1)
         }
     }
@@ -411,7 +411,7 @@ struct AdminBuildSelectionsTab: View {
                                 }
                                 .allowsHitTesting(false)
                             }
-                            .clipShape(.rect(cornerRadius: 5))
+                            .clipShape(.rect(cornerRadius: 4))
                     } else {
                         Circle()
                             .fill(Color(hex: r.hex))
@@ -495,7 +495,7 @@ struct AdminBuildSelectionsTab: View {
             .frame(height: 44)
             .foregroundStyle(AVIATheme.timelessBrown)
             .background(AVIATheme.timelessBrown.opacity(0.1))
-            .clipShape(.rect(cornerRadius: 14))
+            .clipShape(.rect(cornerRadius: 11))
         }
         .disabled(isExportingPDF || (!specViewModel.hasSelections && specViewModel.colourSelections.isEmpty))
     }

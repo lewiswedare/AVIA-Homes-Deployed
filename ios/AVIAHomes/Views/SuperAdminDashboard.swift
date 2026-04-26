@@ -108,7 +108,7 @@ struct SuperAdminDashboard: View {
     }
 
     private func staffCard(user: ClientUser, countType: StaffCountType) -> some View {
-        BentoCard(cornerRadius: 14) {
+        BentoCard(cornerRadius: 11) {
             HStack(spacing: 12) {
                 avatarView(user: user)
 
@@ -223,7 +223,7 @@ struct SuperAdminStaffDetailView: View {
                             .foregroundStyle(AVIATheme.textTertiary)
                             .kerning(0.5)
                         ForEach(assignedBuilds, id: \.id) { build in
-                            BentoCard(cornerRadius: 12) {
+                            BentoCard(cornerRadius: 10) {
                                 HStack(spacing: 12) {
                                     BentoIconCircle(icon: "building.2.fill", color: AVIATheme.timelessBrown)
                                     VStack(alignment: .leading, spacing: 2) {
@@ -250,7 +250,7 @@ struct SuperAdminStaffDetailView: View {
                             .foregroundStyle(AVIATheme.textTertiary)
                             .kerning(0.5)
                         ForEach(assignedPackages, id: \.id) { assignment in
-                            BentoCard(cornerRadius: 12) {
+                            BentoCard(cornerRadius: 10) {
                                 HStack {
                                     BentoIconCircle(icon: "house.and.flag.fill", color: AVIATheme.timelessBrown)
                                     Text("Package \(assignment.packageId.prefix(8))")
@@ -281,7 +281,7 @@ struct SuperAdminBuildListView: View {
         ScrollView {
             VStack(spacing: 8) {
                 ForEach(builds, id: \.id) { build in
-                    BentoCard(cornerRadius: 14) {
+                    BentoCard(cornerRadius: 11) {
                         VStack(alignment: .leading, spacing: 6) {
                             HStack {
                                 Text(build.clientDisplayName)

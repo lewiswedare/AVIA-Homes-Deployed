@@ -91,11 +91,11 @@ struct MyDesignPlanView: View {
                 }
                 .padding(16)
             }
-            .clipShape(.rect(cornerRadius: 0))
+            .clipShape(.rect(cornerRadius: 0.0))
     }
 
     private var statusHeader: some View {
-        BentoCard(cornerRadius: 16) {
+        BentoCard(cornerRadius: 13) {
             VStack(spacing: 12) {
                 HStack {
                     VStack(alignment: .leading, spacing: 4) {
@@ -136,7 +136,7 @@ struct MyDesignPlanView: View {
                             .frame(maxWidth: .infinity)
                             .frame(height: 40)
                             .background(AVIATheme.surfaceElevated)
-                            .clipShape(.rect(cornerRadius: 10))
+                            .clipShape(.rect(cornerRadius: 8))
                         }
 
                         Button {
@@ -152,7 +152,7 @@ struct MyDesignPlanView: View {
                             .frame(maxWidth: .infinity)
                             .frame(height: 40)
                             .background(AVIATheme.primaryGradient)
-                            .clipShape(.rect(cornerRadius: 10))
+                            .clipShape(.rect(cornerRadius: 8))
                         }
                     }
                 }
@@ -169,7 +169,7 @@ struct MyDesignPlanView: View {
                     .padding(.horizontal, 14)
                     .frame(maxWidth: .infinity)
                     .background(AVIATheme.success.opacity(0.08))
-                    .clipShape(.rect(cornerRadius: 10))
+                    .clipShape(.rect(cornerRadius: 8))
                 }
             }
             .padding(16)
@@ -196,7 +196,7 @@ struct MyDesignPlanView: View {
         }
         .frame(maxWidth: .infinity)
         .padding(.vertical, 8)
-        .overlay(RoundedRectangle(cornerRadius: 8).stroke(confirmed ? AVIATheme.success : AVIATheme.textTertiary, lineWidth: 1))
+        .overlay(RoundedRectangle(cornerRadius: 6).stroke(confirmed ? AVIATheme.success : AVIATheme.textTertiary, lineWidth: 1))
     }
 
     private var statusColor: Color {
@@ -255,7 +255,7 @@ struct MyDesignPlanView: View {
 
     private var floorplanSection: some View {
         VStack(spacing: 14) {
-            BentoCard(cornerRadius: 16) {
+            BentoCard(cornerRadius: 13) {
                 VStack(alignment: .leading, spacing: 12) {
                     HStack {
                         VStack(alignment: .leading, spacing: 2) {
@@ -289,7 +289,7 @@ struct MyDesignPlanView: View {
             }
 
             if viewModel.hasUnsavedMarkup || !viewModel.markupDrawing.strokes.isEmpty {
-                BentoCard(cornerRadius: 16) {
+                BentoCard(cornerRadius: 13) {
                     HStack(spacing: 12) {
                         Image(systemName: "hand.draw.fill")
                             .font(.neueCorpMedium(16))
@@ -374,7 +374,7 @@ struct MyDesignPlanView: View {
                     .multilineTextAlignment(isClient ? .trailing : .leading)
                     .padding(12)
                     .background(isClient ? AVIATheme.timelessBrown : AVIATheme.cardBackground)
-                    .clipShape(.rect(cornerRadius: 14))
+                    .clipShape(.rect(cornerRadius: 11))
 
                 if let attachment = msg.attachmentName {
                     HStack(spacing: 6) {
@@ -406,7 +406,7 @@ struct MyDesignPlanView: View {
     }
 
     private var messageComposer: some View {
-        BentoCard(cornerRadius: 16) {
+        BentoCard(cornerRadius: 13) {
             VStack(spacing: 10) {
                 HStack(spacing: 6) {
                     Image(systemName: "text.bubble.fill")
@@ -425,7 +425,7 @@ struct MyDesignPlanView: View {
                     .lineLimit(3...6)
                     .padding(10)
                     .background(AVIATheme.surfaceElevated)
-                    .clipShape(.rect(cornerRadius: 10))
+                    .clipShape(.rect(cornerRadius: 8))
 
                 HStack {
                     Spacer()
@@ -466,7 +466,7 @@ struct MyDesignPlanView: View {
                             .foregroundStyle(AVIATheme.textPrimary)
                     }
 
-                    BentoCard(cornerRadius: 14) {
+                    BentoCard(cornerRadius: 11) {
                         VStack(spacing: 0) {
                             ForEach(Array(viewModel.finalDocuments.enumerated()), id: \.element.id) { index, doc in
                                 planDocumentRow(doc)
@@ -489,7 +489,7 @@ struct MyDesignPlanView: View {
                         .foregroundStyle(AVIATheme.textPrimary)
                 }
 
-                BentoCard(cornerRadius: 14) {
+                BentoCard(cornerRadius: 11) {
                     VStack(spacing: 0) {
                         ForEach(Array(viewModel.planDocuments.enumerated()), id: \.element.id) { index, doc in
                             planDocumentRow(doc)

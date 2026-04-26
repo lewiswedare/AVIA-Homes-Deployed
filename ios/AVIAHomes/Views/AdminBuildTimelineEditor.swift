@@ -44,7 +44,7 @@ struct AdminBuildTimelineEditor: View {
     }
 
     private var timelineOverviewCard: some View {
-        BentoCard(cornerRadius: 16) {
+        BentoCard(cornerRadius: 13) {
             VStack(alignment: .leading, spacing: 14) {
                 HStack {
                     Label("Timeline Overview", systemImage: "calendar.badge.clock")
@@ -126,7 +126,7 @@ struct AdminBuildTimelineEditor: View {
                 ProgressView()
                     .frame(maxWidth: .infinity, minHeight: 60)
             } else if milestones.isEmpty {
-                BentoCard(cornerRadius: 14) {
+                BentoCard(cornerRadius: 11) {
                     VStack(spacing: 10) {
                         Image(systemName: "flag.slash")
                             .font(.system(size: 28))
@@ -175,7 +175,7 @@ struct AdminBuildTimelineEditor: View {
     }
 
     private func milestoneRow(_ milestone: BuildMilestone) -> some View {
-        BentoCard(cornerRadius: 14) {
+        BentoCard(cornerRadius: 11) {
             HStack(spacing: 12) {
                 Image(systemName: milestone.status == .completed ? "checkmark.circle.fill" : milestone.isOverdue ? "exclamationmark.circle.fill" : "circle")
                     .font(.system(size: 20))
@@ -258,7 +258,7 @@ struct AdminBuildTimelineEditor: View {
             }
 
             if reminders.isEmpty {
-                BentoCard(cornerRadius: 14) {
+                BentoCard(cornerRadius: 11) {
                     VStack(spacing: 10) {
                         Image(systemName: "bell.slash")
                             .font(.system(size: 28))
@@ -272,7 +272,7 @@ struct AdminBuildTimelineEditor: View {
                 }
             } else {
                 ForEach(reminders) { reminder in
-                    BentoCard(cornerRadius: 14) {
+                    BentoCard(cornerRadius: 11) {
                         HStack(spacing: 12) {
                             Image(systemName: reminder.isRead ? "bell.fill" : "bell.badge.fill")
                                 .font(.system(size: 18))
@@ -374,7 +374,7 @@ struct AddMilestoneSheet: View {
         NavigationStack {
             ScrollView {
                 VStack(spacing: 16) {
-                    BentoCard(cornerRadius: 16) {
+                    BentoCard(cornerRadius: 13) {
                         VStack(alignment: .leading, spacing: 14) {
                             field(label: "Title") {
                                 TextField("e.g. Council Approval Received", text: $title)
@@ -487,7 +487,7 @@ struct EditMilestoneSheet: View {
         NavigationStack {
             ScrollView {
                 VStack(spacing: 16) {
-                    BentoCard(cornerRadius: 16) {
+                    BentoCard(cornerRadius: 13) {
                         VStack(alignment: .leading, spacing: 14) {
                             field(label: "Title") {
                                 TextField("Milestone title", text: $title)
@@ -594,7 +594,7 @@ struct AddReminderSheet: View {
         NavigationStack {
             ScrollView {
                 VStack(spacing: 16) {
-                    BentoCard(cornerRadius: 16) {
+                    BentoCard(cornerRadius: 13) {
                         VStack(alignment: .leading, spacing: 14) {
                             field(label: "Title") {
                                 TextField("e.g. Colour Selection Due", text: $title)

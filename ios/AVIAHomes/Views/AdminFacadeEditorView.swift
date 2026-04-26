@@ -133,7 +133,7 @@ struct AdminFacadeEditorView: View {
 
     private func facadeCard(_ facade: Facade) -> some View {
         Button { editingFacade = facade } label: {
-            BentoCard(cornerRadius: 14) {
+            BentoCard(cornerRadius: 11) {
                 VStack(spacing: 0) {
                     Color(.secondarySystemBackground)
                         .frame(height: 140)
@@ -279,11 +279,11 @@ struct FacadeEditSheet: View {
                                 }
                                 .allowsHitTesting(false)
                             }
-                            .clipShape(.rect(cornerRadius: 14))
+                            .clipShape(.rect(cornerRadius: 11))
                             .padding(.horizontal, 16)
                     }
 
-                    BentoCard(cornerRadius: 14) {
+                    BentoCard(cornerRadius: 11) {
                         VStack(alignment: .leading, spacing: 14) {
                             sectionHeader("Basic Info")
                             if isNew {
@@ -311,7 +311,7 @@ struct FacadeEditSheet: View {
                         .padding(.vertical, 14)
                     }
 
-                    BentoCard(cornerRadius: 14) {
+                    BentoCard(cornerRadius: 11) {
                         VStack(alignment: .leading, spacing: 14) {
                             sectionHeader("Pricing & Type")
                             sheetField("Pricing") {
@@ -338,7 +338,7 @@ struct FacadeEditSheet: View {
                         .padding(.vertical, 14)
                     }
 
-                    BentoCard(cornerRadius: 14) {
+                    BentoCard(cornerRadius: 11) {
                         VStack(alignment: .leading, spacing: 14) {
                             sectionHeader("Images")
                             AdminImagePickerField(
@@ -353,7 +353,7 @@ struct FacadeEditSheet: View {
                         .padding(.vertical, 14)
                     }
 
-                    BentoCard(cornerRadius: 14) {
+                    BentoCard(cornerRadius: 11) {
                         VStack(alignment: .leading, spacing: 14) {
                             sectionHeader("Features")
                             sheetField("Features (one per line)") {
@@ -426,7 +426,7 @@ struct FacadeEditSheet: View {
                         }
                         .allowsHitTesting(false)
                     }
-                    .clipShape(.rect(cornerRadius: 6))
+                    .clipShape(.rect(cornerRadius: 5))
             }
 
             AdminCompactImagePicker(
@@ -463,7 +463,7 @@ struct FacadeEditSheet: View {
             field()
                 .padding(10)
                 .background(AVIATheme.surfaceElevated)
-                .clipShape(.rect(cornerRadius: 8))
+                .clipShape(.rect(cornerRadius: 6))
         }
         .padding(.horizontal, 14)
     }

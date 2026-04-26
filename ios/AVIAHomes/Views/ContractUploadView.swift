@@ -75,7 +75,7 @@ struct ContractUploadView: View {
     // MARK: - Header
 
     private var headerCard: some View {
-        BentoCard(cornerRadius: 14) {
+        BentoCard(cornerRadius: 11) {
             VStack(alignment: .leading, spacing: 8) {
                 Text("Signed in person")
                     .font(.neueCaption)
@@ -95,7 +95,7 @@ struct ContractUploadView: View {
     // MARK: - Original Contract Card
 
     private var originalContractCard: some View {
-        BentoCard(cornerRadius: 14) {
+        BentoCard(cornerRadius: 11) {
             VStack(alignment: .leading, spacing: 12) {
                 HStack(spacing: 8) {
                     Image(systemName: "doc.text")
@@ -109,7 +109,7 @@ struct ContractUploadView: View {
                 if let contract = contract, let urlString = contract.original_contract_url, let url = URL(string: urlString) {
                     PDFThumbnailView(url: url)
                         .frame(height: 200)
-                        .clipShape(RoundedRectangle(cornerRadius: 10))
+                        .clipShape(RoundedRectangle(cornerRadius: 8))
                     HStack(spacing: 8) {
                         if let uploadedAt = contract.original_contract_uploaded_at {
                             Label("Uploaded \(formatDate(uploadedAt))", systemImage: "checkmark.circle.fill")
@@ -130,7 +130,7 @@ struct ContractUploadView: View {
                             .frame(height: 44)
                             .foregroundStyle(AVIATheme.aviaWhite)
                             .background(AVIATheme.primaryGradient)
-                            .clipShape(.rect(cornerRadius: 10))
+                            .clipShape(.rect(cornerRadius: 8))
                         }
                         if isAdmin {
                             Button {
@@ -147,7 +147,7 @@ struct ContractUploadView: View {
                                 .frame(height: 44)
                                 .foregroundStyle(AVIATheme.timelessBrown)
                                 .background(AVIATheme.timelessBrown.opacity(0.1))
-                                .clipShape(.rect(cornerRadius: 10))
+                                .clipShape(.rect(cornerRadius: 8))
                             }
                             .disabled(isWorking || contract.isFullyConfirmed)
                         }
@@ -194,7 +194,7 @@ struct ContractUploadView: View {
     // MARK: - Document Card
 
     private var documentCard: some View {
-        BentoCard(cornerRadius: 14) {
+        BentoCard(cornerRadius: 11) {
             VStack(alignment: .leading, spacing: 12) {
                 HStack(spacing: 8) {
                     Image(systemName: "signature")
@@ -208,7 +208,7 @@ struct ContractUploadView: View {
                 if let contract = contract, let urlString = contract.contract_document_url, let url = URL(string: urlString) {
                     PDFThumbnailView(url: url)
                         .frame(height: 220)
-                        .clipShape(RoundedRectangle(cornerRadius: 10))
+                        .clipShape(RoundedRectangle(cornerRadius: 8))
                     HStack(spacing: 8) {
                         if let uploadedAt = contract.contract_uploaded_at {
                             Label("Uploaded \(formatDate(uploadedAt))", systemImage: "checkmark.circle.fill")
@@ -258,7 +258,7 @@ struct ContractUploadView: View {
     // MARK: - Confirmation Card
 
     private var confirmationCard: some View {
-        BentoCard(cornerRadius: 14) {
+        BentoCard(cornerRadius: 11) {
             VStack(alignment: .leading, spacing: 14) {
                 HStack(spacing: 8) {
                     Image(systemName: "checkmark.seal.fill")

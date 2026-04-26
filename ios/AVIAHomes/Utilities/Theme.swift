@@ -182,7 +182,7 @@ struct AVIAMetricCard: View {
         .padding(16)
         .frame(maxWidth: .infinity, alignment: .leading)
         .background(AVIATheme.cardBackground)
-        .clipShape(.rect(cornerRadius: 16))
+        .clipShape(.rect(cornerRadius: 13))
     }
 }
 
@@ -217,13 +217,13 @@ struct PremiumButton: View {
             .frame(height: 52)
             .foregroundStyle(foregroundColor)
             .background(backgroundView)
-            .clipShape(.rect(cornerRadius: 14))
+            .clipShape(.rect(cornerRadius: 11))
             .overlay {
                 if style == .outlined {
-                    RoundedRectangle(cornerRadius: 14)
+                    RoundedRectangle(cornerRadius: 11)
                         .stroke(AVIATheme.timelessBrown.opacity(0.3), lineWidth: 1.5)
                 } else if style == .destructive {
-                    RoundedRectangle(cornerRadius: 14)
+                    RoundedRectangle(cornerRadius: 11)
                         .stroke(AVIATheme.destructive.opacity(0.3), lineWidth: 1.5)
                 }
             }
@@ -268,7 +268,7 @@ extension View {
     func frostedOverlay() -> some View {
         self
             .background(.thinMaterial)
-            .clipShape(.rect(cornerRadius: 12))
+            .clipShape(.rect(cornerRadius: 10))
     }
 }
 
@@ -409,7 +409,7 @@ struct HeroCard<Content: View>: View {
                     .frostedOverlay()
                     .padding(12)
             }
-            .clipShape(.rect(cornerRadius: 20))
+            .clipShape(.rect(cornerRadius: 16))
     }
 }
 
@@ -438,7 +438,7 @@ struct ImmersiveStatCard: View {
         .padding(16)
         .frame(maxWidth: .infinity, alignment: .leading)
         .background(useFrosted ? AnyShapeStyle(.ultraThinMaterial) : AnyShapeStyle(AVIATheme.cardBackground))
-        .clipShape(.rect(cornerRadius: 16))
+        .clipShape(.rect(cornerRadius: 13))
         .shadow(color: useFrosted ? .black.opacity(0.06) : .clear, radius: 8, y: 2)
     }
 }

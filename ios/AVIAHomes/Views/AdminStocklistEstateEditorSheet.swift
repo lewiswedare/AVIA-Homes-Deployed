@@ -45,7 +45,7 @@ struct AdminStocklistEstateEditorSheet: View {
                         TextField("Estate name", text: $name)
                             .font(.neueCaption)
                             .padding(12)
-                            .background(AVIATheme.cardBackground, in: RoundedRectangle(cornerRadius: 10))
+                            .background(AVIATheme.cardBackground, in: RoundedRectangle(cornerRadius: 8))
                     }
 
                     // Region picker
@@ -88,7 +88,7 @@ struct AdminStocklistEstateEditorSheet: View {
                             .font(.neueCaption)
                             .frame(minHeight: 80)
                             .padding(8)
-                            .background(AVIATheme.cardBackground, in: RoundedRectangle(cornerRadius: 10))
+                            .background(AVIATheme.cardBackground, in: RoundedRectangle(cornerRadius: 8))
                             .scrollContentBackground(.hidden)
                     }
 
@@ -100,7 +100,7 @@ struct AdminStocklistEstateEditorSheet: View {
                         Stepper("Sort Order: \(sortOrder)", value: $sortOrder, in: 0...999)
                             .font(.neueCaption)
                             .padding(12)
-                            .background(AVIATheme.cardBackground, in: RoundedRectangle(cornerRadius: 10))
+                            .background(AVIATheme.cardBackground, in: RoundedRectangle(cornerRadius: 8))
                     }
 
                     // Is Active toggle
@@ -111,7 +111,7 @@ struct AdminStocklistEstateEditorSheet: View {
                     }
                     .tint(AVIATheme.timelessBrown)
                     .padding(12)
-                    .background(AVIATheme.cardBackground, in: RoundedRectangle(cornerRadius: 10))
+                    .background(AVIATheme.cardBackground, in: RoundedRectangle(cornerRadius: 8))
 
                     // Save button
                     Button {
@@ -128,7 +128,7 @@ struct AdminStocklistEstateEditorSheet: View {
                         .foregroundStyle(AVIATheme.aviaWhite)
                         .frame(maxWidth: .infinity)
                         .padding(.vertical, 14)
-                        .background(AVIATheme.primaryGradient, in: RoundedRectangle(cornerRadius: 12))
+                        .background(AVIATheme.primaryGradient, in: RoundedRectangle(cornerRadius: 10))
                     }
                     .disabled(name.isEmpty || isSaving)
 
@@ -145,7 +145,7 @@ struct AdminStocklistEstateEditorSheet: View {
                             .foregroundStyle(AVIATheme.destructive)
                             .frame(maxWidth: .infinity)
                             .padding(.vertical, 14)
-                            .background(AVIATheme.destructive.opacity(0.1), in: RoundedRectangle(cornerRadius: 12))
+                            .background(AVIATheme.destructive.opacity(0.1), in: RoundedRectangle(cornerRadius: 10))
                         }
                     }
                 }

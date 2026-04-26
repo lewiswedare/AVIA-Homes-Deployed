@@ -43,7 +43,7 @@ struct PackagesContentView: View {
 
     private var summaryCards: some View {
         HStack(spacing: 12) {
-            BentoCard(cornerRadius: 16) {
+            BentoCard(cornerRadius: 13) {
                 VStack(alignment: .leading, spacing: 6) {
                     BentoIconCircle(icon: "house.and.flag.fill", color: AVIATheme.timelessBrown)
                     Text("\(basePackages.count)")
@@ -57,7 +57,7 @@ struct PackagesContentView: View {
                 .frame(maxWidth: .infinity, alignment: .leading)
             }
 
-            BentoCard(cornerRadius: 16) {
+            BentoCard(cornerRadius: 13) {
                 VStack(alignment: .leading, spacing: 6) {
                     BentoIconCircle(icon: "checkmark.circle.fill", color: AVIATheme.success)
                     Text("\(availableCount)")
@@ -181,7 +181,7 @@ struct PackagesContentView: View {
     }
 
     private func packageCard(package: HouseLandPackage) -> some View {
-        BentoCard(cornerRadius: 16) {
+        BentoCard(cornerRadius: 13) {
             VStack(spacing: 0) {
                 Color(AVIATheme.surfaceElevated)
                     .frame(height: 160)

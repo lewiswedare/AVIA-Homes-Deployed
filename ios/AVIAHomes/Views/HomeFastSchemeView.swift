@@ -81,7 +81,7 @@ struct HomeFastSchemeView: View {
                     .foregroundStyle(AVIATheme.timelessBrown)
                     .frame(width: 44, height: 44)
                     .background(AVIATheme.timelessBrown.opacity(0.1))
-                    .clipShape(.rect(cornerRadius: 12))
+                    .clipShape(.rect(cornerRadius: 10))
 
                 VStack(alignment: .leading, spacing: 2) {
                     Text("HomeFast")
@@ -101,7 +101,7 @@ struct HomeFastSchemeView: View {
         .padding(18)
         .frame(maxWidth: .infinity, alignment: .leading)
         .background(AVIATheme.cardBackground)
-        .clipShape(.rect(cornerRadius: 18))
+        .clipShape(.rect(cornerRadius: 14))
     }
 
     private func schemeBreakdown(for scheme: HomeFastScheme) -> some View {
@@ -121,7 +121,7 @@ struct HomeFastSchemeView: View {
         }
         .padding(16)
         .background(AVIATheme.cardBackground)
-        .clipShape(.rect(cornerRadius: 18))
+        .clipShape(.rect(cornerRadius: 14))
     }
 
     private func sectionBreakdown(title: String, categories: [ColourCategory], scheme: HomeFastScheme) -> some View {
@@ -188,7 +188,7 @@ struct HomeFastSchemeView: View {
                                         .aspectRatio(contentMode: .fill)
                                         .allowsHitTesting(false)
                                 }
-                                .clipShape(.rect(cornerRadius: 12))
+                                .clipShape(.rect(cornerRadius: 10))
 
                             Text(roomImage.label)
                                 .font(.neueCaptionMedium)
@@ -202,7 +202,7 @@ struct HomeFastSchemeView: View {
             .padding(.bottom, 16)
         }
         .background(AVIATheme.cardBackground)
-        .clipShape(.rect(cornerRadius: 18))
+        .clipShape(.rect(cornerRadius: 14))
     }
 
     private var applyButton: some View {
@@ -218,7 +218,7 @@ struct HomeFastSchemeView: View {
             .frame(height: 52)
             .foregroundStyle(AVIATheme.aviaWhite)
             .background(AVIATheme.primaryGradient)
-            .clipShape(.rect(cornerRadius: 16))
+            .clipShape(.rect(cornerRadius: 13))
         }
         .transition(.move(edge: .bottom).combined(with: .opacity))
     }
@@ -289,9 +289,9 @@ struct SchemeCard: View {
                 .padding(16)
             }
             .background(AVIATheme.cardBackground)
-            .clipShape(.rect(cornerRadius: 18))
+            .clipShape(.rect(cornerRadius: 14))
             .overlay {
-                RoundedRectangle(cornerRadius: 18)
+                RoundedRectangle(cornerRadius: 14)
                     .stroke(
                         isSelected ? AVIATheme.timelessBrown : (isApplied ? AVIATheme.success.opacity(0.3) : Color.clear),
                         lineWidth: isSelected ? 2.5 : 1

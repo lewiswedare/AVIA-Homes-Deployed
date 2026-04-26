@@ -92,7 +92,7 @@ struct ColourDetailView: View {
                             .transition(.opacity)
                     }
                 }
-                .clipShape(.rect(cornerRadius: 14))
+                .clipShape(.rect(cornerRadius: 11))
                 .overlay(alignment: .bottomLeading) {
                     HStack(spacing: 10) {
                         if let selection = selectedColour {
@@ -111,7 +111,7 @@ struct ColourDetailView: View {
                     .padding(.horizontal, 12)
                     .padding(.vertical, 8)
                     .background(AVIATheme.aviaBlack.opacity(0.5))
-                    .clipShape(.rect(cornerRadius: 8))
+                    .clipShape(.rect(cornerRadius: 6))
                     .padding(10)
                 }
                 .animation(.spring(response: 0.35, dampingFraction: 0.8), value: selectedColour?.optionId)
@@ -129,7 +129,7 @@ struct ColourDetailView: View {
         .padding(14)
         .frame(maxWidth: .infinity, alignment: .leading)
         .background(AVIATheme.timelessBrown.opacity(0.08))
-        .clipShape(.rect(cornerRadius: 14))
+        .clipShape(.rect(cornerRadius: 11))
     }
 
     private var selectedOption: ColourOption? {
@@ -158,9 +158,9 @@ struct ColourDetailView: View {
                             }
                             .allowsHitTesting(false)
                         }
-                        .clipShape(.rect(cornerRadius: 8))
+                        .clipShape(.rect(cornerRadius: 6))
                         .overlay {
-                            RoundedRectangle(cornerRadius: 8)
+                            RoundedRectangle(cornerRadius: 6)
                                 .stroke(AVIATheme.surfaceBorder, lineWidth: 1)
                         }
                 } else {
@@ -190,9 +190,9 @@ struct ColourDetailView: View {
             }
             .padding(14)
             .background(AVIATheme.cardBackground)
-            .clipShape(.rect(cornerRadius: 14))
+            .clipShape(.rect(cornerRadius: 11))
             .overlay {
-                RoundedRectangle(cornerRadius: 14)
+                RoundedRectangle(cornerRadius: 11)
                     .stroke(AVIATheme.timelessBrown.opacity(0.2), lineWidth: 1)
             }
             .transition(.scale.combined(with: .opacity))
@@ -211,7 +211,7 @@ struct ColourDetailView: View {
         .padding(12)
         .frame(maxWidth: .infinity, alignment: .leading)
         .background(AVIATheme.timelessBrown.opacity(0.06))
-        .clipShape(.rect(cornerRadius: 12))
+        .clipShape(.rect(cornerRadius: 10))
     }
 
     private var optionsGrid: some View {
@@ -319,9 +319,9 @@ struct ColourSwatchView: View {
                 }
                 .allowsHitTesting(false)
             }
-            .clipShape(.rect(cornerRadius: 10))
+            .clipShape(.rect(cornerRadius: 8))
             .overlay {
-                RoundedRectangle(cornerRadius: 10)
+                RoundedRectangle(cornerRadius: 8)
                     .stroke(isSelected ? AVIATheme.timelessBrown : AVIATheme.surfaceBorder, lineWidth: isSelected ? 2.5 : 1)
             }
             .overlay(alignment: .bottomTrailing) {

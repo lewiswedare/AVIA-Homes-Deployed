@@ -74,7 +74,7 @@ struct AdminStocklistItemEditorSheet: View {
                         TextField("Lot number", text: $lotNumber)
                             .font(.neueCaption)
                             .padding(12)
-                            .background(AVIATheme.cardBackground, in: RoundedRectangle(cornerRadius: 10))
+                            .background(AVIATheme.cardBackground, in: RoundedRectangle(cornerRadius: 8))
                     }
 
                     // Stage & Street
@@ -83,13 +83,13 @@ struct AdminStocklistItemEditorSheet: View {
                             TextField("Stage", text: $stage)
                                 .font(.neueCaption)
                                 .padding(12)
-                                .background(AVIATheme.cardBackground, in: RoundedRectangle(cornerRadius: 10))
+                                .background(AVIATheme.cardBackground, in: RoundedRectangle(cornerRadius: 8))
                         }
                         fieldSection(title: "Street") {
                             TextField("Street", text: $street)
                                 .font(.neueCaption)
                                 .padding(12)
-                                .background(AVIATheme.cardBackground, in: RoundedRectangle(cornerRadius: 10))
+                                .background(AVIATheme.cardBackground, in: RoundedRectangle(cornerRadius: 8))
                         }
                     }
 
@@ -99,13 +99,13 @@ struct AdminStocklistItemEditorSheet: View {
                             TextField("e.g. 375m²", text: $landSize)
                                 .font(.neueCaption)
                                 .padding(12)
-                                .background(AVIATheme.cardBackground, in: RoundedRectangle(cornerRadius: 10))
+                                .background(AVIATheme.cardBackground, in: RoundedRectangle(cornerRadius: 8))
                         }
                         fieldSection(title: "Land Price") {
                             TextField("e.g. $250,000", text: $landPrice)
                                 .font(.neueCaption)
                                 .padding(12)
-                                .background(AVIATheme.cardBackground, in: RoundedRectangle(cornerRadius: 10))
+                                .background(AVIATheme.cardBackground, in: RoundedRectangle(cornerRadius: 8))
                         }
                     }
 
@@ -114,7 +114,7 @@ struct AdminStocklistItemEditorSheet: View {
                         TextField("e.g. Registered, Q2 2026", text: $registered)
                             .font(.neueCaption)
                             .padding(12)
-                            .background(AVIATheme.cardBackground, in: RoundedRectangle(cornerRadius: 10))
+                            .background(AVIATheme.cardBackground, in: RoundedRectangle(cornerRadius: 8))
                     }
 
                     // Design & Facade
@@ -122,7 +122,7 @@ struct AdminStocklistItemEditorSheet: View {
                         TextField("e.g. Aria 25 / Modern", text: $designFacade)
                             .font(.neueCaption)
                             .padding(12)
-                            .background(AVIATheme.cardBackground, in: RoundedRectangle(cornerRadius: 10))
+                            .background(AVIATheme.cardBackground, in: RoundedRectangle(cornerRadius: 8))
                     }
 
                     // Build size & specs
@@ -131,14 +131,14 @@ struct AdminStocklistItemEditorSheet: View {
                             TextField("e.g. 190.8m²", text: $buildSize)
                                 .font(.neueCaption)
                                 .padding(12)
-                                .background(AVIATheme.cardBackground, in: RoundedRectangle(cornerRadius: 10))
+                                .background(AVIATheme.cardBackground, in: RoundedRectangle(cornerRadius: 8))
                         }
                         fieldSection(title: "Bedrooms") {
                             TextField("e.g. 4", text: $bedrooms)
                                 .font(.neueCaption)
                                 .keyboardType(.numberPad)
                                 .padding(12)
-                                .background(AVIATheme.cardBackground, in: RoundedRectangle(cornerRadius: 10))
+                                .background(AVIATheme.cardBackground, in: RoundedRectangle(cornerRadius: 8))
                         }
                     }
 
@@ -148,14 +148,14 @@ struct AdminStocklistItemEditorSheet: View {
                                 .font(.neueCaption)
                                 .keyboardType(.numberPad)
                                 .padding(12)
-                                .background(AVIATheme.cardBackground, in: RoundedRectangle(cornerRadius: 10))
+                                .background(AVIATheme.cardBackground, in: RoundedRectangle(cornerRadius: 8))
                         }
                         fieldSection(title: "Garages") {
                             TextField("e.g. 2", text: $garages)
                                 .font(.neueCaption)
                                 .keyboardType(.numberPad)
                                 .padding(12)
-                                .background(AVIATheme.cardBackground, in: RoundedRectangle(cornerRadius: 10))
+                                .background(AVIATheme.cardBackground, in: RoundedRectangle(cornerRadius: 8))
                         }
                     }
 
@@ -164,7 +164,7 @@ struct AdminStocklistItemEditorSheet: View {
                             .font(.neueCaption)
                             .keyboardType(.numberPad)
                             .padding(12)
-                            .background(AVIATheme.cardBackground, in: RoundedRectangle(cornerRadius: 10))
+                            .background(AVIATheme.cardBackground, in: RoundedRectangle(cornerRadius: 8))
                     }
 
                     // Pricing
@@ -173,13 +173,13 @@ struct AdminStocklistItemEditorSheet: View {
                             TextField("e.g. $280,000", text: $buildPrice)
                                 .font(.neueCaption)
                                 .padding(12)
-                                .background(AVIATheme.cardBackground, in: RoundedRectangle(cornerRadius: 10))
+                                .background(AVIATheme.cardBackground, in: RoundedRectangle(cornerRadius: 8))
                         }
                         fieldSection(title: "Package Price") {
                             TextField("e.g. $530,000", text: $packagePrice)
                                 .font(.neueCaption)
                                 .padding(12)
-                                .background(AVIATheme.cardBackground, in: RoundedRectangle(cornerRadius: 10))
+                                .background(AVIATheme.cardBackground, in: RoundedRectangle(cornerRadius: 8))
                         }
                     }
 
@@ -188,7 +188,7 @@ struct AdminStocklistItemEditorSheet: View {
                         TextField("e.g. Volos", text: $specification)
                             .font(.neueCaption)
                             .padding(12)
-                            .background(AVIATheme.cardBackground, in: RoundedRectangle(cornerRadius: 10))
+                            .background(AVIATheme.cardBackground, in: RoundedRectangle(cornerRadius: 8))
                     }
 
                     // Status picker
@@ -201,7 +201,7 @@ struct AdminStocklistItemEditorSheet: View {
                         .pickerStyle(.menu)
                         .padding(12)
                         .frame(maxWidth: .infinity, alignment: .leading)
-                        .background(AVIATheme.cardBackground, in: RoundedRectangle(cornerRadius: 10))
+                        .background(AVIATheme.cardBackground, in: RoundedRectangle(cornerRadius: 8))
                     }
 
                     // Owner Occ / Investor picker
@@ -214,7 +214,7 @@ struct AdminStocklistItemEditorSheet: View {
                         .pickerStyle(.menu)
                         .padding(12)
                         .frame(maxWidth: .infinity, alignment: .leading)
-                        .background(AVIATheme.cardBackground, in: RoundedRectangle(cornerRadius: 10))
+                        .background(AVIATheme.cardBackground, in: RoundedRectangle(cornerRadius: 8))
                     }
 
                     // Availability
@@ -222,7 +222,7 @@ struct AdminStocklistItemEditorSheet: View {
                         TextField("e.g. Immediate, Q3 2026", text: $availability)
                             .font(.neueCaption)
                             .padding(12)
-                            .background(AVIATheme.cardBackground, in: RoundedRectangle(cornerRadius: 10))
+                            .background(AVIATheme.cardBackground, in: RoundedRectangle(cornerRadius: 8))
                     }
 
                     // Sales Package Link
@@ -232,7 +232,7 @@ struct AdminStocklistItemEditorSheet: View {
                             .keyboardType(.URL)
                             .autocapitalization(.none)
                             .padding(12)
-                            .background(AVIATheme.cardBackground, in: RoundedRectangle(cornerRadius: 10))
+                            .background(AVIATheme.cardBackground, in: RoundedRectangle(cornerRadius: 8))
                     }
 
                     // Is Coming Soon toggle
@@ -243,7 +243,7 @@ struct AdminStocklistItemEditorSheet: View {
                     }
                     .tint(AVIATheme.timelessBrown)
                     .padding(12)
-                    .background(AVIATheme.cardBackground, in: RoundedRectangle(cornerRadius: 10))
+                    .background(AVIATheme.cardBackground, in: RoundedRectangle(cornerRadius: 8))
 
                     // Sort order
                     VStack(alignment: .leading, spacing: 6) {
@@ -253,7 +253,7 @@ struct AdminStocklistItemEditorSheet: View {
                         Stepper("Sort Order: \(sortOrder)", value: $sortOrder, in: 0...999)
                             .font(.neueCaption)
                             .padding(12)
-                            .background(AVIATheme.cardBackground, in: RoundedRectangle(cornerRadius: 10))
+                            .background(AVIATheme.cardBackground, in: RoundedRectangle(cornerRadius: 8))
                     }
 
                     // Save button
@@ -271,7 +271,7 @@ struct AdminStocklistItemEditorSheet: View {
                         .foregroundStyle(AVIATheme.aviaWhite)
                         .frame(maxWidth: .infinity)
                         .padding(.vertical, 14)
-                        .background(AVIATheme.primaryGradient, in: RoundedRectangle(cornerRadius: 12))
+                        .background(AVIATheme.primaryGradient, in: RoundedRectangle(cornerRadius: 10))
                     }
                     .disabled(lotNumber.isEmpty || isSaving)
 
@@ -288,7 +288,7 @@ struct AdminStocklistItemEditorSheet: View {
                             .foregroundStyle(AVIATheme.destructive)
                             .frame(maxWidth: .infinity)
                             .padding(.vertical, 14)
-                            .background(AVIATheme.destructive.opacity(0.1), in: RoundedRectangle(cornerRadius: 12))
+                            .background(AVIATheme.destructive.opacity(0.1), in: RoundedRectangle(cornerRadius: 10))
                         }
                     }
                 }

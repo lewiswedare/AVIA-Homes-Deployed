@@ -94,7 +94,7 @@ struct UserManagementView: View {
         }
         .padding(14)
         .background(AVIATheme.primaryGradient)
-        .clipShape(.rect(cornerRadius: 16))
+        .clipShape(.rect(cornerRadius: 13))
     }
 
     private var filterBar: some View {
@@ -168,9 +168,9 @@ struct UserManagementView: View {
         }
         .padding(14)
         .background(AVIATheme.cardBackground)
-        .clipShape(.rect(cornerRadius: 14))
+        .clipShape(.rect(cornerRadius: 11))
         .overlay {
-            RoundedRectangle(cornerRadius: 14)
+            RoundedRectangle(cornerRadius: 11)
                 .stroke(user.role.isPending ? AVIATheme.warning.opacity(0.3) : AVIATheme.surfaceBorder, lineWidth: 1)
         }
     }
@@ -255,9 +255,9 @@ struct UserRoleAssignmentSheet: View {
                                     }
                                     .padding(14)
                                     .background(selectedRole == role ? AVIATheme.timelessBrown.opacity(0.06) : AVIATheme.cardBackground)
-                                    .clipShape(.rect(cornerRadius: 14))
+                                    .clipShape(.rect(cornerRadius: 11))
                                     .overlay {
-                                        RoundedRectangle(cornerRadius: 14)
+                                        RoundedRectangle(cornerRadius: 11)
                                             .stroke(selectedRole == role ? AVIATheme.timelessBrown.opacity(0.4) : AVIATheme.surfaceBorder, lineWidth: selectedRole == role ? 1.5 : 1)
                                     }
                                 }
@@ -279,7 +279,7 @@ struct UserRoleAssignmentSheet: View {
                         .frame(height: 52)
                         .foregroundStyle(AVIATheme.aviaWhite)
                         .background(AVIATheme.primaryGradient)
-                        .clipShape(.rect(cornerRadius: 14))
+                        .clipShape(.rect(cornerRadius: 11))
                     }
                     .disabled(isSaving)
                     .padding(.horizontal, 20)

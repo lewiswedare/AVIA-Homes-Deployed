@@ -196,7 +196,7 @@ struct EOIFormView: View {
         VStack(spacing: 16) {
             sectionHeader("Review Your EOI", icon: "doc.text.magnifyingglass")
 
-            BentoCard(cornerRadius: 14) {
+            BentoCard(cornerRadius: 11) {
                 VStack(alignment: .leading, spacing: 10) {
                     reviewSectionTitle("Property")
                     reviewRow("Lot", package.lotNumber)
@@ -210,7 +210,7 @@ struct EOIFormView: View {
                 .padding(16)
             }
 
-            BentoCard(cornerRadius: 14) {
+            BentoCard(cornerRadius: 11) {
                 VStack(alignment: .leading, spacing: 10) {
                     reviewSectionTitle("Buyer One")
                     reviewRow("Name", buyer1Name)
@@ -230,7 +230,7 @@ struct EOIFormView: View {
                 .padding(16)
             }
 
-            BentoCard(cornerRadius: 14) {
+            BentoCard(cornerRadius: 11) {
                 VStack(alignment: .leading, spacing: 10) {
                     reviewSectionTitle("Solicitor")
                     reviewRow("Company", solicitorCompany)
@@ -242,7 +242,7 @@ struct EOIFormView: View {
                 .padding(16)
             }
 
-            BentoCard(cornerRadius: 14) {
+            BentoCard(cornerRadius: 11) {
                 VStack(alignment: .leading, spacing: 10) {
                     reviewSectionTitle("Deposit Payment Details")
                     Text("Please transfer the deposit to:")
@@ -280,7 +280,7 @@ struct EOIFormView: View {
                     .frame(height: 52)
                     .foregroundStyle(AVIATheme.timelessBrown)
                     .background(AVIATheme.timelessBrown.opacity(0.1))
-                    .clipShape(.rect(cornerRadius: 14))
+                    .clipShape(.rect(cornerRadius: 11))
                 }
             }
 
@@ -300,7 +300,7 @@ struct EOIFormView: View {
                     .frame(height: 52)
                     .foregroundStyle(AVIATheme.aviaWhite)
                     .background(AVIATheme.primaryGradient)
-                    .clipShape(.rect(cornerRadius: 14))
+                    .clipShape(.rect(cornerRadius: 11))
                 }
             } else {
                 Button {
@@ -321,7 +321,7 @@ struct EOIFormView: View {
                     .frame(height: 52)
                     .foregroundStyle(AVIATheme.aviaWhite)
                     .background(AVIATheme.primaryGradient)
-                    .clipShape(.rect(cornerRadius: 14))
+                    .clipShape(.rect(cornerRadius: 11))
                 }
                 .disabled(isSubmitting)
             }
@@ -476,7 +476,7 @@ struct EOIFormView: View {
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .padding(12)
                 .background(AVIATheme.surfaceElevated.opacity(0.5))
-                .clipShape(.rect(cornerRadius: 10))
+                .clipShape(.rect(cornerRadius: 8))
         }
     }
 
@@ -492,9 +492,9 @@ struct EOIFormView: View {
                 .autocorrectionDisabled()
                 .padding(12)
                 .background(AVIATheme.cardBackground)
-                .clipShape(.rect(cornerRadius: 10))
+                .clipShape(.rect(cornerRadius: 8))
                 .overlay {
-                    RoundedRectangle(cornerRadius: 10)
+                    RoundedRectangle(cornerRadius: 8)
                         .stroke(AVIATheme.surfaceBorder, lineWidth: 1)
                 }
         }

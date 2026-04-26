@@ -220,7 +220,7 @@ struct EditProfileView: View {
                 .foregroundStyle(AVIATheme.textPrimary)
                 .padding(.horizontal, 20)
 
-            BentoCard(cornerRadius: 16) {
+            BentoCard(cornerRadius: 13) {
                 VStack(spacing: 16) {
                     content()
                 }
@@ -250,9 +250,9 @@ struct EditProfileView: View {
                 .padding(.horizontal, 14)
                 .padding(.vertical, 12)
                 .background(AVIATheme.surfaceElevated.opacity(0.5))
-                .clipShape(.rect(cornerRadius: 10))
+                .clipShape(.rect(cornerRadius: 8))
                 .overlay {
-                    RoundedRectangle(cornerRadius: 10)
+                    RoundedRectangle(cornerRadius: 8)
                         .stroke(AVIATheme.surfaceBorder, lineWidth: 1)
                 }
         }

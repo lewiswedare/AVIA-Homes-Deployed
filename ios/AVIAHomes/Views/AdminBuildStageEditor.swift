@@ -23,7 +23,7 @@ struct AdminBuildStageEditor: View {
         NavigationStack {
             ScrollView {
                 VStack(spacing: 16) {
-                    BentoCard(cornerRadius: 16) {
+                    BentoCard(cornerRadius: 13) {
                         VStack(spacing: 14) {
                             field(label: "Stage Name") {
                                 TextField("e.g. Slab", text: $name)

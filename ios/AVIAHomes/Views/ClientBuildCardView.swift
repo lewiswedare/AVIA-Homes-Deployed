@@ -10,7 +10,7 @@ struct ClientBuildCardView: View {
     }
 
     var body: some View {
-        BentoCard(cornerRadius: 16) {
+        BentoCard(cornerRadius: 13) {
             VStack(spacing: 0) {
                 HStack(spacing: 14) {
                     Text(build.client.initials.isEmpty ? "?" : build.client.initials)

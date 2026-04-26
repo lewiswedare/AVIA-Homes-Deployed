@@ -137,7 +137,7 @@ struct BuildProgressView: View {
         }
         .padding(20)
         .background(AVIATheme.timelessBrown)
-        .clipShape(.rect(cornerRadius: 18))
+        .clipShape(.rect(cornerRadius: 14))
     }
 
     private var timelineView: some View {
@@ -235,7 +235,7 @@ struct TimelineStageRow: View {
 
     private var stageContent: some View {
         Button(action: action) {
-            BentoCard(cornerRadius: 14) {
+            BentoCard(cornerRadius: 11) {
                 VStack(alignment: .leading, spacing: 10) {
                     HStack {
                         VStack(alignment: .leading, spacing: 3) {
@@ -320,7 +320,7 @@ struct TimelineStageRow: View {
                     .padding(12)
                     .frame(maxWidth: .infinity, alignment: .leading)
                     .background(AVIATheme.surfaceElevated)
-                    .clipShape(.rect(cornerRadius: 10))
+                    .clipShape(.rect(cornerRadius: 8))
             }
 
             if stage.photoCount > 0 {

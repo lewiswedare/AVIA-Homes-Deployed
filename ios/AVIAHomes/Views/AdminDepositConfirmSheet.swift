@@ -19,7 +19,7 @@ struct AdminDepositConfirmSheet: View {
         NavigationStack {
             ScrollView {
                 VStack(spacing: 16) {
-                    BentoCard(cornerRadius: 16) {
+                    BentoCard(cornerRadius: 13) {
                         VStack(spacing: 14) {
                             VStack(alignment: .leading, spacing: 6) {
                                 Text("DEPOSIT AMOUNT")

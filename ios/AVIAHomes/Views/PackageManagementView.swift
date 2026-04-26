@@ -134,7 +134,7 @@ struct PackageManagementView: View {
             }
             .padding(16)
             .background(AVIATheme.primaryGradient)
-            .clipShape(.rect(cornerRadius: 16))
+            .clipShape(.rect(cornerRadius: 13))
         }
         .sensoryFeedback(.impact(weight: .light), trigger: showCreatePackage)
     }
@@ -147,7 +147,7 @@ struct PackageManagementView: View {
 
         return VStack(spacing: 12) {
             HStack(spacing: 12) {
-                BentoCard(cornerRadius: 16) {
+                BentoCard(cornerRadius: 13) {
                     VStack(alignment: .leading, spacing: 6) {
                         BentoIconCircle(icon: "square.grid.2x2.fill", color: AVIATheme.timelessBrown)
                         Text("\(viewModel.allPackages.count)")
@@ -161,7 +161,7 @@ struct PackageManagementView: View {
                     .frame(maxWidth: .infinity, alignment: .leading)
                 }
 
-                BentoCard(cornerRadius: 16) {
+                BentoCard(cornerRadius: 13) {
                     VStack(alignment: .leading, spacing: 6) {
                         BentoIconCircle(icon: "paperplane.fill", color: AVIATheme.success)
                         let sharedCount = viewModel.packageAssignments.filter { !$0.sharedWithClientIds.isEmpty }.count
@@ -218,7 +218,7 @@ struct PackageManagementView: View {
                 selectedFilter = isActive ? .all : filter
             }
         } label: {
-            BentoCard(cornerRadius: 16) {
+            BentoCard(cornerRadius: 13) {
                 VStack(alignment: .leading, spacing: 6) {
                     BentoIconCircle(icon: icon, color: color)
                     Text("\(count)")
@@ -232,7 +232,7 @@ struct PackageManagementView: View {
                 .frame(maxWidth: .infinity, alignment: .leading)
             }
             .overlay(
-                RoundedRectangle(cornerRadius: 16)
+                RoundedRectangle(cornerRadius: 13)
                     .stroke(isActive ? color : Color.clear, lineWidth: 2)
             )
         }
@@ -246,7 +246,7 @@ struct PackageManagementView: View {
         return NavigationLink {
             AdminEOIReviewView()
         } label: {
-            BentoCard(cornerRadius: 14) {
+            BentoCard(cornerRadius: 11) {
                 HStack(spacing: 12) {
                     Image(systemName: "doc.text.magnifyingglass")
                         .font(.system(size: 20))
@@ -288,7 +288,7 @@ struct PackageManagementView: View {
 
     private func packageManagementCard(package: HouseLandPackage) -> some View {
         let assignment = viewModel.assignmentForPackage(package.id)
-        return BentoCard(cornerRadius: 16) {
+        return BentoCard(cornerRadius: 13) {
             VStack(spacing: 0) {
                 HStack(spacing: 12) {
                     Color(AVIATheme.surfaceElevated)
@@ -301,7 +301,7 @@ struct PackageManagementView: View {
                             }
                             .allowsHitTesting(false)
                         }
-                        .clipShape(.rect(cornerRadius: 10))
+                        .clipShape(.rect(cornerRadius: 8))
 
                     VStack(alignment: .leading, spacing: 4) {
                         Text(package.title)
@@ -658,7 +658,7 @@ struct QuickAssignSheet: View {
                                 }
                                 .padding(12)
                                 .background(isShared ? AVIATheme.timelessBrown.opacity(0.04) : Color.clear)
-                                .clipShape(.rect(cornerRadius: 14))
+                                .clipShape(.rect(cornerRadius: 11))
                             }
                             .sensoryFeedback(.selection, trigger: isShared)
                         }
@@ -708,7 +708,7 @@ struct QuickAssignSheet: View {
                     }
                     .allowsHitTesting(false)
                 }
-                .clipShape(.rect(cornerRadius: 8))
+                .clipShape(.rect(cornerRadius: 6))
 
             VStack(alignment: .leading, spacing: 2) {
                 Text(package.title)
@@ -820,7 +820,7 @@ struct PackageAssignmentSheet: View {
                     }
                     .allowsHitTesting(false)
                 }
-                .clipShape(.rect(cornerRadius: 10))
+                .clipShape(.rect(cornerRadius: 8))
 
             VStack(alignment: .leading, spacing: 3) {
                 Text(package.title)
@@ -884,7 +884,7 @@ struct PackageAssignmentSheet: View {
                         viewModel.assignPartnerToPackage(packageId: package.id, partnerId: partner.id)
                     }
                 } label: {
-                    BentoCard(cornerRadius: 14) {
+                    BentoCard(cornerRadius: 11) {
                         HStack(spacing: 12) {
                             Text(partner.initials.isEmpty ? "?" : partner.initials)
                                 .font(.neueCaptionMedium)
@@ -951,7 +951,7 @@ struct PackageAssignmentSheet: View {
                         viewModel.sharePackageWithClient(packageId: package.id, clientId: client.id)
                     }
                 } label: {
-                    BentoCard(cornerRadius: 14) {
+                    BentoCard(cornerRadius: 11) {
                         HStack(spacing: 12) {
                             Text(client.initials.isEmpty ? "?" : client.initials)
                                 .font(.neueCaptionMedium)
@@ -1037,7 +1037,7 @@ struct PackageAssignmentSheet: View {
             } else {
                 ForEach(responses) { response in
                     let client = viewModel.clientUsers.first { $0.id == response.clientId }
-                    BentoCard(cornerRadius: 14) {
+                    BentoCard(cornerRadius: 11) {
                         HStack(spacing: 12) {
                             Image(systemName: response.status.icon)
                                 .font(.system(size: 20))

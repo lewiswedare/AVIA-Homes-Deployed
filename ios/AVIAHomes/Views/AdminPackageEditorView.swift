@@ -179,7 +179,7 @@ struct AdminPackageEditorView: View {
         VStack(spacing: 16) {
             sectionHeader(icon: "map.fill", title: "Land Details", subtitle: "Lot information and location")
 
-            BentoCard(cornerRadius: 16) {
+            BentoCard(cornerRadius: 13) {
                 VStack(spacing: 0) {
                     editorField(label: "Package Title", text: $title, placeholder: "e.g. Corfu 210 at Harmony", icon: "tag.fill")
                     fieldDivider
@@ -195,7 +195,7 @@ struct AdminPackageEditorView: View {
                 }
             }
 
-            BentoCard(cornerRadius: 16) {
+            BentoCard(cornerRadius: 13) {
                 VStack(spacing: 0) {
                     editorField(label: "Title Date", text: $titleDate, placeholder: "e.g. Titled — Ready Now", icon: "calendar")
                     fieldDivider
@@ -222,7 +222,7 @@ struct AdminPackageEditorView: View {
             }
             .padding(16)
             .background(AVIATheme.cardBackground)
-            .clipShape(.rect(cornerRadius: 16))
+            .clipShape(.rect(cornerRadius: 13))
         }
     }
 
@@ -252,7 +252,7 @@ struct AdminPackageEditorView: View {
             }
             .padding(16)
             .background(isCustomHome ? AVIATheme.timelessBrown.opacity(0.06) : AVIATheme.cardBackground)
-            .clipShape(.rect(cornerRadius: 16))
+            .clipShape(.rect(cornerRadius: 13))
             .sensoryFeedback(.impact(weight: .light), trigger: isCustomHome)
 
             if isCustomHome {
@@ -265,7 +265,7 @@ struct AdminPackageEditorView: View {
 
             facadeSelectionSection
 
-            BentoCard(cornerRadius: 16) {
+            BentoCard(cornerRadius: 13) {
                 editorField(label: "Image URL", text: $imageURL, placeholder: "https://... (auto-filled from design)", icon: "photo.fill")
             }
         }
@@ -273,7 +273,7 @@ struct AdminPackageEditorView: View {
 
     private var standardDesignSection: some View {
         Group {
-            BentoCard(cornerRadius: 16) {
+            BentoCard(cornerRadius: 13) {
                 VStack(alignment: .leading, spacing: 12) {
                     HStack {
                         Text("SELECT DESIGN")
@@ -320,7 +320,7 @@ struct AdminPackageEditorView: View {
                                                 }
                                                 .allowsHitTesting(false)
                                             }
-                                            .clipShape(.rect(cornerRadius: 8))
+                                            .clipShape(.rect(cornerRadius: 6))
 
                                         VStack(alignment: .leading, spacing: 2) {
                                             Text(design.name)
@@ -364,7 +364,7 @@ struct AdminPackageEditorView: View {
 
     private var customDesignSection: some View {
         VStack(spacing: 16) {
-            BentoCard(cornerRadius: 16) {
+            BentoCard(cornerRadius: 13) {
                 VStack(spacing: 0) {
                     editorField(label: "Design Name", text: $customDesignName, placeholder: "e.g. Smith Family Residence", icon: "pencil.line")
                     fieldDivider
@@ -372,7 +372,7 @@ struct AdminPackageEditorView: View {
                 }
             }
 
-            BentoCard(cornerRadius: 16) {
+            BentoCard(cornerRadius: 13) {
                 VStack(alignment: .leading, spacing: 14) {
                     Text("DESIGN DETAILS")
                         .font(.neueCaption2Medium)
@@ -393,14 +393,14 @@ struct AdminPackageEditorView: View {
             }
 
             if !customDesignName.isEmpty {
-                BentoCard(cornerRadius: 16) {
+                BentoCard(cornerRadius: 13) {
                     HStack(spacing: 14) {
                         Image(systemName: "pencil.and.ruler.fill")
                             .font(.system(size: 22))
                             .foregroundStyle(AVIATheme.timelessBrown)
                             .frame(width: 48, height: 48)
                             .background(AVIATheme.timelessBrown.opacity(0.1))
-                            .clipShape(.rect(cornerRadius: 10))
+                            .clipShape(.rect(cornerRadius: 8))
 
                         VStack(alignment: .leading, spacing: 4) {
                             HStack(spacing: 6) {
@@ -441,7 +441,7 @@ struct AdminPackageEditorView: View {
     }
 
     private var facadeSelectionSection: some View {
-        BentoCard(cornerRadius: 16) {
+        BentoCard(cornerRadius: 13) {
             VStack(alignment: .leading, spacing: 12) {
                 HStack {
                     Text("SELECT FACADE")
@@ -482,7 +482,7 @@ struct AdminPackageEditorView: View {
                                             }
                                             .allowsHitTesting(false)
                                         }
-                                        .clipShape(.rect(cornerRadius: 8))
+                                        .clipShape(.rect(cornerRadius: 6))
 
                                     VStack(alignment: .leading, spacing: 2) {
                                         Text(facade.name)
@@ -518,7 +518,7 @@ struct AdminPackageEditorView: View {
     }
 
     private var specTierSection: some View {
-        BentoCard(cornerRadius: 16) {
+        BentoCard(cornerRadius: 13) {
             VStack(spacing: 0) {
                 HStack {
                     Text("SPECIFICATION RANGE")
@@ -547,7 +547,7 @@ struct AdminPackageEditorView: View {
                             .padding(.vertical, 12)
                             .foregroundStyle(isSelected ? AVIATheme.aviaWhite : AVIATheme.textPrimary)
                             .background(isSelected ? AVIATheme.primaryGradient : LinearGradient(colors: [AVIATheme.surfaceElevated], startPoint: .top, endPoint: .bottom))
-                            .clipShape(.rect(cornerRadius: 12))
+                            .clipShape(.rect(cornerRadius: 10))
                         }
                         .sensoryFeedback(.selection, trigger: selectedSpecTier)
                     }
@@ -600,7 +600,7 @@ struct AdminPackageEditorView: View {
     }
 
     private func selectedDesignPreview(_ design: HomeDesign) -> some View {
-        BentoCard(cornerRadius: 16) {
+        BentoCard(cornerRadius: 13) {
             HStack(spacing: 14) {
                 Color(AVIATheme.surfaceElevated)
                     .frame(width: 64, height: 64)
@@ -612,7 +612,7 @@ struct AdminPackageEditorView: View {
                         }
                         .allowsHitTesting(false)
                     }
-                    .clipShape(.rect(cornerRadius: 10))
+                    .clipShape(.rect(cornerRadius: 8))
 
                 VStack(alignment: .leading, spacing: 4) {
                     HStack(spacing: 6) {
@@ -656,7 +656,7 @@ struct AdminPackageEditorView: View {
         VStack(spacing: 16) {
             sectionHeader(icon: "dollarsign.circle.fill", title: "Pricing", subtitle: "Package price breakdown")
 
-            BentoCard(cornerRadius: 16) {
+            BentoCard(cornerRadius: 13) {
                 VStack(spacing: 0) {
                     editorField(label: "Total Package Price", text: $totalPrice, placeholder: "e.g. $685,000", icon: "dollarsign.circle.fill")
                     fieldDivider
@@ -678,7 +678,7 @@ struct AdminPackageEditorView: View {
                         .foregroundStyle(AVIATheme.textTertiary)
                 }
 
-                BentoCard(cornerRadius: 16) {
+                BentoCard(cornerRadius: 13) {
                     VStack(spacing: 0) {
                         ForEach(Array(inclusions.enumerated()), id: \.offset) { item in
                             let index: Int = item.offset
@@ -742,7 +742,7 @@ struct AdminPackageEditorView: View {
             sectionHeader(icon: "person.2.fill", title: "Assign to Clients", subtitle: "Share this package directly with clients")
 
             if !selectedClientIds.isEmpty {
-                BentoCard(cornerRadius: 16) {
+                BentoCard(cornerRadius: 13) {
                     VStack(alignment: .leading, spacing: 0) {
                         HStack {
                             Text("ASSIGNED (\(selectedClientIds.count))")
@@ -801,7 +801,7 @@ struct AdminPackageEditorView: View {
 
             let unassignedClients = viewModel.clientUsers.filter { !selectedClientIds.contains($0.id) }
 
-            BentoCard(cornerRadius: 16) {
+            BentoCard(cornerRadius: 13) {
                 VStack(alignment: .leading, spacing: 0) {
                     Text("AVAILABLE CLIENTS")
                         .font(.neueCaption2Medium)
@@ -886,7 +886,7 @@ struct AdminPackageEditorView: View {
                 }
                 .padding(12)
                 .background(AVIATheme.timelessBrown.opacity(0.06))
-                .clipShape(.rect(cornerRadius: 12))
+                .clipShape(.rect(cornerRadius: 10))
             }
         }
     }
@@ -912,7 +912,7 @@ struct AdminPackageEditorView: View {
                         .frame(height: 48)
                         .padding(.horizontal, 16)
                         .background(AVIATheme.cardBackground)
-                        .clipShape(.rect(cornerRadius: 12))
+                        .clipShape(.rect(cornerRadius: 10))
                     }
                 }
 
@@ -932,7 +932,7 @@ struct AdminPackageEditorView: View {
                         .frame(height: 48)
                         .padding(.horizontal, 24)
                         .background(AVIATheme.primaryGradient)
-                        .clipShape(.rect(cornerRadius: 12))
+                        .clipShape(.rect(cornerRadius: 10))
                     }
                 } else {
                     Button {
@@ -954,7 +954,7 @@ struct AdminPackageEditorView: View {
                         .frame(height: 48)
                         .padding(.horizontal, 24)
                         .background(canSave ? AVIATheme.primaryGradient : LinearGradient(colors: [AVIATheme.surfaceElevated], startPoint: .top, endPoint: .bottom))
-                        .clipShape(.rect(cornerRadius: 12))
+                        .clipShape(.rect(cornerRadius: 10))
                     }
                     .disabled(!canSave || isSaving)
                     .sensoryFeedback(.impact(weight: .medium), trigger: isSaving)

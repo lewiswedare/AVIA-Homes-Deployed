@@ -103,7 +103,7 @@ struct EstateDetailView: View {
                             .frame(height: 48)
                             .padding(10)
                             .background(.ultraThinMaterial)
-                            .clipShape(.rect(cornerRadius: 10))
+                            .clipShape(.rect(cornerRadius: 8))
                             .padding(.leading, 20)
                             .padding(.bottom, 20)
                     } else if let logoURL = estate.logoURL, let url = URL(string: logoURL) {
@@ -115,7 +115,7 @@ struct EstateDetailView: View {
                                     .frame(height: 48)
                                     .padding(10)
                                     .background(.ultraThinMaterial)
-                                    .clipShape(.rect(cornerRadius: 10))
+                                    .clipShape(.rect(cornerRadius: 8))
                             }
                         }
                         .padding(.leading, 20)
@@ -208,7 +208,7 @@ struct EstateDetailView: View {
                 .kerning(1.0)
                 .foregroundStyle(AVIATheme.textTertiary)
 
-            BentoCard(cornerRadius: 16) {
+            BentoCard(cornerRadius: 13) {
                 VStack(spacing: 0) {
                     if let assetName = estate.logoAssetName, let uiImage = UIImage(named: assetName) {
                         HStack(spacing: 14) {
@@ -216,7 +216,7 @@ struct EstateDetailView: View {
                                 .resizable()
                                 .aspectRatio(contentMode: .fit)
                                 .frame(width: 56, height: 56)
-                                .clipShape(.rect(cornerRadius: 10))
+                                .clipShape(.rect(cornerRadius: 8))
 
                             VStack(alignment: .leading, spacing: 3) {
                                 Text("Estate Logo")
@@ -242,7 +242,7 @@ struct EstateDetailView: View {
                                     }
                                     .allowsHitTesting(false)
                                 }
-                                .clipShape(.rect(cornerRadius: 10))
+                                .clipShape(.rect(cornerRadius: 8))
 
                             VStack(alignment: .leading, spacing: 3) {
                                 Text("Estate Logo")
@@ -267,7 +267,7 @@ struct EstateDetailView: View {
                             showBrochurePreview = true
                         } label: {
                             HStack(spacing: 14) {
-                                RoundedRectangle(cornerRadius: 10)
+                                RoundedRectangle(cornerRadius: 8)
                                     .fill(AVIATheme.timelessBrown.opacity(0.1))
                                     .frame(width: 56, height: 56)
                                     .overlay {
@@ -313,7 +313,7 @@ struct EstateDetailView: View {
                 Button {
                     showSiteMapViewer = true
                 } label: {
-                    BentoCard(cornerRadius: 16) {
+                    BentoCard(cornerRadius: 13) {
                         VStack(spacing: 0) {
                             Color(AVIATheme.surfaceElevated)
                                 .frame(height: 220)
@@ -337,7 +337,7 @@ struct EstateDetailView: View {
                                     }
                                 }
                                 .allowsHitTesting(false)
-                                .clipShape(.rect(cornerRadius: 16, style: .continuous))
+                                .clipShape(.rect(cornerRadius: 13, style: .continuous))
 
                             HStack(spacing: 10) {
                                 Image(systemName: "map.fill")
@@ -382,7 +382,7 @@ struct EstateDetailView: View {
     }
 
     private func statCard(value: String, label: String, icon: String) -> some View {
-        BentoCard(cornerRadius: 14) {
+        BentoCard(cornerRadius: 11) {
             VStack(spacing: 6) {
                 Image(systemName: icon)
                     .font(.neueCorp(14))
@@ -416,7 +416,7 @@ struct EstateDetailView: View {
                 .kerning(1.0)
                 .foregroundStyle(AVIATheme.textTertiary)
 
-            BentoCard(cornerRadius: 16) {
+            BentoCard(cornerRadius: 13) {
                 VStack(alignment: .leading, spacing: 12) {
                     Text(estate.description)
                         .font(.neueSubheadline)
@@ -462,7 +462,7 @@ struct EstateDetailView: View {
                 .kerning(1.0)
                 .foregroundStyle(AVIATheme.textTertiary)
 
-            BentoCard(cornerRadius: 16) {
+            BentoCard(cornerRadius: 13) {
                 VStack(spacing: 0) {
                     ForEach(Array(estate.features.enumerated()), id: \.offset) { index, feature in
                         HStack(spacing: 12) {
@@ -521,7 +521,7 @@ struct EstateDetailView: View {
                 .kerning(1.0)
                 .foregroundStyle(AVIATheme.textTertiary)
 
-            BentoCard(cornerRadius: 16) {
+            BentoCard(cornerRadius: 13) {
                 VStack(spacing: 0) {
                     HStack {
                         VStack(alignment: .leading, spacing: 4) {
@@ -558,10 +558,10 @@ struct EstateDetailView: View {
 
                             GeometryReader { geo in
                                 ZStack(alignment: .leading) {
-                                    RoundedRectangle(cornerRadius: 4)
+                                    RoundedRectangle(cornerRadius: 3)
                                         .fill(AVIATheme.surfaceElevated)
                                         .frame(height: 8)
-                                    RoundedRectangle(cornerRadius: 4)
+                                    RoundedRectangle(cornerRadius: 3)
                                         .fill(AVIATheme.timelessBrown)
                                         .frame(width: geo.size.width * progress, height: 8)
                                 }
@@ -601,7 +601,7 @@ struct EstateDetailView: View {
     }
 
     private func packageRow(package: HouseLandPackage) -> some View {
-        BentoCard(cornerRadius: 16) {
+        BentoCard(cornerRadius: 13) {
             HStack(spacing: 14) {
                 Color(AVIATheme.surfaceElevated)
                     .frame(width: 80, height: 80)
@@ -613,7 +613,7 @@ struct EstateDetailView: View {
                         }
                         .allowsHitTesting(false)
                     }
-                    .clipShape(.rect(cornerRadius: 12))
+                    .clipShape(.rect(cornerRadius: 10))
 
                 VStack(alignment: .leading, spacing: 6) {
                     HStack {
@@ -683,7 +683,7 @@ struct EstateDetailView: View {
                     .frame(height: 52)
                     .foregroundStyle(AVIATheme.aviaWhite)
                     .background(AVIATheme.primaryGradient)
-                    .clipShape(.rect(cornerRadius: 14))
+                    .clipShape(.rect(cornerRadius: 11))
                 }
             }
 
@@ -699,7 +699,7 @@ struct EstateDetailView: View {
                     .frame(height: 52)
                     .foregroundStyle(AVIATheme.timelessBrown)
                     .background(AVIATheme.timelessBrown.opacity(0.1))
-                    .clipShape(.rect(cornerRadius: 14))
+                    .clipShape(.rect(cornerRadius: 11))
                 }
             }
         }

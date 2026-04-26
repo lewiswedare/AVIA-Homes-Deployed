@@ -15,7 +15,7 @@ struct AdminHandoverSheet: View {
         NavigationStack {
             ScrollView {
                 VStack(spacing: 16) {
-                    BentoCard(cornerRadius: 16) {
+                    BentoCard(cornerRadius: 13) {
                         VStack(alignment: .leading, spacing: 12) {
                             Text("SELECT BUILDING SUPPORT STAFF")
                                 .font(.neueCaption2Medium)
@@ -132,7 +132,7 @@ struct AdminBuildHandoverSection: View {
     @State private var buildSupportStaff: ClientUser?
 
     var body: some View {
-        BentoCard(cornerRadius: 16) {
+        BentoCard(cornerRadius: 13) {
             VStack(alignment: .leading, spacing: 12) {
                 Text("STAFF & HANDOVER")
                     .font(.neueCaption2Medium)

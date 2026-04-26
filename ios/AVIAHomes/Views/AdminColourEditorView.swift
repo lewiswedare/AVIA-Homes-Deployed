@@ -151,7 +151,7 @@ struct AdminColourEditorView: View {
 
     private func colourCategoryCard(_ category: ColourCategory) -> some View {
         Button { editingCategory = category } label: {
-            BentoCard(cornerRadius: 14) {
+            BentoCard(cornerRadius: 11) {
                 VStack(alignment: .leading, spacing: 10) {
                     HStack(spacing: 12) {
                         Image(systemName: category.icon)
@@ -294,7 +294,7 @@ struct ColourCategoryEditSheet: View {
         NavigationStack {
             ScrollView {
                 VStack(spacing: 20) {
-                    BentoCard(cornerRadius: 14) {
+                    BentoCard(cornerRadius: 11) {
                         VStack(alignment: .leading, spacing: 14) {
                             editSectionHeader("Category Details")
                             if isNew {
@@ -415,7 +415,7 @@ struct ColourCategoryEditSheet: View {
                         .padding(.vertical, 14)
                     }
 
-                    BentoCard(cornerRadius: 14) {
+                    BentoCard(cornerRadius: 11) {
                         VStack(alignment: .leading, spacing: 10) {
                             HStack {
                                 editSectionHeader("Colour Options (\(options.count))")
@@ -480,7 +480,7 @@ struct ColourCategoryEditSheet: View {
             field()
                 .padding(10)
                 .background(AVIATheme.surfaceElevated)
-                .clipShape(.rect(cornerRadius: 8))
+                .clipShape(.rect(cornerRadius: 6))
         }
         .padding(.horizontal, 14)
     }
@@ -505,9 +505,9 @@ struct ColourCategoryEditSheet: View {
                             }
                             .allowsHitTesting(false)
                         }
-                        .clipShape(.rect(cornerRadius: 6))
+                        .clipShape(.rect(cornerRadius: 5))
                         .overlay {
-                            RoundedRectangle(cornerRadius: 6)
+                            RoundedRectangle(cornerRadius: 5)
                                 .stroke(AVIATheme.surfaceBorder, lineWidth: 1)
                         }
                 } else {
@@ -568,7 +568,7 @@ struct ColourCategoryEditSheet: View {
             }
             .padding(8)
             .background(AVIATheme.surfaceElevated)
-            .clipShape(.rect(cornerRadius: 6))
+            .clipShape(.rect(cornerRadius: 5))
 
             tierAvailabilityRow(option: option)
             optionApplicableTiersRow(option: option)
@@ -599,9 +599,9 @@ struct ColourCategoryEditSheet: View {
                         .frame(width: 26, height: 22)
                         .foregroundStyle(isActive ? AVIATheme.aviaWhite : AVIATheme.textTertiary)
                         .background(isActive ? AVIATheme.heritageBlue : Color.clear)
-                        .clipShape(.rect(cornerRadius: 5))
+                        .clipShape(.rect(cornerRadius: 4))
                         .overlay {
-                            RoundedRectangle(cornerRadius: 5)
+                            RoundedRectangle(cornerRadius: 4)
                                 .stroke(isActive ? AVIATheme.heritageBlue : AVIATheme.surfaceBorder, lineWidth: 1)
                         }
                 }
@@ -626,7 +626,7 @@ struct ColourCategoryEditSheet: View {
         }
         .padding(8)
         .background(AVIATheme.surfaceElevated)
-        .clipShape(.rect(cornerRadius: 6))
+        .clipShape(.rect(cornerRadius: 5))
     }
 
     private func tierAvailabilityRow(option: Binding<EditableColourOption>) -> some View {
@@ -651,9 +651,9 @@ struct ColourCategoryEditSheet: View {
                         .frame(width: 26, height: 22)
                         .foregroundStyle(isActive ? AVIATheme.aviaWhite : AVIATheme.textTertiary)
                         .background(isActive ? AVIATheme.timelessBrown : Color.clear)
-                        .clipShape(.rect(cornerRadius: 5))
+                        .clipShape(.rect(cornerRadius: 4))
                         .overlay {
-                            RoundedRectangle(cornerRadius: 5)
+                            RoundedRectangle(cornerRadius: 4)
                                 .stroke(isActive ? AVIATheme.timelessBrown : AVIATheme.surfaceBorder, lineWidth: 1)
                         }
                 }
@@ -678,7 +678,7 @@ struct ColourCategoryEditSheet: View {
         }
         .padding(8)
         .background(AVIATheme.surfaceElevated)
-        .clipShape(.rect(cornerRadius: 6))
+        .clipShape(.rect(cornerRadius: 5))
     }
 
     private func addNewOption() {

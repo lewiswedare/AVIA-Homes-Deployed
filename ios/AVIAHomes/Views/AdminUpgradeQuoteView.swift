@@ -84,14 +84,14 @@ struct AdminUpgradeQuoteView: View {
     }
 
     private var headerCard: some View {
-        BentoCard(cornerRadius: 16) {
+        BentoCard(cornerRadius: 13) {
             HStack(spacing: 14) {
                 Image(systemName: "doc.text.fill")
                     .font(.neueCorpMedium(18))
                     .foregroundStyle(AVIATheme.aviaWhite)
                     .frame(width: 44, height: 44)
                     .background(AVIATheme.primaryGradient)
-                    .clipShape(.rect(cornerRadius: 12))
+                    .clipShape(.rect(cornerRadius: 10))
 
                 VStack(alignment: .leading, spacing: 3) {
                     Text("Upgrade Quote for \(clientName)")
@@ -122,7 +122,7 @@ struct AdminUpgradeQuoteView: View {
     }
 
     private func quoteLineItem(_ item: BuildSpecSelection) -> some View {
-        BentoCard(cornerRadius: 14) {
+        BentoCard(cornerRadius: 11) {
             VStack(alignment: .leading, spacing: 10) {
                 HStack(spacing: 10) {
                     VStack(alignment: .leading, spacing: 3) {
@@ -164,7 +164,7 @@ struct AdminUpgradeQuoteView: View {
                         }
                         .padding(10)
                         .background(AVIATheme.surfaceElevated)
-                        .clipShape(.rect(cornerRadius: 8))
+                        .clipShape(.rect(cornerRadius: 6))
                         .frame(width: 120)
                     }
 
@@ -176,7 +176,7 @@ struct AdminUpgradeQuoteView: View {
                             .font(.neueCaption)
                             .padding(10)
                             .background(AVIATheme.surfaceElevated)
-                            .clipShape(.rect(cornerRadius: 8))
+                            .clipShape(.rect(cornerRadius: 6))
                     }
                 }
             }
@@ -212,7 +212,7 @@ struct AdminUpgradeQuoteView: View {
                 .foregroundStyle(AVIATheme.textTertiary)
 
             let upgradeColours = colourSelections.filter(\.isUpgrade)
-            BentoCard(cornerRadius: 14) {
+            BentoCard(cornerRadius: 11) {
                 VStack(spacing: 0) {
                     HStack(spacing: 0) {
                         Text("Option")
@@ -272,7 +272,7 @@ struct AdminUpgradeQuoteView: View {
     }
 
     private var totalSection: some View {
-        BentoCard(cornerRadius: 14) {
+        BentoCard(cornerRadius: 11) {
             VStack(spacing: 10) {
                 HStack {
                     Text("Spec Upgrades Subtotal")
@@ -327,7 +327,7 @@ struct AdminUpgradeQuoteView: View {
             .frame(height: 52)
             .foregroundStyle(AVIATheme.aviaWhite)
             .background(AVIATheme.primaryGradient)
-            .clipShape(.rect(cornerRadius: 14))
+            .clipShape(.rect(cornerRadius: 11))
         }
     }
 

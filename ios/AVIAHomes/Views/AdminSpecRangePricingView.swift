@@ -48,14 +48,14 @@ struct AdminSpecRangePricingView: View {
     }
 
     private var headerCard: some View {
-        BentoCard(cornerRadius: 16) {
+        BentoCard(cornerRadius: 13) {
             HStack(spacing: 14) {
                 Image(systemName: "dollarsign.arrow.trianglehead.counterclockwise.rotate.90")
                     .font(.neueCorpMedium(18))
                     .foregroundStyle(AVIATheme.aviaWhite)
                     .frame(width: 44, height: 44)
                     .background(AVIATheme.primaryGradient)
-                    .clipShape(.rect(cornerRadius: 12))
+                    .clipShape(.rect(cornerRadius: 10))
 
                 VStack(alignment: .leading, spacing: 3) {
                     Text("Full Spec Range Upgrade Pricing")
@@ -73,7 +73,7 @@ struct AdminSpecRangePricingView: View {
     }
 
     private var singleStoreyPricingCard: some View {
-        BentoCard(cornerRadius: 14) {
+        BentoCard(cornerRadius: 11) {
             VStack(alignment: .leading, spacing: 16) {
                 HStack(spacing: 8) {
                     Image(systemName: "building")
@@ -113,7 +113,7 @@ struct AdminSpecRangePricingView: View {
     }
 
     private var doubleStoreyPricingCard: some View {
-        BentoCard(cornerRadius: 14) {
+        BentoCard(cornerRadius: 11) {
             VStack(alignment: .leading, spacing: 16) {
                 HStack(spacing: 8) {
                     Image(systemName: "building.2")
@@ -176,7 +176,7 @@ struct AdminSpecRangePricingView: View {
             .padding(.horizontal, 12)
             .padding(.vertical, 10)
             .background(AVIATheme.surfaceElevated)
-            .clipShape(.rect(cornerRadius: 8))
+            .clipShape(.rect(cornerRadius: 6))
         }
     }
 
@@ -199,7 +199,7 @@ struct AdminSpecRangePricingView: View {
             .frame(height: 52)
             .foregroundStyle(AVIATheme.aviaWhite)
             .background(AVIATheme.primaryGradient)
-            .clipShape(.rect(cornerRadius: 14))
+            .clipShape(.rect(cornerRadius: 11))
         }
         .disabled(isSaving)
     }

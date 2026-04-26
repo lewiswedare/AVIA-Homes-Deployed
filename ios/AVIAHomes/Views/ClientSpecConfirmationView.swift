@@ -167,9 +167,9 @@ struct ClientSpecConfirmationView: View {
             }
             .padding(14)
             .background(AVIATheme.accent.opacity(0.08))
-            .clipShape(.rect(cornerRadius: 14))
+            .clipShape(.rect(cornerRadius: 11))
             .overlay {
-                RoundedRectangle(cornerRadius: 14)
+                RoundedRectangle(cornerRadius: 11)
                     .stroke(AVIATheme.accent.opacity(0.35), lineWidth: 1)
             }
         }
@@ -191,7 +191,7 @@ struct ClientSpecConfirmationView: View {
         }
         .padding(10)
         .background(AVIATheme.cardBackground)
-        .clipShape(.rect(cornerRadius: 10))
+        .clipShape(.rect(cornerRadius: 8))
     }
 
     private var statusBanner: some View {
@@ -221,9 +221,9 @@ struct ClientSpecConfirmationView: View {
         }
         .padding(14)
         .background(statusColor.opacity(0.06))
-        .clipShape(.rect(cornerRadius: 14))
+        .clipShape(.rect(cornerRadius: 11))
         .overlay {
-            RoundedRectangle(cornerRadius: 14)
+            RoundedRectangle(cornerRadius: 11)
                 .stroke(statusColor.opacity(0.2), lineWidth: 1)
         }
     }
@@ -304,16 +304,16 @@ struct ClientSpecConfirmationView: View {
                     .frame(height: 48)
                     .foregroundStyle(AVIATheme.aviaWhite)
                     .background(AVIATheme.primaryGradient)
-                    .clipShape(.rect(cornerRadius: 12))
+                    .clipShape(.rect(cornerRadius: 10))
                 }
                 .buttonStyle(.pressable(.prominent))
                 .disabled(viewModel.isSaving)
             }
             .padding(14)
             .background(AVIATheme.cardBackground)
-            .clipShape(.rect(cornerRadius: 14))
+            .clipShape(.rect(cornerRadius: 11))
             .overlay {
-                RoundedRectangle(cornerRadius: 14)
+                RoundedRectangle(cornerRadius: 11)
                     .stroke(AVIATheme.timelessBrown.opacity(0.25), lineWidth: 1)
             }
         }
@@ -357,7 +357,7 @@ struct ClientSpecConfirmationView: View {
         }
         .padding(12)
         .background(AVIATheme.timelessBrown.opacity(0.04))
-        .clipShape(.rect(cornerRadius: 10))
+        .clipShape(.rect(cornerRadius: 8))
     }
 
     @ViewBuilder
@@ -390,9 +390,9 @@ struct ClientSpecConfirmationView: View {
             }
             .padding(14)
             .background(AVIATheme.cardBackground)
-            .clipShape(.rect(cornerRadius: 14))
+            .clipShape(.rect(cornerRadius: 11))
             .overlay {
-                RoundedRectangle(cornerRadius: 14)
+                RoundedRectangle(cornerRadius: 11)
                     .stroke(AVIATheme.accent.opacity(0.25), lineWidth: 1)
             }
         }
@@ -457,7 +457,7 @@ struct ClientSpecConfirmationView: View {
         }
         .padding(12)
         .background(AVIATheme.accent.opacity(0.04))
-        .clipShape(.rect(cornerRadius: 10))
+        .clipShape(.rect(cornerRadius: 8))
     }
 
     private var tierInfoBanner: some View {
@@ -471,7 +471,7 @@ struct ClientSpecConfirmationView: View {
         .padding(12)
         .frame(maxWidth: .infinity, alignment: .leading)
         .background(AVIATheme.timelessBrown.opacity(0.06))
-        .clipShape(.rect(cornerRadius: 12))
+        .clipShape(.rect(cornerRadius: 10))
     }
 
     @ViewBuilder
@@ -492,7 +492,7 @@ struct ClientSpecConfirmationView: View {
         if let pending = viewModel.pendingRangeUpgrade {
             pendingRangeUpgradeCard(pending)
         } else if !availableUpgrades.isEmpty {
-            BentoCard(cornerRadius: 14) {
+            BentoCard(cornerRadius: 11) {
                 VStack(alignment: .leading, spacing: 12) {
                     HStack(spacing: 10) {
                         Image(systemName: "arrow.up.forward.circle.fill")
@@ -544,9 +544,9 @@ struct ClientSpecConfirmationView: View {
                                 }
                                 .padding(12)
                                 .background(tierColor(tier).opacity(0.04))
-                                .clipShape(.rect(cornerRadius: 10))
+                                .clipShape(.rect(cornerRadius: 8))
                                 .overlay {
-                                    RoundedRectangle(cornerRadius: 10)
+                                    RoundedRectangle(cornerRadius: 8)
                                         .stroke(tierColor(tier).opacity(0.15), lineWidth: 1)
                                 }
                             }
@@ -582,7 +582,7 @@ struct ClientSpecConfirmationView: View {
             default: return formatCurrency(request.cost)
             }
         }()
-        BentoCard(cornerRadius: 14) {
+        BentoCard(cornerRadius: 11) {
             VStack(alignment: .leading, spacing: 14) {
                 HStack(spacing: 10) {
                     Image(systemName: headerIcon)
@@ -626,7 +626,7 @@ struct ClientSpecConfirmationView: View {
                     .padding(10)
                     .frame(maxWidth: .infinity, alignment: .leading)
                     .background(AVIATheme.accent.opacity(0.08))
-                    .clipShape(.rect(cornerRadius: 10))
+                    .clipShape(.rect(cornerRadius: 8))
 
                     Button {
                         Task { await SupabaseService.shared.deleteBuildRangeUpgradeRequest(id: request.id) }
@@ -686,7 +686,7 @@ struct ClientSpecConfirmationView: View {
                     .padding(10)
                     .frame(maxWidth: .infinity, alignment: .leading)
                     .background(AVIATheme.warning.opacity(0.08))
-                    .clipShape(.rect(cornerRadius: 10))
+                    .clipShape(.rect(cornerRadius: 8))
                 }
             }
             .padding(14)
@@ -746,7 +746,7 @@ struct ClientSpecConfirmationView: View {
                 .frame(height: 52)
                 .foregroundStyle(AVIATheme.aviaWhite)
                 .background(AVIATheme.primaryGradient)
-                .clipShape(.rect(cornerRadius: 14))
+                .clipShape(.rect(cornerRadius: 11))
             }
             .disabled(viewModel.isSaving)
         }
@@ -755,7 +755,7 @@ struct ClientSpecConfirmationView: View {
     @ViewBuilder
     private var pdfSection: some View {
         if let latestDoc = viewModel.documents.first {
-            BentoCard(cornerRadius: 14) {
+            BentoCard(cornerRadius: 11) {
                 VStack(alignment: .leading, spacing: 10) {
                     HStack(spacing: 8) {
                         Image(systemName: "doc.text.fill")
@@ -873,7 +873,7 @@ struct UpgradeRequestSheet: View {
                     .lineLimit(4...8)
                     .padding(12)
                     .background(AVIATheme.surfaceElevated)
-                    .clipShape(.rect(cornerRadius: 10))
+                    .clipShape(.rect(cornerRadius: 8))
 
                 Button {
                     onSubmit()
@@ -885,7 +885,7 @@ struct UpgradeRequestSheet: View {
                         .frame(height: 48)
                         .foregroundStyle(AVIATheme.aviaWhite)
                         .background(AVIATheme.primaryGradient)
-                        .clipShape(.rect(cornerRadius: 12))
+                        .clipShape(.rect(cornerRadius: 10))
                 }
 
                 Spacer()

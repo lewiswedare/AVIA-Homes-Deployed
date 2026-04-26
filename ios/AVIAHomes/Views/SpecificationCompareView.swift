@@ -99,10 +99,10 @@ struct SpecificationCompareView: View {
                 }
                 .padding(14)
                 .background(isCurrent ? AVIATheme.cardBackgroundAlt : AVIATheme.cardBackground)
-                .clipShape(.rect(cornerRadius: 14))
+                .clipShape(.rect(cornerRadius: 11))
                 .overlay {
                     if isCurrent {
-                        RoundedRectangle(cornerRadius: 14)
+                        RoundedRectangle(cornerRadius: 11)
                             .stroke(AVIATheme.timelessBrown.opacity(0.3), lineWidth: 1.5)
                     }
                 }

@@ -53,9 +53,9 @@ struct ForgotPasswordView: View {
                             .padding(.horizontal, 16)
                             .padding(.vertical, 14)
                             .background(AVIATheme.cardBackground)
-                            .clipShape(.rect(cornerRadius: 12))
+                            .clipShape(.rect(cornerRadius: 10))
                             .overlay {
-                                RoundedRectangle(cornerRadius: 12)
+                                RoundedRectangle(cornerRadius: 10)
                                     .stroke(AVIATheme.surfaceBorder, lineWidth: 1)
                             }
                         }
@@ -73,7 +73,7 @@ struct ForgotPasswordView: View {
                             .frame(height: 52)
                             .foregroundStyle(AVIATheme.aviaWhite)
                             .background(AVIATheme.primaryGradient)
-                            .clipShape(.rect(cornerRadius: 14))
+                            .clipShape(.rect(cornerRadius: 11))
                         }
                         .disabled(email.isEmpty || appViewModel.authService.isLoading)
                         .opacity(email.isEmpty ? 0.6 : 1)

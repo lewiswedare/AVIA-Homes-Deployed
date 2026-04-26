@@ -74,11 +74,11 @@ struct SelectionSummaryView: View {
         .padding(14)
         .frame(maxWidth: .infinity, alignment: .leading)
         .background(AVIATheme.timelessBrown.opacity(0.06))
-        .clipShape(.rect(cornerRadius: 12))
+        .clipShape(.rect(cornerRadius: 10))
     }
 
     private var statusBanner: some View {
-        BentoCard(cornerRadius: 16) {
+        BentoCard(cornerRadius: 13) {
             HStack(spacing: 14) {
                 ZStack {
                     Circle()
@@ -113,7 +113,7 @@ struct SelectionSummaryView: View {
                 .font(.neueHeadline)
                 .foregroundStyle(AVIATheme.textPrimary)
 
-            BentoCard(cornerRadius: 14) {
+            BentoCard(cornerRadius: 11) {
                 VStack(spacing: 0) {
                     ForEach(Array(selections.enumerated()), id: \.element.0.id) { index, pair in
                         let (category, selection) = pair
@@ -136,9 +136,9 @@ struct SelectionSummaryView: View {
                                         }
                                         .allowsHitTesting(false)
                                     }
-                                    .clipShape(.rect(cornerRadius: 8))
+                                    .clipShape(.rect(cornerRadius: 6))
                                     .overlay {
-                                        RoundedRectangle(cornerRadius: 8)
+                                        RoundedRectangle(cornerRadius: 6)
                                             .stroke(AVIATheme.surfaceBorder, lineWidth: 1)
                                     }
                             } else {

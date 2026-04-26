@@ -62,7 +62,7 @@ struct AdminImagePickerField: View {
                 .autocorrectionDisabled()
                 .padding(8)
                 .background(AVIATheme.surfaceElevated)
-                .clipShape(.rect(cornerRadius: 8))
+                .clipShape(.rect(cornerRadius: 6))
 
             if let uploadError {
                 Text(uploadError)
@@ -88,7 +88,7 @@ struct AdminImagePickerField: View {
                             .aspectRatio(contentMode: .fill)
                             .allowsHitTesting(false)
                     }
-                    .clipShape(.rect(cornerRadius: 10))
+                    .clipShape(.rect(cornerRadius: 8))
             } else {
                 Color(.secondarySystemBackground)
                     .frame(height: 120)
@@ -107,7 +107,7 @@ struct AdminImagePickerField: View {
                         }
                         .allowsHitTesting(false)
                     }
-                    .clipShape(.rect(cornerRadius: 10))
+                    .clipShape(.rect(cornerRadius: 8))
             }
         }
     }

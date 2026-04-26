@@ -135,7 +135,7 @@ struct SpecificationsOverviewView: View {
                     .frame(maxWidth: .infinity)
                     .frame(height: 52)
                     .background(AVIATheme.primaryGradient)
-                    .clipShape(.rect(cornerRadius: 14))
+                    .clipShape(.rect(cornerRadius: 11))
                 }
                 .disabled(specVM.isSubmittingRequests)
                 .sensoryFeedback(.success, trigger: specVM.submitMessage)
@@ -153,7 +153,7 @@ struct SpecificationsOverviewView: View {
                     .frame(maxWidth: .infinity)
                     .frame(height: 52)
                     .background(AVIATheme.primaryGradient)
-                    .clipShape(.rect(cornerRadius: 14))
+                    .clipShape(.rect(cornerRadius: 11))
                 }
                 .sensoryFeedback(.impact(flexibility: .soft), trigger: showConfirmAlert)
             }
@@ -177,9 +177,9 @@ struct SpecificationsOverviewView: View {
         }
         .padding(16)
         .background(AVIATheme.success.opacity(0.06))
-        .clipShape(.rect(cornerRadius: 16))
+        .clipShape(.rect(cornerRadius: 13))
         .overlay {
-            RoundedRectangle(cornerRadius: 16)
+            RoundedRectangle(cornerRadius: 13)
                 .stroke(AVIATheme.success.opacity(0.15), lineWidth: 1)
         }
     }
@@ -338,7 +338,7 @@ struct SpecificationsOverviewView: View {
             }
         }
         .background(AVIATheme.timelessBrown)
-        .clipShape(.rect(cornerRadius: 20))
+        .clipShape(.rect(cornerRadius: 16))
     }
 
     private var categoriesList: some View {
@@ -358,7 +358,7 @@ struct SpecificationsOverviewView: View {
             }
         }
         .background(AVIATheme.cardBackground)
-        .clipShape(.rect(cornerRadius: 16))
+        .clipShape(.rect(cornerRadius: 13))
     }
 
     private func categoryRow(_ category: SpecCategory) -> some View {
@@ -373,7 +373,7 @@ struct SpecificationsOverviewView: View {
                 .foregroundStyle(AVIATheme.timelessBrown)
                 .frame(width: 36, height: 36)
                 .background(AVIATheme.timelessBrown.opacity(0.1))
-                .clipShape(.rect(cornerRadius: 10))
+                .clipShape(.rect(cornerRadius: 8))
 
             VStack(alignment: .leading, spacing: 3) {
                 HStack(spacing: 8) {
@@ -468,7 +468,7 @@ struct SpecificationsOverviewView: View {
                         .frame(maxWidth: .infinity)
                         .padding(.vertical, 12)
                         .background(AVIATheme.cardBackground)
-                        .clipShape(.rect(cornerRadius: 12))
+                        .clipShape(.rect(cornerRadius: 10))
                 }
             }
         }
@@ -512,7 +512,7 @@ struct SpecificationsOverviewView: View {
                     .padding(10)
                     .frame(maxWidth: .infinity, alignment: .leading)
                     .background(AVIATheme.surfaceElevated)
-                    .clipShape(.rect(cornerRadius: 10))
+                    .clipShape(.rect(cornerRadius: 8))
             }
 
             if request.status == .pending {
@@ -562,10 +562,10 @@ struct SpecificationsOverviewView: View {
         }
         .padding(14)
         .background(AVIATheme.cardBackground)
-        .clipShape(.rect(cornerRadius: 14))
+        .clipShape(.rect(cornerRadius: 11))
         .overlay {
             if request.status == .quoted {
-                RoundedRectangle(cornerRadius: 14)
+                RoundedRectangle(cornerRadius: 11)
                     .stroke(AVIATheme.timelessBrown.opacity(0.3), lineWidth: 1)
             }
         }

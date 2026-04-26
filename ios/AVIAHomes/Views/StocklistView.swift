@@ -204,7 +204,7 @@ struct StocklistView: View {
                 }
                 .padding(.horizontal, 12)
                 .padding(.vertical, 10)
-                .background(AVIATheme.cardBackground, in: RoundedRectangle(cornerRadius: 10))
+                .background(AVIATheme.cardBackground, in: RoundedRectangle(cornerRadius: 8))
 
                 Button {
                     showFilterMenu.toggle()
@@ -285,7 +285,7 @@ struct StocklistView: View {
                         .foregroundStyle(AVIATheme.aviaWhite)
                         .frame(maxWidth: .infinity)
                         .padding(.vertical, 12)
-                        .background(AVIATheme.primaryGradient, in: RoundedRectangle(cornerRadius: 12))
+                        .background(AVIATheme.primaryGradient, in: RoundedRectangle(cornerRadius: 10))
                     }
                 }
 
@@ -481,7 +481,7 @@ struct StocklistView: View {
     // MARK: - Lot Card (BentoCard style)
 
     private func lotCard(lot: StocklistItemRow, estate: StocklistEstateRow) -> some View {
-        BentoCard(cornerRadius: 16) {
+        BentoCard(cornerRadius: 13) {
             VStack(spacing: 0) {
                 // Top section: status badge + lot number
                 Color(AVIATheme.surfaceElevated)

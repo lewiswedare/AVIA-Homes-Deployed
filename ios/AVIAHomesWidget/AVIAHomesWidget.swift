@@ -442,7 +442,7 @@ private struct PackageWidgetView: View {
                                 }
                             }
                         }
-                        .clipShape(.rect(cornerRadius: 10))
+                        .clipShape(.rect(cornerRadius: 8))
                 }
                 VStack(alignment: .leading, spacing: 4) {
                     Text("YOUR PACKAGE")
@@ -504,7 +504,7 @@ private struct PackageWidgetView: View {
                                 }
                             }
                         }
-                        .clipShape(.rect(cornerRadius: 12))
+                        .clipShape(.rect(cornerRadius: 10))
                 }
                 Text(snapshot.package?.title ?? "House & Land Package")
                     .font(.headline)

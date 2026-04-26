@@ -87,7 +87,7 @@ struct ClientDiscoverDashboardView: View {
     }
 
     private var welcomeBanner: some View {
-        BentoCard(cornerRadius: 16) {
+        BentoCard(cornerRadius: 13) {
             VStack(spacing: 12) {
                 VStack(alignment: .leading, spacing: 2) {
                     Text("Explore AVIA Homes")
@@ -112,7 +112,7 @@ struct ClientDiscoverDashboardView: View {
                             .frame(maxWidth: .infinity)
                             .frame(height: 38)
                             .background(AVIATheme.brownGradient)
-                            .clipShape(.rect(cornerRadius: 10))
+                            .clipShape(.rect(cornerRadius: 8))
                         }
                     }
 
@@ -128,7 +128,7 @@ struct ClientDiscoverDashboardView: View {
                             .frame(maxWidth: .infinity)
                             .frame(height: 38)
                             .background(AVIATheme.surfaceElevated)
-                            .clipShape(.rect(cornerRadius: 10))
+                            .clipShape(.rect(cornerRadius: 8))
                         }
                     }
                 }
@@ -209,11 +209,11 @@ struct ClientDiscoverDashboardView: View {
             .frame(maxWidth: .infinity, alignment: .leading)
         }
         .background(AVIATheme.cardBackground)
-        .clipShape(.rect(cornerRadius: 16))
+        .clipShape(.rect(cornerRadius: 13))
     }
 
     private func compactBlogRow(post: BlogPost) -> some View {
-        BentoCard(cornerRadius: 16) {
+        BentoCard(cornerRadius: 13) {
             HStack(spacing: 12) {
                 Color(AVIATheme.surfaceElevated)
                     .frame(width: 72, height: 72)
@@ -225,7 +225,7 @@ struct ClientDiscoverDashboardView: View {
                         }
                         .allowsHitTesting(false)
                     }
-                    .clipShape(.rect(cornerRadius: 10))
+                    .clipShape(.rect(cornerRadius: 8))
 
                 VStack(alignment: .leading, spacing: 4) {
                     Text(post.category.uppercased())
@@ -295,7 +295,7 @@ struct ClientDiscoverDashboardView: View {
                         }
                         .frame(width: 260, height: 325)
                         .background(AVIATheme.cardBackground)
-                        .clipShape(.rect(cornerRadius: 16))
+                        .clipShape(.rect(cornerRadius: 13))
                     }
                 }
             }
@@ -349,7 +349,7 @@ struct ClientDiscoverDashboardView: View {
                 .background(Color(red: 0.961, green: 0.961, blue: 0.961))
                 .clipShape(.rect(cornerRadii: .init(bottomLeading: 16, bottomTrailing: 16)))
             }
-            .clipShape(.rect(cornerRadius: 16))
+            .clipShape(.rect(cornerRadius: 13))
     }
 
     private var houseLandSection: some View {
@@ -365,7 +365,7 @@ struct ClientDiscoverDashboardView: View {
     }
 
     private func houseLandCard(package: HouseLandPackage) -> some View {
-        BentoCard(cornerRadius: 16) {
+        BentoCard(cornerRadius: 13) {
             HStack(spacing: 12) {
                 Color(AVIATheme.surfaceElevated)
                     .frame(width: 90, height: 90)
@@ -377,7 +377,7 @@ struct ClientDiscoverDashboardView: View {
                         }
                         .allowsHitTesting(false)
                     }
-                    .clipShape(.rect(cornerRadius: 12))
+                    .clipShape(.rect(cornerRadius: 10))
                     .overlay(alignment: .topLeading) {
                         if package.isNew {
                             Text("NEW")
@@ -501,7 +501,7 @@ struct ClientDiscoverDashboardView: View {
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .padding(18)
             }
-            .clipShape(.rect(cornerRadius: 20))
+            .clipShape(.rect(cornerRadius: 16))
             .shadow(color: AVIATheme.aviaBlack.opacity(0.12), radius: 14, x: 0, y: 6)
     }
 
@@ -598,7 +598,7 @@ struct ClientDiscoverDashboardView: View {
         }
         .frame(width: 320)
         .background(AVIATheme.cardBackground)
-        .clipShape(.rect(cornerRadius: 16))
+        .clipShape(.rect(cornerRadius: 13))
     }
 
     private var socialFollowBlock: some View {
@@ -610,7 +610,7 @@ struct ClientDiscoverDashboardView: View {
                     .aspectRatio(contentMode: .fill)
                     .allowsHitTesting(false)
             }
-            .clipShape(.rect(cornerRadius: 20))
+            .clipShape(.rect(cornerRadius: 16))
             .overlay(alignment: .bottomLeading) {
                 HStack(alignment: .bottom) {
                     Text("Stay Social")
@@ -674,7 +674,7 @@ struct ClientDiscoverDashboardView: View {
     }
 
     private func highlightCard(icon: String, title: String, description: String) -> some View {
-        BentoCard(cornerRadius: 16) {
+        BentoCard(cornerRadius: 13) {
             VStack(alignment: .leading, spacing: 8) {
                 Text(title)
                     .font(.neueSubheadlineMedium)
@@ -730,7 +730,7 @@ struct ClientDiscoverDashboardView: View {
                             .frame(maxWidth: .infinity)
                             .frame(height: 38)
                             .background(AVIATheme.brownGradient)
-                            .clipShape(.rect(cornerRadius: 10))
+                            .clipShape(.rect(cornerRadius: 8))
                         }
                     }
 
@@ -744,7 +744,7 @@ struct ClientDiscoverDashboardView: View {
                             .frame(maxWidth: .infinity)
                             .frame(height: 38)
                             .background(AVIATheme.surfaceElevated)
-                            .clipShape(.rect(cornerRadius: 10))
+                            .clipShape(.rect(cornerRadius: 8))
                         }
                     }
                 }
@@ -760,7 +760,7 @@ struct ClientDiscoverDashboardView: View {
             .padding(14)
         }
         .background(AVIATheme.cardBackground)
-        .clipShape(.rect(cornerRadius: 16))
+        .clipShape(.rect(cornerRadius: 13))
     }
 
     private var sharedPackagesBanner: some View {
@@ -818,7 +818,7 @@ struct ClientDiscoverDashboardView: View {
         let response = viewModel.clientResponseForPackage(package.id, clientId: viewModel.currentUser.id)
         let isPending = response == nil || response?.status == .pending
 
-        return BentoCard(cornerRadius: 16) {
+        return BentoCard(cornerRadius: 13) {
             HStack(spacing: 12) {
                 Color(AVIATheme.surfaceElevated)
                     .frame(width: 72, height: 72)
@@ -830,7 +830,7 @@ struct ClientDiscoverDashboardView: View {
                         }
                         .allowsHitTesting(false)
                     }
-                    .clipShape(.rect(cornerRadius: 10))
+                    .clipShape(.rect(cornerRadius: 8))
 
                 VStack(alignment: .leading, spacing: 4) {
                     Text(package.title)

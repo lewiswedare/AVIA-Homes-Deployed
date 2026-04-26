@@ -41,7 +41,7 @@ struct ClientInvoiceListContent: View {
     }
 
     private func invoiceCard(_ invoice: InvoiceRow) -> some View {
-        BentoCard(cornerRadius: 14) {
+        BentoCard(cornerRadius: 11) {
             VStack(spacing: 0) {
                 HStack(spacing: 12) {
                     Image(systemName: "dollarsign.circle.fill")
@@ -135,7 +135,7 @@ struct ClientInvoiceDetailSheet: View {
             ScrollView {
                 VStack(spacing: 16) {
                     // Status header
-                    BentoCard(cornerRadius: 14) {
+                    BentoCard(cornerRadius: 11) {
                         HStack(spacing: 12) {
                             Image(systemName: invoice.statusEnum.icon)
                                 .font(.system(size: 24))
@@ -155,7 +155,7 @@ struct ClientInvoiceDetailSheet: View {
                     }
 
                     // Amount & Details
-                    BentoCard(cornerRadius: 14) {
+                    BentoCard(cornerRadius: 11) {
                         VStack(alignment: .leading, spacing: 12) {
                             HStack(spacing: 8) {
                                 Image(systemName: "dollarsign.circle.fill")
@@ -193,7 +193,7 @@ struct ClientInvoiceDetailSheet: View {
 
                     // Notes
                     if let notes = invoice.notes, !notes.isEmpty {
-                        BentoCard(cornerRadius: 14) {
+                        BentoCard(cornerRadius: 11) {
                             VStack(alignment: .leading, spacing: 8) {
                                 HStack(spacing: 8) {
                                     Image(systemName: "note.text")
@@ -213,7 +213,7 @@ struct ClientInvoiceDetailSheet: View {
 
                     // Payment info
                     if invoice.statusEnum == .sent || invoice.statusEnum == .overdue {
-                        BentoCard(cornerRadius: 14) {
+                        BentoCard(cornerRadius: 11) {
                             VStack(alignment: .leading, spacing: 8) {
                                 HStack(spacing: 8) {
                                     Image(systemName: "info.circle.fill")
@@ -232,7 +232,7 @@ struct ClientInvoiceDetailSheet: View {
                     }
 
                     if invoice.statusEnum == .paid {
-                        BentoCard(cornerRadius: 14) {
+                        BentoCard(cornerRadius: 11) {
                             HStack(spacing: 12) {
                                 Image(systemName: "checkmark.seal.fill")
                                     .font(.system(size: 20))

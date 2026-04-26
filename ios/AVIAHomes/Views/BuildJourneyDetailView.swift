@@ -36,7 +36,7 @@ struct BuildJourneyDetailView: View {
     }
 
     private var overallProgressCard: some View {
-        BentoCard(cornerRadius: 20) {
+        BentoCard(cornerRadius: 16) {
             VStack(spacing: 16) {
                 HStack(spacing: 16) {
                     ZStack {
@@ -98,7 +98,7 @@ struct BuildJourneyDetailView: View {
         .frame(maxWidth: .infinity)
         .padding(.vertical, 12)
         .background(AVIATheme.surfaceElevated)
-        .clipShape(.rect(cornerRadius: 12))
+        .clipShape(.rect(cornerRadius: 10))
     }
 
     private var stagesTimeline: some View {
@@ -181,7 +181,7 @@ struct BuildJourneyDetailView: View {
         }
         .padding(18)
         .background(AVIATheme.cardBackground)
-        .clipShape(.rect(cornerRadius: 20))
+        .clipShape(.rect(cornerRadius: 16))
     }
 
     private var currentStageDetail: some View {
@@ -209,7 +209,7 @@ struct BuildJourneyDetailView: View {
                 }
                 .padding(14)
                 .background(task.isComplete ? AVIATheme.success.opacity(0.04) : AVIATheme.cardBackground)
-                .clipShape(.rect(cornerRadius: 14))
+                .clipShape(.rect(cornerRadius: 11))
             }
 
             if journeyVM.currentStage != .complete {
@@ -235,7 +235,7 @@ struct BuildJourneyDetailView: View {
                     .frame(maxWidth: .infinity)
                     .frame(height: 50)
                     .background(AVIATheme.primaryGradient)
-                    .clipShape(.rect(cornerRadius: 14))
+                    .clipShape(.rect(cornerRadius: 11))
                 }
                 .padding(.top, 4)
             }
@@ -260,9 +260,9 @@ struct BuildJourneyDetailView: View {
         .padding(24)
         .frame(maxWidth: .infinity)
         .background(AVIATheme.success.opacity(0.06))
-        .clipShape(.rect(cornerRadius: 20))
+        .clipShape(.rect(cornerRadius: 16))
         .overlay {
-            RoundedRectangle(cornerRadius: 20)
+            RoundedRectangle(cornerRadius: 16)
                 .stroke(AVIATheme.success.opacity(0.15), lineWidth: 1)
         }
     }

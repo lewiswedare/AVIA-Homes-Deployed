@@ -114,7 +114,7 @@ struct HomeDesignDetailView: View {
         }
         .padding(.vertical, 16)
         .background(AVIATheme.cardBackground)
-        .clipShape(.rect(cornerRadius: 16))
+        .clipShape(.rect(cornerRadius: 13))
     }
 
     private func statPill(value: String, label: String, icon: String) -> some View {
@@ -156,7 +156,7 @@ struct HomeDesignDetailView: View {
         .frame(maxWidth: .infinity)
         .padding(.vertical, 10)
         .background(AVIATheme.timelessBrown.opacity(0.06))
-        .clipShape(.rect(cornerRadius: 12))
+        .clipShape(.rect(cornerRadius: 10))
     }
 
     private var descriptionBlock: some View {
@@ -172,7 +172,7 @@ struct HomeDesignDetailView: View {
                         .frame(width: 3)
                 }
 
-            BentoCard(cornerRadius: 16) {
+            BentoCard(cornerRadius: 13) {
                 Text(design.description)
                     .font(.neueSubheadline)
                     .foregroundStyle(AVIATheme.textSecondary)
@@ -235,9 +235,9 @@ struct HomeDesignDetailView: View {
                     .padding(.vertical, 12)
                     .background(AVIATheme.cardBackground)
                 }
-                .clipShape(.rect(cornerRadius: 16))
+                .clipShape(.rect(cornerRadius: 13))
                 .overlay(
-                    RoundedRectangle(cornerRadius: 16)
+                    RoundedRectangle(cornerRadius: 13)
                         .stroke(AVIATheme.surfaceBorder, lineWidth: 1)
                 )
             }
@@ -278,7 +278,7 @@ struct HomeDesignDetailView: View {
                             )
                             .allowsHitTesting(false)
                         }
-                        .clipShape(.rect(cornerRadius: 18))
+                        .clipShape(.rect(cornerRadius: 14))
                         .overlay(alignment: .topLeading) {
                             HStack(spacing: 6) {
                                 Image(systemName: "doc.richtext.fill")
@@ -322,7 +322,7 @@ struct HomeDesignDetailView: View {
                             .padding(16)
                         }
                         .overlay(
-                            RoundedRectangle(cornerRadius: 18)
+                            RoundedRectangle(cornerRadius: 14)
                                 .stroke(.white.opacity(0.08), lineWidth: 1)
                         )
                 }
@@ -344,7 +344,7 @@ struct HomeDesignDetailView: View {
         .padding(.horizontal, 12)
         .padding(.vertical, 8)
         .background(AVIATheme.surfaceElevated)
-        .clipShape(.rect(cornerRadius: 10))
+        .clipShape(.rect(cornerRadius: 8))
     }
 
     private func compactSpecRow(label: String, value: String) -> some View {
@@ -378,7 +378,7 @@ struct HomeDesignDetailView: View {
                         .frame(width: 3)
                 }
 
-            BentoCard(cornerRadius: 16) {
+            BentoCard(cornerRadius: 13) {
                 VStack(spacing: 0) {
                     ForEach(Array(design.roomHighlights.enumerated()), id: \.offset) { index, highlight in
                         HStack(spacing: 12) {
@@ -415,7 +415,7 @@ struct HomeDesignDetailView: View {
                         .frame(width: 3)
                 }
 
-            BentoCard(cornerRadius: 16) {
+            BentoCard(cornerRadius: 13) {
                 VStack(spacing: 0) {
                     specRow(label: "Total Area", value: String(format: "%.2f m²", design.squareMeters), icon: "square.dashed")
                     specDivider
@@ -473,7 +473,7 @@ struct HomeDesignDetailView: View {
                         .frame(width: 3)
                 }
 
-            BentoCard(cornerRadius: 16) {
+            BentoCard(cornerRadius: 13) {
                 VStack(spacing: 0) {
                     ForEach(Array(design.inclusions.enumerated()), id: \.offset) { index, inclusion in
                         HStack(spacing: 12) {
@@ -525,7 +525,7 @@ struct HomeDesignDetailView: View {
     }
 
     private func featureCard(icon: String, title: String, subtitle: String) -> some View {
-        BentoCard(cornerRadius: 14) {
+        BentoCard(cornerRadius: 11) {
             VStack(alignment: .leading, spacing: 4) {
                 Text(title)
                     .font(.neueCaptionMedium)
@@ -554,7 +554,7 @@ struct HomeDesignDetailView: View {
                 .frame(height: 52)
                 .foregroundStyle(AVIATheme.aviaWhite)
                 .background(AVIATheme.primaryGradient)
-                .clipShape(.rect(cornerRadius: 14))
+                .clipShape(.rect(cornerRadius: 11))
             }
             .sheet(isPresented: $showingEnquiryForm) {
                 DesignEnquiryFormView(designName: design.name)
@@ -572,7 +572,7 @@ struct HomeDesignDetailView: View {
                     .frame(height: 52)
                     .foregroundStyle(AVIATheme.timelessBrown)
                     .background(AVIATheme.timelessBrown.opacity(0.1))
-                    .clipShape(.rect(cornerRadius: 14))
+                    .clipShape(.rect(cornerRadius: 11))
                 }
             }
         }

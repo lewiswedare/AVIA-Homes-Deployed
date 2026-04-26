@@ -72,9 +72,9 @@ struct LoginView: View {
                                 .padding(.horizontal, 16)
                                 .padding(.vertical, 14)
                                 .background(AVIATheme.cardBackground)
-                                .clipShape(.rect(cornerRadius: 12))
+                                .clipShape(.rect(cornerRadius: 10))
                                 .overlay {
-                                    RoundedRectangle(cornerRadius: 12)
+                                    RoundedRectangle(cornerRadius: 10)
                                         .stroke(AVIATheme.surfaceBorder, lineWidth: 1)
                                 }
                             }
@@ -94,9 +94,9 @@ struct LoginView: View {
                                     .padding(.horizontal, 16)
                                     .padding(.vertical, 14)
                                     .background(AVIATheme.cardBackground)
-                                    .clipShape(.rect(cornerRadius: 12))
+                                    .clipShape(.rect(cornerRadius: 10))
                                     .overlay {
-                                        RoundedRectangle(cornerRadius: 12)
+                                        RoundedRectangle(cornerRadius: 10)
                                             .stroke(AVIATheme.surfaceBorder, lineWidth: 1)
                                     }
                             }
@@ -115,7 +115,7 @@ struct LoginView: View {
                             .frame(height: 52)
                             .foregroundStyle(AVIATheme.aviaWhite)
                             .background(AVIATheme.primaryGradient)
-                            .clipShape(.rect(cornerRadius: 14))
+                            .clipShape(.rect(cornerRadius: 11))
                         }
                         .disabled(email.isEmpty || password.isEmpty || appViewModel.authService.isLoading)
                         .opacity(email.isEmpty || password.isEmpty ? 0.6 : 1)
@@ -137,9 +137,9 @@ struct LoginView: View {
                                 .frame(height: 52)
                                 .foregroundStyle(AVIATheme.timelessBrown)
                                 .background(AVIATheme.timelessBrown.opacity(0.08))
-                                .clipShape(.rect(cornerRadius: 14))
+                                .clipShape(.rect(cornerRadius: 11))
                                 .overlay {
-                                    RoundedRectangle(cornerRadius: 14)
+                                    RoundedRectangle(cornerRadius: 11)
                                         .stroke(AVIATheme.timelessBrown.opacity(0.2), lineWidth: 1)
                                 }
                         }

@@ -67,7 +67,7 @@ struct AdminPipelineView: View {
     // MARK: - Header
 
     private var pipelineHeader: some View {
-        BentoCard(cornerRadius: 14) {
+        BentoCard(cornerRadius: 11) {
             HStack(spacing: 12) {
                 Image(systemName: "arrow.triangle.branch")
                     .font(.system(size: 24))
@@ -361,10 +361,10 @@ struct AdminPipelineView: View {
         .padding(.horizontal, 16)
         .padding(.top, 12)
         .background(isActive ? AVIATheme.cardBackground : Color.clear)
-        .clipShape(.rect(cornerRadius: 14))
+        .clipShape(.rect(cornerRadius: 11))
         .overlay {
             if isActive {
-                RoundedRectangle(cornerRadius: 14)
+                RoundedRectangle(cornerRadius: 11)
                     .stroke(AVIATheme.timelessBrown.opacity(0.3), lineWidth: 1)
             }
         }
@@ -452,7 +452,7 @@ struct RaiseContractSheet: View {
         NavigationStack {
             ScrollView {
                 VStack(spacing: 16) {
-                    BentoCard(cornerRadius: 14) {
+                    BentoCard(cornerRadius: 11) {
                         VStack(alignment: .leading, spacing: 10) {
                             HStack(spacing: 8) {
                                 Image(systemName: "doc.richtext.fill")
@@ -481,7 +481,7 @@ struct RaiseContractSheet: View {
                                 }
                                 .padding(12)
                                 .background(AVIATheme.cardBackgroundAlt)
-                                .clipShape(.rect(cornerRadius: 10))
+                                .clipShape(.rect(cornerRadius: 8))
                             } else {
                                 Button {
                                     showDocumentPicker = true
@@ -497,9 +497,9 @@ struct RaiseContractSheet: View {
                                     .frame(maxWidth: .infinity)
                                     .frame(height: 100)
                                     .background(AVIATheme.cardBackgroundAlt)
-                                    .clipShape(.rect(cornerRadius: 10))
+                                    .clipShape(.rect(cornerRadius: 8))
                                     .overlay {
-                                        RoundedRectangle(cornerRadius: 10)
+                                        RoundedRectangle(cornerRadius: 8)
                                             .strokeBorder(style: StrokeStyle(lineWidth: 1, dash: [6]))
                                             .foregroundStyle(AVIATheme.surfaceBorder)
                                     }
@@ -509,7 +509,7 @@ struct RaiseContractSheet: View {
                         .padding(16)
                     }
 
-                    BentoCard(cornerRadius: 14) {
+                    BentoCard(cornerRadius: 11) {
                         VStack(alignment: .leading, spacing: 8) {
                             Text("Notes")
                                 .font(.neueCaptionMedium)
@@ -519,7 +519,7 @@ struct RaiseContractSheet: View {
                                 .lineLimit(3...6)
                                 .padding(12)
                                 .background(AVIATheme.cardBackgroundAlt)
-                                .clipShape(.rect(cornerRadius: 10))
+                                .clipShape(.rect(cornerRadius: 8))
                         }
                         .padding(16)
                     }
@@ -622,7 +622,7 @@ struct RaiseInvoiceSheet: View {
         NavigationStack {
             ScrollView {
                 VStack(spacing: 16) {
-                    BentoCard(cornerRadius: 14) {
+                    BentoCard(cornerRadius: 11) {
                         VStack(alignment: .leading, spacing: 12) {
                             HStack(spacing: 8) {
                                 Image(systemName: "dollarsign.circle.fill")
@@ -642,7 +642,7 @@ struct RaiseInvoiceSheet: View {
                                     .keyboardType(.decimalPad)
                                     .padding(12)
                                     .background(AVIATheme.cardBackgroundAlt)
-                                    .clipShape(.rect(cornerRadius: 10))
+                                    .clipShape(.rect(cornerRadius: 8))
                                 if let suggested = suggestedAmount {
                                     Button {
                                         amount = String(format: "%.2f", suggested)
@@ -662,7 +662,7 @@ struct RaiseInvoiceSheet: View {
                                     .font(.neueSubheadline)
                                     .padding(12)
                                     .background(AVIATheme.cardBackgroundAlt)
-                                    .clipShape(.rect(cornerRadius: 10))
+                                    .clipShape(.rect(cornerRadius: 8))
                             }
 
                             VStack(alignment: .leading, spacing: 6) {
@@ -682,7 +682,7 @@ struct RaiseInvoiceSheet: View {
                                     .lineLimit(2...4)
                                     .padding(12)
                                     .background(AVIATheme.cardBackgroundAlt)
-                                    .clipShape(.rect(cornerRadius: 10))
+                                    .clipShape(.rect(cornerRadius: 8))
                             }
                         }
                         .padding(16)

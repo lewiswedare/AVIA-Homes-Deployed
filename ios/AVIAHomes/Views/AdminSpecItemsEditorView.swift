@@ -62,7 +62,7 @@ struct AdminSpecItemsEditorView: View {
                         .frame(maxWidth: .infinity)
                         .frame(height: 48)
                         .background(AVIATheme.primaryGradient)
-                        .clipShape(.rect(cornerRadius: 14))
+                        .clipShape(.rect(cornerRadius: 11))
                     }
                     .disabled(viewModel.isLoading)
                 } else {
@@ -165,7 +165,7 @@ struct AdminSpecItemsEditorView: View {
                     .foregroundStyle(AVIATheme.textTertiary)
             }
 
-            BentoCard(cornerRadius: 14) {
+            BentoCard(cornerRadius: 11) {
                 VStack(spacing: 0) {
                     ForEach(Array(items.enumerated()), id: \.element.id) { index, item in
                         specItemRow(item)
@@ -286,7 +286,7 @@ struct SpecItemEditSheet: View {
         NavigationStack {
             ScrollView {
                 VStack(spacing: 20) {
-                    BentoCard(cornerRadius: 14) {
+                    BentoCard(cornerRadius: 11) {
                         VStack(alignment: .leading, spacing: 14) {
                             sectionHeader("Basic Info")
                             if isNew {
@@ -326,7 +326,7 @@ struct SpecItemEditSheet: View {
                         .padding(.vertical, 14)
                     }
 
-                    BentoCard(cornerRadius: 14) {
+                    BentoCard(cornerRadius: 11) {
                         VStack(alignment: .leading, spacing: 14) {
                             sectionHeader("Tier Descriptions")
                             tierField("Volos", text: $volosDesc, color: AVIATheme.timelessBrown)
@@ -336,7 +336,7 @@ struct SpecItemEditSheet: View {
                         .padding(.vertical, 14)
                     }
 
-                    BentoCard(cornerRadius: 14) {
+                    BentoCard(cornerRadius: 11) {
                         VStack(alignment: .leading, spacing: 14) {
                             sectionHeader("Base Image (Optional)")
                             AdminImagePickerField(
@@ -349,7 +349,7 @@ struct SpecItemEditSheet: View {
                         .padding(.vertical, 14)
                     }
 
-                    BentoCard(cornerRadius: 14) {
+                    BentoCard(cornerRadius: 11) {
                         VStack(alignment: .leading, spacing: 14) {
                             sectionHeader("Tier-Specific Images")
                             Text("Upload a different image for each spec range. These override the base image when viewing a specific tier.")
@@ -375,7 +375,7 @@ struct SpecItemEditSheet: View {
                     }
 
                     if isUpgradeable {
-                        BentoCard(cornerRadius: 14) {
+                        BentoCard(cornerRadius: 11) {
                             VStack(alignment: .leading, spacing: 14) {
                                 sectionHeader("Upgrade Costs")
                                 Text("Set upgrade costs between tiers. All prices in AUD.")
@@ -394,7 +394,7 @@ struct SpecItemEditSheet: View {
                         }
                     }
 
-                    BentoCard(cornerRadius: 14) {
+                    BentoCard(cornerRadius: 11) {
                         VStack(alignment: .leading, spacing: 14) {
                             sectionHeader("Linked Colour Categories")
                             Text("Select which colour categories this spec item unlocks. When the client confirms this item in Stage 1, the chosen colour categories appear in their Stage 2 colour selection.")
@@ -470,10 +470,10 @@ struct SpecItemEditSheet: View {
             .background(isSelected ? AVIATheme.timelessBrown.opacity(0.15) : AVIATheme.surfaceElevated)
             .foregroundStyle(isSelected ? AVIATheme.timelessBrown : AVIATheme.textSecondary)
             .overlay(
-                RoundedRectangle(cornerRadius: 8)
+                RoundedRectangle(cornerRadius: 6)
                     .stroke(isSelected ? AVIATheme.timelessBrown : Color.clear, lineWidth: 1)
             )
-            .clipShape(.rect(cornerRadius: 8))
+            .clipShape(.rect(cornerRadius: 6))
         }
         .buttonStyle(.pressable(.subtle))
     }
@@ -495,7 +495,7 @@ struct SpecItemEditSheet: View {
             field()
                 .padding(10)
                 .background(AVIATheme.surfaceElevated)
-                .clipShape(.rect(cornerRadius: 8))
+                .clipShape(.rect(cornerRadius: 6))
         }
         .padding(.horizontal, 14)
     }
@@ -513,7 +513,7 @@ struct SpecItemEditSheet: View {
                 .lineLimit(2...4)
                 .padding(10)
                 .background(AVIATheme.surfaceElevated)
-                .clipShape(.rect(cornerRadius: 8))
+                .clipShape(.rect(cornerRadius: 6))
         }
         .padding(.horizontal, 14)
     }
@@ -556,7 +556,7 @@ struct SpecItemEditSheet: View {
             .padding(.horizontal, 8)
             .padding(.vertical, 6)
             .background(AVIATheme.surfaceElevated)
-            .clipShape(.rect(cornerRadius: 6))
+            .clipShape(.rect(cornerRadius: 5))
         }
     }
 
@@ -642,7 +642,7 @@ struct AdminMiniStat: View {
         .frame(maxWidth: .infinity)
         .padding(.vertical, 12)
         .background(AVIATheme.cardBackground)
-        .clipShape(.rect(cornerRadius: 12))
+        .clipShape(.rect(cornerRadius: 10))
     }
 }
 

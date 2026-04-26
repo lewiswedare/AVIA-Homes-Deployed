@@ -178,11 +178,11 @@ struct AllNewsView: View {
             .frame(maxWidth: .infinity, alignment: .leading)
         }
         .background(AVIATheme.cardBackground)
-        .clipShape(.rect(cornerRadius: 16))
+        .clipShape(.rect(cornerRadius: 13))
     }
 
     private func compactNewsRow(post: BlogPost) -> some View {
-        BentoCard(cornerRadius: 16) {
+        BentoCard(cornerRadius: 13) {
             HStack(spacing: 12) {
                 Color(AVIATheme.surfaceElevated)
                     .frame(width: 88, height: 88)
@@ -194,7 +194,7 @@ struct AllNewsView: View {
                         }
                         .allowsHitTesting(false)
                     }
-                    .clipShape(.rect(cornerRadius: 12))
+                    .clipShape(.rect(cornerRadius: 10))
 
                 VStack(alignment: .leading, spacing: 5) {
                     Text(post.category.uppercased())

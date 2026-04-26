@@ -135,7 +135,7 @@ struct ConversationsView: View {
                 .padding(.horizontal, 24)
                 .padding(.vertical, 14)
                 .background(AVIATheme.primaryGradient)
-                .clipShape(.rect(cornerRadius: 14))
+                .clipShape(.rect(cornerRadius: 11))
             }
             .padding(.top, 8)
         }

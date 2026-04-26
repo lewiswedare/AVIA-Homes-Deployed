@@ -19,7 +19,7 @@ struct BuildJourneyCard: View {
                 actionButton
             }
             .background(AVIATheme.cardBackground)
-            .clipShape(.rect(cornerRadius: 20))
+            .clipShape(.rect(cornerRadius: 16))
         }
         .buttonStyle(.pressable(.subtle))
     }
@@ -153,7 +153,7 @@ struct BuildJourneyCard: View {
             .frame(maxWidth: .infinity)
             .frame(height: 44)
             .background(AVIATheme.primaryGradient)
-            .clipShape(.rect(cornerRadius: 12))
+            .clipShape(.rect(cornerRadius: 10))
         }
         .padding(.horizontal, 16)
         .padding(.bottom, 16)

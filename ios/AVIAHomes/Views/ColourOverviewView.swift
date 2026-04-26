@@ -92,7 +92,7 @@ struct ColourOverviewView: View {
     }
 
     private var progressCard: some View {
-        BentoCard(cornerRadius: 18) {
+        BentoCard(cornerRadius: 14) {
             HStack(spacing: 16) {
                 ZStack {
                     Circle()
@@ -137,7 +137,7 @@ struct ColourOverviewView: View {
                     .foregroundStyle(AVIATheme.timelessBrown)
                     .frame(width: 44, height: 44)
                     .background(AVIATheme.timelessBrown.opacity(0.1))
-                    .clipShape(.rect(cornerRadius: 12))
+                    .clipShape(.rect(cornerRadius: 10))
 
                 VStack(alignment: .leading, spacing: 3) {
                     HStack(spacing: 6) {
@@ -165,10 +165,10 @@ struct ColourOverviewView: View {
             }
             .padding(16)
             .background(AVIATheme.cardBackground)
-            .clipShape(.rect(cornerRadius: 18))
+            .clipShape(.rect(cornerRadius: 14))
             .overlay {
                 if viewModel.appliedScheme != nil {
-                    RoundedRectangle(cornerRadius: 18)
+                    RoundedRectangle(cornerRadius: 14)
                         .stroke(AVIATheme.success.opacity(0.2), lineWidth: 1)
                 }
             }
@@ -186,7 +186,7 @@ struct ColourOverviewView: View {
                     .foregroundStyle(AVIATheme.aviaWhite)
                     .frame(width: 44, height: 44)
                     .background(AVIATheme.aviaWhite.opacity(0.15))
-                    .clipShape(.rect(cornerRadius: 12))
+                    .clipShape(.rect(cornerRadius: 10))
 
                 VStack(alignment: .leading, spacing: 3) {
                     Text("Start Guided Tour")
@@ -203,7 +203,7 @@ struct ColourOverviewView: View {
             }
             .padding(16)
             .background(AVIATheme.primaryGradient)
-            .clipShape(.rect(cornerRadius: 18))
+            .clipShape(.rect(cornerRadius: 14))
         }
     }
 
@@ -317,9 +317,9 @@ struct CategoryCard: View {
             .padding(.horizontal, 8)
             .frame(maxWidth: .infinity)
             .background(AVIATheme.cardBackground)
-            .clipShape(.rect(cornerRadius: 16))
+            .clipShape(.rect(cornerRadius: 13))
             .overlay {
-                RoundedRectangle(cornerRadius: 16)
+                RoundedRectangle(cornerRadius: 13)
                     .stroke(selection != nil ? AVIATheme.timelessBrown.opacity(0.2) : Color.clear, lineWidth: 1)
             }
         }

@@ -38,7 +38,7 @@ struct PendingApprovalView: View {
                         .padding(.horizontal, 20)
                 }
 
-                BentoCard(cornerRadius: 16) {
+                BentoCard(cornerRadius: 13) {
                     VStack(spacing: 14) {
                         HStack(spacing: 12) {
                             Image(systemName: "checkmark.circle.fill")
@@ -92,7 +92,7 @@ struct PendingApprovalView: View {
                         .frame(height: 50)
                         .foregroundStyle(AVIATheme.destructive)
                         .background(AVIATheme.destructive.opacity(0.08))
-                        .clipShape(.rect(cornerRadius: 14))
+                        .clipShape(.rect(cornerRadius: 11))
                 }
                 .padding(.horizontal, 28)
             }

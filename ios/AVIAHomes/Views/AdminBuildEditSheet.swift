@@ -220,7 +220,7 @@ struct AdminBuildEditSheet: View {
 
     private var clientsSection: some View {
         VStack(spacing: 16) {
-            BentoCard(cornerRadius: 16) {
+            BentoCard(cornerRadius: 13) {
                 VStack(alignment: .leading, spacing: 14) {
                     HStack {
                         Label("Assigned Clients", systemImage: "person.2.fill")
@@ -268,10 +268,10 @@ struct AdminBuildEditSheet: View {
                 .frame(height: 48)
                 .foregroundStyle(AVIATheme.aviaWhite)
                 .background(AVIATheme.primaryGradient)
-                .clipShape(.rect(cornerRadius: 14))
+                .clipShape(.rect(cornerRadius: 11))
             }
 
-            BentoCard(cornerRadius: 16) {
+            BentoCard(cornerRadius: 13) {
                 VStack(spacing: 12) {
                     Image(systemName: "info.circle.fill")
                         .font(.system(size: 24))
@@ -335,7 +335,7 @@ struct AdminBuildEditSheet: View {
         }
         .padding(10)
         .background(isPrimary ? AVIATheme.timelessBrown.opacity(0.04) : Color.clear)
-        .clipShape(.rect(cornerRadius: 10))
+        .clipShape(.rect(cornerRadius: 8))
     }
 
     private var deleteBuildSection: some View {
@@ -355,7 +355,7 @@ struct AdminBuildEditSheet: View {
                 .frame(height: 48)
                 .foregroundStyle(AVIATheme.aviaWhite)
                 .background(AVIATheme.destructive)
-                .clipShape(.rect(cornerRadius: 14))
+                .clipShape(.rect(cornerRadius: 11))
             }
 
             Text("This action is permanent and cannot be undone.")
@@ -369,7 +369,7 @@ struct AdminBuildEditSheet: View {
 
     private var detailsEditSection: some View {
         VStack(spacing: 16) {
-            BentoCard(cornerRadius: 16) {
+            BentoCard(cornerRadius: 13) {
                 VStack(alignment: .leading, spacing: 16) {
                     Label("Build Details", systemImage: "house.fill")
                         .font(.neueSubheadlineMedium)
@@ -413,10 +413,10 @@ struct AdminBuildEditSheet: View {
                                     .padding(.vertical, 10)
                                     .foregroundStyle(selectedSpecTier == tier.rawValue ? AVIATheme.aviaWhite : AVIATheme.textSecondary)
                                     .background(selectedSpecTier == tier.rawValue ? AVIATheme.timelessBrown : AVIATheme.cardBackgroundAlt)
-                                    .clipShape(.rect(cornerRadius: 10))
+                                    .clipShape(.rect(cornerRadius: 8))
                                     .overlay {
                                         if selectedSpecTier != tier.rawValue {
-                                            RoundedRectangle(cornerRadius: 10)
+                                            RoundedRectangle(cornerRadius: 8)
                                                 .stroke(AVIATheme.surfaceBorder, lineWidth: 1)
                                         }
                                     }
@@ -428,7 +428,7 @@ struct AdminBuildEditSheet: View {
                 .padding(16)
             }
 
-            BentoCard(cornerRadius: 16) {
+            BentoCard(cornerRadius: 13) {
                 VStack(alignment: .leading, spacing: 16) {
                     Label("Assigned Staff", systemImage: "person.badge.shield.checkmark.fill")
                         .font(.neueSubheadlineMedium)
@@ -473,7 +473,7 @@ struct AdminBuildEditSheet: View {
                                     }
                                     .padding(10)
                                     .background(selectedStaffId == member.id ? AVIATheme.timelessBrown.opacity(0.06) : Color.clear)
-                                    .clipShape(.rect(cornerRadius: 10))
+                                    .clipShape(.rect(cornerRadius: 8))
                                 }
                             }
                         }
@@ -498,7 +498,7 @@ struct AdminBuildEditSheet: View {
                 .frame(height: 52)
                 .foregroundStyle(AVIATheme.aviaWhite)
                 .background(AVIATheme.primaryGradient)
-                .clipShape(.rect(cornerRadius: 14))
+                .clipShape(.rect(cornerRadius: 11))
             }
             .disabled(isSaving)
         }
@@ -514,9 +514,9 @@ struct AdminBuildEditSheet: View {
                 .foregroundStyle(AVIATheme.textPrimary)
                 .padding(12)
                 .background(AVIATheme.cardBackgroundAlt)
-                .clipShape(.rect(cornerRadius: 10))
+                .clipShape(.rect(cornerRadius: 8))
                 .overlay {
-                    RoundedRectangle(cornerRadius: 10)
+                    RoundedRectangle(cornerRadius: 8)
                         .stroke(AVIATheme.surfaceBorder, lineWidth: 1)
                 }
         }
@@ -524,7 +524,7 @@ struct AdminBuildEditSheet: View {
 
     private var stagesSection: some View {
         VStack(spacing: 12) {
-            BentoCard(cornerRadius: 16) {
+            BentoCard(cornerRadius: 13) {
                 VStack(alignment: .leading, spacing: 12) {
                     HStack {
                         Label("Build Stages", systemImage: "chart.bar.fill")
@@ -553,7 +553,7 @@ struct AdminBuildEditSheet: View {
                 Button {
                     editingStage = stage
                 } label: {
-                    BentoCard(cornerRadius: 14) {
+                    BentoCard(cornerRadius: 11) {
                         HStack(spacing: 14) {
                             stageStatusIcon(for: stage)
 
@@ -605,7 +605,7 @@ struct AdminBuildEditSheet: View {
 
     private var registrationToggleCard: some View {
         let hasRegistration = latestBuild.awaitingRegistrationStage != nil
-        return BentoCard(cornerRadius: 14) {
+        return BentoCard(cornerRadius: 11) {
             HStack(spacing: 12) {
                 Image(systemName: "clock.badge.questionmark")
                     .font(.system(size: 18))
@@ -698,14 +698,14 @@ struct AdminBuildEditSheet: View {
                 .frame(height: 48)
                 .foregroundStyle(AVIATheme.aviaWhite)
                 .background(AVIATheme.primaryGradient)
-                .clipShape(.rect(cornerRadius: 14))
+                .clipShape(.rect(cornerRadius: 11))
             }
 
             if isLoadingDocs {
                 ProgressView()
                     .frame(maxWidth: .infinity, minHeight: 100)
             } else if buildDocuments.isEmpty {
-                BentoCard(cornerRadius: 16) {
+                BentoCard(cornerRadius: 13) {
                     VStack(spacing: 14) {
                         Image(systemName: "doc.text.fill")
                             .font(.system(size: 36))
@@ -722,7 +722,7 @@ struct AdminBuildEditSheet: View {
                     .padding(24)
                 }
             } else {
-                BentoCard(cornerRadius: 16) {
+                BentoCard(cornerRadius: 13) {
                     VStack(spacing: 0) {
                         ForEach(Array(buildDocuments.enumerated()), id: \.element.id) { index, doc in
                             buildDocumentRow(doc)
@@ -750,7 +750,7 @@ struct AdminBuildEditSheet: View {
 
             // Document status summary
             if !buildDocuments.isEmpty {
-                BentoCard(cornerRadius: 16) {
+                BentoCard(cornerRadius: 13) {
                     VStack(spacing: 14) {
                         Image(systemName: "checkmark.seal.fill")
                             .font(.system(size: 32))
@@ -804,7 +804,7 @@ struct AdminBuildEditSheet: View {
                     }
                     .padding(32)
                     .background(.ultraThinMaterial)
-                    .clipShape(.rect(cornerRadius: 16))
+                    .clipShape(.rect(cornerRadius: 13))
                 }
             }
         }
@@ -980,7 +980,7 @@ struct AdminBuildEditSheet: View {
         }
         .padding(32)
         .background(.ultraThinMaterial)
-        .clipShape(.rect(cornerRadius: 20))
+        .clipShape(.rect(cornerRadius: 16))
         .transition(.scale.combined(with: .opacity))
     }
 

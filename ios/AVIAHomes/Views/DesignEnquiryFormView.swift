@@ -65,7 +65,7 @@ struct DesignEnquiryFormView: View {
         }
         .padding(16)
         .background(AVIATheme.cardBackground)
-        .clipShape(.rect(cornerRadius: 12))
+        .clipShape(.rect(cornerRadius: 10))
     }
 
     private var formFields: some View {
@@ -85,9 +85,9 @@ struct DesignEnquiryFormView: View {
                     .padding(10)
                     .scrollContentBackground(.hidden)
                     .background(AVIATheme.cardBackgroundAlt)
-                    .clipShape(.rect(cornerRadius: 10))
+                    .clipShape(.rect(cornerRadius: 8))
                     .overlay(
-                        RoundedRectangle(cornerRadius: 10)
+                        RoundedRectangle(cornerRadius: 8)
                             .stroke(AVIATheme.surfaceBorder, lineWidth: 1)
                     )
             }
@@ -104,9 +104,9 @@ struct DesignEnquiryFormView: View {
                 .keyboardType(keyboardType)
                 .padding(12)
                 .background(AVIATheme.cardBackgroundAlt)
-                .clipShape(.rect(cornerRadius: 10))
+                .clipShape(.rect(cornerRadius: 8))
                 .overlay(
-                    RoundedRectangle(cornerRadius: 10)
+                    RoundedRectangle(cornerRadius: 8)
                         .stroke(AVIATheme.surfaceBorder, lineWidth: 1)
                 )
         }
@@ -131,7 +131,7 @@ struct DesignEnquiryFormView: View {
             .frame(height: 52)
             .foregroundStyle(AVIATheme.aviaWhite)
             .background(isFormValid ? AVIATheme.primaryGradient : LinearGradient(colors: [AVIATheme.textTertiary, AVIATheme.textTertiary], startPoint: .topLeading, endPoint: .bottomTrailing))
-            .clipShape(.rect(cornerRadius: 14))
+            .clipShape(.rect(cornerRadius: 11))
         }
         .disabled(!isFormValid || isSubmitting)
     }

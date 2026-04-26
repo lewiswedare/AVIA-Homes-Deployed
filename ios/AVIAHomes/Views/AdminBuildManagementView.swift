@@ -93,7 +93,7 @@ struct AdminBuildManagementView: View {
     }
 
     private func adminStatCard(value: String, label: String, icon: String, color: Color) -> some View {
-        BentoCard(cornerRadius: 16) {
+        BentoCard(cornerRadius: 13) {
             VStack(alignment: .leading, spacing: 8) {
                 BentoIconCircle(icon: icon, color: color)
                 Text(value)
@@ -170,7 +170,7 @@ struct AdminBuildRow: View {
     var specReviewStatus: BuildSpecReviewBadge = .none
 
     var body: some View {
-        BentoCard(cornerRadius: 16) {
+        BentoCard(cornerRadius: 13) {
             VStack(spacing: 0) {
                 HStack(spacing: 14) {
                     ZStack(alignment: .topTrailing) {

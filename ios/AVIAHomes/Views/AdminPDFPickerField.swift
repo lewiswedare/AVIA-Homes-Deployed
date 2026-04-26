@@ -62,7 +62,7 @@ struct AdminPDFPickerField: View {
                 .autocorrectionDisabled()
                 .padding(8)
                 .background(AVIATheme.surfaceElevated)
-                .clipShape(.rect(cornerRadius: 8))
+                .clipShape(.rect(cornerRadius: 6))
 
             if let uploadError {
                 Text(uploadError)
@@ -91,7 +91,7 @@ struct AdminPDFPickerField: View {
                 .foregroundStyle(AVIATheme.timelessBrown)
                 .frame(width: 44, height: 44)
                 .background(AVIATheme.timelessBrown.opacity(0.12))
-                .clipShape(.rect(cornerRadius: 10))
+                .clipShape(.rect(cornerRadius: 8))
 
             VStack(alignment: .leading, spacing: 2) {
                 Text("PDF uploaded")
@@ -108,7 +108,7 @@ struct AdminPDFPickerField: View {
         }
         .padding(10)
         .background(AVIATheme.surfaceElevated)
-        .clipShape(.rect(cornerRadius: 10))
+        .clipShape(.rect(cornerRadius: 8))
     }
 
     private func handlePDFSelection(_ url: URL) async {

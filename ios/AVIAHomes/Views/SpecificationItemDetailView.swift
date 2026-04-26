@@ -150,7 +150,7 @@ struct SpecificationItemDetailView: View {
         }
         .padding(16)
         .background(AVIATheme.cardBackground)
-        .clipShape(.rect(cornerRadius: 16))
+        .clipShape(.rect(cornerRadius: 13))
     }
 
     private var upgradeOptionsSection: some View {
@@ -232,7 +232,7 @@ struct SpecificationItemDetailView: View {
                 .frame(maxWidth: .infinity)
                 .padding(.vertical, 10)
                 .background(AVIATheme.warning.opacity(0.1))
-                .clipShape(.rect(cornerRadius: 10))
+                .clipShape(.rect(cornerRadius: 8))
             } else {
                 Button {
                     selectedUpgradeTier = tier
@@ -248,13 +248,13 @@ struct SpecificationItemDetailView: View {
                     .frame(maxWidth: .infinity)
                     .padding(.vertical, 10)
                     .background(AVIATheme.primaryGradient)
-                    .clipShape(.rect(cornerRadius: 10))
+                    .clipShape(.rect(cornerRadius: 8))
                 }
             }
         }
         .padding(14)
         .background(AVIATheme.cardBackground)
-        .clipShape(.rect(cornerRadius: 14))
+        .clipShape(.rect(cornerRadius: 11))
     }
 
     private var allTiersComparison: some View {
@@ -332,6 +332,6 @@ struct SpecificationItemDetailView: View {
         }
         .padding(16)
         .background(AVIATheme.cardBackground)
-        .clipShape(.rect(cornerRadius: 16))
+        .clipShape(.rect(cornerRadius: 13))
     }
 }

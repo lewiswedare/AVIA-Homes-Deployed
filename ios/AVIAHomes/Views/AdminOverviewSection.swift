@@ -40,7 +40,7 @@ struct AdminOverviewSection: View {
         let totalAlerts = pendingUsers + openRequests + specSubmissionBuildCount + specUpgradesToPrice + specUpgradesToApprove + colourUpgradesToApprove + pendingPkgResponses + pendingEOIs
 
         if totalAlerts > 0 {
-            BentoCard(cornerRadius: 16) {
+            BentoCard(cornerRadius: 13) {
                 VStack(spacing: 10) {
                     HStack(spacing: 10) {
                         Image(systemName: "bell.badge.fill")
@@ -132,7 +132,7 @@ struct AdminOverviewSection: View {
             }
             .padding(10)
             .background(AVIATheme.cardBackgroundAlt)
-            .clipShape(.rect(cornerRadius: 10))
+            .clipShape(.rect(cornerRadius: 8))
         }
         .buttonStyle(.pressable(.subtle))
     }
@@ -155,7 +155,7 @@ struct AdminOverviewSection: View {
     private var portfolioProgress: some View {
         let builds = viewModel.allClientBuilds
         let avg = builds.isEmpty ? 0.0 : builds.reduce(0.0) { $0 + $1.overallProgress } / Double(builds.count)
-        return BentoCard(cornerRadius: 16) {
+        return BentoCard(cornerRadius: 13) {
             VStack(alignment: .leading, spacing: 10) {
                 HStack {
                     Text("Portfolio Progress")
@@ -262,7 +262,7 @@ struct AdminOverviewSection: View {
                         let (response, pkgId) = item
                         let client = viewModel.allRegisteredUsers.first { $0.id == response.clientId }
                         let pkg = viewModel.allPackages.first { $0.id == pkgId }
-                        BentoCard(cornerRadius: 14) {
+                        BentoCard(cornerRadius: 11) {
                             HStack(spacing: 12) {
                                 Image(systemName: response.status.icon)
                                     .font(.system(size: 20))
@@ -312,7 +312,7 @@ struct AdminOverviewSection: View {
                 .font(.neueCaption2Medium)
                 .kerning(1.0)
                 .foregroundStyle(AVIATheme.textTertiary)
-            BentoCard(cornerRadius: 16) {
+            BentoCard(cornerRadius: 13) {
                 VStack(spacing: 0) {
                     AdminPendingRow(icon: "person.badge.clock.fill", label: "Pending Users", count: viewModel.allRegisteredUsers.filter { $0.role == .pending }.count, color: AVIATheme.warning)
                     Rectangle().fill(AVIATheme.surfaceBorder).frame(height: 1).padding(.leading, 52)

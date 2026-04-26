@@ -39,7 +39,7 @@ struct AdminRequestsSection: View {
     }
 
     private func requestMetric(label: String, count: Int, color: Color) -> some View {
-        BentoCard(cornerRadius: 14) {
+        BentoCard(cornerRadius: 11) {
             VStack(spacing: 6) {
                 Text("\(count)")
                     .font(.neueCorpMedium(28))
@@ -68,7 +68,7 @@ struct AdminRequestRow: View {
 
     var body: some View {
         Button(action: onTap) {
-            BentoCard(cornerRadius: 14) {
+            BentoCard(cornerRadius: 11) {
                 VStack(spacing: 0) {
                     HStack(spacing: 12) {
                         BentoIconCircle(icon: request.category.icon, color: statusColor)
@@ -157,7 +157,7 @@ struct AdminRequestDetailSheet: View {
     }
 
     private var requestHeader: some View {
-        BentoCard(cornerRadius: 16) {
+        BentoCard(cornerRadius: 13) {
             VStack(alignment: .leading, spacing: 12) {
                 HStack {
                     Label(request.category.rawValue, systemImage: request.category.icon)
@@ -181,7 +181,7 @@ struct AdminRequestDetailSheet: View {
     }
 
     private var statusUpdateCard: some View {
-        BentoCard(cornerRadius: 16) {
+        BentoCard(cornerRadius: 13) {
             VStack(alignment: .leading, spacing: 12) {
                 Text("Update Status")
                     .font(.neueSubheadlineMedium)
@@ -228,13 +228,13 @@ struct AdminRequestDetailSheet: View {
                 }
                 .padding(14)
                 .background(response.isFromClient ? AVIATheme.timelessBrown.opacity(0.06) : AVIATheme.cardBackground)
-                .clipShape(.rect(cornerRadius: 12))
+                .clipShape(.rect(cornerRadius: 10))
             }
         }
     }
 
     private var addResponseCard: some View {
-        BentoCard(cornerRadius: 16) {
+        BentoCard(cornerRadius: 13) {
             VStack(alignment: .leading, spacing: 12) {
                 Text("Add Response")
                     .font(.neueSubheadlineMedium)
@@ -246,9 +246,9 @@ struct AdminRequestDetailSheet: View {
                     .scrollContentBackground(.hidden)
                     .padding(10)
                     .background(AVIATheme.cardBackgroundAlt)
-                    .clipShape(.rect(cornerRadius: 10))
+                    .clipShape(.rect(cornerRadius: 8))
                     .overlay {
-                        RoundedRectangle(cornerRadius: 10)
+                        RoundedRectangle(cornerRadius: 8)
                             .stroke(AVIATheme.surfaceBorder, lineWidth: 1)
                     }
                 Button {
@@ -272,7 +272,7 @@ struct AdminRequestDetailSheet: View {
                     .frame(height: 48)
                     .foregroundStyle(AVIATheme.aviaWhite)
                     .background(AVIATheme.primaryGradient)
-                    .clipShape(.rect(cornerRadius: 12))
+                    .clipShape(.rect(cornerRadius: 10))
                 }
                 .disabled(responseText.trimmingCharacters(in: .whitespaces).isEmpty)
             }

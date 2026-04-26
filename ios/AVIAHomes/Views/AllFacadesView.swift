@@ -236,7 +236,7 @@ struct AllFacadesView: View {
             .padding(14)
         }
         .background(AVIATheme.cardBackground)
-        .clipShape(.rect(cornerRadius: 16))
+        .clipShape(.rect(cornerRadius: 13))
     }
 
     private func pricingBadge(_ pricing: FacadePricing) -> some View {

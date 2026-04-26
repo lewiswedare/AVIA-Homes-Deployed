@@ -117,7 +117,7 @@ struct AddBuildSheet: View {
                         .frame(height: 52)
                         .foregroundStyle(AVIATheme.aviaWhite)
                         .background(isFormValid ? AVIATheme.primaryGradient : LinearGradient(colors: [AVIATheme.textTertiary], startPoint: .leading, endPoint: .trailing))
-                        .clipShape(.rect(cornerRadius: 14))
+                        .clipShape(.rect(cornerRadius: 11))
                     }
                     .disabled(!isFormValid || isSaving)
                 }
@@ -168,12 +168,12 @@ struct AddBuildSheet: View {
         }
         .padding(16)
         .background(isCustomHome ? AVIATheme.timelessBrown.opacity(0.06) : AVIATheme.cardBackground)
-        .clipShape(.rect(cornerRadius: 16))
+        .clipShape(.rect(cornerRadius: 13))
         .sensoryFeedback(.impact(weight: .light), trigger: isCustomHome)
     }
 
     private var standardDesignCard: some View {
-        BentoCard(cornerRadius: 16) {
+        BentoCard(cornerRadius: 13) {
             VStack(alignment: .leading, spacing: 12) {
                 Label("Select Design", systemImage: "house.fill")
                     .font(.neueSubheadlineMedium)
@@ -200,7 +200,7 @@ struct AddBuildSheet: View {
                                             }
                                             .allowsHitTesting(false)
                                         }
-                                        .clipShape(.rect(cornerRadius: 8))
+                                        .clipShape(.rect(cornerRadius: 6))
 
                                     VStack(alignment: .leading, spacing: 2) {
                                         Text(design.name)
@@ -226,7 +226,7 @@ struct AddBuildSheet: View {
                                 .padding(.horizontal, 12)
                                 .padding(.vertical, 6)
                                 .background(isSelected ? AVIATheme.timelessBrown.opacity(0.06) : Color.clear)
-                                .clipShape(.rect(cornerRadius: 10))
+                                .clipShape(.rect(cornerRadius: 8))
                             }
                         }
                     }
@@ -238,7 +238,7 @@ struct AddBuildSheet: View {
     }
 
     private var customDesignCard: some View {
-        BentoCard(cornerRadius: 16) {
+        BentoCard(cornerRadius: 13) {
             VStack(alignment: .leading, spacing: 16) {
                 HStack(spacing: 8) {
                     Image(systemName: "pencil.and.ruler.fill")
@@ -272,7 +272,7 @@ struct AddBuildSheet: View {
     }
 
     private var buildDetailsCard: some View {
-        BentoCard(cornerRadius: 16) {
+        BentoCard(cornerRadius: 13) {
             VStack(alignment: .leading, spacing: 16) {
                 Label("Build Details", systemImage: "mappin.and.ellipse")
                     .font(.neueSubheadlineMedium)
@@ -295,7 +295,7 @@ struct AddBuildSheet: View {
     }
 
     private var specTierCard: some View {
-        BentoCard(cornerRadius: 16) {
+        BentoCard(cornerRadius: 13) {
             VStack(alignment: .leading, spacing: 12) {
                 Text("SPECIFICATION RANGE")
                     .font(.neueCaption2Medium)
@@ -318,7 +318,7 @@ struct AddBuildSheet: View {
                             .padding(.vertical, 12)
                             .foregroundStyle(isSelected ? AVIATheme.aviaWhite : AVIATheme.textPrimary)
                             .background(isSelected ? AVIATheme.primaryGradient : LinearGradient(colors: [AVIATheme.surfaceElevated], startPoint: .top, endPoint: .bottom))
-                            .clipShape(.rect(cornerRadius: 12))
+                            .clipShape(.rect(cornerRadius: 10))
                         }
                         .sensoryFeedback(.selection, trigger: selectedSpecTier)
                     }
@@ -329,7 +329,7 @@ struct AddBuildSheet: View {
     }
 
     private var facadeCard: some View {
-        BentoCard(cornerRadius: 16) {
+        BentoCard(cornerRadius: 13) {
             VStack(alignment: .leading, spacing: 12) {
                 HStack {
                     Text("SELECT FACADE")
@@ -368,7 +368,7 @@ struct AddBuildSheet: View {
                                             }
                                             .allowsHitTesting(false)
                                         }
-                                        .clipShape(.rect(cornerRadius: 8))
+                                        .clipShape(.rect(cornerRadius: 6))
 
                                     VStack(alignment: .leading, spacing: 2) {
                                         Text(facade.name)
@@ -392,7 +392,7 @@ struct AddBuildSheet: View {
                                 .padding(.horizontal, 12)
                                 .padding(.vertical, 6)
                                 .background(isSelected ? AVIATheme.timelessBrown.opacity(0.06) : Color.clear)
-                                .clipShape(.rect(cornerRadius: 10))
+                                .clipShape(.rect(cornerRadius: 8))
                             }
                             .sensoryFeedback(.selection, trigger: selectedFacadeId)
                         }
@@ -405,7 +405,7 @@ struct AddBuildSheet: View {
     }
 
     private var timelineConfigCard: some View {
-        BentoCard(cornerRadius: 16) {
+        BentoCard(cornerRadius: 13) {
             VStack(alignment: .leading, spacing: 16) {
                 HStack {
                     Label("Build Timeline", systemImage: "calendar.badge.clock")
@@ -506,7 +506,7 @@ struct AddBuildSheet: View {
     }
 
     private var awaitingRegistrationCard: some View {
-        BentoCard(cornerRadius: 16) {
+        BentoCard(cornerRadius: 13) {
             VStack(alignment: .leading, spacing: 12) {
                 Toggle(isOn: $awaitingRegistration) {
                     HStack(spacing: 8) {
@@ -545,9 +545,9 @@ struct AddBuildSheet: View {
                                 .foregroundStyle(AVIATheme.textPrimary)
                                 .padding(12)
                                 .background(AVIATheme.cardBackgroundAlt)
-                                .clipShape(.rect(cornerRadius: 10))
+                                .clipShape(.rect(cornerRadius: 8))
                                 .overlay {
-                                    RoundedRectangle(cornerRadius: 10)
+                                    RoundedRectangle(cornerRadius: 8)
                                         .stroke(AVIATheme.surfaceBorder, lineWidth: 1)
                                 }
                         }
@@ -561,7 +561,7 @@ struct AddBuildSheet: View {
                         }
                         .padding(10)
                         .background(AVIATheme.timelessBrown.opacity(0.06))
-                        .clipShape(.rect(cornerRadius: 10))
+                        .clipShape(.rect(cornerRadius: 8))
                     }
                 }
             }
@@ -601,7 +601,7 @@ struct AddBuildSheet: View {
     }
 
     private var clientCard: some View {
-        BentoCard(cornerRadius: 16) {
+        BentoCard(cornerRadius: 13) {
             VStack(alignment: .leading, spacing: 14) {
                 Label("Assign Client", systemImage: "person.fill")
                     .font(.neueSubheadlineMedium)
@@ -646,7 +646,7 @@ struct AddBuildSheet: View {
                                 }
                                 .padding(10)
                                 .background(selectedClientId == client.id ? AVIATheme.timelessBrown.opacity(0.06) : Color.clear)
-                                .clipShape(.rect(cornerRadius: 10))
+                                .clipShape(.rect(cornerRadius: 8))
                             }
                         }
                     }
@@ -657,7 +657,7 @@ struct AddBuildSheet: View {
     }
 
     private var staffCard: some View {
-        BentoCard(cornerRadius: 16) {
+        BentoCard(cornerRadius: 13) {
             VStack(alignment: .leading, spacing: 14) {
                 Label("Assign Staff", systemImage: "person.badge.shield.checkmark.fill")
                     .font(.neueSubheadlineMedium)
@@ -706,7 +706,7 @@ struct AddBuildSheet: View {
                                 }
                                 .padding(10)
                                 .background(selectedStaffId == member.id ? AVIATheme.timelessBrown.opacity(0.06) : Color.clear)
-                                .clipShape(.rect(cornerRadius: 10))
+                                .clipShape(.rect(cornerRadius: 8))
                             }
                         }
                     }
@@ -726,9 +726,9 @@ struct AddBuildSheet: View {
                 .foregroundStyle(AVIATheme.textPrimary)
                 .padding(12)
                 .background(AVIATheme.cardBackgroundAlt)
-                .clipShape(.rect(cornerRadius: 10))
+                .clipShape(.rect(cornerRadius: 8))
                 .overlay {
-                    RoundedRectangle(cornerRadius: 10)
+                    RoundedRectangle(cornerRadius: 8)
                         .stroke(AVIATheme.surfaceBorder, lineWidth: 1)
                 }
         }

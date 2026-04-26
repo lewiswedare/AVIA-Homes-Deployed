@@ -105,7 +105,7 @@ struct ClientBuildTimelineView: View {
         }
         .padding(20)
         .background(AVIATheme.timelessBrown)
-        .clipShape(.rect(cornerRadius: 18))
+        .clipShape(.rect(cornerRadius: 14))
     }
 
     // MARK: - Awaiting Registration Card
@@ -113,7 +113,7 @@ struct ClientBuildTimelineView: View {
     @ViewBuilder
     private var awaitingRegistrationCard: some View {
         if let regStage = build.awaitingRegistrationStage, regStage.status != .completed {
-            BentoCard(cornerRadius: 16) {
+            BentoCard(cornerRadius: 13) {
                 VStack(spacing: 14) {
                     VStack(alignment: .leading, spacing: 4) {
                         Text("AWAITING SITE REGISTRATION")
@@ -145,7 +145,7 @@ struct ClientBuildTimelineView: View {
                         }
                         .padding(12)
                         .background(AVIATheme.surfaceElevated)
-                        .clipShape(.rect(cornerRadius: 12))
+                        .clipShape(.rect(cornerRadius: 10))
                     }
 
                     if let notes = regStage.notes, !notes.isEmpty {
@@ -160,7 +160,7 @@ struct ClientBuildTimelineView: View {
                         .padding(12)
                         .frame(maxWidth: .infinity, alignment: .leading)
                         .background(AVIATheme.surfaceElevated)
-                        .clipShape(.rect(cornerRadius: 10))
+                        .clipShape(.rect(cornerRadius: 8))
                     }
                 }
                 .padding(16)
@@ -174,7 +174,7 @@ struct ClientBuildTimelineView: View {
     private var nextMilestoneCard: some View {
         let upcoming = milestones.first { $0.status != .completed }
         if let next = upcoming {
-            BentoCard(cornerRadius: 16) {
+            BentoCard(cornerRadius: 13) {
                 HStack(spacing: 14) {
                     VStack(alignment: .leading, spacing: 3) {
                         Text("NEXT MILESTONE")
@@ -202,7 +202,7 @@ struct ClientBuildTimelineView: View {
                             .padding(.horizontal, 8)
                             .padding(.vertical, 6)
                             .background(AVIATheme.warning)
-                            .clipShape(.rect(cornerRadius: 8))
+                            .clipShape(.rect(cornerRadius: 6))
                     }
                 }
                 .padding(16)
@@ -228,7 +228,7 @@ struct ClientBuildTimelineView: View {
                 }
 
                 ForEach(actionItems) { item in
-                    BentoCard(cornerRadius: 14) {
+                    BentoCard(cornerRadius: 11) {
                         HStack(spacing: 12) {
                             Image(systemName: "hand.raised.fill")
                                 .font(.system(size: 16))
@@ -357,7 +357,7 @@ struct ClientTimelineStageRow: View {
 
             // Content
             Button(action: action) {
-                BentoCard(cornerRadius: 14) {
+                BentoCard(cornerRadius: 11) {
                     VStack(alignment: .leading, spacing: 10) {
                         HStack {
                             VStack(alignment: .leading, spacing: 3) {
@@ -461,7 +461,7 @@ struct ClientTimelineStageRow: View {
                     .padding(12)
                     .frame(maxWidth: .infinity, alignment: .leading)
                     .background(AVIATheme.surfaceElevated)
-                    .clipShape(.rect(cornerRadius: 10))
+                    .clipShape(.rect(cornerRadius: 8))
             }
 
             // Milestones within this stage

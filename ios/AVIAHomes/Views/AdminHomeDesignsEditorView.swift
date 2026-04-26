@@ -127,7 +127,7 @@ struct AdminHomeDesignsEditorView: View {
 
     private func designCard(_ design: HomeDesign) -> some View {
         Button { editingDesign = design } label: {
-            BentoCard(cornerRadius: 14) {
+            BentoCard(cornerRadius: 11) {
                 HStack(spacing: 14) {
                     Color(.secondarySystemBackground)
                         .frame(width: 72, height: 72)
@@ -139,7 +139,7 @@ struct AdminHomeDesignsEditorView: View {
                             }
                             .allowsHitTesting(false)
                         }
-                        .clipShape(.rect(cornerRadius: 10))
+                        .clipShape(.rect(cornerRadius: 8))
 
                     VStack(alignment: .leading, spacing: 4) {
                         Text(design.name)
@@ -265,7 +265,7 @@ struct HomeDesignEditSheet: View {
         NavigationStack {
             ScrollView {
                 VStack(spacing: 20) {
-                    BentoCard(cornerRadius: 14) {
+                    BentoCard(cornerRadius: 11) {
                         VStack(alignment: .leading, spacing: 14) {
                             sheetSectionHeader("Basic Info")
                             if isNew {
@@ -298,7 +298,7 @@ struct HomeDesignEditSheet: View {
                         .padding(.vertical, 14)
                     }
 
-                    BentoCard(cornerRadius: 14) {
+                    BentoCard(cornerRadius: 11) {
                         VStack(alignment: .leading, spacing: 14) {
                             sheetSectionHeader("Specifications")
                             HStack(spacing: 12) {
@@ -325,7 +325,7 @@ struct HomeDesignEditSheet: View {
                         .padding(.vertical, 14)
                     }
 
-                    BentoCard(cornerRadius: 14) {
+                    BentoCard(cornerRadius: 11) {
                         VStack(alignment: .leading, spacing: 14) {
                             sheetSectionHeader("Dimensions")
                             HStack(spacing: 12) {
@@ -349,7 +349,7 @@ struct HomeDesignEditSheet: View {
                         .padding(.vertical, 14)
                     }
 
-                    BentoCard(cornerRadius: 14) {
+                    BentoCard(cornerRadius: 11) {
                         VStack(alignment: .leading, spacing: 14) {
                             sheetSectionHeader("Images")
                             AdminImagePickerField(
@@ -380,7 +380,7 @@ struct HomeDesignEditSheet: View {
                         .padding(.vertical, 14)
                     }
 
-                    BentoCard(cornerRadius: 14) {
+                    BentoCard(cornerRadius: 11) {
                         VStack(alignment: .leading, spacing: 14) {
                             sheetSectionHeader("Highlights & Inclusions")
                             sheetField("Room Highlights (one per line)") {
@@ -435,7 +435,7 @@ struct HomeDesignEditSheet: View {
             field()
                 .padding(10)
                 .background(AVIATheme.surfaceElevated)
-                .clipShape(.rect(cornerRadius: 8))
+                .clipShape(.rect(cornerRadius: 6))
         }
         .padding(.horizontal, 14)
     }
@@ -466,7 +466,7 @@ struct HomeDesignEditSheet: View {
         .frame(maxWidth: .infinity)
         .padding(.vertical, 8)
         .background(AVIATheme.surfaceElevated)
-        .clipShape(.rect(cornerRadius: 10))
+        .clipShape(.rect(cornerRadius: 8))
     }
 
     private func populateFields() {

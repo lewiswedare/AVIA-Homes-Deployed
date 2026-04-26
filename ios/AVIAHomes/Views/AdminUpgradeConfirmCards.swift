@@ -11,7 +11,7 @@ struct RangeUpgradeAdminCard: View {
     @State private var note: String = ""
 
     var body: some View {
-        BentoCard(cornerRadius: 14) {
+        BentoCard(cornerRadius: 11) {
             VStack(alignment: .leading, spacing: 12) {
                 HStack(spacing: 10) {
                     Image(systemName: "arrow.up.forward.circle.fill")
@@ -56,7 +56,7 @@ struct RangeUpgradeAdminCard: View {
                     .padding(10)
                     .frame(maxWidth: .infinity, alignment: .leading)
                     .background(AVIATheme.accent.opacity(0.08))
-                    .clipShape(.rect(cornerRadius: 10))
+                    .clipShape(.rect(cornerRadius: 8))
 
                     revisePricingEditor
                 case .clientAccepted:
@@ -100,14 +100,14 @@ struct RangeUpgradeAdminCard: View {
                 }
                 .padding(10)
                 .background(AVIATheme.surfaceElevated)
-                .clipShape(.rect(cornerRadius: 8))
+                .clipShape(.rect(cornerRadius: 6))
                 .frame(width: 120)
 
                 TextField("Cost note (optional)...", text: $note)
                     .font(.neueCaption)
                     .padding(10)
                     .background(AVIATheme.surfaceElevated)
-                    .clipShape(.rect(cornerRadius: 8))
+                    .clipShape(.rect(cornerRadius: 6))
             }
 
             HStack(spacing: 10) {
@@ -163,14 +163,14 @@ struct RangeUpgradeAdminCard: View {
                 }
                 .padding(10)
                 .background(AVIATheme.surfaceElevated)
-                .clipShape(.rect(cornerRadius: 8))
+                .clipShape(.rect(cornerRadius: 6))
                 .frame(width: 120)
 
                 TextField("Cost note (optional)...", text: $note)
                     .font(.neueCaption)
                     .padding(10)
                     .background(AVIATheme.surfaceElevated)
-                    .clipShape(.rect(cornerRadius: 8))
+                    .clipShape(.rect(cornerRadius: 6))
             }
 
             Button {
@@ -239,7 +239,7 @@ struct ColourUpgradeAdminCard: View {
     @State private var note: String = ""
 
     var body: some View {
-        BentoCard(cornerRadius: 14) {
+        BentoCard(cornerRadius: 11) {
             VStack(alignment: .leading, spacing: 12) {
                 HStack(spacing: 10) {
                     if let r = resolved {
@@ -276,7 +276,7 @@ struct ColourUpgradeAdminCard: View {
                     .padding(10)
                     .frame(maxWidth: .infinity, alignment: .leading)
                     .background(AVIATheme.accent.opacity(0.08))
-                    .clipShape(.rect(cornerRadius: 10))
+                    .clipShape(.rect(cornerRadius: 8))
 
                     revisePricingEditor
                 case .upgradeAcceptedByClient:
@@ -311,14 +311,14 @@ struct ColourUpgradeAdminCard: View {
                 }
                 .padding(10)
                 .background(AVIATheme.surfaceElevated)
-                .clipShape(.rect(cornerRadius: 8))
+                .clipShape(.rect(cornerRadius: 6))
                 .frame(width: 120)
 
                 TextField("Cost note (optional)...", text: $note)
                     .font(.neueCaption)
                     .padding(10)
                     .background(AVIATheme.surfaceElevated)
-                    .clipShape(.rect(cornerRadius: 8))
+                    .clipShape(.rect(cornerRadius: 6))
             }
 
             HStack(spacing: 10) {
@@ -374,14 +374,14 @@ struct ColourUpgradeAdminCard: View {
                 }
                 .padding(10)
                 .background(AVIATheme.surfaceElevated)
-                .clipShape(.rect(cornerRadius: 8))
+                .clipShape(.rect(cornerRadius: 6))
                 .frame(width: 120)
 
                 TextField("Cost note (optional)...", text: $note)
                     .font(.neueCaption)
                     .padding(10)
                     .background(AVIATheme.surfaceElevated)
-                    .clipShape(.rect(cornerRadius: 8))
+                    .clipShape(.rect(cornerRadius: 6))
             }
 
             Button {

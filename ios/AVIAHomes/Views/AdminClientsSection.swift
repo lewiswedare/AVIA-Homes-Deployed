@@ -48,7 +48,7 @@ struct AdminClientCard: View {
     }
 
     var body: some View {
-        BentoCard(cornerRadius: 14) {
+        BentoCard(cornerRadius: 11) {
             VStack(spacing: 0) {
                 HStack(spacing: 12) {
                     Text(client.initials.isEmpty ? "?" : client.initials)

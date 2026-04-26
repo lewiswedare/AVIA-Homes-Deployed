@@ -88,7 +88,7 @@ struct DiscoverFeedView: View {
         let response = viewModel.clientResponseForPackage(package.id, clientId: viewModel.currentUser.id)
         let isPending = response == nil || response?.status == .pending
 
-        return BentoCard(cornerRadius: 16) {
+        return BentoCard(cornerRadius: 13) {
             HStack(spacing: 12) {
                 Color(AVIATheme.surfaceElevated)
                     .frame(width: 72, height: 72)
@@ -100,7 +100,7 @@ struct DiscoverFeedView: View {
                         }
                         .allowsHitTesting(false)
                     }
-                    .clipShape(.rect(cornerRadius: 10))
+                    .clipShape(.rect(cornerRadius: 8))
 
                 VStack(alignment: .leading, spacing: 4) {
                     Text(package.title)
@@ -223,11 +223,11 @@ struct DiscoverFeedView: View {
             .frame(maxWidth: .infinity, alignment: .leading)
         }
         .background(AVIATheme.cardBackground)
-        .clipShape(.rect(cornerRadius: 16))
+        .clipShape(.rect(cornerRadius: 13))
     }
 
     private func compactBlogRow(post: BlogPost) -> some View {
-        BentoCard(cornerRadius: 16) {
+        BentoCard(cornerRadius: 13) {
             HStack(spacing: 12) {
                 Color(AVIATheme.surfaceElevated)
                     .frame(width: 72, height: 72)
@@ -239,7 +239,7 @@ struct DiscoverFeedView: View {
                         }
                         .allowsHitTesting(false)
                     }
-                    .clipShape(.rect(cornerRadius: 10))
+                    .clipShape(.rect(cornerRadius: 8))
 
                 VStack(alignment: .leading, spacing: 4) {
                     Text(post.category.uppercased())
@@ -311,7 +311,7 @@ struct DiscoverFeedView: View {
                         }
                         .frame(width: 260, height: 325)
                         .background(AVIATheme.cardBackground)
-                        .clipShape(.rect(cornerRadius: 16))
+                        .clipShape(.rect(cornerRadius: 13))
                     }
                 }
             }
@@ -365,7 +365,7 @@ struct DiscoverFeedView: View {
                 .background(Color(hex: "f5f5f5"))
                 .clipShape(.rect(cornerRadii: .init(bottomLeading: 16, bottomTrailing: 16)))
             }
-            .clipShape(.rect(cornerRadius: 16))
+            .clipShape(.rect(cornerRadius: 13))
     }
 
     // MARK: - Spec Ranges
@@ -445,7 +445,7 @@ struct DiscoverFeedView: View {
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .padding(18)
             }
-            .clipShape(.rect(cornerRadius: 20))
+            .clipShape(.rect(cornerRadius: 16))
             .shadow(color: AVIATheme.aviaBlack.opacity(0.12), radius: 14, x: 0, y: 6)
     }
 
@@ -528,7 +528,7 @@ struct DiscoverFeedView: View {
         }
         .frame(width: 320)
         .background(AVIATheme.cardBackground)
-        .clipShape(.rect(cornerRadius: 16))
+        .clipShape(.rect(cornerRadius: 13))
     }
 
     // MARK: - Social
@@ -542,7 +542,7 @@ struct DiscoverFeedView: View {
                     .aspectRatio(contentMode: .fill)
                     .allowsHitTesting(false)
             }
-            .clipShape(.rect(cornerRadius: 20))
+            .clipShape(.rect(cornerRadius: 16))
             .overlay(alignment: .bottomLeading) {
                 HStack(alignment: .bottom) {
                     Text("Stay Social")

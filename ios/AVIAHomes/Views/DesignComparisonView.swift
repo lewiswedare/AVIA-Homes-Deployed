@@ -75,7 +75,7 @@ struct DesignComparisonView: View {
                 .padding(.vertical, 10)
                 .background(.ultraThinMaterial)
             }
-            .clipShape(.rect(cornerRadius: 14))
+            .clipShape(.rect(cornerRadius: 11))
     }
 
     // MARK: - Stats Section
@@ -84,7 +84,7 @@ struct DesignComparisonView: View {
         VStack(alignment: .leading, spacing: 10) {
             sectionHeader("KEY STATS")
 
-            BentoCard(cornerRadius: 16) {
+            BentoCard(cornerRadius: 13) {
                 VStack(spacing: 0) {
                     comparisonRow(label: "Bedrooms", icon: "bed.double.fill", valueA: "\(designA.bedrooms)", valueB: "\(designB.bedrooms)")
                     rowDivider
@@ -106,7 +106,7 @@ struct DesignComparisonView: View {
         VStack(alignment: .leading, spacing: 10) {
             sectionHeader("DIMENSIONS")
 
-            BentoCard(cornerRadius: 16) {
+            BentoCard(cornerRadius: 13) {
                 VStack(spacing: 0) {
                     comparisonRow(label: "Total Area", icon: "square.dashed", valueA: String(format: "%.0f m²", designA.squareMeters), valueB: String(format: "%.0f m²", designB.squareMeters))
                     rowDivider
@@ -126,7 +126,7 @@ struct DesignComparisonView: View {
         VStack(alignment: .leading, spacing: 10) {
             sectionHeader("DETAILS")
 
-            BentoCard(cornerRadius: 16) {
+            BentoCard(cornerRadius: 13) {
                 VStack(spacing: 0) {
                     comparisonRow(label: "Price From", icon: "dollarsign.circle.fill", valueA: designA.priceFrom.isEmpty ? "–" : designA.priceFrom, valueB: designB.priceFrom.isEmpty ? "–" : designB.priceFrom)
                     rowDivider

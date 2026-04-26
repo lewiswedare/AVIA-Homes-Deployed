@@ -68,7 +68,7 @@ struct PartnerDashboardView: View {
         .padding(20)
         .frame(maxWidth: .infinity, alignment: .leading)
         .background(AVIATheme.warmAccent)
-        .clipShape(.rect(cornerRadius: 20))
+        .clipShape(.rect(cornerRadius: 16))
     }
 
     private var portfolioStats: some View {
@@ -84,7 +84,7 @@ struct PartnerDashboardView: View {
             .padding(16)
             .frame(maxWidth: .infinity, alignment: .leading)
             .background(.ultraThinMaterial)
-            .clipShape(.rect(cornerRadius: 16))
+            .clipShape(.rect(cornerRadius: 13))
             .shadow(color: AVIATheme.aviaBlack.opacity(0.06), radius: 8, y: 2)
 
             VStack(alignment: .leading, spacing: 4) {
@@ -100,7 +100,7 @@ struct PartnerDashboardView: View {
             .padding(16)
             .frame(maxWidth: .infinity, alignment: .leading)
             .background(AVIATheme.cardBackground)
-            .clipShape(.rect(cornerRadius: 16))
+            .clipShape(.rect(cornerRadius: 13))
         }
         .fixedSize(horizontal: false, vertical: true)
     }
@@ -134,7 +134,7 @@ struct PartnerDashboardView: View {
     }
 
     private func salesClientCard(build: ClientBuild) -> some View {
-        BentoCard(cornerRadius: 16) {
+        BentoCard(cornerRadius: 13) {
             VStack(spacing: 0) {
                 HStack(spacing: 14) {
                     Text(build.client.initials.isEmpty ? "?" : build.client.initials)
@@ -203,7 +203,7 @@ struct PartnerClientDetailView: View {
     }
 
     private var clientSummary: some View {
-        BentoCard(cornerRadius: 16) {
+        BentoCard(cornerRadius: 13) {
             VStack(spacing: 14) {
                 HStack(spacing: 14) {
                     Text(build.client.initials.isEmpty ? "?" : build.client.initials)

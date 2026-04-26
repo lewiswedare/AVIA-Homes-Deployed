@@ -70,14 +70,14 @@ struct AdminCatalogHubView: View {
                 NavigationLink {
                     AdminSpecRangeEditorView()
                 } label: {
-                    BentoCard(cornerRadius: 14) {
+                    BentoCard(cornerRadius: 11) {
                         HStack(spacing: 14) {
                             Image(systemName: "square.stack.3d.up.fill")
                                 .font(.neueCorpMedium(16))
                                 .foregroundStyle(AVIATheme.timelessBrown)
                                 .frame(width: 44, height: 44)
                                 .background(AVIATheme.timelessBrown.opacity(0.12))
-                                .clipShape(.rect(cornerRadius: 12))
+                                .clipShape(.rect(cornerRadius: 10))
 
                             VStack(alignment: .leading, spacing: 3) {
                                 Text("Spec Range Content")
@@ -103,14 +103,14 @@ struct AdminCatalogHubView: View {
                 NavigationLink {
                     AdminSpecRangePricingView()
                 } label: {
-                    BentoCard(cornerRadius: 14) {
+                    BentoCard(cornerRadius: 11) {
                         HStack(spacing: 14) {
                             Image(systemName: "dollarsign.arrow.trianglehead.counterclockwise.rotate.90")
                                 .font(.neueCorpMedium(16))
                                 .foregroundStyle(AVIATheme.timelessBrown)
                                 .frame(width: 44, height: 44)
                                 .background(AVIATheme.timelessBrown.opacity(0.12))
-                                .clipShape(.rect(cornerRadius: 12))
+                                .clipShape(.rect(cornerRadius: 10))
 
                             VStack(alignment: .leading, spacing: 3) {
                                 Text("Spec Range Upgrade Pricing")
@@ -146,14 +146,14 @@ struct AdminCatalogHubView: View {
     }
 
     private var headerCard: some View {
-        BentoCard(cornerRadius: 16) {
+        BentoCard(cornerRadius: 13) {
             HStack(spacing: 14) {
                 Image(systemName: "slider.horizontal.3")
                     .font(.neueCorpMedium(18))
                     .foregroundStyle(AVIATheme.aviaWhite)
                     .frame(width: 44, height: 44)
                     .background(AVIATheme.primaryGradient)
-                    .clipShape(.rect(cornerRadius: 12))
+                    .clipShape(.rect(cornerRadius: 10))
 
                 VStack(alignment: .leading, spacing: 3) {
                     Text("Product Catalog")
@@ -171,14 +171,14 @@ struct AdminCatalogHubView: View {
     }
 
     private func catalogCard(icon: String, title: String, subtitle: String, count: Int, countLabel: String, color: Color) -> some View {
-        BentoCard(cornerRadius: 14) {
+        BentoCard(cornerRadius: 11) {
             HStack(spacing: 14) {
                 Image(systemName: icon)
                     .font(.neueCorpMedium(16))
                     .foregroundStyle(color)
                     .frame(width: 44, height: 44)
                     .background(color.opacity(0.12))
-                    .clipShape(.rect(cornerRadius: 12))
+                    .clipShape(.rect(cornerRadius: 10))
 
                 VStack(alignment: .leading, spacing: 3) {
                     Text(title)
@@ -211,7 +211,7 @@ struct AdminCatalogHubView: View {
     }
 
     private var infoCard: some View {
-        BentoCard(cornerRadius: 14) {
+        BentoCard(cornerRadius: 11) {
             HStack(spacing: 12) {
                 Image(systemName: "info.circle.fill")
                     .font(.neueCorp(14))

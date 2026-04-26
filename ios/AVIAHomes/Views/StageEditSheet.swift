@@ -22,7 +22,7 @@ struct StageEditSheet: View {
                 VStack(spacing: 20) {
                     stageHeader
 
-                    BentoCard(cornerRadius: 16) {
+                    BentoCard(cornerRadius: 13) {
                         VStack(alignment: .leading, spacing: 16) {
                             Label("Progress", systemImage: "chart.bar.fill")
                                 .font(.neueSubheadlineMedium)
@@ -66,7 +66,7 @@ struct StageEditSheet: View {
                         .padding(16)
                     }
 
-                    BentoCard(cornerRadius: 16) {
+                    BentoCard(cornerRadius: 13) {
                         VStack(alignment: .leading, spacing: 12) {
                             Label("Notes", systemImage: "note.text")
                                 .font(.neueSubheadlineMedium)
@@ -79,9 +79,9 @@ struct StageEditSheet: View {
                                 .scrollContentBackground(.hidden)
                                 .padding(10)
                                 .background(AVIATheme.cardBackgroundAlt)
-                                .clipShape(.rect(cornerRadius: 10))
+                                .clipShape(.rect(cornerRadius: 8))
                                 .overlay {
-                                    RoundedRectangle(cornerRadius: 10)
+                                    RoundedRectangle(cornerRadius: 8)
                                         .stroke(AVIATheme.surfaceBorder, lineWidth: 1)
                                 }
                         }
@@ -89,7 +89,7 @@ struct StageEditSheet: View {
                     }
 
                     if let startDate = stage.startDate {
-                        BentoCard(cornerRadius: 16) {
+                        BentoCard(cornerRadius: 13) {
                             VStack(alignment: .leading, spacing: 8) {
                                 Label("Timeline", systemImage: "calendar")
                                     .font(.neueSubheadlineMedium)
@@ -137,7 +137,7 @@ struct StageEditSheet: View {
                         .frame(height: 52)
                         .foregroundStyle(AVIATheme.aviaWhite)
                         .background(AVIATheme.primaryGradient)
-                        .clipShape(.rect(cornerRadius: 14))
+                        .clipShape(.rect(cornerRadius: 11))
                     }
                     .disabled(isSaving)
                 }
@@ -191,7 +191,7 @@ struct StageEditSheet: View {
                 .frame(maxWidth: .infinity)
                 .padding(.vertical, 8)
                 .background(abs(progress - value) < 0.01 ? AVIATheme.timelessBrown : AVIATheme.cardBackgroundAlt)
-                .clipShape(.rect(cornerRadius: 8))
+                .clipShape(.rect(cornerRadius: 6))
         }
     }
 

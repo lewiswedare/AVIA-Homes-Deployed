@@ -21,7 +21,7 @@ struct AdminScheduleItemEditor: View {
         NavigationStack {
             ScrollView {
                 VStack(spacing: 16) {
-                    BentoCard(cornerRadius: 16) {
+                    BentoCard(cornerRadius: 13) {
                         VStack(spacing: 14) {
                             field(label: "Title") {
                                 TextField("e.g. Site Inspection", text: $title)
@@ -147,7 +147,7 @@ struct AdminScheduleItemList: View {
                     .padding(.vertical, 8)
             } else {
                 ForEach(items) { item in
-                    BentoCard(cornerRadius: 12) {
+                    BentoCard(cornerRadius: 10) {
                         HStack(spacing: 12) {
                             Image(systemName: item.iconColor)
                                 .font(.neueCorpMedium(14))

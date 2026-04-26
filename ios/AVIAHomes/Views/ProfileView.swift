@@ -60,7 +60,7 @@ struct ProfileView: View {
                         .frame(height: 50)
                         .foregroundStyle(AVIATheme.destructive)
                         .background(AVIATheme.destructive.opacity(0.08))
-                        .clipShape(.rect(cornerRadius: 14))
+                        .clipShape(.rect(cornerRadius: 11))
                 }
                 .padding(.horizontal, 16)
 
@@ -122,7 +122,7 @@ struct ProfileView: View {
         }
         .padding(18)
         .background(AVIATheme.cardBackground)
-        .clipShape(.rect(cornerRadius: 18))
+        .clipShape(.rect(cornerRadius: 14))
         .padding(.horizontal, 16)
     }
 
@@ -133,7 +133,7 @@ struct ProfileView: View {
                 .foregroundStyle(AVIATheme.textPrimary)
                 .padding(.horizontal, 20)
 
-            BentoCard(cornerRadius: 16) {
+            BentoCard(cornerRadius: 13) {
                 VStack(spacing: 0) {
                     content()
                 }

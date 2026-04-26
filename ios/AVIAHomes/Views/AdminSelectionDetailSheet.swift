@@ -88,9 +88,9 @@ struct AdminSelectionDetailSheet: View {
                         }
                         .allowsHitTesting(false)
                     }
-                    .clipShape(.rect(cornerRadius: 12))
+                    .clipShape(.rect(cornerRadius: 10))
             } else {
-                RoundedRectangle(cornerRadius: 12)
+                RoundedRectangle(cornerRadius: 10)
                     .fill(AVIATheme.surfaceElevated)
                     .frame(width: 72, height: 72)
                     .overlay {
@@ -114,7 +114,7 @@ struct AdminSelectionDetailSheet: View {
         }
         .padding(16)
         .background(AVIATheme.cardBackground)
-        .clipShape(.rect(cornerRadius: 14))
+        .clipShape(.rect(cornerRadius: 11))
     }
 
     @ViewBuilder
@@ -141,7 +141,7 @@ struct AdminSelectionDetailSheet: View {
     }
 
     private var statusSection: some View {
-        BentoCard(cornerRadius: 14) {
+        BentoCard(cornerRadius: 11) {
             VStack(spacing: 12) {
                 HStack {
                     Text("STATUS")
@@ -198,7 +198,7 @@ struct AdminSelectionDetailSheet: View {
     }
 
     private var detailsSection: some View {
-        BentoCard(cornerRadius: 14) {
+        BentoCard(cornerRadius: 11) {
             VStack(alignment: .leading, spacing: 10) {
                 HStack {
                     Text("DESCRIPTION")
@@ -238,7 +238,7 @@ struct AdminSelectionDetailSheet: View {
     }
 
     private func colourSection(_ resolved: (category: ColourCategory, option: ColourOption)) -> some View {
-        BentoCard(cornerRadius: 14) {
+        BentoCard(cornerRadius: 11) {
             VStack(alignment: .leading, spacing: 10) {
                 HStack {
                     Text("COLOUR SELECTION")
@@ -269,7 +269,7 @@ struct AdminSelectionDetailSheet: View {
                                 }
                                 .allowsHitTesting(false)
                             }
-                            .clipShape(.rect(cornerRadius: 8))
+                            .clipShape(.rect(cornerRadius: 6))
                     } else {
                         Circle()
                             .fill(Color(hex: resolved.option.hexColor))
@@ -297,7 +297,7 @@ struct AdminSelectionDetailSheet: View {
     }
 
     private var notesSection: some View {
-        BentoCard(cornerRadius: 14) {
+        BentoCard(cornerRadius: 11) {
             VStack(alignment: .leading, spacing: 10) {
                 HStack {
                     Text("NOTES")
@@ -324,7 +324,7 @@ struct AdminSelectionDetailSheet: View {
                     .padding(10)
                     .frame(maxWidth: .infinity, alignment: .leading)
                     .background(AVIATheme.timelessBrown.opacity(0.06))
-                    .clipShape(.rect(cornerRadius: 8))
+                    .clipShape(.rect(cornerRadius: 6))
                 }
 
                 VStack(alignment: .leading, spacing: 6) {
@@ -336,7 +336,7 @@ struct AdminSelectionDetailSheet: View {
                         .lineLimit(3...6)
                         .padding(10)
                         .background(AVIATheme.surfaceElevated)
-                        .clipShape(.rect(cornerRadius: 8))
+                        .clipShape(.rect(cornerRadius: 6))
                     HStack {
                         Spacer()
                         Button("Save Notes") {
@@ -358,7 +358,7 @@ struct AdminSelectionDetailSheet: View {
     @ViewBuilder
     private var upgradeSection: some View {
         if selection.selectionType == .upgradeRequested {
-            BentoCard(cornerRadius: 14) {
+            BentoCard(cornerRadius: 11) {
                 VStack(alignment: .leading, spacing: 10) {
                     HStack {
                         Text("SET UPGRADE COST")
@@ -379,14 +379,14 @@ struct AdminSelectionDetailSheet: View {
                         }
                         .padding(10)
                         .background(AVIATheme.surfaceElevated)
-                        .clipShape(.rect(cornerRadius: 8))
+                        .clipShape(.rect(cornerRadius: 6))
                         .frame(width: 120)
 
                         TextField("Cost note...", text: $upgradeCostNote)
                             .font(.neueCaption)
                             .padding(10)
                             .background(AVIATheme.surfaceElevated)
-                            .clipShape(.rect(cornerRadius: 8))
+                            .clipShape(.rect(cornerRadius: 6))
                     }
 
                     HStack {
@@ -407,7 +407,7 @@ struct AdminSelectionDetailSheet: View {
                 .padding(16)
             }
         } else if selection.selectionType == .upgradeCosted {
-            BentoCard(cornerRadius: 14) {
+            BentoCard(cornerRadius: 11) {
                 VStack(alignment: .leading, spacing: 10) {
                     HStack {
                         Text("UPGRADE COST")
@@ -436,14 +436,14 @@ struct AdminSelectionDetailSheet: View {
                     .frame(maxWidth: .infinity)
                     .padding(.vertical, 10)
                     .background(AVIATheme.accent.opacity(0.1))
-                    .clipShape(.rect(cornerRadius: 10))
+                    .clipShape(.rect(cornerRadius: 8))
 
                     reviseCostFields
                 }
                 .padding(16)
             }
         } else if selection.selectionType == .upgradeAccepted || selection.selectionType == .upgradeApproved {
-            BentoCard(cornerRadius: 14) {
+            BentoCard(cornerRadius: 11) {
                 VStack(alignment: .leading, spacing: 10) {
                     HStack {
                         Text("UPGRADE COST")
@@ -472,14 +472,14 @@ struct AdminSelectionDetailSheet: View {
                     .frame(maxWidth: .infinity)
                     .padding(.vertical, 10)
                     .background((selection.selectionType == .upgradeApproved ? AVIATheme.success : AVIATheme.heritageBlue).opacity(0.1))
-                    .clipShape(.rect(cornerRadius: 10))
+                    .clipShape(.rect(cornerRadius: 8))
 
                     reviseCostFields
                 }
                 .padding(16)
             }
         } else if selection.selectionType == .upgradeDeclined {
-            BentoCard(cornerRadius: 14) {
+            BentoCard(cornerRadius: 11) {
                 VStack(alignment: .leading, spacing: 10) {
                     HStack {
                         Text("UPGRADE")
@@ -498,7 +498,7 @@ struct AdminSelectionDetailSheet: View {
                     .frame(maxWidth: .infinity)
                     .padding(.vertical, 10)
                     .background(AVIATheme.textTertiary.opacity(0.1))
-                    .clipShape(.rect(cornerRadius: 10))
+                    .clipShape(.rect(cornerRadius: 8))
                 }
                 .padding(16)
             }
@@ -526,14 +526,14 @@ struct AdminSelectionDetailSheet: View {
                 }
                 .padding(10)
                 .background(AVIATheme.surfaceElevated)
-                .clipShape(.rect(cornerRadius: 8))
+                .clipShape(.rect(cornerRadius: 6))
                 .frame(width: 120)
 
                 TextField("Cost note...", text: $upgradeCostNote)
                     .font(.neueCaption)
                     .padding(10)
                     .background(AVIATheme.surfaceElevated)
-                    .clipShape(.rect(cornerRadius: 8))
+                    .clipShape(.rect(cornerRadius: 6))
             }
 
             HStack {
@@ -570,7 +570,7 @@ struct AdminSelectionDetailSheet: View {
                 .frame(maxWidth: .infinity)
                 .frame(height: 48)
                 .background(AVIATheme.warning.opacity(0.08))
-                .clipShape(.rect(cornerRadius: 14))
+                .clipShape(.rect(cornerRadius: 11))
             } else if selection.selectionType == .upgradeCosted {
                 HStack(spacing: 8) {
                     Image(systemName: "hourglass")
@@ -582,7 +582,7 @@ struct AdminSelectionDetailSheet: View {
                 .frame(maxWidth: .infinity)
                 .frame(height: 48)
                 .background(AVIATheme.accent.opacity(0.08))
-                .clipShape(.rect(cornerRadius: 14))
+                .clipShape(.rect(cornerRadius: 11))
             } else if selection.selectionType == .upgradeAccepted {
                 Button {
                     showApproveConfirm = true
@@ -596,7 +596,7 @@ struct AdminSelectionDetailSheet: View {
                     .frame(height: 48)
                     .foregroundStyle(AVIATheme.aviaWhite)
                     .background(AVIATheme.timelessBrown)
-                    .clipShape(.rect(cornerRadius: 14))
+                    .clipShape(.rect(cornerRadius: 11))
                 }
             } else if selection.selectionType == .upgradeDeclined {
                 HStack(spacing: 8) {
@@ -609,7 +609,7 @@ struct AdminSelectionDetailSheet: View {
                 .frame(maxWidth: .infinity)
                 .frame(height: 48)
                 .background(AVIATheme.textTertiary.opacity(0.08))
-                .clipShape(.rect(cornerRadius: 14))
+                .clipShape(.rect(cornerRadius: 11))
             } else if !selection.adminConfirmed {
                 Button {
                     showApproveConfirm = true
@@ -623,7 +623,7 @@ struct AdminSelectionDetailSheet: View {
                     .frame(height: 48)
                     .foregroundStyle(AVIATheme.aviaWhite)
                     .background(AVIATheme.timelessBrown)
-                    .clipShape(.rect(cornerRadius: 14))
+                    .clipShape(.rect(cornerRadius: 11))
                 }
             } else {
                 HStack(spacing: 8) {
@@ -636,7 +636,7 @@ struct AdminSelectionDetailSheet: View {
                 .frame(maxWidth: .infinity)
                 .frame(height: 48)
                 .background(AVIATheme.success.opacity(0.08))
-                .clipShape(.rect(cornerRadius: 14))
+                .clipShape(.rect(cornerRadius: 11))
             }
         }
     }

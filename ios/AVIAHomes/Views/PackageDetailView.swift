@@ -210,7 +210,7 @@ struct PackageDetailView: View {
                 Spacer()
             }
 
-            BentoCard(cornerRadius: 16) {
+            BentoCard(cornerRadius: 13) {
                 VStack(spacing: 0) {
                     HStack {
                         Text(package.price)
@@ -286,7 +286,7 @@ struct PackageDetailView: View {
                         .frame(width: 3)
                 }
 
-            BentoCard(cornerRadius: 16) {
+            BentoCard(cornerRadius: 13) {
                 VStack(spacing: 0) {
                     detailRow(icon: "number", label: "Lot", value: package.lotNumber)
                     detailDivider
@@ -340,10 +340,10 @@ struct PackageDetailView: View {
                     .padding(.horizontal, 16)
                     .padding(.vertical, 12)
                     .background(AVIATheme.timelessBrown.opacity(0.06))
-                    .clipShape(.rect(cornerRadius: 12))
+                    .clipShape(.rect(cornerRadius: 10))
                 }
             } else {
-                BentoCard(cornerRadius: 16) {
+                BentoCard(cornerRadius: 13) {
                     VStack(spacing: 0) {
                         detailRow(icon: "house.fill", label: "Design", value: package.homeDesign)
                         detailDivider
@@ -418,7 +418,7 @@ struct PackageDetailView: View {
                         }
                         .padding(.vertical, 14)
                         .background(AVIATheme.surfaceElevated)
-                        .clipShape(.rect(cornerRadius: 14))
+                        .clipShape(.rect(cornerRadius: 11))
 
                         VStack(alignment: .leading, spacing: 10) {
                             Text("HOUSE DIMENSIONS")
@@ -463,7 +463,7 @@ struct PackageDetailView: View {
                         .padding(14)
                         .frame(maxWidth: .infinity, alignment: .leading)
                         .background(AVIATheme.surfaceElevated)
-                        .clipShape(.rect(cornerRadius: 14))
+                        .clipShape(.rect(cornerRadius: 11))
 
                         if !design.floorplanImageURL.isEmpty {
                             VStack(alignment: .leading, spacing: 10) {
@@ -499,7 +499,7 @@ struct PackageDetailView: View {
                                         }
                                         .allowsHitTesting(false)
                                     }
-                                    .clipShape(.rect(cornerRadius: 14))
+                                    .clipShape(.rect(cornerRadius: 11))
                             }
                         }
 
@@ -555,7 +555,7 @@ struct PackageDetailView: View {
                 .background(Color(hex: "f5f5f5"))
                 .clipShape(.rect(cornerRadii: .init(bottomLeading: 20, bottomTrailing: 20)))
             }
-            .clipShape(.rect(cornerRadius: 20))
+            .clipShape(.rect(cornerRadius: 16))
         }
         .buttonStyle(.pressable(.subtle))
     }
@@ -590,7 +590,7 @@ struct PackageDetailView: View {
             if let facade = resolvedFacade {
 
             NavigationLink(value: facade) {
-            BentoCard(cornerRadius: 16) {
+            BentoCard(cornerRadius: 13) {
                 VStack(spacing: 0) {
                     Color(AVIATheme.surfaceElevated)
                         .frame(height: 160)
@@ -650,7 +650,7 @@ struct PackageDetailView: View {
                 .padding(.horizontal, 16)
                 .padding(.vertical, 12)
                 .background(AVIATheme.timelessBrown.opacity(0.06))
-                .clipShape(.rect(cornerRadius: 12))
+                .clipShape(.rect(cornerRadius: 10))
             }
             }
         }
@@ -674,7 +674,7 @@ struct PackageDetailView: View {
             let tier = package.specTier
 
             NavigationLink(value: tier) {
-            BentoCard(cornerRadius: 16) {
+            BentoCard(cornerRadius: 13) {
                 VStack(spacing: 0) {
                     Color(AVIATheme.surfaceElevated)
                         .frame(height: 140)
@@ -734,7 +734,7 @@ struct PackageDetailView: View {
                 .padding(.horizontal, 16)
                 .padding(.vertical, 12)
                 .background(AVIATheme.timelessBrown.opacity(0.06))
-                .clipShape(.rect(cornerRadius: 12))
+                .clipShape(.rect(cornerRadius: 10))
             }
 
             Button {
@@ -753,7 +753,7 @@ struct PackageDetailView: View {
                 .padding(.horizontal, 20)
                 .padding(.vertical, 16)
                 .background(AVIATheme.primaryGradient)
-                .clipShape(.rect(cornerRadius: 14))
+                .clipShape(.rect(cornerRadius: 11))
             }
         }
     }
@@ -794,7 +794,7 @@ struct PackageDetailView: View {
                         .frame(width: 3)
                 }
 
-            BentoCard(cornerRadius: 16) {
+            BentoCard(cornerRadius: 13) {
                 VStack(spacing: 0) {
                     ForEach(Array(package.inclusions.enumerated()), id: \.offset) { index, inclusion in
                         HStack(spacing: 12) {
@@ -835,7 +835,7 @@ struct PackageDetailView: View {
                                 .frame(width: 3)
                         }
 
-                    BentoCard(cornerRadius: 16) {
+                    BentoCard(cornerRadius: 13) {
                         VStack(spacing: 0) {
                             Color(AVIATheme.surfaceElevated)
                                 .frame(height: 120)
@@ -895,7 +895,7 @@ struct PackageDetailView: View {
                         .padding(.horizontal, 16)
                         .padding(.vertical, 12)
                         .background(AVIATheme.timelessBrown.opacity(0.06))
-                        .clipShape(.rect(cornerRadius: 12))
+                        .clipShape(.rect(cornerRadius: 10))
                     }
                 }
             }
@@ -905,7 +905,7 @@ struct PackageDetailView: View {
     // MARK: - Build Timeline
 
     private var buildTimelineRow: some View {
-        BentoCard(cornerRadius: 16) {
+        BentoCard(cornerRadius: 13) {
             VStack(alignment: .leading, spacing: 10) {
                 HStack(spacing: 10) {
                     Image(systemName: "clock.fill")
@@ -952,7 +952,7 @@ struct PackageDetailView: View {
                 : (needsAdminTick ? "Review & Confirm Contract" : "View Contract Status")
 
             VStack(spacing: 10) {
-                BentoCard(cornerRadius: 16) {
+                BentoCard(cornerRadius: 13) {
                     HStack(spacing: 12) {
                         Image(systemName: isUploadStep ? "arrow.up.doc.fill" : "checkmark.seal")
                             .font(.system(size: 24))
@@ -983,7 +983,7 @@ struct PackageDetailView: View {
                     .frame(height: 52)
                     .foregroundStyle(AVIATheme.aviaWhite)
                     .background(AVIATheme.primaryGradient)
-                    .clipShape(.rect(cornerRadius: 14))
+                    .clipShape(.rect(cornerRadius: 11))
                 }
             }
         }
@@ -1011,7 +1011,7 @@ struct PackageDetailView: View {
                         .frame(height: 52)
                         .foregroundStyle(AVIATheme.aviaWhite)
                         .background(AVIATheme.primaryGradient)
-                        .clipShape(.rect(cornerRadius: 14))
+                        .clipShape(.rect(cornerRadius: 11))
                     }
                 }
 
@@ -1027,7 +1027,7 @@ struct PackageDetailView: View {
                         .frame(height: 52)
                         .foregroundStyle(AVIATheme.timelessBrown)
                         .background(AVIATheme.timelessBrown.opacity(0.1))
-                        .clipShape(.rect(cornerRadius: 14))
+                        .clipShape(.rect(cornerRadius: 11))
                     }
                 }
             }
@@ -1058,7 +1058,7 @@ struct PackageDetailView: View {
                 .padding(.horizontal, 20)
                 .padding(.vertical, 16)
                 .background(AVIATheme.primaryGradient)
-                .clipShape(.rect(cornerRadius: 14))
+                .clipShape(.rect(cornerRadius: 11))
             }
             .sensoryFeedback(.impact(weight: .medium), trigger: showPackageSharing)
 
@@ -1077,13 +1077,13 @@ struct PackageDetailView: View {
                 .frame(height: 52)
                 .foregroundStyle(AVIATheme.timelessBrown)
                 .background(AVIATheme.timelessBrown.opacity(0.1))
-                .clipShape(.rect(cornerRadius: 14))
+                .clipShape(.rect(cornerRadius: 11))
             }
         }
     }
 
     private var assignmentSummaryCard: some View {
-        BentoCard(cornerRadius: 16) {
+        BentoCard(cornerRadius: 13) {
             VStack(spacing: 0) {
                 HStack(spacing: 10) {
                     Image(systemName: "chart.bar.doc.horizontal.fill")
@@ -1186,7 +1186,7 @@ struct PackageDetailView: View {
                         ? "Upload a PDF of the signed contract after the in-person signing."
                         : "Both parties need to tick ‘I confirm this is signed’."
                     let buttonLabel = isUploadStep ? "Open Contract Upload" : "Review & Confirm Contract"
-                    BentoCard(cornerRadius: 16) {
+                    BentoCard(cornerRadius: 13) {
                         HStack(spacing: 12) {
                             Image(systemName: isUploadStep ? "arrow.up.doc.fill" : "checkmark.seal")
                                 .font(.system(size: 24))
@@ -1217,10 +1217,10 @@ struct PackageDetailView: View {
                         .frame(height: 52)
                         .foregroundStyle(AVIATheme.aviaWhite)
                         .background(AVIATheme.primaryGradient)
-                        .clipShape(.rect(cornerRadius: 14))
+                        .clipShape(.rect(cornerRadius: 11))
                     }
                 } else if assign.contractStatus == "signed" {
-                    BentoCard(cornerRadius: 16) {
+                    BentoCard(cornerRadius: 13) {
                         HStack(spacing: 12) {
                             Image(systemName: "checkmark.seal.fill")
                                 .font(.system(size: 24))
@@ -1238,7 +1238,7 @@ struct PackageDetailView: View {
                         .padding(16)
                     }
                 } else if assign.eoiStatus == "submitted" || assign.eoiStatus == "resubmitted" {
-                    BentoCard(cornerRadius: 16) {
+                    BentoCard(cornerRadius: 13) {
                         HStack(spacing: 12) {
                             Image(systemName: "doc.text.fill")
                                 .font(.system(size: 24))
@@ -1256,7 +1256,7 @@ struct PackageDetailView: View {
                         .padding(16)
                     }
                 } else if assign.eoiStatus == "approved" {
-                    BentoCard(cornerRadius: 16) {
+                    BentoCard(cornerRadius: 13) {
                         HStack(spacing: 12) {
                             Image(systemName: "checkmark.seal.fill")
                                 .font(.system(size: 24))
@@ -1274,7 +1274,7 @@ struct PackageDetailView: View {
                         .padding(16)
                     }
                 } else if assign.eoiStatus == "changes_requested" {
-                    BentoCard(cornerRadius: 16) {
+                    BentoCard(cornerRadius: 13) {
                         HStack(spacing: 12) {
                             Image(systemName: "exclamationmark.bubble.fill")
                                 .font(.system(size: 24))
@@ -1305,10 +1305,10 @@ struct PackageDetailView: View {
                         .frame(height: 52)
                         .foregroundStyle(AVIATheme.aviaWhite)
                         .background(AVIATheme.primaryGradient)
-                        .clipShape(.rect(cornerRadius: 14))
+                        .clipShape(.rect(cornerRadius: 11))
                     }
                 } else if currentResponse?.status == .accepted {
-                    BentoCard(cornerRadius: 16) {
+                    BentoCard(cornerRadius: 13) {
                         HStack(spacing: 12) {
                             Image(systemName: "checkmark.circle.fill")
                                 .font(.system(size: 24))
@@ -1328,7 +1328,7 @@ struct PackageDetailView: View {
                         .padding(16)
                     }
                 } else if currentResponse?.status == .declined {
-                    BentoCard(cornerRadius: 16) {
+                    BentoCard(cornerRadius: 13) {
                         HStack(spacing: 12) {
                             Image(systemName: "xmark.circle.fill")
                                 .font(.system(size: 24))
@@ -1363,7 +1363,7 @@ struct PackageDetailView: View {
                     .frame(height: 52)
                     .foregroundStyle(AVIATheme.aviaWhite)
                     .background(AVIATheme.primaryGradient)
-                    .clipShape(.rect(cornerRadius: 14))
+                    .clipShape(.rect(cornerRadius: 11))
                 }
                 .sensoryFeedback(.impact(weight: .medium), trigger: showEOIForm)
             }
@@ -1382,7 +1382,7 @@ struct PackageDetailView: View {
                     .frame(height: 52)
                     .foregroundStyle(AVIATheme.destructive)
                     .background(AVIATheme.destructive.opacity(0.08))
-                    .clipShape(.rect(cornerRadius: 14))
+                    .clipShape(.rect(cornerRadius: 11))
                 }
                 .confirmationDialog(
                     "Decline this house & land package?",
@@ -1482,7 +1482,7 @@ struct PackageDetailView: View {
         .frame(maxWidth: .infinity)
         .padding(.vertical, 10)
         .background(AVIATheme.background.opacity(0.5))
-        .clipShape(.rect(cornerRadius: 10))
+        .clipShape(.rect(cornerRadius: 8))
     }
 
     private func dimensionTag(icon: String, value: String) -> some View {

@@ -30,9 +30,9 @@ struct BuildSpecItemRow: View {
                             }
                             .allowsHitTesting(false)
                         }
-                        .clipShape(.rect(cornerRadius: 8))
+                        .clipShape(.rect(cornerRadius: 6))
                 } else {
-                    RoundedRectangle(cornerRadius: 8)
+                    RoundedRectangle(cornerRadius: 6)
                         .fill(AVIATheme.surfaceElevated)
                         .frame(width: 56, height: 56)
                         .overlay {
@@ -73,7 +73,7 @@ struct BuildSpecItemRow: View {
                 }
                 .padding(8)
                 .background(AVIATheme.timelessBrown.opacity(0.06))
-                .clipShape(.rect(cornerRadius: 8))
+                .clipShape(.rect(cornerRadius: 6))
             }
 
             if let notes = selection.adminNotes, !notes.isEmpty {
@@ -88,7 +88,7 @@ struct BuildSpecItemRow: View {
                 }
                 .padding(8)
                 .background(AVIATheme.heritageBlue.opacity(0.06))
-                .clipShape(.rect(cornerRadius: 8))
+                .clipShape(.rect(cornerRadius: 6))
             }
 
             if let cost = selection.upgradeCost, (selection.selectionType == .upgradeRequested || selection.selectionType == .upgradeCosted || selection.selectionType == .upgradeAccepted || selection.selectionType == .upgradeApproved) {
@@ -102,7 +102,7 @@ struct BuildSpecItemRow: View {
                 }
                 .padding(8)
                 .background(AVIATheme.warning.opacity(0.06))
-                .clipShape(.rect(cornerRadius: 8))
+                .clipShape(.rect(cornerRadius: 6))
             }
 
             if isEditable || isAdmin {
@@ -115,7 +115,7 @@ struct BuildSpecItemRow: View {
         }
         .padding(14)
         .background(AVIATheme.cardBackground)
-        .clipShape(.rect(cornerRadius: 14))
+        .clipShape(.rect(cornerRadius: 11))
     }
 
     @ViewBuilder
@@ -334,7 +334,7 @@ struct BuildSpecItemRow: View {
                 .lineLimit(3...5)
                 .padding(10)
                 .background(AVIATheme.surfaceElevated)
-                .clipShape(.rect(cornerRadius: 8))
+                .clipShape(.rect(cornerRadius: 6))
 
             HStack {
                 Spacer()

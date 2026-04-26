@@ -83,7 +83,7 @@ struct SpecRangeDetailView: View {
                                 }
                                 .allowsHitTesting(false)
                             }
-                            .clipShape(.rect(cornerRadius: 10))
+                            .clipShape(.rect(cornerRadius: 8))
                             .accessibilityLabel(logo.name)
                     }
                 }
@@ -145,7 +145,7 @@ struct SpecRangeDetailView: View {
                     .foregroundStyle(AVIATheme.timelessBrown)
                     .frame(width: 40, height: 40)
                     .background(AVIATheme.timelessBrown.opacity(0.1))
-                    .clipShape(.rect(cornerRadius: 10))
+                    .clipShape(.rect(cornerRadius: 8))
 
                 VStack(alignment: .leading, spacing: 2) {
                     Text("Compare All Spec Ranges")
@@ -164,7 +164,7 @@ struct SpecRangeDetailView: View {
             }
             .padding(14)
             .background(AVIATheme.cardBackground)
-            .clipShape(.rect(cornerRadius: 16))
+            .clipShape(.rect(cornerRadius: 13))
         }
     }
 
@@ -263,7 +263,7 @@ struct SpecRangeDetailView: View {
                 }
             }
             .background(AVIATheme.cardBackground)
-            .clipShape(.rect(cornerRadius: 16))
+            .clipShape(.rect(cornerRadius: 13))
         }
     }
 
@@ -307,7 +307,7 @@ struct SpecRangeDetailView: View {
                         .padding(.vertical, 10)
                     }
                     .background(AVIATheme.cardBackground)
-                    .clipShape(.rect(cornerRadius: 16))
+                    .clipShape(.rect(cornerRadius: 13))
                     .tag(index)
                 }
             }
@@ -330,7 +330,7 @@ struct SpecRangeDetailView: View {
                             .foregroundStyle(AVIATheme.timelessBrown)
                             .frame(width: 32, height: 32)
                             .background(AVIATheme.timelessBrown.opacity(0.08))
-                            .clipShape(.rect(cornerRadius: 8))
+                            .clipShape(.rect(cornerRadius: 6))
 
                         VStack(alignment: .leading, spacing: 2) {
                             Text(category.name)
@@ -357,7 +357,7 @@ struct SpecRangeDetailView: View {
                 }
             }
             .background(AVIATheme.cardBackground)
-            .clipShape(.rect(cornerRadius: 16))
+            .clipShape(.rect(cornerRadius: 13))
 
             Button {
                 showingInclusions = true
@@ -372,7 +372,7 @@ struct SpecRangeDetailView: View {
                 .frame(height: 48)
                 .foregroundStyle(AVIATheme.aviaWhite)
                 .background(AVIATheme.primaryGradient)
-                .clipShape(.rect(cornerRadius: 14))
+                .clipShape(.rect(cornerRadius: 11))
             }
         }
     }
@@ -443,12 +443,12 @@ struct SpecRangeDetailView: View {
                             .frame(height: 50)
                             .foregroundStyle(AVIATheme.aviaWhite)
                             .background(AVIATheme.primaryGradient)
-                            .clipShape(.rect(cornerRadius: 14))
+                            .clipShape(.rect(cornerRadius: 11))
                         }
                     }
                     .padding(20)
                 }
-                .clipShape(.rect(cornerRadius: 20))
+                .clipShape(.rect(cornerRadius: 16))
         }
     }
 }

@@ -155,7 +155,7 @@ struct ProfileSetupView: View {
                 }
                 .padding(.top, 16)
 
-                BentoCard(cornerRadius: 16) {
+                BentoCard(cornerRadius: 13) {
                     VStack(spacing: 0) {
                         summaryRow(icon: "person.fill", label: "Name", value: "\(firstName) \(lastName)")
                         Divider().padding(.leading, 48)
@@ -210,7 +210,7 @@ struct ProfileSetupView: View {
                         .frame(height: 52)
                         .foregroundStyle(AVIATheme.textPrimary)
                         .background(AVIATheme.cardBackground)
-                        .clipShape(.rect(cornerRadius: 14))
+                        .clipShape(.rect(cornerRadius: 11))
                 }
             }
 
@@ -227,7 +227,7 @@ struct ProfileSetupView: View {
                     .frame(height: 52)
                     .foregroundStyle(AVIATheme.aviaWhite)
                     .background(AVIATheme.primaryGradient)
-                    .clipShape(.rect(cornerRadius: 14))
+                    .clipShape(.rect(cornerRadius: 11))
             }
             .disabled(currentStep == 0 && (firstName.isEmpty || lastName.isEmpty))
             .opacity(currentStep == 0 && (firstName.isEmpty || lastName.isEmpty) ? 0.6 : 1)
@@ -258,9 +258,9 @@ struct ProfileSetupView: View {
                 .padding(.horizontal, 16)
                 .padding(.vertical, 14)
                 .background(AVIATheme.cardBackground)
-                .clipShape(.rect(cornerRadius: 12))
+                .clipShape(.rect(cornerRadius: 10))
                 .overlay {
-                    RoundedRectangle(cornerRadius: 12)
+                    RoundedRectangle(cornerRadius: 10)
                         .stroke(AVIATheme.surfaceBorder, lineWidth: 1)
                 }
         }

@@ -29,7 +29,7 @@ struct RequestsView: View {
                     .foregroundStyle(AVIATheme.textSecondary)
                     .padding(.top, 40)
                 } else {
-                    BentoCard(cornerRadius: 16) {
+                    BentoCard(cornerRadius: 13) {
                         VStack(spacing: 0) {
                             ForEach(Array(filteredRequests.enumerated()), id: \.element.id) { index, request in
                                 Button { selectedRequest = request } label: {
@@ -136,7 +136,7 @@ struct RequestDetailView: View {
         NavigationStack {
             ScrollView {
                 VStack(alignment: .leading, spacing: 20) {
-                    BentoCard(cornerRadius: 16) {
+                    BentoCard(cornerRadius: 13) {
                         VStack(alignment: .leading, spacing: 12) {
                             HStack {
                                 Label(request.category.rawValue, systemImage: request.category.icon)
@@ -160,7 +160,7 @@ struct RequestDetailView: View {
                         .padding(18)
                     }
 
-                    BentoCard(cornerRadius: 14) {
+                    BentoCard(cornerRadius: 11) {
                         VStack(alignment: .leading, spacing: 8) {
                             Text("Description")
                                 .font(.neueSubheadlineMedium)
@@ -193,7 +193,7 @@ struct RequestDetailView: View {
                                                         .aspectRatio(contentMode: .fill)
                                                         .allowsHitTesting(false)
                                                 }
-                                                .clipShape(.rect(cornerRadius: 12))
+                                                .clipShape(.rect(cornerRadius: 10))
                                         }
                                         .buttonStyle(.pressable(.subtle))
                                     }
@@ -227,7 +227,7 @@ struct RequestDetailView: View {
                                 }
                                 .padding(14)
                                 .background(response.isFromClient ? AVIATheme.timelessBrown.opacity(0.08) : AVIATheme.cardBackground)
-                                .clipShape(.rect(cornerRadius: 14))
+                                .clipShape(.rect(cornerRadius: 11))
                             }
                         }
                     }
@@ -425,9 +425,9 @@ struct NewRequestView: View {
                 .padding(.horizontal, 16)
                 .padding(.vertical, 14)
                 .background(AVIATheme.cardBackground)
-                .clipShape(.rect(cornerRadius: 12))
+                .clipShape(.rect(cornerRadius: 10))
                 .overlay {
-                    RoundedRectangle(cornerRadius: 12)
+                    RoundedRectangle(cornerRadius: 10)
                         .stroke(AVIATheme.surfaceBorder, lineWidth: 1)
                 }
 
@@ -439,9 +439,9 @@ struct NewRequestView: View {
                 .padding(.horizontal, 16)
                 .padding(.vertical, 14)
                 .background(AVIATheme.cardBackground)
-                .clipShape(.rect(cornerRadius: 12))
+                .clipShape(.rect(cornerRadius: 10))
                 .overlay {
-                    RoundedRectangle(cornerRadius: 12)
+                    RoundedRectangle(cornerRadius: 10)
                         .stroke(AVIATheme.surfaceBorder, lineWidth: 1)
                 }
         }
@@ -487,7 +487,7 @@ struct NewRequestView: View {
                             .aspectRatio(contentMode: .fill)
                             .allowsHitTesting(false)
                     }
-                    .clipShape(.rect(cornerRadius: 10))
+                    .clipShape(.rect(cornerRadius: 8))
             }
             .buttonStyle(.pressable(.subtle))
 
@@ -524,9 +524,9 @@ struct NewRequestView: View {
             .padding(.vertical, 12)
             .frame(maxWidth: .infinity)
             .background(AVIATheme.timelessBrown.opacity(0.08))
-            .clipShape(.rect(cornerRadius: 12))
+            .clipShape(.rect(cornerRadius: 10))
             .overlay {
-                RoundedRectangle(cornerRadius: 12)
+                RoundedRectangle(cornerRadius: 10)
                     .stroke(AVIATheme.timelessBrown.opacity(0.25), lineWidth: 1)
             }
         }

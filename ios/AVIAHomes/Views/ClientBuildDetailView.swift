@@ -43,7 +43,7 @@ struct ClientBuildDetailView: View {
     }
 
     private var clientHeader: some View {
-        BentoCard(cornerRadius: 16) {
+        BentoCard(cornerRadius: 13) {
             VStack(spacing: 14) {
                 HStack(spacing: 14) {
                     Text(build.client.initials.isEmpty ? "?" : build.client.initials)
@@ -105,7 +105,7 @@ struct ClientBuildDetailView: View {
                             .frame(maxWidth: .infinity)
                             .frame(height: 36)
                             .background(AVIATheme.primaryGradient)
-                            .clipShape(.rect(cornerRadius: 10))
+                            .clipShape(.rect(cornerRadius: 8))
                         }
                     }
 
@@ -121,7 +121,7 @@ struct ClientBuildDetailView: View {
                             .frame(maxWidth: .infinity)
                             .frame(height: 36)
                             .background(AVIATheme.surfaceElevated)
-                            .clipShape(.rect(cornerRadius: 10))
+                            .clipShape(.rect(cornerRadius: 8))
                         }
                     }
                 }
@@ -204,7 +204,7 @@ struct ClientBuildDetailView: View {
 
     private var overviewSection: some View {
         VStack(spacing: 12) {
-            BentoCard(cornerRadius: 16) {
+            BentoCard(cornerRadius: 13) {
                 VStack(alignment: .leading, spacing: 12) {
                     HStack(spacing: 8) {
                         Image(systemName: "info.circle.fill")
@@ -227,7 +227,7 @@ struct ClientBuildDetailView: View {
                 .padding(16)
             }
 
-            BentoCard(cornerRadius: 16) {
+            BentoCard(cornerRadius: 13) {
                 VStack(alignment: .leading, spacing: 12) {
                     HStack(spacing: 8) {
                         Image(systemName: "person.fill")

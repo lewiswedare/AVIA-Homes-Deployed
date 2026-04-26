@@ -444,7 +444,7 @@ struct StaffScheduleView: View {
                         .padding(.vertical, 80)
                     } else {
                         ForEach(viewModel.upcomingScheduleItems) { item in
-                            BentoCard(cornerRadius: 16) {
+                            BentoCard(cornerRadius: 13) {
                                 HStack(spacing: 14) {
                                     Image(systemName: item.icon)
                                         .font(.neueCorpMedium(14))
@@ -500,7 +500,7 @@ struct MoreView: View {
             VStack(spacing: 0) {
                 ScrollView {
                     VStack(spacing: 12) {
-                        BentoCard(cornerRadius: 16) {
+                        BentoCard(cornerRadius: 13) {
                             VStack(spacing: 0) {
                                 NavigationLink {
                                     ConversationsView()
@@ -597,7 +597,7 @@ struct MoreView: View {
                             }
                         }
 
-                        BentoCard(cornerRadius: 16) {
+                        BentoCard(cornerRadius: 13) {
                             VStack(spacing: 0) {
                                 if let phoneURL = URL(string: "tel:0756545123") {
                                     Link(destination: phoneURL) {

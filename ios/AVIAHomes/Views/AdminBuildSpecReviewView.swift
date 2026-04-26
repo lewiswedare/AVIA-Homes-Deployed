@@ -195,7 +195,7 @@ struct AdminBuildSpecReviewView: View {
     }
 
     private func specUpgradeAdminCard(_ item: BuildSpecSelection) -> some View {
-        BentoCard(cornerRadius: 14) {
+        BentoCard(cornerRadius: 11) {
             VStack(alignment: .leading, spacing: 12) {
                 HStack(spacing: 10) {
                     Image(systemName: "hand.thumbsup.fill")
@@ -305,7 +305,7 @@ struct AdminBuildSpecReviewView: View {
                         .foregroundStyle(AVIATheme.textTertiary)
                         .padding(.horizontal, 4)
 
-                    BentoCard(cornerRadius: 14) {
+                    BentoCard(cornerRadius: 11) {
                         VStack(spacing: 0) {
                             tableHeader
 
@@ -368,9 +368,9 @@ struct AdminBuildSpecReviewView: View {
                             }
                             .allowsHitTesting(false)
                         }
-                        .clipShape(.rect(cornerRadius: 6))
+                        .clipShape(.rect(cornerRadius: 5))
                 } else {
-                    RoundedRectangle(cornerRadius: 6)
+                    RoundedRectangle(cornerRadius: 5)
                         .fill(AVIATheme.surfaceElevated)
                         .frame(width: 36, height: 36)
                         .overlay {
@@ -461,7 +461,7 @@ struct AdminBuildSpecReviewView: View {
             } else {
                 colourStatusBanner
 
-                BentoCard(cornerRadius: 14) {
+                BentoCard(cornerRadius: 11) {
                     VStack(spacing: 0) {
                         colourTableHeader
 
@@ -511,9 +511,9 @@ struct AdminBuildSpecReviewView: View {
         }
         .padding(14)
         .background(colourStatusColor.opacity(0.06))
-        .clipShape(.rect(cornerRadius: 14))
+        .clipShape(.rect(cornerRadius: 11))
         .overlay {
-            RoundedRectangle(cornerRadius: 14)
+            RoundedRectangle(cornerRadius: 11)
                 .stroke(colourStatusColor.opacity(0.2), lineWidth: 1)
         }
     }
@@ -566,7 +566,7 @@ struct AdminBuildSpecReviewView: View {
                                 }
                                 .allowsHitTesting(false)
                             }
-                            .clipShape(.rect(cornerRadius: 6))
+                            .clipShape(.rect(cornerRadius: 5))
                     } else {
                         Circle()
                             .fill(Color(hex: r.hex))
@@ -651,7 +651,7 @@ struct AdminBuildSpecReviewView: View {
             .frame(height: 48)
             .foregroundStyle(AVIATheme.timelessBrown)
             .background(AVIATheme.timelessBrown.opacity(0.1))
-            .clipShape(.rect(cornerRadius: 14))
+            .clipShape(.rect(cornerRadius: 11))
         }
         .disabled(isExportingPDF)
     }
@@ -782,9 +782,9 @@ struct AdminBuildSpecReviewView: View {
             }
             .padding(14)
             .background(AVIATheme.warning.opacity(0.08))
-            .clipShape(.rect(cornerRadius: 14))
+            .clipShape(.rect(cornerRadius: 11))
             .overlay {
-                RoundedRectangle(cornerRadius: 14)
+                RoundedRectangle(cornerRadius: 11)
                     .stroke(AVIATheme.warning.opacity(0.35), lineWidth: 1)
             }
         }
@@ -810,7 +810,7 @@ struct AdminBuildSpecReviewView: View {
             }
             .padding(10)
             .background(AVIATheme.cardBackground)
-            .clipShape(.rect(cornerRadius: 10))
+            .clipShape(.rect(cornerRadius: 8))
         }
         .buttonStyle(.pressable(.subtle))
     }
@@ -844,9 +844,9 @@ struct AdminBuildSpecReviewView: View {
         }
         .padding(14)
         .background(adminStatusColor.opacity(0.06))
-        .clipShape(.rect(cornerRadius: 14))
+        .clipShape(.rect(cornerRadius: 11))
         .overlay {
-            RoundedRectangle(cornerRadius: 14)
+            RoundedRectangle(cornerRadius: 11)
                 .stroke(adminStatusColor.opacity(0.2), lineWidth: 1)
         }
     }
@@ -922,7 +922,7 @@ struct AdminBuildSpecReviewView: View {
         }
         .padding(14)
         .background(AVIATheme.cardBackground)
-        .clipShape(.rect(cornerRadius: 14))
+        .clipShape(.rect(cornerRadius: 11))
     }
 
     private var adminActionButtons: some View {
@@ -944,7 +944,7 @@ struct AdminBuildSpecReviewView: View {
                     .frame(height: 52)
                     .foregroundStyle(AVIATheme.aviaWhite)
                     .background(AVIATheme.timelessBrown)
-                    .clipShape(.rect(cornerRadius: 14))
+                    .clipShape(.rect(cornerRadius: 11))
                 }
                 .disabled(viewModel.isSaving)
             }
@@ -962,7 +962,7 @@ struct AdminBuildSpecReviewView: View {
                     .frame(height: 48)
                     .foregroundStyle(AVIATheme.destructive)
                     .background(AVIATheme.destructive.opacity(0.1))
-                    .clipShape(.rect(cornerRadius: 14))
+                    .clipShape(.rect(cornerRadius: 11))
                 }
                 .disabled(viewModel.isSaving)
             }
@@ -1005,7 +1005,7 @@ struct AdminBuildSpecReviewView: View {
                 }
                 .padding(12)
                 .background(AVIATheme.cardBackground)
-                .clipShape(.rect(cornerRadius: 12))
+                .clipShape(.rect(cornerRadius: 10))
             }
         }
     }

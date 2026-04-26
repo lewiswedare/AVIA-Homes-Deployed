@@ -4,7 +4,7 @@ struct StaffContactCard: View {
     let staffUser: ClientUser
 
     var body: some View {
-        BentoCard(cornerRadius: 16) {
+        BentoCard(cornerRadius: 13) {
             HStack(spacing: 14) {
                 avatarView
                 VStack(alignment: .leading, spacing: 4) {

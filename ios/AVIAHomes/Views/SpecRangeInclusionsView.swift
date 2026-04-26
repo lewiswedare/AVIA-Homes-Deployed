@@ -46,7 +46,7 @@ struct SpecRangeInclusionsView: View {
         }
         .padding(16)
         .background(AVIATheme.cardBackground)
-        .clipShape(.rect(cornerRadius: 16))
+        .clipShape(.rect(cornerRadius: 13))
     }
 
     private func categorySection(_ category: SpecCategory) -> some View {
@@ -68,7 +68,7 @@ struct SpecRangeInclusionsView: View {
                         .foregroundStyle(AVIATheme.timelessBrown)
                         .frame(width: 32, height: 32)
                         .background(AVIATheme.timelessBrown.opacity(0.08))
-                        .clipShape(.rect(cornerRadius: 8))
+                        .clipShape(.rect(cornerRadius: 6))
 
                     Text(category.name)
                         .font(.neueSubheadlineMedium)
@@ -107,7 +107,7 @@ struct SpecRangeInclusionsView: View {
             }
         }
         .background(AVIATheme.cardBackground)
-        .clipShape(.rect(cornerRadius: 16))
+        .clipShape(.rect(cornerRadius: 13))
     }
 
     private func inclusionRow(item: SpecItem) -> some View {

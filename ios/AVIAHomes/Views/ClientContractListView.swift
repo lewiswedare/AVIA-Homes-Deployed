@@ -41,7 +41,7 @@ struct ClientContractListContent: View {
     }
 
     private func contractCard(_ contract: ContractRow) -> some View {
-        BentoCard(cornerRadius: 14) {
+        BentoCard(cornerRadius: 11) {
             VStack(spacing: 0) {
                 HStack(spacing: 12) {
                     Image(systemName: "doc.richtext.fill")
@@ -137,7 +137,7 @@ struct ClientContractDetailSheet: View {
             ScrollView {
                 VStack(spacing: 16) {
                     // Status header
-                    BentoCard(cornerRadius: 14) {
+                    BentoCard(cornerRadius: 11) {
                         HStack(spacing: 12) {
                             Image(systemName: contract.statusEnum.icon)
                                 .font(.system(size: 24))
@@ -158,7 +158,7 @@ struct ClientContractDetailSheet: View {
 
                     // PDF viewer link
                     if let url = contract.contract_url, let pdfURL = URL(string: url) {
-                        BentoCard(cornerRadius: 14) {
+                        BentoCard(cornerRadius: 11) {
                             VStack(alignment: .leading, spacing: 10) {
                                 HStack(spacing: 8) {
                                     Image(systemName: "doc.text.fill")
@@ -180,7 +180,7 @@ struct ClientContractDetailSheet: View {
                                     .padding(12)
                                     .foregroundStyle(AVIATheme.timelessBrown)
                                     .background(AVIATheme.timelessBrown.opacity(0.1))
-                                    .clipShape(.rect(cornerRadius: 10))
+                                    .clipShape(.rect(cornerRadius: 8))
                                 }
                             }
                             .padding(16)
@@ -189,7 +189,7 @@ struct ClientContractDetailSheet: View {
 
                     // Notes
                     if let notes = contract.notes, !notes.isEmpty {
-                        BentoCard(cornerRadius: 14) {
+                        BentoCard(cornerRadius: 11) {
                             VStack(alignment: .leading, spacing: 8) {
                                 HStack(spacing: 8) {
                                     Image(systemName: "note.text")
@@ -217,7 +217,7 @@ struct ClientContractDetailSheet: View {
 
                     // Signed info
                     if contract.statusEnum == .signed {
-                        BentoCard(cornerRadius: 14) {
+                        BentoCard(cornerRadius: 11) {
                             HStack(spacing: 12) {
                                 Image(systemName: "checkmark.seal.fill")
                                     .font(.system(size: 20))

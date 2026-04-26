@@ -105,7 +105,7 @@ struct StaffPackageSharingView: View {
                     }
                     .allowsHitTesting(false)
                 }
-                .clipShape(.rect(cornerRadius: 10))
+                .clipShape(.rect(cornerRadius: 8))
 
             VStack(alignment: .leading, spacing: 3) {
                 Text(package.title)
@@ -208,7 +208,7 @@ struct StaffPackageSharingView: View {
                         showShareConfirmation = true
                     }
                 } label: {
-                    BentoCard(cornerRadius: 14) {
+                    BentoCard(cornerRadius: 11) {
                         HStack(spacing: 12) {
                             Text(client.initials.isEmpty ? "?" : client.initials)
                                 .font(.neueCaptionMedium)
@@ -285,7 +285,7 @@ struct StaffPackageSharingView: View {
             } else {
                 ForEach(responses) { response in
                     let client = allClients.first { $0.id == response.clientId }
-                    BentoCard(cornerRadius: 14) {
+                    BentoCard(cornerRadius: 11) {
                         HStack(spacing: 12) {
                             Image(systemName: response.status.icon)
                                 .font(.system(size: 20))

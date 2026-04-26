@@ -99,7 +99,7 @@ struct AllUpgradeRequestsView: View {
                 .padding(10)
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .background(AVIATheme.surfaceElevated)
-                .clipShape(.rect(cornerRadius: 10))
+                .clipShape(.rect(cornerRadius: 8))
             }
 
             if request.status == .quoted {
@@ -130,10 +130,10 @@ struct AllUpgradeRequestsView: View {
         }
         .padding(14)
         .background(AVIATheme.cardBackground)
-        .clipShape(.rect(cornerRadius: 14))
+        .clipShape(.rect(cornerRadius: 11))
         .overlay {
             if request.status == .quoted {
-                RoundedRectangle(cornerRadius: 14)
+                RoundedRectangle(cornerRadius: 11)
                     .stroke(AVIATheme.timelessBrown.opacity(0.3), lineWidth: 1)
             }
         }
@@ -173,9 +173,9 @@ struct AllUpgradeRequestsView: View {
         }
         .padding(16)
         .background(AVIATheme.cardBackground)
-        .clipShape(.rect(cornerRadius: 16))
+        .clipShape(.rect(cornerRadius: 13))
         .overlay {
-            RoundedRectangle(cornerRadius: 16)
+            RoundedRectangle(cornerRadius: 13)
                 .stroke(AVIATheme.timelessBrown.opacity(0.15), lineWidth: 1)
         }
     }
@@ -230,7 +230,7 @@ struct UpgradeResponseSheet: View {
                         .frame(maxWidth: .infinity)
                         .padding(20)
                         .background(AVIATheme.timelessBrown.opacity(0.08))
-                        .clipShape(.rect(cornerRadius: 16))
+                        .clipShape(.rect(cornerRadius: 13))
                     }
 
                     if let notes = request.adminNotes, !notes.isEmpty {
@@ -246,7 +246,7 @@ struct UpgradeResponseSheet: View {
                         .frame(maxWidth: .infinity, alignment: .leading)
                         .padding(14)
                         .background(AVIATheme.surfaceElevated)
-                        .clipShape(.rect(cornerRadius: 12))
+                        .clipShape(.rect(cornerRadius: 10))
                     }
 
                     VStack(spacing: 10) {
@@ -260,7 +260,7 @@ struct UpgradeResponseSheet: View {
                             .frame(maxWidth: .infinity)
                             .frame(height: 52)
                             .background(AVIATheme.timelessBrown)
-                            .clipShape(.rect(cornerRadius: 14))
+                            .clipShape(.rect(cornerRadius: 11))
                         }
 
                         Button(action: onDecline) {
@@ -273,7 +273,7 @@ struct UpgradeResponseSheet: View {
                             .frame(maxWidth: .infinity)
                             .frame(height: 52)
                             .background(AVIATheme.destructive.opacity(0.1))
-                            .clipShape(.rect(cornerRadius: 14))
+                            .clipShape(.rect(cornerRadius: 11))
                         }
                     }
 

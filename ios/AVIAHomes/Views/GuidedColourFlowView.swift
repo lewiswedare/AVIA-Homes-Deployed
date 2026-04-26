@@ -119,9 +119,9 @@ struct GuidedColourFlowView: View {
                                     }
                                     .allowsHitTesting(false)
                                 }
-                                .clipShape(.rect(cornerRadius: 8))
+                                .clipShape(.rect(cornerRadius: 6))
                                 .overlay {
-                                    RoundedRectangle(cornerRadius: 8)
+                                    RoundedRectangle(cornerRadius: 6)
                                         .stroke(AVIATheme.surfaceBorder, lineWidth: 1)
                                 }
                         } else {
@@ -143,7 +143,7 @@ struct GuidedColourFlowView: View {
                     }
                     .padding(14)
                     .background(AVIATheme.cardBackground)
-                    .clipShape(.rect(cornerRadius: 14))
+                    .clipShape(.rect(cornerRadius: 11))
                     .padding(.horizontal, 20)
                 }
 
@@ -191,7 +191,7 @@ struct GuidedColourFlowView: View {
                     .frame(height: 50)
                     .foregroundStyle(AVIATheme.timelessBrown)
                     .background(AVIATheme.timelessBrown.opacity(0.1))
-                    .clipShape(.rect(cornerRadius: 14))
+                    .clipShape(.rect(cornerRadius: 11))
                 }
             }
 
@@ -210,7 +210,7 @@ struct GuidedColourFlowView: View {
                     .frame(height: 50)
                     .foregroundStyle(AVIATheme.aviaWhite)
                     .background(AVIATheme.primaryGradient)
-                    .clipShape(.rect(cornerRadius: 14))
+                    .clipShape(.rect(cornerRadius: 11))
                 }
             } else {
                 Button {
@@ -225,7 +225,7 @@ struct GuidedColourFlowView: View {
                         .frame(height: 50)
                         .foregroundStyle(AVIATheme.aviaWhite)
                         .background(AVIATheme.primaryGradient)
-                        .clipShape(.rect(cornerRadius: 14))
+                        .clipShape(.rect(cornerRadius: 11))
                 }
             }
         }

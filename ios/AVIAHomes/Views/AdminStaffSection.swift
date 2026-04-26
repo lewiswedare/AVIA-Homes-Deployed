@@ -119,7 +119,7 @@ struct AdminStaffSection: View {
         }
         .padding(14)
         .background(AVIATheme.primaryGradient)
-        .clipShape(.rect(cornerRadius: 16))
+        .clipShape(.rect(cornerRadius: 13))
     }
 }
 
@@ -167,9 +167,9 @@ struct AdminStaffUserRow: View {
         }
         .padding(12)
         .background(AVIATheme.cardBackground)
-        .clipShape(.rect(cornerRadius: 14))
+        .clipShape(.rect(cornerRadius: 11))
         .overlay {
-            RoundedRectangle(cornerRadius: 14)
+            RoundedRectangle(cornerRadius: 11)
                 .stroke(user.role.isPending ? AVIATheme.warning.opacity(0.3) : AVIATheme.surfaceBorder, lineWidth: 1)
         }
     }
@@ -184,7 +184,7 @@ struct AdminStaffWorkloadCard: View {
     }
 
     var body: some View {
-        BentoCard(cornerRadius: 14) {
+        BentoCard(cornerRadius: 11) {
             VStack(spacing: 0) {
                 HStack(spacing: 12) {
                     Text(member.initials)
@@ -243,7 +243,7 @@ struct AdminPartnerCard: View {
         let assignedPackages = viewModel.packageAssignments.filter { $0.assignedPartnerIds.contains(partner.id) }
         let partnerClients = viewModel.allClientBuilds.filter { $0.salesPartnerId == partner.id }
 
-        BentoCard(cornerRadius: 14) {
+        BentoCard(cornerRadius: 11) {
             VStack(spacing: 0) {
                 HStack(spacing: 12) {
                     Text(partner.initials.isEmpty ? "?" : partner.initials)

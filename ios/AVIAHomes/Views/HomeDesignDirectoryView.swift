@@ -264,7 +264,7 @@ struct HomeDesignDirectoryView: View {
                             }
                             .overlay {
                                 let isSelected = compareSelections.contains(design)
-                                RoundedRectangle(cornerRadius: 14)
+                                RoundedRectangle(cornerRadius: 11)
                                     .stroke(isSelected ? AVIATheme.timelessBrown : .clear, lineWidth: 2)
                             }
                     }
@@ -303,7 +303,7 @@ struct HomeDesignDirectoryView: View {
         .padding(.horizontal, 14)
         .padding(.vertical, 10)
         .background(AVIATheme.timelessBrown.opacity(0.06))
-        .clipShape(.rect(cornerRadius: 12))
+        .clipShape(.rect(cornerRadius: 10))
         .padding(.horizontal, 16)
     }
 
@@ -322,7 +322,7 @@ struct HomeDesignDirectoryView: View {
             .frame(height: 52)
             .foregroundStyle(AVIATheme.aviaWhite)
             .background(AVIATheme.primaryGradient)
-            .clipShape(.rect(cornerRadius: 14))
+            .clipShape(.rect(cornerRadius: 11))
             .shadow(color: AVIATheme.timelessBrown.opacity(0.3), radius: 12, y: 4)
         }
         .padding(.horizontal, 20)
@@ -384,7 +384,7 @@ struct HomeDesignDirectoryView: View {
                 .background(Color(hex: "f5f5f5"))
                 .clipShape(.rect(cornerRadii: .init(bottomLeading: 14, bottomTrailing: 14)))
             }
-            .clipShape(.rect(cornerRadius: 14))
+            .clipShape(.rect(cornerRadius: 11))
     }
 }
 

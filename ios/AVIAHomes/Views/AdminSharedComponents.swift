@@ -7,7 +7,7 @@ struct AdminMetricCard: View {
     let color: Color
 
     var body: some View {
-        BentoCard(cornerRadius: 16) {
+        BentoCard(cornerRadius: 13) {
             VStack(alignment: .leading, spacing: 8) {
                 BentoIconCircle(icon: icon, color: color)
                 Text(value)
@@ -59,9 +59,9 @@ struct AdminQuickActionContent: View {
         }
         .padding(12)
         .background(AVIATheme.cardBackground)
-        .clipShape(.rect(cornerRadius: 14))
+        .clipShape(.rect(cornerRadius: 11))
         .overlay {
-            RoundedRectangle(cornerRadius: 14).stroke(AVIATheme.surfaceBorder, lineWidth: 1)
+            RoundedRectangle(cornerRadius: 11).stroke(AVIATheme.surfaceBorder, lineWidth: 1)
         }
     }
 }

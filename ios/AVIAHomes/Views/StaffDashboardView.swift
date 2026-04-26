@@ -86,7 +86,7 @@ struct StaffDashboardView: View {
         .padding(20)
         .frame(maxWidth: .infinity, alignment: .leading)
         .background(AVIATheme.warmAccent)
-        .clipShape(.rect(cornerRadius: 20))
+        .clipShape(.rect(cornerRadius: 16))
         .padding(.horizontal, 16)
     }
 

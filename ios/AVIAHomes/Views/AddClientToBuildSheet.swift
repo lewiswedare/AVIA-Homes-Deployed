@@ -38,7 +38,7 @@ struct AddClientToBuildSheet: View {
                         .frame(maxWidth: .infinity)
                         .padding(.vertical, 60)
                     } else {
-                        BentoCard(cornerRadius: 16) {
+                        BentoCard(cornerRadius: 13) {
                             VStack(alignment: .leading, spacing: 12) {
                                 Label("Select a client to add", systemImage: "person.badge.plus")
                                     .font(.neueSubheadlineMedium)
@@ -74,7 +74,7 @@ struct AddClientToBuildSheet: View {
                                                 .foregroundStyle(AVIATheme.timelessBrown)
                                         }
                                         .padding(10)
-                                        .clipShape(.rect(cornerRadius: 10))
+                                        .clipShape(.rect(cornerRadius: 8))
                                     }
                                     .buttonStyle(.pressable(.subtle))
                                 }

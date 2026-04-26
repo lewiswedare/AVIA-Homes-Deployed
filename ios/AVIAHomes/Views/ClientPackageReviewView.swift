@@ -60,7 +60,7 @@ struct ClientPackageReviewView: View {
                 viewModel.clientResponseForPackage(pkg.id, clientId: viewModel.currentUser.id)?.status == .accepted
             }.count
 
-            BentoCard(cornerRadius: 16) {
+            BentoCard(cornerRadius: 13) {
                 VStack(alignment: .leading, spacing: 6) {
                     BentoIconCircle(icon: "clock.fill", color: AVIATheme.warning)
                     Text("\(pendingCount)")
@@ -74,7 +74,7 @@ struct ClientPackageReviewView: View {
                 .frame(maxWidth: .infinity, alignment: .leading)
             }
 
-            BentoCard(cornerRadius: 16) {
+            BentoCard(cornerRadius: 13) {
                 VStack(alignment: .leading, spacing: 6) {
                     BentoIconCircle(icon: "checkmark.circle.fill", color: AVIATheme.success)
                     Text("\(acceptedCount)")
@@ -97,7 +97,7 @@ struct ClientPackageReviewView: View {
         let facade = package.selectedFacadeId.flatMap { viewModel.findFacade(byId: $0) }
         let tier = package.specTier
 
-        return BentoCard(cornerRadius: 16) {
+        return BentoCard(cornerRadius: 13) {
             VStack(spacing: 0) {
                 NavigationLink {
                     PackageDetailView(package: package)
@@ -207,7 +207,7 @@ struct ClientPackageReviewView: View {
                 .foregroundStyle(AVIATheme.timelessBrown)
                 .frame(width: 32, height: 32)
                 .background(AVIATheme.timelessBrown.opacity(0.1))
-                .clipShape(.rect(cornerRadius: 8))
+                .clipShape(.rect(cornerRadius: 6))
             VStack(alignment: .leading, spacing: 1) {
                 Text(title)
                     .font(.neueCaptionMedium)
@@ -226,7 +226,7 @@ struct ClientPackageReviewView: View {
         .padding(.horizontal, 12)
         .padding(.vertical, 10)
         .background(AVIATheme.surfaceElevated.opacity(0.5))
-        .clipShape(.rect(cornerRadius: 10))
+        .clipShape(.rect(cornerRadius: 8))
     }
 
     private func responseStatusBadge(_ status: PackageResponseStatus?) -> some View {

@@ -88,7 +88,7 @@ struct AdminEOIReviewView: View {
 
     private func eoiRow(_ eoi: EOISubmissionRow) -> some View {
         let otherEOIsForPackage = eoiList.filter { $0.package_id == eoi.package_id && $0.id != eoi.id }
-        return BentoCard(cornerRadius: 14) {
+        return BentoCard(cornerRadius: 11) {
             VStack(spacing: 0) {
                 HStack(spacing: 12) {
                     VStack(alignment: .leading, spacing: 4) {
@@ -229,7 +229,7 @@ struct AdminEOIDetailSheet: View {
                             }
                             .padding(16)
                             .background(AVIATheme.cardBackground)
-                            .clipShape(.rect(cornerRadius: 14))
+                            .clipShape(.rect(cornerRadius: 11))
                         }
                     }
 
@@ -345,7 +345,7 @@ struct AdminEOIDetailSheet: View {
         }
         .padding(16)
         .background(AVIATheme.cardBackground)
-        .clipShape(.rect(cornerRadius: 14))
+        .clipShape(.rect(cornerRadius: 11))
     }
 
     private var statusInfo: (String, Color) {
@@ -392,9 +392,9 @@ struct AdminEOIDetailSheet: View {
                         .lineLimit(3...6)
                         .padding(12)
                         .background(AVIATheme.cardBackground)
-                        .clipShape(.rect(cornerRadius: 10))
+                        .clipShape(.rect(cornerRadius: 8))
                         .overlay {
-                            RoundedRectangle(cornerRadius: 10)
+                            RoundedRectangle(cornerRadius: 8)
                                 .stroke(AVIATheme.surfaceBorder, lineWidth: 1)
                         }
                 }
@@ -413,7 +413,7 @@ struct AdminEOIDetailSheet: View {
             }
         } else if eoi.status == "approved" {
             VStack(spacing: 12) {
-                BentoCard(cornerRadius: 14) {
+                BentoCard(cornerRadius: 11) {
                     HStack(spacing: 12) {
                         Image(systemName: "checkmark.seal.fill")
                             .font(.system(size: 20))
@@ -436,7 +436,7 @@ struct AdminEOIDetailSheet: View {
                 .disabled(isProcessing)
             }
         } else if eoi.status == "declined" {
-            BentoCard(cornerRadius: 14) {
+            BentoCard(cornerRadius: 11) {
                 HStack(spacing: 12) {
                     Image(systemName: "xmark.circle.fill")
                         .font(.system(size: 20))
@@ -648,7 +648,7 @@ struct AdminEOIDetailSheet: View {
     // MARK: - Helpers
 
     private func eoiDetailCard<Content: View>(_ title: String, icon: String, @ViewBuilder content: @escaping () -> Content) -> some View {
-        BentoCard(cornerRadius: 14) {
+        BentoCard(cornerRadius: 11) {
             VStack(alignment: .leading, spacing: 10) {
                 HStack(spacing: 8) {
                     Image(systemName: icon)

@@ -89,7 +89,7 @@ struct FacadeDetailView: View {
         }
         .padding(14)
         .background(AVIATheme.cardBackground)
-        .clipShape(.rect(cornerRadius: 16))
+        .clipShape(.rect(cornerRadius: 13))
     }
 
     private var descriptionSection: some View {
@@ -141,7 +141,7 @@ struct FacadeDetailView: View {
                 }
             }
             .background(AVIATheme.cardBackground)
-            .clipShape(.rect(cornerRadius: 16))
+            .clipShape(.rect(cornerRadius: 13))
         }
     }
 
@@ -169,7 +169,7 @@ struct FacadeDetailView: View {
                             }
                             .allowsHitTesting(false)
                         }
-                        .clipShape(.rect(cornerRadius: 16))
+                        .clipShape(.rect(cornerRadius: 13))
                         .tag(index)
                 }
             }
@@ -187,14 +187,14 @@ struct FacadeDetailView: View {
 
     private var enquirySection: some View {
         VStack(spacing: 12) {
-            BentoCard(cornerRadius: 16) {
+            BentoCard(cornerRadius: 13) {
                 HStack(spacing: 14) {
                     Image(systemName: "questionmark.bubble")
                         .font(.neueCorpMedium(22))
                         .foregroundStyle(AVIATheme.timelessBrown)
                         .frame(width: 48, height: 48)
                         .background(AVIATheme.timelessBrown.opacity(0.1))
-                        .clipShape(.rect(cornerRadius: 12))
+                        .clipShape(.rect(cornerRadius: 10))
 
                     VStack(alignment: .leading, spacing: 2) {
                         Text("Interested in this facade?")
@@ -222,7 +222,7 @@ struct FacadeDetailView: View {
                     .frame(height: 48)
                     .foregroundStyle(AVIATheme.aviaWhite)
                     .background(AVIATheme.primaryGradient)
-                    .clipShape(.rect(cornerRadius: 14))
+                    .clipShape(.rect(cornerRadius: 11))
                 }
             }
         }

@@ -39,7 +39,7 @@ struct SpecificationCategoryDetailView: View {
                 .foregroundStyle(AVIATheme.aviaWhite)
                 .frame(width: 44, height: 44)
                 .background(AVIATheme.primaryGradient)
-                .clipShape(.rect(cornerRadius: 12))
+                .clipShape(.rect(cornerRadius: 10))
 
             VStack(alignment: .leading, spacing: 3) {
                 Text("\(category.items.count) inclusions in this category")
@@ -61,7 +61,7 @@ struct SpecificationCategoryDetailView: View {
         }
         .padding(16)
         .background(AVIATheme.cardBackground)
-        .clipShape(.rect(cornerRadius: 16))
+        .clipShape(.rect(cornerRadius: 13))
     }
 
     private func itemCard(_ item: SpecItem) -> some View {
@@ -107,7 +107,7 @@ struct SpecificationCategoryDetailView: View {
                 .padding(14)
             }
             .background(AVIATheme.timelessBrown)
-            .clipShape(.rect(cornerRadius: 16))
+            .clipShape(.rect(cornerRadius: 13))
         }
         .buttonStyle(.pressable(.subtle))
     }

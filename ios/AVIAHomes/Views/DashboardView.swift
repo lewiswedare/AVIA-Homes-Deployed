@@ -231,7 +231,7 @@ struct DashboardView: View {
         NavigationLink {
             ClientPackageReviewView()
         } label: {
-            BentoCard(cornerRadius: 16) {
+            BentoCard(cornerRadius: 13) {
                 HStack(spacing: 12) {
                     VStack(alignment: .leading, spacing: 2) {
                         Text("My Package")
@@ -326,7 +326,7 @@ struct DashboardView: View {
             Button {
                 showContractSigning = true
             } label: {
-                BentoCard(cornerRadius: 14) {
+                BentoCard(cornerRadius: 11) {
                     HStack(spacing: 12) {
                         ZStack {
                             Circle()
@@ -416,7 +416,7 @@ struct DashboardView: View {
                 .padding(12)
                 .frame(maxWidth: .infinity, alignment: .leading)
             }
-            .clipShape(.rect(cornerRadius: 16))
+            .clipShape(.rect(cornerRadius: 13))
             .contextMenu {
                 Button {
                     if let url = URL(string: "tel:0468040280") {
@@ -440,7 +440,7 @@ struct DashboardView: View {
             if let next = viewModel.nextScheduleItem {
                 let _ = countdownTick
                 let remaining = next.timeUntil
-                BentoCard(cornerRadius: 16) {
+                BentoCard(cornerRadius: 13) {
                     VStack(spacing: 14) {
                         HStack {
                             VStack(alignment: .leading, spacing: 2) {
@@ -477,7 +477,7 @@ struct DashboardView: View {
                             .padding(.vertical, 10)
                             .padding(.horizontal, 8)
                             .background(AVIATheme.surfaceElevated)
-                            .clipShape(.rect(cornerRadius: 12))
+                            .clipShape(.rect(cornerRadius: 10))
                         }
 
                         HStack(spacing: 10) {
@@ -495,7 +495,7 @@ struct DashboardView: View {
                                 .frame(maxWidth: .infinity)
                                 .frame(height: 38)
                                 .background(AVIATheme.primaryGradient)
-                                .clipShape(.rect(cornerRadius: 10))
+                                .clipShape(.rect(cornerRadius: 8))
                             }
                             .sensoryFeedback(.impact(flexibility: .soft), trigger: showScheduleSheet)
 
@@ -512,7 +512,7 @@ struct DashboardView: View {
                                 .frame(maxWidth: .infinity)
                                 .frame(height: 38)
                                 .background(AVIATheme.surfaceElevated)
-                                .clipShape(.rect(cornerRadius: 10))
+                                .clipShape(.rect(cornerRadius: 8))
                             }
                         }
                     }
@@ -524,7 +524,7 @@ struct DashboardView: View {
 
     private var scheduleAndTasksRow: some View {
         HStack(spacing: 12) {
-            BentoCard(cornerRadius: 16) {
+            BentoCard(cornerRadius: 13) {
                 VStack(alignment: .leading, spacing: 8) {
                     HStack(spacing: 6) {
                         Image(systemName: "calendar.badge.clock")
@@ -544,7 +544,7 @@ struct DashboardView: View {
 
             VStack(spacing: 8) {
                 if let first = viewModel.upcomingScheduleItems.first {
-                    BentoCard(cornerRadius: 14) {
+                    BentoCard(cornerRadius: 11) {
                         HStack {
                             HStack(spacing: 6) {
                                 Image(systemName: first.icon)
@@ -564,7 +564,7 @@ struct DashboardView: View {
 
                 if viewModel.upcomingScheduleItems.count > 1 {
                     let second = viewModel.upcomingScheduleItems[1]
-                    BentoCard(cornerRadius: 14) {
+                    BentoCard(cornerRadius: 11) {
                         HStack {
                             HStack(spacing: 6) {
                                 Image(systemName: second.icon)
@@ -588,7 +588,7 @@ struct DashboardView: View {
 
     private var dateAndBuildInfo: some View {
         HStack(spacing: 12) {
-            BentoCard(cornerRadius: 16) {
+            BentoCard(cornerRadius: 13) {
                 VStack(alignment: .leading, spacing: 4) {
                     let day = Calendar.current.component(.day, from: Date())
                     let month = Date().formatted(.dateTime.month(.wide))
@@ -608,7 +608,7 @@ struct DashboardView: View {
             Button {
                 showMyDesignPlan = true
             } label: {
-                BentoCard(cornerRadius: 16) {
+                BentoCard(cornerRadius: 13) {
                     VStack(alignment: .leading, spacing: 4) {
                         HStack(spacing: 4) {
                             Text("My Home")
@@ -651,7 +651,7 @@ struct DashboardView: View {
                 .padding(16)
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .background(.ultraThinMaterial)
-                .clipShape(.rect(cornerRadius: 16))
+                .clipShape(.rect(cornerRadius: 13))
                 .shadow(color: AVIATheme.aviaBlack.opacity(0.06), radius: 8, y: 2)
             }
 
@@ -669,7 +669,7 @@ struct DashboardView: View {
                 .padding(16)
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .background(AVIATheme.cardBackground)
-                .clipShape(.rect(cornerRadius: 16))
+                .clipShape(.rect(cornerRadius: 13))
             }
         }
         .fixedSize(horizontal: false, vertical: true)
@@ -680,7 +680,7 @@ struct DashboardView: View {
             Button {
                 selectedTab = 3
             } label: {
-                BentoCard(cornerRadius: 16) {
+                BentoCard(cornerRadius: 13) {
                     VStack(alignment: .leading, spacing: 8) {
                         Text("Build Progress")
                             .font(.neueCaptionMedium)
@@ -756,7 +756,7 @@ struct DashboardView: View {
                 }
 
                 ForEach(reminders.prefix(3)) { reminder in
-                    BentoCard(cornerRadius: 14) {
+                    BentoCard(cornerRadius: 11) {
                         HStack(spacing: 12) {
                             Image(systemName: reminder.isRead ? "bell" : "bell.badge.fill")
                                 .font(.system(size: 16))
@@ -799,7 +799,7 @@ struct DashboardView: View {
     }
 
     private var resourceUsageCard: some View {
-        BentoCard(cornerRadius: 16) {
+        BentoCard(cornerRadius: 13) {
             VStack(alignment: .leading, spacing: 14) {
                 HStack {
                     VStack(alignment: .leading, spacing: 2) {
@@ -813,7 +813,7 @@ struct DashboardView: View {
                     Spacer()
                 }
 
-                BentoCard(cornerRadius: 12) {
+                BentoCard(cornerRadius: 10) {
                     HStack(spacing: 0) {
                         ResourceMetric(value: "\(Int(viewModel.overallProgress * 100))%", label: "Progress")
                         ResourceMetric(value: "\(colourVM.completedCount)", label: "Selections")
@@ -822,7 +822,7 @@ struct DashboardView: View {
                     .padding(.vertical, 14)
                 }
                 .background(AVIATheme.surfaceElevated)
-                .clipShape(.rect(cornerRadius: 12))
+                .clipShape(.rect(cornerRadius: 10))
 
                 VStack(spacing: 6) {
                     HStack {
@@ -862,7 +862,7 @@ struct DashboardView: View {
     }
 
     private func scheduleItemRow(item: ScheduleItem) -> some View {
-        BentoCard(cornerRadius: 16) {
+        BentoCard(cornerRadius: 13) {
             VStack(spacing: 0) {
                 HStack(spacing: 12) {
                     Image(systemName: item.icon)
@@ -1033,14 +1033,14 @@ struct DashboardView: View {
                             .padding(.horizontal, 16)
                             .padding(.vertical, 12)
                             .background(AVIATheme.primaryGradient)
-                            .clipShape(.rect(cornerRadius: 12))
+                            .clipShape(.rect(cornerRadius: 10))
                         }
                     }
                 }
                 .padding(14)
             }
             .background(AVIATheme.cardBackground)
-            .clipShape(.rect(cornerRadius: 16))
+            .clipShape(.rect(cornerRadius: 13))
         }
     }
 
@@ -1124,7 +1124,7 @@ struct DashboardView: View {
         }
         .frame(width: 260)
         .background(AVIATheme.cardBackground)
-        .clipShape(.rect(cornerRadius: 16))
+        .clipShape(.rect(cornerRadius: 13))
     }
 
     private var specRangesSlider: some View {
@@ -1198,7 +1198,7 @@ struct DashboardView: View {
         }
         .frame(width: 240)
         .background(AVIATheme.cardBackground)
-        .clipShape(.rect(cornerRadius: 16))
+        .clipShape(.rect(cornerRadius: 13))
     }
 
     private func specRangeImageURL(for tier: SpecTier) -> String {
@@ -1276,11 +1276,11 @@ struct DashboardView: View {
             .frame(maxWidth: .infinity, alignment: .leading)
         }
         .background(AVIATheme.cardBackground)
-        .clipShape(.rect(cornerRadius: 16))
+        .clipShape(.rect(cornerRadius: 13))
     }
 
     private func compactBlogRow(post: BlogPost) -> some View {
-        BentoCard(cornerRadius: 16) {
+        BentoCard(cornerRadius: 13) {
             HStack(spacing: 12) {
                 Color(AVIATheme.surfaceElevated)
                     .frame(width: 72, height: 72)
@@ -1292,7 +1292,7 @@ struct DashboardView: View {
                         }
                         .allowsHitTesting(false)
                     }
-                    .clipShape(.rect(cornerRadius: 10))
+                    .clipShape(.rect(cornerRadius: 8))
 
                 VStack(alignment: .leading, spacing: 4) {
                     Text(post.category.uppercased())
@@ -1362,7 +1362,7 @@ struct DashboardView: View {
                         }
                         .frame(width: 260, height: 325)
                         .background(AVIATheme.cardBackground)
-                        .clipShape(.rect(cornerRadius: 16))
+                        .clipShape(.rect(cornerRadius: 13))
                     }
                 }
             }
@@ -1409,7 +1409,7 @@ struct DashboardView: View {
                 .background(Color(red: 245.0/255.0, green: 245.0/255.0, blue: 245.0/255.0))
                 .clipShape(.rect(cornerRadii: .init(bottomLeading: 16, bottomTrailing: 16)))
             }
-            .clipShape(.rect(cornerRadius: 16))
+            .clipShape(.rect(cornerRadius: 13))
     }
 
     private var houseLandSection: some View {
@@ -1423,7 +1423,7 @@ struct DashboardView: View {
     }
 
     private func houseLandCard(package: HouseLandPackage) -> some View {
-        BentoCard(cornerRadius: 16) {
+        BentoCard(cornerRadius: 13) {
             HStack(spacing: 12) {
                 Color(AVIATheme.surfaceElevated)
                     .frame(width: 90, height: 90)
@@ -1435,7 +1435,7 @@ struct DashboardView: View {
                         }
                         .allowsHitTesting(false)
                     }
-                    .clipShape(.rect(cornerRadius: 12))
+                    .clipShape(.rect(cornerRadius: 10))
                     .overlay(alignment: .topLeading) {
                         if package.isNew {
                             AVIAChip("NEW", onLight: false)
@@ -1502,7 +1502,7 @@ struct DashboardView: View {
     }
 
     private func highlightCard(icon: String, title: String, description: String) -> some View {
-        BentoCard(cornerRadius: 16) {
+        BentoCard(cornerRadius: 13) {
             VStack(alignment: .leading, spacing: 8) {
                 Text(title)
                     .font(.neueSubheadlineMedium)
@@ -1558,7 +1558,7 @@ struct DashboardView: View {
                             .frame(maxWidth: .infinity)
                             .frame(height: 38)
                             .background(AVIATheme.brownGradient)
-                            .clipShape(.rect(cornerRadius: 10))
+                            .clipShape(.rect(cornerRadius: 8))
                         }
                     }
 
@@ -1572,7 +1572,7 @@ struct DashboardView: View {
                             .frame(maxWidth: .infinity)
                             .frame(height: 38)
                             .background(AVIATheme.surfaceElevated)
-                            .clipShape(.rect(cornerRadius: 10))
+                            .clipShape(.rect(cornerRadius: 8))
                         }
                     }
                 }
@@ -1588,7 +1588,7 @@ struct DashboardView: View {
             .padding(14)
         }
         .background(AVIATheme.cardBackground)
-        .clipShape(.rect(cornerRadius: 16))
+        .clipShape(.rect(cornerRadius: 13))
     }
 
     private func sectionHeader(title: String, icon: String) -> some View {

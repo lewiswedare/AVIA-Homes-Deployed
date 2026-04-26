@@ -160,7 +160,7 @@ struct BuildColourSelectionView: View {
     }
 
     private var colourUpgradeSummarySection: some View {
-        BentoCard(cornerRadius: 14) {
+        BentoCard(cornerRadius: 11) {
             VStack(alignment: .leading, spacing: 14) {
                 HStack(spacing: 10) {
                     Image(systemName: "tag.fill")
@@ -210,7 +210,7 @@ struct BuildColourSelectionView: View {
                 .frame(maxWidth: .infinity)
                 .frame(height: 52)
                 .background(AVIATheme.primaryGradient)
-                .clipShape(.rect(cornerRadius: 14))
+                .clipShape(.rect(cornerRadius: 11))
             }
             .buttonStyle(.pressable(.prominent))
             .disabled(viewModel.isSaving)
@@ -238,9 +238,9 @@ struct BuildColourSelectionView: View {
             .padding(14)
             .frame(maxWidth: .infinity, alignment: .leading)
             .background(AVIATheme.warning.opacity(0.08))
-            .clipShape(.rect(cornerRadius: 14))
+            .clipShape(.rect(cornerRadius: 11))
             .overlay {
-                RoundedRectangle(cornerRadius: 14)
+                RoundedRectangle(cornerRadius: 11)
                     .stroke(AVIATheme.warning.opacity(0.3), lineWidth: 1)
             }
         }
@@ -262,7 +262,7 @@ struct BuildColourSelectionView: View {
         .padding(.horizontal, 20)
         .padding(.vertical, 14)
         .background(AVIATheme.aviaBlack)
-        .clipShape(.rect(cornerRadius: 16))
+        .clipShape(.rect(cornerRadius: 13))
         .shadow(color: AVIATheme.aviaBlack.opacity(0.15), radius: 10, y: -2)
         .padding(.horizontal, 16)
         .padding(.bottom, 8)
@@ -297,7 +297,7 @@ struct BuildColourSelectionView: View {
         }
         .padding(14)
         .background(AVIATheme.cardBackground)
-        .clipShape(.rect(cornerRadius: 14))
+        .clipShape(.rect(cornerRadius: 11))
     }
 
     /// Mirrors the spec confirmation view's `upgradeQuotesAwaitingResponseCard`
@@ -335,9 +335,9 @@ struct BuildColourSelectionView: View {
             }
             .padding(14)
             .background(AVIATheme.cardBackground)
-            .clipShape(.rect(cornerRadius: 14))
+            .clipShape(.rect(cornerRadius: 11))
             .overlay {
-                RoundedRectangle(cornerRadius: 14)
+                RoundedRectangle(cornerRadius: 11)
                     .stroke(AVIATheme.accent.opacity(0.25), lineWidth: 1)
             }
         }
@@ -410,7 +410,7 @@ struct BuildColourSelectionView: View {
         }
         .padding(12)
         .background(AVIATheme.accent.opacity(0.04))
-        .clipShape(.rect(cornerRadius: 10))
+        .clipShape(.rect(cornerRadius: 8))
     }
 
     private var colourStatusBanner: some View {
@@ -478,9 +478,9 @@ struct BuildColourSelectionView: View {
         }
         .padding(14)
         .background(color.opacity(0.06))
-        .clipShape(.rect(cornerRadius: 14))
+        .clipShape(.rect(cornerRadius: 11))
         .overlay {
-            RoundedRectangle(cornerRadius: 14)
+            RoundedRectangle(cornerRadius: 11)
                 .stroke(color.opacity(0.2), lineWidth: 1)
         }
     }
@@ -492,7 +492,7 @@ struct BuildColourSelectionView: View {
             .padding(12)
             .frame(maxWidth: .infinity, alignment: .leading)
             .background(AVIATheme.timelessBrown.opacity(0.06))
-            .clipShape(.rect(cornerRadius: 12))
+            .clipShape(.rect(cornerRadius: 10))
     }
 
     private func colourItemCard(_ item: BuildSpecSelection) -> some View {
@@ -519,7 +519,7 @@ struct BuildColourSelectionView: View {
                                 }
                                 .allowsHitTesting(false)
                             }
-                            .clipShape(.rect(cornerRadius: 8))
+                            .clipShape(.rect(cornerRadius: 6))
                     } else {
                         Circle()
                             .fill(Color(hex: opt.hexColor))
@@ -527,7 +527,7 @@ struct BuildColourSelectionView: View {
                             .overlay { Circle().stroke(AVIATheme.surfaceBorder, lineWidth: 1) }
                     }
                 } else {
-                    RoundedRectangle(cornerRadius: 8)
+                    RoundedRectangle(cornerRadius: 6)
                         .fill(AVIATheme.timelessBrown.opacity(0.08))
                         .frame(width: 44, height: 44)
                 }
@@ -571,10 +571,10 @@ struct BuildColourSelectionView: View {
             }
             .padding(12)
             .background(AVIATheme.cardBackground)
-            .clipShape(.rect(cornerRadius: 14))
+            .clipShape(.rect(cornerRadius: 11))
             .overlay {
                 if colourSel != nil {
-                    RoundedRectangle(cornerRadius: 14)
+                    RoundedRectangle(cornerRadius: 11)
                         .stroke(AVIATheme.success.opacity(0.2), lineWidth: 1)
                 }
             }
@@ -729,13 +729,13 @@ struct BuildColourPickerSheet: View {
                                     .padding(10)
                                     .frame(maxWidth: .infinity, alignment: .leading)
                                     .background(AVIATheme.timelessBrown.opacity(0.06))
-                                    .clipShape(.rect(cornerRadius: 8))
+                                    .clipShape(.rect(cornerRadius: 6))
                             }
                         }
                     }
                     .padding(14)
                     .background(AVIATheme.cardBackground)
-                    .clipShape(.rect(cornerRadius: 14))
+                    .clipShape(.rect(cornerRadius: 11))
 
                     if colourCategories.isEmpty {
                         Text("No colour options available for this item.")

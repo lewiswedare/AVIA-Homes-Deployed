@@ -45,14 +45,14 @@ struct AdminSpecRangeEditorView: View {
     }
 
     private var headerCard: some View {
-        BentoCard(cornerRadius: 16) {
+        BentoCard(cornerRadius: 13) {
             HStack(spacing: 14) {
                 Image(systemName: "square.stack.3d.up.fill")
                     .font(.neueCorpMedium(18))
                     .foregroundStyle(AVIATheme.aviaWhite)
                     .frame(width: 44, height: 44)
                     .background(AVIATheme.primaryGradient)
-                    .clipShape(.rect(cornerRadius: 12))
+                    .clipShape(.rect(cornerRadius: 10))
 
                 VStack(alignment: .leading, spacing: 3) {
                     Text("Spec Range Content")
@@ -76,7 +76,7 @@ struct AdminSpecRangeEditorView: View {
         let heroURL = row?.hero_image_url ?? ""
 
         return Button { editingTier = tier } label: {
-            BentoCard(cornerRadius: 14) {
+            BentoCard(cornerRadius: 11) {
                 VStack(spacing: 0) {
                     Color(AVIATheme.surfaceElevated)
                         .frame(height: 150)
@@ -141,7 +141,7 @@ struct AdminSpecRangeEditorView: View {
     }
 
     private var infoCard: some View {
-        BentoCard(cornerRadius: 14) {
+        BentoCard(cornerRadius: 11) {
             HStack(spacing: 12) {
                 Image(systemName: "info.circle.fill")
                     .font(.neueCorp(14))
@@ -257,7 +257,7 @@ private struct SpecRangeEditSheet: View {
     }
 
     private var heroCard: some View {
-        BentoCard(cornerRadius: 14) {
+        BentoCard(cornerRadius: 11) {
             VStack(alignment: .leading, spacing: 14) {
                 sectionHeader("Hero Image")
                 AdminImagePickerField(
@@ -272,7 +272,7 @@ private struct SpecRangeEditSheet: View {
     }
 
     private var summaryCard: some View {
-        BentoCard(cornerRadius: 14) {
+        BentoCard(cornerRadius: 11) {
             VStack(alignment: .leading, spacing: 14) {
                 sectionHeader("Summary")
                 sheetField("About This Range") {
@@ -286,7 +286,7 @@ private struct SpecRangeEditSheet: View {
     }
 
     private var highlightsCard: some View {
-        BentoCard(cornerRadius: 14) {
+        BentoCard(cornerRadius: 11) {
             VStack(alignment: .leading, spacing: 14) {
                 HStack {
                     sectionHeader("Highlights")
@@ -371,12 +371,12 @@ private struct SpecRangeEditSheet: View {
         }
         .padding(12)
         .background(AVIATheme.surfaceElevated)
-        .clipShape(.rect(cornerRadius: 10))
+        .clipShape(.rect(cornerRadius: 8))
         .padding(.horizontal, 14)
     }
 
     private var roomsCard: some View {
-        BentoCard(cornerRadius: 14) {
+        BentoCard(cornerRadius: 11) {
             VStack(alignment: .leading, spacing: 14) {
                 HStack {
                     sectionHeader("Room Gallery")
@@ -439,12 +439,12 @@ private struct SpecRangeEditSheet: View {
         }
         .padding(12)
         .background(AVIATheme.surfaceElevated)
-        .clipShape(.rect(cornerRadius: 10))
+        .clipShape(.rect(cornerRadius: 8))
         .padding(.horizontal, 14)
     }
 
     private var pdfCard: some View {
-        BentoCard(cornerRadius: 14) {
+        BentoCard(cornerRadius: 11) {
             VStack(alignment: .leading, spacing: 14) {
                 sectionHeader("Spec Range PDF")
 
@@ -470,7 +470,7 @@ private struct SpecRangeEditSheet: View {
     }
 
     private var partnerLogosCard: some View {
-        BentoCard(cornerRadius: 14) {
+        BentoCard(cornerRadius: 11) {
             VStack(alignment: .leading, spacing: 14) {
                 HStack {
                     sectionHeader("Trusted Brand Partners")
@@ -533,7 +533,7 @@ private struct SpecRangeEditSheet: View {
         }
         .padding(12)
         .background(AVIATheme.surfaceElevated)
-        .clipShape(.rect(cornerRadius: 10))
+        .clipShape(.rect(cornerRadius: 8))
         .padding(.horizontal, 14)
     }
 
@@ -554,7 +554,7 @@ private struct SpecRangeEditSheet: View {
             field()
                 .padding(10)
                 .background(AVIATheme.cardBackground)
-                .clipShape(.rect(cornerRadius: 8))
+                .clipShape(.rect(cornerRadius: 6))
         }
         .padding(.horizontal, 14)
     }

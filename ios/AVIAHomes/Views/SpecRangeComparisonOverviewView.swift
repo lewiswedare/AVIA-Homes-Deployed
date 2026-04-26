@@ -73,7 +73,7 @@ struct SpecRangeComparisonOverviewView: View {
         }
         .padding(14)
         .background(AVIATheme.cardBackground)
-        .clipShape(.rect(cornerRadius: 16))
+        .clipShape(.rect(cornerRadius: 13))
     }
 
     private func tierSelector(selection: Binding<SpecTier>, other: SpecTier) -> some View {
@@ -108,9 +108,9 @@ struct SpecRangeComparisonOverviewView: View {
             .frame(maxWidth: .infinity, alignment: .leading)
             .padding(12)
             .background(AVIATheme.surfaceElevated.opacity(0.5))
-            .clipShape(.rect(cornerRadius: 12))
+            .clipShape(.rect(cornerRadius: 10))
             .overlay {
-                RoundedRectangle(cornerRadius: 12)
+                RoundedRectangle(cornerRadius: 10)
                     .stroke(AVIATheme.timelessBrown.opacity(0.25), lineWidth: 1)
             }
         }
@@ -124,7 +124,7 @@ struct SpecRangeComparisonOverviewView: View {
                     .foregroundStyle(AVIATheme.timelessBrown)
                     .frame(width: 32, height: 32)
                     .background(AVIATheme.timelessBrown.opacity(0.08))
-                    .clipShape(.rect(cornerRadius: 8))
+                    .clipShape(.rect(cornerRadius: 6))
 
                 Text(category.name)
                     .font(.neueHeadline)
@@ -183,7 +183,7 @@ struct SpecRangeComparisonOverviewView: View {
         }
         .padding(14)
         .background(AVIATheme.cardBackground)
-        .clipShape(.rect(cornerRadius: 18))
+        .clipShape(.rect(cornerRadius: 14))
     }
 
     private func bigTierCell(item: SpecItem, tier: SpecTier) -> some View {
@@ -222,7 +222,7 @@ struct SpecRangeComparisonOverviewView: View {
                             .foregroundStyle(AVIATheme.textTertiary.opacity(0.3))
                     }
                 }
-                .clipShape(.rect(cornerRadius: 12))
+                .clipShape(.rect(cornerRadius: 10))
 
             Text(item.description(for: tier))
                 .font(.neueCaption)
@@ -233,7 +233,7 @@ struct SpecRangeComparisonOverviewView: View {
         .padding(12)
         .frame(maxWidth: .infinity, alignment: .leading)
         .background(AVIATheme.surfaceElevated.opacity(0.4))
-        .clipShape(.rect(cornerRadius: 14))
+        .clipShape(.rect(cornerRadius: 11))
     }
 
     private func coloursPreview(item: SpecItem) -> some View {

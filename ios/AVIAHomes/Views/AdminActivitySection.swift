@@ -52,7 +52,7 @@ struct AdminActivitySection: View {
 
     var body: some View {
         VStack(spacing: 12) {
-            BentoCard(cornerRadius: 16) {
+            BentoCard(cornerRadius: 13) {
                 VStack(alignment: .leading, spacing: 12) {
                     HStack(spacing: 8) {
                         Image(systemName: "clock.arrow.circlepath")

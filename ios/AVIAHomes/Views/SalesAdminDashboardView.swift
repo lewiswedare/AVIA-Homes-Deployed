@@ -93,7 +93,7 @@ struct SalesAdminDashboardView: View {
         .padding(20)
         .frame(maxWidth: .infinity, alignment: .leading)
         .background(AVIATheme.warmAccent)
-        .clipShape(.rect(cornerRadius: 20))
+        .clipShape(.rect(cornerRadius: 16))
     }
 
     private var overviewStats: some View {
@@ -103,7 +103,7 @@ struct SalesAdminDashboardView: View {
                 ImmersiveStatCard(value: "\(viewModel.allClientBuilds.filter { $0.currentStage != nil }.count)", label: "In Progress")
             }
 
-            BentoCard(cornerRadius: 16) {
+            BentoCard(cornerRadius: 13) {
                 VStack(alignment: .leading, spacing: 10) {
                     HStack {
                         Text("Portfolio Progress")

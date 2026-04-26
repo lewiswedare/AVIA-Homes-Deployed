@@ -88,7 +88,7 @@ struct DocumentsView: View {
                                 .foregroundStyle(AVIATheme.textPrimary)
                                 .padding(.leading, 4)
 
-                            BentoCard(cornerRadius: 14) {
+                            BentoCard(cornerRadius: 11) {
                                 VStack(spacing: 0) {
                                     ForEach(Array(docs.enumerated()), id: \.element.id) { index, doc in
                                         DocumentRow(document: doc)
