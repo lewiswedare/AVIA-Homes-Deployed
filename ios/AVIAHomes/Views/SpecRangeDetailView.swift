@@ -379,8 +379,8 @@ struct SpecRangeDetailView: View {
 
     @ViewBuilder
     private var downloadSection: some View {
-        if let pdfString = specData.pdfURL, !pdfString.isEmpty, let pdfURL = URL(string: pdfString) {
-            let previewURL = (specData.pdfPreviewImageURL).flatMap { $0.isEmpty ? nil : URL(string: $0) }
+        if let pdfString = specData.pdfURL, !pdfString.isEmpty, let pdfURL = pdfString.urlWithConfiguredSupabaseHost {
+            let previewURL = (specData.pdfPreviewImageURL).flatMap { $0.isEmpty ? nil : $0.urlWithConfiguredSupabaseHost }
             Color(AVIATheme.surfaceElevated)
                 .frame(height: 420)
                 .overlay {
