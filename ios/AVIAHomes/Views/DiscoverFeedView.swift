@@ -362,7 +362,7 @@ struct DiscoverFeedView: View {
                 }
                 .padding(12)
                 .frame(maxWidth: .infinity, alignment: .leading)
-                .background(.thinMaterial)
+                .background(Color(hex: "f5f5f5"))
                 .clipShape(.rect(cornerRadii: .init(bottomLeading: 16, bottomTrailing: 16)))
             }
             .clipShape(.rect(cornerRadius: 16))

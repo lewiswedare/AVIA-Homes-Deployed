@@ -381,7 +381,7 @@ struct HomeDesignDirectoryView: View {
                 .padding(.horizontal, 10)
                 .padding(.vertical, 8)
                 .frame(maxWidth: .infinity, alignment: .leading)
-                .background(.thinMaterial)
+                .background(Color(hex: "f5f5f5"))
                 .clipShape(.rect(cornerRadii: .init(bottomLeading: 14, bottomTrailing: 14)))
             }
             .clipShape(.rect(cornerRadius: 14))
