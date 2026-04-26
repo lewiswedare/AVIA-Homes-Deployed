@@ -377,44 +377,46 @@ struct SpecRangeDetailView: View {
         }
     }
 
+    @ViewBuilder
     private var downloadSection: some View {
-        VStack(spacing: 12) {
-            BentoCard(cornerRadius: 16) {
-                HStack(spacing: 14) {
-                    Image(systemName: "doc.richtext")
-                        .font(.neueCorpMedium(22))
-                        .foregroundStyle(AVIATheme.timelessBrown)
-                        .frame(width: 48, height: 48)
-                        .background(AVIATheme.timelessBrown.opacity(0.1))
-                        .clipShape(.rect(cornerRadius: 12))
+        if let pdfString = specData.pdfURL, !pdfString.isEmpty, let pdfURL = URL(string: pdfString) {
+            VStack(spacing: 12) {
+                BentoCard(cornerRadius: 16) {
+                    HStack(spacing: 14) {
+                        Image(systemName: "doc.richtext")
+                            .font(.neueCorpMedium(22))
+                            .foregroundStyle(AVIATheme.timelessBrown)
+                            .frame(width: 48, height: 48)
+                            .background(AVIATheme.timelessBrown.opacity(0.1))
+                            .clipShape(.rect(cornerRadius: 12))
 
-                    VStack(alignment: .leading, spacing: 2) {
-                        Text("\(tier.displayName) Spec Range PDF")
-                            .font(.neueSubheadlineMedium)
-                            .foregroundStyle(AVIATheme.textPrimary)
-                        Text("Download the full specification document")
-                            .font(.neueCaption)
-                            .foregroundStyle(AVIATheme.textTertiary)
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text("\(tier.displayName) Spec Range PDF")
+                                .font(.neueSubheadlineMedium)
+                                .foregroundStyle(AVIATheme.textPrimary)
+                            Text("Download the full specification document")
+                                .font(.neueCaption)
+                                .foregroundStyle(AVIATheme.textTertiary)
+                        }
+
+                        Spacer(minLength: 0)
                     }
-
-                    Spacer(minLength: 0)
+                    .padding(14)
                 }
-                .padding(14)
-            }
 
-            Button {
-            } label: {
-                HStack(spacing: 8) {
-                    Image(systemName: "arrow.down.doc.fill")
-                        .font(.neueSubheadlineMedium)
-                    Text("Download PDF")
-                        .font(.neueSubheadlineMedium)
+                Link(destination: pdfURL) {
+                    HStack(spacing: 8) {
+                        Image(systemName: "arrow.down.doc.fill")
+                            .font(.neueSubheadlineMedium)
+                        Text("Download PDF")
+                            .font(.neueSubheadlineMedium)
+                    }
+                    .frame(maxWidth: .infinity)
+                    .frame(height: 48)
+                    .foregroundStyle(AVIATheme.timelessBrown)
+                    .background(AVIATheme.timelessBrown.opacity(0.1))
+                    .clipShape(.rect(cornerRadius: 14))
                 }
-                .frame(maxWidth: .infinity)
-                .frame(height: 48)
-                .foregroundStyle(AVIATheme.timelessBrown)
-                .background(AVIATheme.timelessBrown.opacity(0.1))
-                .clipShape(.rect(cornerRadius: 14))
             }
         }
     }

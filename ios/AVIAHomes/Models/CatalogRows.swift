@@ -96,6 +96,7 @@ nonisolated struct SpecRangeTierRow: Codable, Sendable {
     let highlights: [HighlightRow]
     let room_images: [RoomImageRow]
     let partner_logos: [PartnerLogoRow]?
+    let pdf_url: String?
 
     struct HighlightRow: Codable, Sendable {
         let icon: String
@@ -129,7 +130,8 @@ nonisolated struct SpecRangeTierRow: Codable, Sendable {
         summary: String,
         highlights: [HighlightRow],
         room_images: [RoomImageRow],
-        partner_logos: [PartnerLogoRow]? = nil
+        partner_logos: [PartnerLogoRow]? = nil,
+        pdf_url: String? = nil
     ) {
         self.tier = tier
         self.hero_image_url = hero_image_url
@@ -137,6 +139,7 @@ nonisolated struct SpecRangeTierRow: Codable, Sendable {
         self.highlights = highlights
         self.room_images = room_images
         self.partner_logos = partner_logos
+        self.pdf_url = pdf_url
     }
 
     func toSpecRangeData() -> SpecRangeData {
@@ -154,7 +157,8 @@ nonisolated struct SpecRangeTierRow: Codable, Sendable {
             },
             partnerLogos: (partner_logos ?? []).map {
                 SpecRangePartnerLogo(name: $0.name, imageURL: $0.image_url)
-            }
+            },
+            pdfURL: pdf_url
         )
     }
 

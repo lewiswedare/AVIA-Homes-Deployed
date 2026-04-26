@@ -219,6 +219,7 @@ private struct SpecRangeEditSheet: View {
 
     @State private var heroImageURL: String = ""
     @State private var summary: String = ""
+    @State private var pdfURL: String = ""
     @State private var highlights: [EditableHighlight] = []
     @State private var roomImages: [EditableRoomImage] = []
     @State private var partnerLogos: [EditablePartnerLogo] = []
@@ -232,6 +233,7 @@ private struct SpecRangeEditSheet: View {
                     highlightsCard
                     roomsCard
                     partnerLogosCard
+                    pdfCard
                 }
                 .padding(.horizontal, 16)
                 .padding(.vertical, 12)
@@ -440,6 +442,21 @@ private struct SpecRangeEditSheet: View {
         .padding(.horizontal, 14)
     }
 
+    private var pdfCard: some View {
+        BentoCard(cornerRadius: 14) {
+            VStack(alignment: .leading, spacing: 14) {
+                sectionHeader("Spec Range PDF")
+                AdminPDFPickerField(
+                    label: "PDF Document (shown on spec range detail screen)",
+                    pdfURL: $pdfURL,
+                    folder: "spec-ranges/pdfs",
+                    itemId: "\(tier.rawValue)_pdf"
+                )
+            }
+            .padding(.vertical, 14)
+        }
+    }
+
     private var partnerLogosCard: some View {
         BentoCard(cornerRadius: 14) {
             VStack(alignment: .leading, spacing: 14) {
@@ -561,6 +578,7 @@ private struct SpecRangeEditSheet: View {
         if let existing {
             heroImageURL = existing.hero_image_url
             summary = existing.summary
+            pdfURL = existing.pdf_url ?? ""
             highlights = existing.highlights.map {
                 EditableHighlight(
                     icon: $0.icon,
@@ -587,6 +605,7 @@ private struct SpecRangeEditSheet: View {
                 EditableRoomImage(name: $0.name, imageURL: $0.imageURL)
             }
             partnerLogos = []
+            pdfURL = ""
         }
     }
 
@@ -611,7 +630,8 @@ private struct SpecRangeEditSheet: View {
                 .map { SpecRangeTierRow.RoomImageRow(name: $0.name, image_url: $0.imageURL) },
             partner_logos: partnerLogos
                 .filter { !$0.name.isEmpty && !$0.imageURL.isEmpty }
-                .map { SpecRangeTierRow.PartnerLogoRow(name: $0.name, image_url: $0.imageURL) }
+                .map { SpecRangeTierRow.PartnerLogoRow(name: $0.name, image_url: $0.imageURL) },
+            pdf_url: pdfURL.isEmpty ? nil : pdfURL
         )
         onSave(row)
         dismiss()
