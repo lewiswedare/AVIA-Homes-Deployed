@@ -33,7 +33,7 @@ struct EstateDetailView: View {
                 contentSection
             }
         }
-        .ignoresSafeArea(edges: .top)
+        .ignoresSafeArea(edges: [.top, .horizontal])
         .background(AVIATheme.background)
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {

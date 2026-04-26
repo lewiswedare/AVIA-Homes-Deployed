@@ -10,7 +10,7 @@ struct NewsArticleDetailView: View {
                 articleContent
             }
         }
-        .ignoresSafeArea(edges: .top)
+        .ignoresSafeArea(edges: [.top, .horizontal])
         .background(AVIATheme.background)
         .navigationBarTitleDisplayMode(.inline)
         .toolbarBackground(.hidden, for: .navigationBar)

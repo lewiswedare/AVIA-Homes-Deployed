@@ -32,7 +32,7 @@ struct SpecificationsOverviewView: View {
                     .padding(.bottom, 40)
                 }
             }
-            .ignoresSafeArea(edges: .top)
+            .ignoresSafeArea(edges: [.top, .horizontal])
             .background(AVIATheme.background)
             .sheet(item: $selectedCategory) { category in
                 SpecificationCategoryDetailView(category: category)

@@ -31,7 +31,7 @@ struct SpecRangeDetailView: View {
                 .padding(.bottom, 40)
             }
         }
-        .ignoresSafeArea(edges: .top)
+        .ignoresSafeArea(edges: [.top, .horizontal])
         .background(AVIATheme.background)
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {

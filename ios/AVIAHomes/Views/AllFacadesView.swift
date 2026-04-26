@@ -46,7 +46,7 @@ struct AllFacadesView: View {
                 .padding(.bottom, 40)
             }
         }
-        .ignoresSafeArea(edges: .top)
+        .ignoresSafeArea(edges: [.top, .horizontal])
         .background(AVIATheme.background)
         .navigationBarTitleDisplayMode(.inline)
         .toolbarBackground(.hidden, for: .navigationBar)

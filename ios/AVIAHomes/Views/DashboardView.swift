@@ -47,7 +47,7 @@ struct DashboardView: View {
                     .padding(.bottom, 40)
                 }
             }
-            .ignoresSafeArea(edges: .top)
+            .ignoresSafeArea(edges: [.top, .horizontal])
             .background(AVIATheme.background)
             .navigationDestination(for: HomeDesign.self) { design in
                 HomeDesignDetailView(design: design)

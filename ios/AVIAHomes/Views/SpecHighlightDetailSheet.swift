@@ -63,7 +63,7 @@ struct SpecHighlightDetailSheet: View {
             }
         }
         .background(AVIATheme.background)
-        .ignoresSafeArea(edges: .top)
+        .ignoresSafeArea(edges: [.top, .horizontal])
         .overlay(alignment: .topTrailing) {
             Button {
                 dismiss()

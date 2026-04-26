@@ -161,7 +161,7 @@ struct SignUpView: View {
                 .frame(minHeight: geo.size.height)
             }
             .scrollDismissesKeyboard(.interactively)
-            .ignoresSafeArea(edges: .top)
+            .ignoresSafeArea(edges: [.top, .horizontal])
         }
         .background(AVIATheme.background)
         .tint(AVIATheme.textPrimary)
