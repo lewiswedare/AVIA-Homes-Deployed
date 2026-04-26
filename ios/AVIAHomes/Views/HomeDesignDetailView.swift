@@ -2,6 +2,7 @@ import SwiftUI
 
 struct HomeDesignDetailView: View {
     let design: HomeDesign
+    @Environment(AppViewModel.self) private var appViewModel
     @State private var showingFloorplan: Bool = false
     @State private var showingEnquiryForm: Bool = false
     @State private var enquirySent: Bool = false
@@ -16,6 +17,16 @@ struct HomeDesignDetailView: View {
         .ignoresSafeArea(edges: [.top, .horizontal])
         .background(AVIATheme.background)
         .navigationBarTitleDisplayMode(.inline)
+        .onAppear {
+            if appViewModel.currentUser.role == .client {
+                ActivityTrackingService.track(
+                    clientId: appViewModel.currentUser.id,
+                    kind: .designView,
+                    referenceId: design.id,
+                    referenceName: design.name
+                )
+            }
+        }
         .toolbar {
             ToolbarItem(placement: .principal) {
                 Text(design.name)
@@ -285,6 +296,16 @@ struct HomeDesignDetailView: View {
                             .allowsHitTesting(false)
                         }
                         .clipShape(.rect(cornerRadius: 14))
+                        .simultaneousGesture(TapGesture().onEnded {
+                            if appViewModel.currentUser.role == .client {
+                                ActivityTrackingService.track(
+                                    clientId: appViewModel.currentUser.id,
+                                    kind: .floorplanDownload,
+                                    referenceId: design.id,
+                                    referenceName: design.name
+                                )
+                            }
+                        })
                         .overlay(alignment: .topLeading) {
                             HStack(spacing: 6) {
                                 Image(systemName: "doc.richtext.fill")

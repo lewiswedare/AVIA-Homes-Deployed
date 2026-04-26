@@ -2581,4 +2581,55 @@ class SupabaseService {
             return false
         }
     }
+
+    // MARK: - Client Activity (CRM)
+
+    @discardableResult
+    func logClientActivity(_ activity: ClientActivity) async -> Bool {
+        guard isConfigured else { return false }
+        guard !activity.clientId.isEmpty else { return false }
+        let row = ClientActivityRow(activity: activity)
+        do {
+            try await client.from("client_activity").insert(row).execute()
+            return true
+        } catch {
+            print("[SupabaseService] logClientActivity FAILED: \(error)")
+            return false
+        }
+    }
+
+    func fetchAllClientActivity(limit: Int = 1000) async -> [ClientActivity] {
+        guard isConfigured else { return [] }
+        do {
+            let rows: [ClientActivityRow] = try await client
+                .from("client_activity")
+                .select()
+                .order("created_at", ascending: false)
+                .limit(limit)
+                .execute()
+                .value
+            return rows.compactMap { $0.toActivity() }
+        } catch {
+            print("[SupabaseService] fetchAllClientActivity FAILED: \(error)")
+            return []
+        }
+    }
+
+    func fetchClientActivity(clientId: String, limit: Int = 200) async -> [ClientActivity] {
+        guard isConfigured else { return [] }
+        do {
+            let rows: [ClientActivityRow] = try await client
+                .from("client_activity")
+                .select()
+                .eq("client_id", value: clientId)
+                .order("created_at", ascending: false)
+                .limit(limit)
+                .execute()
+                .value
+            return rows.compactMap { $0.toActivity() }
+        } catch {
+            print("[SupabaseService] fetchClientActivity FAILED: \(error)")
+            return []
+        }
+    }
 }

@@ -56,6 +56,7 @@ struct AdminDashboardView: View {
             .sheet(item: $selectedUserForEdit) { user in UserRoleAssignmentSheet(user: user) }
             .sheet(item: $selectedRequest) { req in AdminRequestDetailSheet(request: req) }
             .navigationDestination(for: ClientBuild.self) { build in ClientBuildDetailView(build: build) }
+            .navigationDestination(for: ClientUser.self) { client in AdminClientCRMView(client: client) }
         }
     }
 

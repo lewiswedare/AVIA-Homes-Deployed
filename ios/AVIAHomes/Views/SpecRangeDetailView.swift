@@ -2,6 +2,7 @@ import SwiftUI
 
 struct SpecRangeDetailView: View {
     let tier: SpecTier
+    @Environment(AppViewModel.self) private var appViewModel
     @State private var showingInclusions: Bool = false
     @State private var showCompareRanges: Bool = false
     @State private var selectedRoomIndex: Int = 0
@@ -34,6 +35,16 @@ struct SpecRangeDetailView: View {
         .ignoresSafeArea(edges: [.top, .horizontal])
         .background(AVIATheme.background)
         .navigationBarTitleDisplayMode(.inline)
+        .onAppear {
+            if appViewModel.currentUser.role == .client {
+                ActivityTrackingService.track(
+                    clientId: appViewModel.currentUser.id,
+                    kind: .specRangeView,
+                    referenceId: tier.rawValue,
+                    referenceName: tier.displayName
+                )
+            }
+        }
         .toolbar {
             ToolbarItem(placement: .principal) {
                 Text(tier.displayName)

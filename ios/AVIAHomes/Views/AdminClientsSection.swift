@@ -31,7 +31,10 @@ struct AdminClientsSection: View {
                 AdminEmptyState(icon: "person.2.slash", title: "No clients found", subtitle: "Clients who sign up will appear here")
             } else {
                 ForEach(allClients, id: \.id) { client in
-                    AdminClientCard(client: client, hasBuilds: clientsWithBuildIds.contains(client.id))
+                    NavigationLink(value: client) {
+                        AdminClientCard(client: client, hasBuilds: clientsWithBuildIds.contains(client.id))
+                    }
+                    .buttonStyle(.plain)
                 }
             }
         }
