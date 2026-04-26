@@ -255,6 +255,7 @@ struct HomeDesignEditSheet: View {
     @State private var livingAreas: Int = 1
     @State private var floorplanImageURL: String = ""
     @State private var floorplanPDFURL: String = ""
+    @State private var floorplanPDFImageURL: String = ""
     @State private var roomHighlightsText: String = ""
     @State private var inclusionsText: String = ""
 
@@ -369,6 +370,12 @@ struct HomeDesignEditSheet: View {
                                 folder: "home-designs/floorplan-pdfs",
                                 itemId: isNew ? designId : (design?.id ?? designId)
                             )
+                            AdminImagePickerField(
+                                label: "Floorplan PDF Block Image",
+                                imageURL: $floorplanPDFImageURL,
+                                folder: "home-designs/floorplan-pdf-images",
+                                itemId: isNew ? designId : (design?.id ?? designId)
+                            )
                         }
                         .padding(.vertical, 14)
                     }
@@ -481,6 +488,7 @@ struct HomeDesignEditSheet: View {
         livingAreas = design.livingAreas
         floorplanImageURL = design.floorplanImageURL
         floorplanPDFURL = design.floorplanPDFURL
+        floorplanPDFImageURL = design.floorplanPDFImageURL
         roomHighlightsText = design.roomHighlights.joined(separator: "\n")
         inclusionsText = design.inclusions.joined(separator: "\n")
     }
@@ -507,6 +515,7 @@ struct HomeDesignEditSheet: View {
             livingAreas: livingAreas,
             floorplanImageURL: floorplanImageURL,
             floorplanPDFURL: floorplanPDFURL,
+            floorplanPDFImageURL: floorplanPDFImageURL,
             roomHighlights: highlights,
             inclusions: incl
         )

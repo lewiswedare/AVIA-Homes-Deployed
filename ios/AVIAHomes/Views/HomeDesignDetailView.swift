@@ -245,6 +245,10 @@ struct HomeDesignDetailView: View {
         }
     }
 
+    private var pdfBlockImageURL: String {
+        design.floorplanPDFImageURL.isEmpty ? design.floorplanImageURL : design.floorplanPDFImageURL
+    }
+
     private var floorplanPDFDownload: some View {
         Group {
             if let url = URL(string: design.floorplanPDFURL) {
@@ -252,12 +256,12 @@ struct HomeDesignDetailView: View {
                     Color(.secondarySystemBackground)
                         .frame(height: 200)
                         .overlay {
-                            AsyncImage(url: URL(string: design.floorplanImageURL)) { phase in
+                            AsyncImage(url: URL(string: pdfBlockImageURL)) { phase in
                                 if let image = phase.image {
                                     image
                                         .resizable()
                                         .aspectRatio(contentMode: .fill)
-                                        .blur(radius: 2)
+                                        .blur(radius: design.floorplanPDFImageURL.isEmpty ? 2 : 0)
                                         .allowsHitTesting(false)
                                 }
                             }

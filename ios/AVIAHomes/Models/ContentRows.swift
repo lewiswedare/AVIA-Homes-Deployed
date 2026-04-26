@@ -18,8 +18,64 @@ nonisolated struct HomeDesignRow: Codable, Sendable {
     let living_areas: Int
     let floorplan_image_url: String
     let floorplan_pdf_url: String?
+    let floorplan_pdf_image_url: String?
     let room_highlights: [String]
     let inclusions: [String]
+
+    nonisolated enum CodingKeys: String, CodingKey {
+        case id, name, bedrooms, bathrooms, garages, square_meters, image_url, price_from
+        case storeys, lot_width, slug, description, house_width, house_length, living_areas
+        case floorplan_image_url, floorplan_pdf_url, floorplan_pdf_image_url
+        case room_highlights, inclusions
+    }
+
+    init(from decoder: Decoder) throws {
+        let c = try decoder.container(keyedBy: CodingKeys.self)
+        id = try c.decode(String.self, forKey: .id)
+        name = try c.decode(String.self, forKey: .name)
+        bedrooms = try c.decode(Int.self, forKey: .bedrooms)
+        bathrooms = try c.decode(Int.self, forKey: .bathrooms)
+        garages = try c.decode(Int.self, forKey: .garages)
+        square_meters = try c.decode(Double.self, forKey: .square_meters)
+        image_url = try c.decode(String.self, forKey: .image_url)
+        price_from = try c.decode(String.self, forKey: .price_from)
+        storeys = try c.decode(Int.self, forKey: .storeys)
+        lot_width = try c.decode(Double.self, forKey: .lot_width)
+        slug = (try? c.decode(String.self, forKey: .slug)) ?? ""
+        description = (try? c.decode(String.self, forKey: .description)) ?? ""
+        house_width = (try? c.decode(Double.self, forKey: .house_width)) ?? 0
+        house_length = (try? c.decode(Double.self, forKey: .house_length)) ?? 0
+        living_areas = (try? c.decode(Int.self, forKey: .living_areas)) ?? 1
+        floorplan_image_url = (try? c.decode(String.self, forKey: .floorplan_image_url)) ?? ""
+        floorplan_pdf_url = try? c.decodeIfPresent(String.self, forKey: .floorplan_pdf_url)
+        floorplan_pdf_image_url = try? c.decodeIfPresent(String.self, forKey: .floorplan_pdf_image_url)
+        room_highlights = (try? c.decode([String].self, forKey: .room_highlights)) ?? []
+        inclusions = (try? c.decode([String].self, forKey: .inclusions)) ?? []
+    }
+
+    func encode(to encoder: Encoder) throws {
+        var c = encoder.container(keyedBy: CodingKeys.self)
+        try c.encode(id, forKey: .id)
+        try c.encode(name, forKey: .name)
+        try c.encode(bedrooms, forKey: .bedrooms)
+        try c.encode(bathrooms, forKey: .bathrooms)
+        try c.encode(garages, forKey: .garages)
+        try c.encode(square_meters, forKey: .square_meters)
+        try c.encode(image_url, forKey: .image_url)
+        try c.encode(price_from, forKey: .price_from)
+        try c.encode(storeys, forKey: .storeys)
+        try c.encode(lot_width, forKey: .lot_width)
+        try c.encode(slug, forKey: .slug)
+        try c.encode(description, forKey: .description)
+        try c.encode(house_width, forKey: .house_width)
+        try c.encode(house_length, forKey: .house_length)
+        try c.encode(living_areas, forKey: .living_areas)
+        try c.encode(floorplan_image_url, forKey: .floorplan_image_url)
+        try c.encodeIfPresent(floorplan_pdf_url, forKey: .floorplan_pdf_url)
+        try c.encodeIfPresent(floorplan_pdf_image_url, forKey: .floorplan_pdf_image_url)
+        try c.encode(room_highlights, forKey: .room_highlights)
+        try c.encode(inclusions, forKey: .inclusions)
+    }
 
     init(from design: HomeDesign) {
         id = design.id
@@ -39,6 +95,7 @@ nonisolated struct HomeDesignRow: Codable, Sendable {
         living_areas = design.livingAreas
         floorplan_image_url = design.floorplanImageURL
         floorplan_pdf_url = design.floorplanPDFURL.isEmpty ? nil : design.floorplanPDFURL
+        floorplan_pdf_image_url = design.floorplanPDFImageURL.isEmpty ? nil : design.floorplanPDFImageURL
         room_highlights = design.roomHighlights
         inclusions = design.inclusions
     }
@@ -62,6 +119,7 @@ nonisolated struct HomeDesignRow: Codable, Sendable {
             livingAreas: living_areas,
             floorplanImageURL: floorplan_image_url,
             floorplanPDFURL: floorplan_pdf_url ?? "",
+            floorplanPDFImageURL: floorplan_pdf_image_url ?? "",
             roomHighlights: room_highlights,
             inclusions: inclusions
         )
