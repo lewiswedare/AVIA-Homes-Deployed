@@ -227,6 +227,7 @@ class AppViewModel {
         }
         pushManager.updateBadgeCount(totalBadgeCount)
         syncBuildStagesForCurrentUser()
+        await WidgetSnapshotBuilder.update(from: self)
     }
 
     /// Refetches every remote data source in parallel. Use on foreground,
@@ -248,6 +249,7 @@ class AppViewModel {
         async let m: () = catalogManager.loadAll()
         _ = await (a, b, c, d, e, f, g, h, i, j, k, l, m)
         syncBuildStagesForCurrentUser()
+        await WidgetSnapshotBuilder.update(from: self)
     }
 
     /// Called from AVIAHomesApp when the scene becomes active.
@@ -729,6 +731,7 @@ class AppViewModel {
         messagingService.conversations = []
         messagingService.currentMessages = []
         pushManager.updateBadgeCount(0)
+        WidgetSnapshotStore.clear()
     }
 
     func assignBuildToClient(buildId: String, clientId: String) {

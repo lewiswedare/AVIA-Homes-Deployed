@@ -8,6 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		XX50D61ED0BAE05FA2F8E9XX /* Supabase in Frameworks */ = {isa = PBXBuildFile; productRef = XX1C9FF110ABBCE8BF456CXX /* Supabase */; };
+		XXF882E4C928E923A3CB34XX /* AVIAHomesWidget.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = XXBB0F6022B06903D89362XX /* AVIAHomesWidget.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -25,29 +26,54 @@
 			remoteGlobalIDString = 105FC5792E9EAD3100EA8BCF;
 			remoteInfo = AVIAHomesHomes;
 		};
+		XX44900D0FBF2806354782XX /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 105FC5722E9EAD3100EA8BCF /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = XXAAA6F456B5686E4D1A7BXX;
+			remoteInfo = AVIAHomesWidget;
+		};
 /* End PBXContainerItemProxy section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		XX8DA86AF5970A2F75D494XX /* Embed Foundation Extensions */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 13;
+			files = (
+				XXF882E4C928E923A3CB34XX /* AVIAHomesWidget.appex in Embed Foundation Extensions */,
+			);
+			name = "Embed Foundation Extensions";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
 		105FC57A2E9EAD3100EA8BCF /* AVIAHomes.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = AVIAHomes.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		105FC5892E9EAD3200EA8BCF /* AVIAHomesTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = AVIAHomesTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		105FC5932E9EAD3200EA8BCF /* AVIAHomesUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = AVIAHomesUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		XXBB0F6022B06903D89362XX /* AVIAHomesWidget.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = AVIAHomesWidget.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
+/* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
+		XXF4B02133C123BADBA6ACXX /* PBXFileSystemSynchronizedBuildFileExceptionSet */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Info.plist,
+			);
+			target = XXAAA6F456B5686E4D1A7BXX /* AVIAHomesWidget */;
+		};
+/* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
+
 /* Begin PBXFileSystemSynchronizedRootGroup section */
-		105FC57C2E9EAD3100EA8BCF /* AVIAHomes */ = {
+		XX158442139BC9AB30F8B7XX /* AVIAHomesWidget */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
-			path = AVIAHomes;
+			path = AVIAHomesWidget;
 			sourceTree = "<group>";
-		};
-		105FC58C2E9EAD3200EA8BCF /* AVIAHomesTests */ = {
-			isa = PBXFileSystemSynchronizedRootGroup;
-			path = AVIAHomesTests;
-			sourceTree = "<group>";
-		};
-		105FC5962E9EAD3200EA8BCF /* AVIAHomesUITests */ = {
-			isa = PBXFileSystemSynchronizedRootGroup;
-			path = AVIAHomesUITests;
-			sourceTree = "<group>";
+			exceptions = (
+				XXF4B02133C123BADBA6ACXX /* PBXFileSystemSynchronizedBuildFileExceptionSet */,
+			);
 		};
 /* End PBXFileSystemSynchronizedRootGroup section */
 
@@ -74,7 +100,32 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		XX75B8358D2242CEB782C5XX /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXFileSystemSynchronizedRootGroup section */
+		105FC57C2E9EAD3100EA8BCF /* AVIAHomes */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = AVIAHomes;
+			sourceTree = "<group>";
+		};
+		105FC58C2E9EAD3200EA8BCF /* AVIAHomesTests */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = AVIAHomesTests;
+			sourceTree = "<group>";
+		};
+		105FC5962E9EAD3200EA8BCF /* AVIAHomesUITests */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = AVIAHomesUITests;
+			sourceTree = "<group>";
+		};
+/* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXGroup section */
 		105FC5712E9EAD3100EA8BCF = {
@@ -84,6 +135,7 @@
 				105FC58C2E9EAD3200EA8BCF /* AVIAHomesTests */,
 				105FC5962E9EAD3200EA8BCF /* AVIAHomesUITests */,
 				105FC57B2E9EAD3100EA8BCF /* Products */,
+				XX158442139BC9AB30F8B7XX /* AVIAHomesWidget */,
 			);
 			sourceTree = "<group>";
 		};
@@ -93,6 +145,7 @@
 				105FC57A2E9EAD3100EA8BCF /* AVIAHomes.app */,
 				105FC5892E9EAD3200EA8BCF /* AVIAHomesTests.xctest */,
 				105FC5932E9EAD3200EA8BCF /* AVIAHomesUITests.xctest */,
+				XXBB0F6022B06903D89362XX /* AVIAHomesWidget.appex */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -107,10 +160,12 @@
 				105FC5762E9EAD3100EA8BCF /* Sources */,
 				105FC5772E9EAD3100EA8BCF /* Frameworks */,
 				105FC5782E9EAD3100EA8BCF /* Resources */,
+				XX8DA86AF5970A2F75D494XX /* Embed Foundation Extensions */,
 			);
 			buildRules = (
 			);
 			dependencies = (
+				XX2C95C1035B29F7B74980XX /* PBXTargetDependency */,
 			);
 			fileSystemSynchronizedGroups = (
 				105FC57C2E9EAD3100EA8BCF /* AVIAHomes */,
@@ -169,6 +224,26 @@
 			productReference = 105FC5932E9EAD3200EA8BCF /* AVIAHomesUITests.xctest */;
 			productType = "com.apple.product-type.bundle.ui-testing";
 		};
+		XXAAA6F456B5686E4D1A7BXX /* AVIAHomesWidget */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = XXF472414833A6E95A0477XX /* Build configuration list for PBXNativeTarget "AVIAHomesWidget" */;
+			buildPhases = (
+				XXE0FD6AFA7551401BFCEBXX /* Sources */,
+				XX75B8358D2242CEB782C5XX /* Frameworks */,
+				XX8DEE49FEB104205DDA8DXX /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = AVIAHomesWidget;
+			productName = AVIAHomesWidget;
+			productReference = XXBB0F6022B06903D89362XX /* AVIAHomesWidget.appex */;
+			productType = "com.apple.product-type.app-extension";
+			fileSystemSynchronizedGroups = (
+				XX158442139BC9AB30F8B7XX /* AVIAHomesWidget */,
+			);
+		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
@@ -203,7 +278,7 @@
 			mainGroup = 105FC5712E9EAD3100EA8BCF;
 			minimizedProjectReferenceProxies = 1;
 			packageReferences = (
-				XX20EB7F6EA71E9F2E096CXX /* XCRemoteSwiftPackageReference "supabase-swift.git" */,
+				XX20EB7F6EA71E9F2E096CXX /* XCRemoteSwiftPackageReference "supabase-swift" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 105FC57B2E9EAD3100EA8BCF /* Products */;
@@ -213,6 +288,7 @@
 				105FC5792E9EAD3100EA8BCF /* AVIAHomes */,
 				105FC5882E9EAD3200EA8BCF /* AVIAHomes */,
 				105FC5922E9EAD3200EA8BCF /* AVIAHomes */,
+				XXAAA6F456B5686E4D1A7BXX /* AVIAHomesWidget */,
 			);
 		};
 /* End PBXProject section */
@@ -233,6 +309,13 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 		105FC5912E9EAD3200EA8BCF /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		XX8DEE49FEB104205DDA8DXX /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -263,6 +346,13 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		XXE0FD6AFA7551401BFCEBXX /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
@@ -275,6 +365,11 @@
 			isa = PBXTargetDependency;
 			target = 105FC5792E9EAD3100EA8BCF /* AVIAHomes */;
 			targetProxy = 105FC5942E9EAD3200EA8BCF /* PBXContainerItemProxy */;
+		};
+		XX2C95C1035B29F7B74980XX /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = XXAAA6F456B5686E4D1A7BXX /* AVIAHomesWidget */;
+			targetProxy = XX44900D0FBF2806354782XX /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
 
@@ -586,6 +681,52 @@
 			};
 			name = Release;
 		};
+		XXF00F3332FDA2D3F33A4BXX /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_ENTITLEMENTS = AVIAHomesWidget/AVIAHomesWidget.entitlements;
+				PRODUCT_BUNDLE_IDENTIFIER = com.wedare.aviahomes.aviahomeswidget;
+				PRODUCT_NAME = AVIAHomesWidget;
+				SWIFT_VERSION = 5.0;
+				SDKROOT = iphoneos;
+				IPHONEOS_DEPLOYMENT_TARGET = 18.0;
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = AVIAHomesWidget/Info.plist;
+				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
+				SKIP_INSTALL = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				MARKETING_VERSION = 1.0;
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @executable_path/../../Frameworks";
+				INFOPLIST_KEY_CFBundleDisplayName = "$(PRODUCT_NAME)";
+			};
+			name = Debug;
+		};
+		XXF7ED7499497C5674F753XX /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_ENTITLEMENTS = AVIAHomesWidget/AVIAHomesWidget.entitlements;
+				PRODUCT_BUNDLE_IDENTIFIER = com.wedare.aviahomes.aviahomeswidget;
+				PRODUCT_NAME = AVIAHomesWidget;
+				SWIFT_VERSION = 5.0;
+				SDKROOT = iphoneos;
+				IPHONEOS_DEPLOYMENT_TARGET = 18.0;
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = AVIAHomesWidget/Info.plist;
+				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
+				SKIP_INSTALL = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				MARKETING_VERSION = 1.0;
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @executable_path/../../Frameworks";
+				INFOPLIST_KEY_CFBundleDisplayName = "$(PRODUCT_NAME)";
+			};
+			name = Release;
+		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -625,10 +766,19 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
+		XXF472414833A6E95A0477XX /* Build configuration list for PBXNativeTarget "AVIAHomesWidget" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				XXF00F3332FDA2D3F33A4BXX /* Debug */,
+				XXF7ED7499497C5674F753XX /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
 /* End XCConfigurationList section */
 
 /* Begin XCRemoteSwiftPackageReference section */
-		XX20EB7F6EA71E9F2E096CXX /* XCRemoteSwiftPackageReference "supabase-swift.git" */ = {
+		XX20EB7F6EA71E9F2E096CXX /* XCRemoteSwiftPackageReference "supabase-swift" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/supabase/supabase-swift.git";
 			requirement = {
@@ -641,7 +791,7 @@
 /* Begin XCSwiftPackageProductDependency section */
 		XX1C9FF110ABBCE8BF456CXX /* Supabase */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = XX20EB7F6EA71E9F2E096CXX /* XCRemoteSwiftPackageReference "supabase-swift.git" */;
+			package = XX20EB7F6EA71E9F2E096CXX /* XCRemoteSwiftPackageReference "supabase-swift" */;
 			productName = Supabase;
 		};
 /* End XCSwiftPackageProductDependency section */
