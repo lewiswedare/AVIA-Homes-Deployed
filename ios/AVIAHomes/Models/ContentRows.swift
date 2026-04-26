@@ -17,6 +17,7 @@ nonisolated struct HomeDesignRow: Codable, Sendable {
     let house_length: Double
     let living_areas: Int
     let floorplan_image_url: String
+    let floorplan_pdf_url: String?
     let room_highlights: [String]
     let inclusions: [String]
 
@@ -37,6 +38,7 @@ nonisolated struct HomeDesignRow: Codable, Sendable {
         house_length = design.houseLength
         living_areas = design.livingAreas
         floorplan_image_url = design.floorplanImageURL
+        floorplan_pdf_url = design.floorplanPDFURL.isEmpty ? nil : design.floorplanPDFURL
         room_highlights = design.roomHighlights
         inclusions = design.inclusions
     }
@@ -59,6 +61,7 @@ nonisolated struct HomeDesignRow: Codable, Sendable {
             houseLength: house_length,
             livingAreas: living_areas,
             floorplanImageURL: floorplan_image_url,
+            floorplanPDFURL: floorplan_pdf_url ?? "",
             roomHighlights: room_highlights,
             inclusions: inclusions
         )

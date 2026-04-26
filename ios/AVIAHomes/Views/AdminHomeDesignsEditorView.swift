@@ -254,6 +254,7 @@ struct HomeDesignEditSheet: View {
     @State private var houseLength: Double = 20.0
     @State private var livingAreas: Int = 1
     @State private var floorplanImageURL: String = ""
+    @State private var floorplanPDFURL: String = ""
     @State private var roomHighlightsText: String = ""
     @State private var inclusionsText: String = ""
 
@@ -360,6 +361,12 @@ struct HomeDesignEditSheet: View {
                                 label: "Floorplan Image",
                                 imageURL: $floorplanImageURL,
                                 folder: "home-designs/floorplans",
+                                itemId: isNew ? designId : (design?.id ?? designId)
+                            )
+                            AdminPDFPickerField(
+                                label: "Floorplan PDF",
+                                pdfURL: $floorplanPDFURL,
+                                folder: "home-designs/floorplan-pdfs",
                                 itemId: isNew ? designId : (design?.id ?? designId)
                             )
                         }
@@ -473,6 +480,7 @@ struct HomeDesignEditSheet: View {
         houseLength = design.houseLength
         livingAreas = design.livingAreas
         floorplanImageURL = design.floorplanImageURL
+        floorplanPDFURL = design.floorplanPDFURL
         roomHighlightsText = design.roomHighlights.joined(separator: "\n")
         inclusionsText = design.inclusions.joined(separator: "\n")
     }
@@ -498,6 +506,7 @@ struct HomeDesignEditSheet: View {
             houseLength: houseLength,
             livingAreas: livingAreas,
             floorplanImageURL: floorplanImageURL,
+            floorplanPDFURL: floorplanPDFURL,
             roomHighlights: highlights,
             inclusions: incl
         )

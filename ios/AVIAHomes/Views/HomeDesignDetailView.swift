@@ -85,6 +85,9 @@ struct HomeDesignDetailView: View {
             dimensionsBar
             if !design.floorplanImageURL.isEmpty {
                 floorplanSection
+                if !design.floorplanPDFURL.isEmpty {
+                    floorplanPDFDownload
+                }
             }
             roomHighlightsSection
             specificationGrid
@@ -239,6 +242,47 @@ struct HomeDesignDetailView: View {
                 )
             }
             .buttonStyle(.pressable(.subtle))
+        }
+    }
+
+    private var floorplanPDFDownload: some View {
+        Group {
+            if let url = URL(string: design.floorplanPDFURL) {
+                ShareLink(item: url) {
+                    HStack(spacing: 12) {
+                        Image(systemName: "arrow.down.doc.fill")
+                            .font(.system(size: 18, weight: .medium))
+                            .foregroundStyle(AVIATheme.timelessBrown)
+                            .frame(width: 44, height: 44)
+                            .background(AVIATheme.timelessBrown.opacity(0.12))
+                            .clipShape(.rect(cornerRadius: 10))
+
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text("Download Floor Plan PDF")
+                                .font(.neueCaptionMedium)
+                                .foregroundStyle(AVIATheme.textPrimary)
+                            Text("Save or share the full \(design.name) floor plan")
+                                .font(.neueCaption2)
+                                .foregroundStyle(AVIATheme.textTertiary)
+                                .lineLimit(1)
+                        }
+
+                        Spacer(minLength: 0)
+
+                        Image(systemName: "square.and.arrow.up")
+                            .font(.system(size: 14, weight: .medium))
+                            .foregroundStyle(AVIATheme.timelessBrown)
+                    }
+                    .padding(14)
+                    .background(AVIATheme.cardBackground)
+                    .clipShape(.rect(cornerRadius: 14))
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 14)
+                            .stroke(AVIATheme.surfaceBorder, lineWidth: 1)
+                    )
+                }
+                .buttonStyle(.pressable(.subtle))
+            }
         }
     }
 

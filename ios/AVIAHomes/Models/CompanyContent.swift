@@ -47,12 +47,13 @@ nonisolated struct HomeDesign: Identifiable, Sendable, Hashable {
     let houseLength: Double
     let livingAreas: Int
     let floorplanImageURL: String
+    let floorplanPDFURL: String
     let roomHighlights: [String]
     let inclusions: [String]
 
     static let defaultFloorplanURL: String = "https://pub-e001eb4506b145aa938b5d3badbff6a5.r2.dev/attachments/t6n7lee0b3vwff1rhkljx.webp"
 
-    init(id: String, name: String, bedrooms: Int, bathrooms: Int, garages: Int, squareMeters: Double, imageURL: String, priceFrom: String, storeys: Int = 1, lotWidth: Double = 12.5, slug: String = "", description: String = "", houseWidth: Double = 0, houseLength: Double = 0, livingAreas: Int = 1, floorplanImageURL: String = "", roomHighlights: [String] = [], inclusions: [String] = []) {
+    init(id: String, name: String, bedrooms: Int, bathrooms: Int, garages: Int, squareMeters: Double, imageURL: String, priceFrom: String, storeys: Int = 1, lotWidth: Double = 12.5, slug: String = "", description: String = "", houseWidth: Double = 0, houseLength: Double = 0, livingAreas: Int = 1, floorplanImageURL: String = "", floorplanPDFURL: String = "", roomHighlights: [String] = [], inclusions: [String] = []) {
         self.id = id
         self.name = name
         self.bedrooms = bedrooms
@@ -69,6 +70,7 @@ nonisolated struct HomeDesign: Identifiable, Sendable, Hashable {
         self.houseLength = houseLength
         self.livingAreas = livingAreas
         self.floorplanImageURL = floorplanImageURL.isEmpty ? HomeDesign.defaultFloorplanURL : floorplanImageURL
+        self.floorplanPDFURL = floorplanPDFURL
         self.roomHighlights = roomHighlights
         self.inclusions = inclusions
     }
