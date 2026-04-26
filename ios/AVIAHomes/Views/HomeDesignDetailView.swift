@@ -161,6 +161,11 @@ struct HomeDesignDetailView: View {
 
     private var descriptionBlock: some View {
         VStack(alignment: .leading, spacing: 12) {
+            Text(design.name)
+                .font(.neueCorpMedium(28))
+                .foregroundStyle(AVIATheme.textPrimary)
+                .frame(maxWidth: .infinity, alignment: .leading)
+
             Text("ABOUT THIS DESIGN")
                 .font(.neueCaption2Medium)
                 .kerning(1.0)
