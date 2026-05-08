@@ -1,4 +1,21 @@
--- Communication log for CRM: track admin↔client interactions (calls, emails, meetings, sms).
+-- Communication log for CRM: track admin↔client interactions (calls, emails, meetings, sms, notes).
+-- Self-contained: re-declares the is_admin_or_staff helper so this migration runs
+-- independently of the CRM migration.
+
+create or replace function public.is_admin_or_staff(uid uuid)
+returns boolean
+language sql
+stable
+as $$
+    select exists (
+        select 1 from public.profiles p
+        where p.id = uid
+          and lower(coalesce(p.role, '')) in (
+              'admin','superadmin','super_admin','salesadmin','sales_admin',
+              'staff','preconstruction','pre_construction','buildingsupport','building_support','partner','salespartner','sales_partner'
+          )
+    );
+$$;
 
 create table if not exists public.client_communications (
     id uuid primary key default gen_random_uuid(),
