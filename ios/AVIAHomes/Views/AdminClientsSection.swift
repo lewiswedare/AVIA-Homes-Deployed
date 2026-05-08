@@ -7,6 +7,14 @@ struct AdminClientsSection: View {
     @State private var crmProfiles: [String: ClientCRMProfile] = [:]
     @State private var statusFilter: LeadStatus? = nil
     @State private var isLoadingProfiles: Bool = false
+    @State private var viewMode: ClientsViewMode = .list
+
+    enum ClientsViewMode: String, CaseIterable, Identifiable {
+        case list, pipeline
+        var id: String { rawValue }
+        var label: String { self == .list ? "List" : "Pipeline" }
+        var icon: String { self == .list ? "list.bullet" : "rectangle.split.3x1.fill" }
+    }
 
     private var clientsList: [ClientUser] {
         var clients = viewModel.allRegisteredUsers.filter { $0.role == .client }
@@ -45,6 +53,29 @@ struct AdminClientsSection: View {
             }
             .fixedSize(horizontal: false, vertical: true)
 
+            HStack(spacing: 10) {
+                Picker("View", selection: $viewMode) {
+                    ForEach(ClientsViewMode.allCases) { m in
+                        Label(m.label, systemImage: m.icon).tag(m)
+                    }
+                }
+                .pickerStyle(.segmented)
+                NavigationLink {
+                    AdminTasksInboxView()
+                } label: {
+                    HStack(spacing: 5) {
+                        Image(systemName: "tray.fill").font(.neueCaption2)
+                        Text("Tasks").font(.neueCaption2Medium)
+                    }
+                    .foregroundStyle(AVIATheme.aviaWhite)
+                    .padding(.horizontal, 12)
+                    .padding(.vertical, 8)
+                    .background(AVIATheme.timelessBrown)
+                    .clipShape(.capsule)
+                }
+                .buttonStyle(.plain)
+            }
+
             if followUpsDueCount > 0 {
                 HStack(spacing: 8) {
                     Image(systemName: "bell.badge.fill")
@@ -64,6 +95,8 @@ struct AdminClientsSection: View {
 
             if allClients.isEmpty {
                 AdminEmptyState(icon: "person.2.slash", title: "No clients found", subtitle: "Clients who sign up will appear here")
+            } else if viewMode == .pipeline {
+                AdminClientPipelineView(clients: allClients, profiles: crmProfiles)
             } else if filtered.isEmpty {
                 AdminEmptyState(icon: "line.3.horizontal.decrease.circle", title: "No clients match", subtitle: "Try a different status filter")
             } else {

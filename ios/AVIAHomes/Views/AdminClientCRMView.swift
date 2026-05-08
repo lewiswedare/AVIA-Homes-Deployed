@@ -28,6 +28,12 @@ struct AdminClientCRMView: View {
     @State private var showAddTag: Bool = false
     @State private var newTagText: String = ""
 
+    @State private var communications: [ClientCommunication] = []
+    @State private var showLogComm: Bool = false
+    @State private var newCommKind: CommunicationKind = .call
+    @State private var newCommSummary: String = ""
+    @State private var newCommDate: Date = .now
+
     enum ActivityFilter: String, CaseIterable, Identifiable {
         case all, designs, floorplans, specs, enquiries
         var id: String { rawValue }
@@ -116,6 +122,7 @@ struct AdminClientCRMView: View {
                 quickActions
                 metricsGrid
                 tasksSection
+                communicationsSection
                 notesSection
                 if !topDesigns.isEmpty || !topSpecs.isEmpty {
                     interestsSection
@@ -149,6 +156,9 @@ struct AdminClientCRMView: View {
         .sheet(isPresented: $showAddTask) {
             addTaskSheet
         }
+        .sheet(isPresented: $showLogComm) {
+            logCommSheet
+        }
         .alert("Add Tag", isPresented: $showAddTag) {
             TextField("Tag name", text: $newTagText)
             Button("Cancel", role: .cancel) { newTagText = "" }
@@ -170,10 +180,12 @@ struct AdminClientCRMView: View {
         async let profile = SupabaseService.shared.fetchCRMProfile(clientId: client.id)
         async let notesList = SupabaseService.shared.fetchClientNotes(clientId: client.id)
         async let tasksList = SupabaseService.shared.fetchClientTasks(clientId: client.id)
+        async let commsList = SupabaseService.shared.fetchClientCommunications(clientId: client.id)
         let p = await profile
         crmProfile = p ?? .empty(clientId: client.id)
         notes = await notesList
         tasks = await tasksList
+        communications = await commsList
         isLoadingCRM = false
     }
 
@@ -682,6 +694,186 @@ struct AdminClientCRMView: View {
     private func deleteTask(_ task: ClientTask) {
         tasks.removeAll { $0.id == task.id }
         Task { await SupabaseService.shared.deleteClientTask(id: task.id) }
+    }
+
+    // MARK: - Communications
+
+    private var communicationsSection: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            HStack {
+                Text("COMMUNICATION LOG")
+                    .font(.neueCaption2Medium)
+                    .tracking(1.2)
+                    .foregroundStyle(AVIATheme.textTertiary)
+                Spacer()
+                Button {
+                    resetNewComm()
+                    showLogComm = true
+                } label: {
+                    Image(systemName: "plus.circle.fill")
+                        .font(.neueSubheadlineMedium)
+                        .foregroundStyle(AVIATheme.timelessBrown)
+                }
+                .buttonStyle(.plain)
+            }
+
+            if communications.isEmpty {
+                BentoCard(cornerRadius: 12) {
+                    VStack(alignment: .leading, spacing: 10) {
+                        Text("Log every touchpoint with this client — calls, emails, meetings.")
+                            .font(.neueCaption)
+                            .foregroundStyle(AVIATheme.textSecondary)
+                        HStack(spacing: 8) {
+                            ForEach(CommunicationKind.allCases) { kind in
+                                Button {
+                                    newCommKind = kind
+                                    newCommSummary = ""
+                                    newCommDate = .now
+                                    showLogComm = true
+                                } label: {
+                                    HStack(spacing: 5) {
+                                        Image(systemName: kind.icon)
+                                            .font(.neueCaption2)
+                                        Text(kind.label)
+                                            .font(.neueCaption2Medium)
+                                    }
+                                    .foregroundStyle(AVIATheme.timelessBrown)
+                                    .padding(.horizontal, 9)
+                                    .padding(.vertical, 5)
+                                    .background(AVIATheme.warmAccent)
+                                    .clipShape(.capsule)
+                                }
+                                .buttonStyle(.plain)
+                            }
+                        }
+                    }
+                    .padding(14)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                }
+            } else {
+                VStack(spacing: 8) {
+                    ForEach(communications) { comm in
+                        commRow(comm)
+                    }
+                }
+            }
+        }
+    }
+
+    private func commRow(_ comm: ClientCommunication) -> some View {
+        BentoCard(cornerRadius: 11) {
+            HStack(alignment: .top, spacing: 12) {
+                Image(systemName: comm.kind.icon)
+                    .font(.neueCaption)
+                    .foregroundStyle(AVIATheme.aviaWhite)
+                    .frame(width: 30, height: 30)
+                    .background(commKindColor(comm.kind))
+                    .clipShape(Circle())
+                VStack(alignment: .leading, spacing: 4) {
+                    HStack(spacing: 6) {
+                        Text(comm.kind.label.uppercased())
+                            .font(.neueCaption2Medium)
+                            .tracking(0.6)
+                            .foregroundStyle(commKindColor(comm.kind))
+                        Text("·")
+                            .font(.neueCaption2)
+                            .foregroundStyle(AVIATheme.textTertiary)
+                        Text(comm.occurredAt.formatted(.relative(presentation: .named)))
+                            .font(.neueCaption2)
+                            .foregroundStyle(AVIATheme.textTertiary)
+                    }
+                    Text(comm.summary)
+                        .font(.neueCaption)
+                        .foregroundStyle(AVIATheme.textPrimary)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                }
+                Spacer()
+                Button(role: .destructive) {
+                    deleteComm(comm)
+                } label: {
+                    Image(systemName: "trash")
+                        .font(.neueCaption2)
+                        .foregroundStyle(AVIATheme.textTertiary)
+                }
+                .buttonStyle(.plain)
+            }
+            .padding(12)
+        }
+    }
+
+    private func commKindColor(_ kind: CommunicationKind) -> Color {
+        switch kind {
+        case .call: return AVIATheme.success
+        case .email: return AVIATheme.timelessBrown
+        case .meeting: return AVIATheme.warning
+        case .sms: return AVIATheme.timelessBrown.opacity(0.8)
+        case .note: return AVIATheme.textSecondary
+        }
+    }
+
+    private func resetNewComm() {
+        newCommKind = .call
+        newCommSummary = ""
+        newCommDate = .now
+    }
+
+    private var logCommSheet: some View {
+        NavigationStack {
+            Form {
+                Section("Type") {
+                    Picker("Kind", selection: $newCommKind) {
+                        ForEach(CommunicationKind.allCases) { kind in
+                            Label(kind.label, systemImage: kind.icon).tag(kind)
+                        }
+                    }
+                    .pickerStyle(.segmented)
+                }
+                Section("Summary") {
+                    TextField("What happened? (e.g. Discussed budget and timeline)", text: $newCommSummary, axis: .vertical)
+                        .lineLimit(3...6)
+                }
+                Section("When") {
+                    DatePicker("Occurred", selection: $newCommDate)
+                }
+            }
+            .navigationTitle("Log Communication")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .cancellationAction) {
+                    Button("Cancel") { showLogComm = false }
+                }
+                ToolbarItem(placement: .confirmationAction) {
+                    Button("Save") { saveNewComm() }
+                        .disabled(newCommSummary.trimmingCharacters(in: .whitespaces).isEmpty)
+                }
+            }
+        }
+    }
+
+    private func saveNewComm() {
+        let trimmed = newCommSummary.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmed.isEmpty else { return }
+        let comm = ClientCommunication(
+            id: UUID().uuidString,
+            clientId: client.id,
+            authorId: viewModel.currentUser.id,
+            kind: newCommKind,
+            summary: trimmed,
+            occurredAt: newCommDate,
+            createdAt: .now
+        )
+        communications.insert(comm, at: 0)
+        crmProfile.lastContactedAt = newCommDate
+        showLogComm = false
+        Task {
+            await SupabaseService.shared.upsertClientCommunication(comm)
+            await SupabaseService.shared.upsertCRMProfile(crmProfile)
+        }
+    }
+
+    private func deleteComm(_ comm: ClientCommunication) {
+        communications.removeAll { $0.id == comm.id }
+        Task { await SupabaseService.shared.deleteClientCommunication(id: comm.id) }
     }
 
     // MARK: - Notes

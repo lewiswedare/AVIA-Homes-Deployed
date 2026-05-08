@@ -2801,4 +2801,68 @@ class SupabaseService {
             return false
         }
     }
+
+    func fetchAllOpenClientTasks(limit: Int = 500) async -> [ClientTask] {
+        guard isConfigured else { return [] }
+        do {
+            let rows: [ClientTaskRow] = try await client
+                .from("client_tasks")
+                .select()
+                .is("completed_at", value: nil)
+                .order("due_at", ascending: true)
+                .limit(limit)
+                .execute()
+                .value
+            return rows.map { $0.toTask() }
+        } catch {
+            print("[SupabaseService] fetchAllOpenClientTasks FAILED: \(error)")
+            return []
+        }
+    }
+
+    // MARK: - Client Communications (CRM log)
+
+    func fetchClientCommunications(clientId: String) async -> [ClientCommunication] {
+        guard isConfigured else { return [] }
+        do {
+            let rows: [ClientCommunicationRow] = try await client
+                .from("client_communications")
+                .select()
+                .eq("client_id", value: clientId)
+                .order("occurred_at", ascending: false)
+                .execute()
+                .value
+            return rows.map { $0.toComm() }
+        } catch {
+            print("[SupabaseService] fetchClientCommunications FAILED: \(error)")
+            return []
+        }
+    }
+
+    @discardableResult
+    func upsertClientCommunication(_ comm: ClientCommunication) async -> Bool {
+        guard isConfigured else { return false }
+        let row = ClientCommunicationRow(comm: comm)
+        do {
+            try await client.from("client_communications")
+                .upsert(row, onConflict: "id")
+                .execute()
+            return true
+        } catch {
+            print("[SupabaseService] upsertClientCommunication FAILED: \(error)")
+            return false
+        }
+    }
+
+    @discardableResult
+    func deleteClientCommunication(id: String) async -> Bool {
+        guard isConfigured else { return false }
+        do {
+            try await client.from("client_communications").delete().eq("id", value: id).execute()
+            return true
+        } catch {
+            print("[SupabaseService] deleteClientCommunication FAILED: \(error)")
+            return false
+        }
+    }
 }
