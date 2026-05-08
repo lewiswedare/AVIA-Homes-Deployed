@@ -2654,4 +2654,151 @@ class SupabaseService {
             return []
         }
     }
+
+    // MARK: - CRM Profiles
+
+    func fetchAllCRMProfiles() async -> [ClientCRMProfile] {
+        guard isConfigured else { return [] }
+        do {
+            let rows: [ClientCRMProfileRow] = try await client
+                .from("client_crm_profile")
+                .select()
+                .execute()
+                .value
+            return rows.map { $0.toProfile() }
+        } catch {
+            print("[SupabaseService] fetchAllCRMProfiles FAILED: \(error)")
+            return []
+        }
+    }
+
+    func fetchCRMProfile(clientId: String) async -> ClientCRMProfile? {
+        guard isConfigured else { return nil }
+        do {
+            let rows: [ClientCRMProfileRow] = try await client
+                .from("client_crm_profile")
+                .select()
+                .eq("client_id", value: clientId)
+                .limit(1)
+                .execute()
+                .value
+            return rows.first?.toProfile()
+        } catch {
+            print("[SupabaseService] fetchCRMProfile FAILED: \(error)")
+            return nil
+        }
+    }
+
+    @discardableResult
+    func upsertCRMProfile(_ profile: ClientCRMProfile) async -> Bool {
+        guard isConfigured else { return false }
+        var updated = profile
+        updated.updatedAt = .now
+        let row = ClientCRMProfileRow(profile: updated)
+        do {
+            try await client.from("client_crm_profile")
+                .upsert(row, onConflict: "client_id")
+                .execute()
+            return true
+        } catch {
+            print("[SupabaseService] upsertCRMProfile FAILED: \(error)")
+            return false
+        }
+    }
+
+    // MARK: - Client Notes
+
+    func fetchClientNotes(clientId: String) async -> [ClientNote] {
+        guard isConfigured else { return [] }
+        do {
+            let rows: [ClientNoteRow] = try await client
+                .from("client_notes")
+                .select()
+                .eq("client_id", value: clientId)
+                .order("pinned", ascending: false)
+                .order("created_at", ascending: false)
+                .execute()
+                .value
+            return rows.map { $0.toNote() }
+        } catch {
+            print("[SupabaseService] fetchClientNotes FAILED: \(error)")
+            return []
+        }
+    }
+
+    @discardableResult
+    func upsertClientNote(_ note: ClientNote) async -> Bool {
+        guard isConfigured else { return false }
+        var updated = note
+        updated.updatedAt = .now
+        let row = ClientNoteRow(note: updated)
+        do {
+            try await client.from("client_notes")
+                .upsert(row, onConflict: "id")
+                .execute()
+            return true
+        } catch {
+            print("[SupabaseService] upsertClientNote FAILED: \(error)")
+            return false
+        }
+    }
+
+    @discardableResult
+    func deleteClientNote(id: String) async -> Bool {
+        guard isConfigured else { return false }
+        do {
+            try await client.from("client_notes").delete().eq("id", value: id).execute()
+            return true
+        } catch {
+            print("[SupabaseService] deleteClientNote FAILED: \(error)")
+            return false
+        }
+    }
+
+    // MARK: - Client Tasks
+
+    func fetchClientTasks(clientId: String) async -> [ClientTask] {
+        guard isConfigured else { return [] }
+        do {
+            let rows: [ClientTaskRow] = try await client
+                .from("client_tasks")
+                .select()
+                .eq("client_id", value: clientId)
+                .order("completed_at", ascending: true)
+                .order("due_at", ascending: true)
+                .execute()
+                .value
+            return rows.map { $0.toTask() }
+        } catch {
+            print("[SupabaseService] fetchClientTasks FAILED: \(error)")
+            return []
+        }
+    }
+
+    @discardableResult
+    func upsertClientTask(_ task: ClientTask) async -> Bool {
+        guard isConfigured else { return false }
+        let row = ClientTaskRow(task: task)
+        do {
+            try await client.from("client_tasks")
+                .upsert(row, onConflict: "id")
+                .execute()
+            return true
+        } catch {
+            print("[SupabaseService] upsertClientTask FAILED: \(error)")
+            return false
+        }
+    }
+
+    @discardableResult
+    func deleteClientTask(id: String) async -> Bool {
+        guard isConfigured else { return false }
+        do {
+            try await client.from("client_tasks").delete().eq("id", value: id).execute()
+            return true
+        } catch {
+            print("[SupabaseService] deleteClientTask FAILED: \(error)")
+            return false
+        }
+    }
 }
