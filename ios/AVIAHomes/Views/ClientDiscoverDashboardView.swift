@@ -354,7 +354,6 @@ struct ClientDiscoverDashboardView: View {
                 .padding(12)
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .background(Color(red: 0.961, green: 0.961, blue: 0.961))
-                .clipShape(.rect(cornerRadii: .init(bottomLeading: 16, bottomTrailing: 16)))
             }
             .clipShape(.rect(cornerRadius: 13))
     }
