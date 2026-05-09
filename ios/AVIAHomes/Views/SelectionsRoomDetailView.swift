@@ -236,12 +236,20 @@ private struct SelectionItemCard: View {
         }
     }
 
+    private var hasImage: Bool {
+        if let s = selection.snapshotImageURL, !s.isEmpty, URL(string: s) != nil { return true }
+        if linkedSpecItem?.imageURL != nil { return true }
+        return false
+    }
+
     private var header: some View {
         Button(action: onToggle) {
             HStack(alignment: .top, spacing: 12) {
-                itemThumbnail
-                    .frame(width: 56, height: 56)
-                    .clipShape(.rect(cornerRadius: 10))
+                if hasImage {
+                    itemThumbnail
+                        .frame(width: 56, height: 56)
+                        .clipShape(.rect(cornerRadius: 10))
+                }
 
                 VStack(alignment: .leading, spacing: 4) {
                     Text(selection.snapshotName)
@@ -315,8 +323,6 @@ private struct SelectionItemCard: View {
                         }
                         .allowsHitTesting(false)
                     }
-            } else {
-                AVIATheme.cardBackgroundAlt.overlay { placeholderIcon }
             }
         }
     }
