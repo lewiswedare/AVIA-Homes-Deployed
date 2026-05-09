@@ -10,8 +10,6 @@ struct ClientBuildDetailView: View {
         case overview = "Overview"
         case progress = "Progress"
         case selections = "Selections"
-        case specs = "Specs"
-        case colours = "Colours"
         case documents = "Documents"
         case requests = "Requests"
 
@@ -20,30 +18,14 @@ struct ClientBuildDetailView: View {
             case .overview: "house.fill"
             case .progress: "chart.bar.fill"
             case .selections: "square.grid.2x2.fill"
-            case .specs: "checklist"
-            case .colours: "paintpalette.fill"
             case .documents: "doc.text.fill"
             case .requests: "bubble.left.and.bubble.right.fill"
             }
         }
     }
 
-    /// Cutoff for the new unified Selections experience. Builds with contracts
-    /// from this date onwards use the combined Selections flow; older builds
-    /// keep the legacy split Specs + Colours tabs so nothing in flight breaks.
-    private static let unifiedSelectionsCutoff: Date = {
-        DateComponents(calendar: .current, year: 2026, month: 5, day: 8).date ?? .distantFuture
-    }()
-
-    private var usesUnifiedSelections: Bool {
-        build.contractDate >= Self.unifiedSelectionsCutoff
-    }
-
     private var availableSections: [DetailSection] {
-        if usesUnifiedSelections {
-            return [.overview, .progress, .selections, .documents, .requests]
-        }
-        return [.overview, .progress, .specs, .colours, .documents, .requests]
+        [.overview, .progress, .selections, .documents, .requests]
     }
 
     var body: some View {
@@ -213,14 +195,6 @@ struct ClientBuildDetailView: View {
             } else {
                 SelectionsHomeView(buildId: build.id)
             }
-        case .specs:
-            if isAdmin {
-                AdminBuildSpecReviewView(buildId: build.id, clientName: build.clientDisplayName, clientId: build.client.id)
-            } else {
-                ClientSpecConfirmationView(buildId: build.id)
-            }
-        case .colours:
-            BuildColourSelectionView(buildId: build.id)
         case .documents:
             DocumentsView()
         case .requests:

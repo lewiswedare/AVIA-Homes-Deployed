@@ -6,7 +6,7 @@ Today, clients have to bounce between two separate screens — Spec Range (to re
 
 ## Features (Client side)
 
-- **Single "Selections" tab** replaces both Spec Range and Colour Selections screens for new builds.
+- **Single "Selections" tab** replaces both Spec Range and Colour Selections screens for every client build.
 - **Room-based browsing**: Kitchen, Bathroom & Ensuite, Living, Bedrooms, Laundry, External, Outdoor — each room shown as a visual card with hero image and progress.
 - **One unified card per item**: shows the item name, what's included as standard, and any available upgrade tiers with pricing.
 - **Two-step flow on the same card**:
@@ -15,7 +15,7 @@ Today, clients have to bounce between two separate screens — Spec Range (to re
 - **Live running total** of upgrade costs at the top of each room and overall.
 - **Submit when ready** — one button sends everything (item upgrades + colour choices) to the AVIA team for review and quoting.
 - **Status pills** on each item: Not started, In progress, Submitted, Quoted, Approved, Changes requested.
-- Existing builds continue using the old Spec + Colour screens; only new builds use Selections.
+- All client builds — new and in-flight — use the unified Selections flow. The legacy split Specs + Colours tabs have been removed.
 
 ## Features (Admin side)
 
@@ -43,6 +43,6 @@ Today, clients have to bounce between two separate screens — Spec Range (to re
 
 ## Data & rollout
 
-- New builds automatically use the unified Selections flow.
-- Existing in-progress builds keep the current Spec + Colour screens so nothing in flight breaks.
+- All client builds use the unified Selections flow — no contract-date cutoff.
+- Legacy Spec + Colour client tabs removed from `ClientBuildDetailView`.
 - Admin catalog (item categories, tiers, colour options) stays as-is — Selections reads from the same catalog.
