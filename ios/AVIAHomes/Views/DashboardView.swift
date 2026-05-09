@@ -83,8 +83,7 @@ struct DashboardView: View {
             }
             .sheet(isPresented: $showJourneyDetail) {
                 BuildJourneyDetailView(
-                    onNavigateToSpecs: { selectedTab = 1 },
-                    onNavigateToColours: { selectedTab = 1 }
+                    onNavigateToSelections: { selectedTab = 1 }
                 )
             }
             .alert(calendarService.lastResultMessage ?? "", isPresented: $calendarService.showResultAlert) {
@@ -222,8 +221,7 @@ struct DashboardView: View {
     private var journeyCard: some View {
         BuildJourneyCard(
             onTapAction: { showJourneyDetail = true },
-            onNavigateToSpecs: { selectedTab = 1 },
-            onNavigateToColours: { selectedTab = 1 }
+            onNavigateToSelections: { selectedTab = 1 }
         )
     }
 
@@ -633,7 +631,7 @@ struct DashboardView: View {
     private var statCards: some View {
         HStack(spacing: 12) {
             Button {
-                selectedTab = 2
+                selectedTab = 1
             } label: {
                 VStack(alignment: .leading, spacing: 6) {
                     HStack(alignment: .firstTextBaseline, spacing: 4) {
@@ -644,7 +642,7 @@ struct DashboardView: View {
                             .font(.neueCaption)
                             .foregroundStyle(AVIATheme.textSecondary)
                     }
-                    Text("Colour Selections")
+                    Text("Selections")
                         .font(.neueCaptionMedium)
                         .foregroundStyle(AVIATheme.textSecondary)
                 }

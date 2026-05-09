@@ -1,40 +1,35 @@
 import Foundation
 
 nonisolated enum JourneyStage: Int, CaseIterable, Sendable, Identifiable {
-    case specifications = 0
-    case colourSelection = 1
-    case complete = 2
+    case selections = 0
+    case complete = 1
 
     var id: Int { rawValue }
 
     var title: String {
         switch self {
-        case .specifications: "Specifications"
-        case .colourSelection: "Colour Selection"
+        case .selections: "Selections"
         case .complete: "Selections Complete"
         }
     }
 
     var subtitle: String {
         switch self {
-        case .specifications: "Review your inclusions and confirm any upgrades"
-        case .colourSelection: "Choose colours and finishes for your new home"
+        case .selections: "Choose your upgrades, colours and finishes — room by room"
         case .complete: "All selections confirmed — your build is underway"
         }
     }
 
     var icon: String {
         switch self {
-        case .specifications: "list.clipboard.fill"
-        case .colourSelection: "paintpalette.fill"
+        case .selections: "square.grid.2x2.fill"
         case .complete: "checkmark.seal.fill"
         }
     }
 
     var actionLabel: String {
         switch self {
-        case .specifications: "Review Specifications"
-        case .colourSelection: "Start Colour Selection"
+        case .selections: "Open Selections"
         case .complete: "View Summary"
         }
     }

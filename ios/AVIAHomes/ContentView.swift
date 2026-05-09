@@ -478,19 +478,6 @@ struct StaffScheduleView: View {
     }
 }
 
-struct ClientColourTabView: View {
-    @Environment(AppViewModel.self) private var appViewModel
-    @Environment(SpecificationViewModel.self) private var specVM
-
-    var body: some View {
-        if specVM.buildId.isEmpty {
-            ColourOverviewView()
-        } else {
-            BuildColourSelectionView(buildId: specVM.buildId)
-        }
-    }
-}
-
 struct ClientSelectionsTabView: View {
     @Environment(AppViewModel.self) private var appViewModel
     @Environment(SpecificationViewModel.self) private var specVM

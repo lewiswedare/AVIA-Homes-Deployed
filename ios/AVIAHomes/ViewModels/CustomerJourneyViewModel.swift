@@ -8,37 +8,50 @@ class CustomerJourneyViewModel {
     var currentStage: JourneyStage {
         if specsConfirmed && coloursUnlocked {
             return .complete
-        } else if specsConfirmed {
-            return .colourSelection
         }
-        return .specifications
+        return .selections
     }
 
     var stageProgress: Double {
-        Double(currentStage.rawValue) / Double(JourneyStage.allCases.count - 1)
+        Double(currentStage.rawValue) / Double(max(1, JourneyStage.allCases.count - 1))
     }
 
     func tasksForCurrentStage(specVM: SpecificationViewModel, colourVM: ColourSelectionViewModel) -> [JourneyTask] {
         switch currentStage {
-        case .specifications:
-            let hasReviewedSpecs = true
+        case .selections:
             let pendingUpgrades = specVM.upgradeRequests.filter { $0.status == .pending }
             let allUpgradesResolved = pendingUpgrades.isEmpty
+            let coloursDone = colourVM.isComplete
             return [
-                JourneyTask(id: "review_specs", title: "Review your \(specVM.currentTier.displayName) inclusions", icon: "checkmark.circle.fill", isComplete: hasReviewedSpecs),
-                JourneyTask(id: "upgrades_resolved", title: "Confirm or resolve upgrade requests", icon: pendingUpgrades.isEmpty ? "checkmark.circle.fill" : "clock.fill", isComplete: allUpgradesResolved),
-                JourneyTask(id: "confirm_specs", title: "Confirm your specifications", icon: specsConfirmed ? "checkmark.circle.fill" : "circle", isComplete: specsConfirmed),
-            ]
-        case .colourSelection:
-            let allSelected = colourVM.isComplete
-            return [
-                JourneyTask(id: "select_colours", title: "Preview colours in the Colour Library (\(colourVM.completedCount)/\(colourVM.totalCount))", icon: allSelected ? "checkmark.circle.fill" : "circle", isComplete: allSelected),
-                JourneyTask(id: "build_colours", title: "Select official colours on your live build", icon: "circle", isComplete: false),
+                JourneyTask(
+                    id: "browse_rooms",
+                    title: "Browse rooms and pick your upgrades",
+                    icon: "checkmark.circle.fill",
+                    isComplete: true
+                ),
+                JourneyTask(
+                    id: "upgrades_resolved",
+                    title: "Confirm or resolve upgrade requests",
+                    icon: allUpgradesResolved ? "checkmark.circle.fill" : "clock.fill",
+                    isComplete: allUpgradesResolved
+                ),
+                JourneyTask(
+                    id: "select_colours",
+                    title: "Choose colours & finishes (\(colourVM.completedCount)/\(colourVM.totalCount))",
+                    icon: coloursDone ? "checkmark.circle.fill" : "circle",
+                    isComplete: coloursDone
+                ),
+                JourneyTask(
+                    id: "submit_selections",
+                    title: "Submit your selections for review",
+                    icon: specsConfirmed ? "checkmark.circle.fill" : "circle",
+                    isComplete: specsConfirmed
+                ),
             ]
         case .complete:
             return [
-                JourneyTask(id: "specs_done", title: "Specifications confirmed", icon: "checkmark.circle.fill", isComplete: true),
-                JourneyTask(id: "colours_done", title: "Colour selections submitted", icon: "checkmark.circle.fill", isComplete: true),
+                JourneyTask(id: "selections_done", title: "Selections submitted", icon: "checkmark.circle.fill", isComplete: true),
+                JourneyTask(id: "colours_done", title: "Colours confirmed", icon: "checkmark.circle.fill", isComplete: true),
             ]
         }
     }

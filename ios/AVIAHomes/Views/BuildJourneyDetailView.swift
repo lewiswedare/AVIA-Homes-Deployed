@@ -5,8 +5,7 @@ struct BuildJourneyDetailView: View {
     @Environment(SpecificationViewModel.self) private var specVM
     @Environment(ColourSelectionViewModel.self) private var colourVM
     @Environment(\.dismiss) private var dismiss
-    let onNavigateToSpecs: () -> Void
-    let onNavigateToColours: () -> Void
+    let onNavigateToSelections: () -> Void
 
     var body: some View {
         NavigationStack {
@@ -71,14 +70,14 @@ struct BuildJourneyDetailView: View {
 
                 HStack(spacing: 12) {
                     statPill(
-                        value: journeyVM.currentStage == .specifications ? "In Progress" : "Complete",
-                        label: "Specs",
+                        value: journeyVM.specsConfirmed ? "Submitted" : "In Progress",
+                        label: "Selections",
                         color: journeyVM.specsConfirmed ? AVIATheme.success : AVIATheme.warning
                     )
                     statPill(
                         value: "\(colourVM.completedCount)/\(colourVM.totalCount)",
-                        label: "Previews",
-                        color: journeyVM.specsConfirmed ? AVIATheme.warning : AVIATheme.textTertiary
+                        label: "Colours Picked",
+                        color: colourVM.completedCount > 0 ? AVIATheme.timelessBrown : AVIATheme.textTertiary
                     )
                 }
             }
@@ -162,16 +161,7 @@ struct BuildJourneyDetailView: View {
                         Text(stage.subtitle)
                             .font(.neueCaption)
                             .foregroundStyle(AVIATheme.textSecondary)
-                        if isLocked && stage == .colourSelection {
-                            HStack(spacing: 4) {
-                                Image(systemName: "lock.fill")
-                                    .font(.neueCorp(9))
-                                Text("Complete specifications to unlock")
-                                    .font(.neueCaption2)
-                            }
-                            .foregroundStyle(AVIATheme.textTertiary)
-                            .padding(.top, 2)
-                        }
+
                     }
                     .padding(.bottom, stage != JourneyStage.allCases.last ? 16 : 0)
 
@@ -215,11 +205,8 @@ struct BuildJourneyDetailView: View {
             if journeyVM.currentStage != .complete {
                 Button {
                     switch journeyVM.currentStage {
-                    case .specifications:
-                        onNavigateToSpecs()
-                        dismiss()
-                    case .colourSelection:
-                        onNavigateToColours()
+                    case .selections:
+                        onNavigateToSelections()
                         dismiss()
                     case .complete:
                         break

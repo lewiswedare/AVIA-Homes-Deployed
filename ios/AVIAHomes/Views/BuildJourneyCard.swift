@@ -5,8 +5,7 @@ struct BuildJourneyCard: View {
     @Environment(SpecificationViewModel.self) private var specVM
     @Environment(ColourSelectionViewModel.self) private var colourVM
     let onTapAction: () -> Void
-    let onNavigateToSpecs: () -> Void
-    let onNavigateToColours: () -> Void
+    let onNavigateToSelections: () -> Void
 
     var body: some View {
         Button(action: onTapAction) {
@@ -135,10 +134,8 @@ struct BuildJourneyCard: View {
     private var actionButton: some View {
         Button {
             switch journeyVM.currentStage {
-            case .specifications:
-                onNavigateToSpecs()
-            case .colourSelection:
-                onNavigateToColours()
+            case .selections:
+                onNavigateToSelections()
             case .complete:
                 onTapAction()
             }
