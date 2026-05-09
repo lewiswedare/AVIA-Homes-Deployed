@@ -4,11 +4,13 @@ struct DesignComparisonView: View {
     let designA: HomeDesign
     let designB: HomeDesign
     @Environment(\.dismiss) private var dismiss
+    @State private var zoomedFloorplan: ZoomedFloorplan?
 
     var body: some View {
         NavigationStack {
             ScrollView {
                 VStack(spacing: 20) {
+                    floorplanRow
                     imageRow
                     statsSection
                     dimensionsSection
@@ -20,6 +22,9 @@ struct DesignComparisonView: View {
             .background(AVIATheme.background)
             .navigationTitle("Compare Designs")
             .navigationBarTitleDisplayMode(.inline)
+            .fullScreenCover(item: $zoomedFloorplan) { item in
+                FloorplanZoomView(design: item.design)
+            }
             .toolbar {
                 ToolbarItem(placement: .topBarLeading) {
                     Button {
@@ -35,12 +40,80 @@ struct DesignComparisonView: View {
         }
     }
 
+    // MARK: - Floor Plan Row (Priority)
+
+    private var floorplanRow: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            HStack {
+                sectionHeader("FLOOR PLANS")
+                Spacer()
+                Label("Tap to zoom", systemImage: "arrow.up.left.and.arrow.down.right")
+                    .font(.neueCaption2)
+                    .foregroundStyle(AVIATheme.textTertiary)
+            }
+            HStack(spacing: 10) {
+                floorplanCard(design: designA)
+                floorplanCard(design: designB)
+            }
+        }
+    }
+
+    private func floorplanCard(design: HomeDesign) -> some View {
+        let url = design.floorplanImageURL
+        return Button {
+            zoomedFloorplan = ZoomedFloorplan(design: design)
+        } label: {
+            AVIATheme.aviaWhite
+                .aspectRatio(3 / 4, contentMode: .fit)
+                .overlay {
+                    AsyncImage(url: URL(string: url)) { phase in
+                        if let image = phase.image {
+                            image.resizable().aspectRatio(contentMode: .fit).padding(8)
+                        } else if phase.error != nil {
+                            Image(systemName: "rectangle.split.2x2")
+                                .font(.neueCorpMedium(28))
+                                .foregroundStyle(AVIATheme.timelessBrown.opacity(0.3))
+                        } else {
+                            ProgressView()
+                        }
+                    }
+                    .allowsHitTesting(false)
+                }
+                .overlay(alignment: .topLeading) {
+                    Text(design.name)
+                        .font(.neueCaption2Medium)
+                        .foregroundStyle(AVIATheme.textPrimary)
+                        .padding(.horizontal, 8)
+                        .padding(.vertical, 4)
+                        .background(.ultraThinMaterial, in: .capsule)
+                        .padding(8)
+                }
+                .overlay(alignment: .topTrailing) {
+                    Image(systemName: "arrow.up.left.and.arrow.down.right")
+                        .font(.system(size: 11, weight: .semibold))
+                        .foregroundStyle(AVIATheme.aviaWhite)
+                        .padding(6)
+                        .background(AVIATheme.timelessBrown.opacity(0.85), in: .circle)
+                        .padding(8)
+                }
+                .clipShape(.rect(cornerRadius: 11))
+                .overlay {
+                    RoundedRectangle(cornerRadius: 11)
+                        .stroke(AVIATheme.surfaceBorder, lineWidth: 1)
+                }
+        }
+        .buttonStyle(.plain)
+    }
+
     // MARK: - Image Row
 
     private var imageRow: some View {
-        HStack(spacing: 10) {
-            designImageCard(design: designA)
-            designImageCard(design: designB)
+        VStack(alignment: .leading, spacing: 10) {
+            sectionHeader("EXTERIOR")
+            HStack(spacing: 10) {
+                designImageCard(design: designA)
+                designImageCard(design: designB)
+            }
         }
     }
 
@@ -179,5 +252,108 @@ struct DesignComparisonView: View {
             .fill(AVIATheme.surfaceBorder)
             .frame(height: 1)
             .padding(.horizontal, 16)
+    }
+}
+
+// MARK: - Floor Plan Zoom
+
+private struct ZoomedFloorplan: Identifiable {
+    let design: HomeDesign
+    var id: String { design.id }
+}
+
+private struct FloorplanZoomView: View {
+    let design: HomeDesign
+    @Environment(\.dismiss) private var dismiss
+    @State private var scale: CGFloat = 1.0
+    @State private var lastScale: CGFloat = 1.0
+    @State private var offset: CGSize = .zero
+    @State private var lastOffset: CGSize = .zero
+
+    var body: some View {
+        ZStack {
+            Color.black.ignoresSafeArea()
+
+            AsyncImage(url: URL(string: design.floorplanImageURL)) { phase in
+                if let image = phase.image {
+                    image.resizable().aspectRatio(contentMode: .fit)
+                } else if phase.error != nil {
+                    Image(systemName: "rectangle.split.2x2")
+                        .font(.system(size: 60))
+                        .foregroundStyle(.white.opacity(0.4))
+                } else {
+                    ProgressView().tint(.white)
+                }
+            }
+            .scaleEffect(scale)
+            .offset(offset)
+            .gesture(
+                MagnifyGesture()
+                    .onChanged { value in
+                        scale = max(1.0, min(lastScale * value.magnification, 5.0))
+                    }
+                    .onEnded { _ in
+                        lastScale = scale
+                        if scale <= 1.0 {
+                            withAnimation(.spring(response: 0.3)) {
+                                offset = .zero
+                                lastOffset = .zero
+                            }
+                        }
+                    }
+            )
+            .simultaneousGesture(
+                DragGesture()
+                    .onChanged { value in
+                        guard scale > 1.0 else { return }
+                        offset = CGSize(
+                            width: lastOffset.width + value.translation.width,
+                            height: lastOffset.height + value.translation.height
+                        )
+                    }
+                    .onEnded { _ in
+                        lastOffset = offset
+                    }
+            )
+            .onTapGesture(count: 2) {
+                withAnimation(.spring(response: 0.3)) {
+                    if scale > 1.0 {
+                        scale = 1.0
+                        lastScale = 1.0
+                        offset = .zero
+                        lastOffset = .zero
+                    } else {
+                        scale = 2.5
+                        lastScale = 2.5
+                    }
+                }
+            }
+
+            VStack {
+                HStack {
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text(design.name)
+                            .font(.neueHeadline)
+                            .foregroundStyle(.white)
+                        Text("Floor Plan")
+                            .font(.neueCaption)
+                            .foregroundStyle(.white.opacity(0.7))
+                    }
+                    Spacer()
+                    Button {
+                        dismiss()
+                    } label: {
+                        Image(systemName: "xmark")
+                            .font(.system(size: 14, weight: .semibold))
+                            .foregroundStyle(.white)
+                            .frame(width: 36, height: 36)
+                            .background(.ultraThinMaterial, in: .circle)
+                    }
+                }
+                .padding(.horizontal, 20)
+                .padding(.top, 12)
+                Spacer()
+            }
+        }
     }
 }
