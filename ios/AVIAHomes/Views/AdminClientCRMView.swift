@@ -29,6 +29,7 @@ struct AdminClientCRMView: View {
     @State private var newTagText: String = ""
 
     @State private var communications: [ClientCommunication] = []
+    @State private var foundationCall: FoundationCall? = nil
     @State private var showLogComm: Bool = false
     @State private var newCommKind: CommunicationKind = .call
     @State private var newCommSummary: String = ""
@@ -118,6 +119,7 @@ struct AdminClientCRMView: View {
             VStack(spacing: 16) {
                 profileHeader
                 lifecycleStageCard
+                foundationCallCard
                 statusAndScoreCard
                 tagsCard
                 quickActions
@@ -182,11 +184,13 @@ struct AdminClientCRMView: View {
         async let notesList = SupabaseService.shared.fetchClientNotes(clientId: client.id)
         async let tasksList = SupabaseService.shared.fetchClientTasks(clientId: client.id)
         async let commsList = SupabaseService.shared.fetchClientCommunications(clientId: client.id)
+        async let foundation = SupabaseService.shared.fetchLatestFoundationCall(clientId: client.id)
         let p = await profile
         crmProfile = p ?? .empty(clientId: client.id)
         notes = await notesList
         tasks = await tasksList
         communications = await commsList
+        foundationCall = await foundation
         isLoadingCRM = false
     }
 
@@ -255,6 +259,18 @@ struct AdminClientCRMView: View {
         }
     }
 
+    // MARK: - Foundation Call (primary conversion goal)
+
+    private var foundationCallCard: some View {
+        FoundationCallCard(
+            client: client,
+            currentUserId: viewModel.currentUser.id,
+            call: $foundationCall
+        ) {
+            Task { await loadCRM() }
+        }
+    }
+
     // MARK: - Lifecycle Stage (primary CRM feature)
 
     private var lifecycleContext: LifecycleContext {
@@ -263,7 +279,8 @@ struct AdminClientCRMView: View {
             activities: activities,
             communications: communications,
             notes: notes,
-            tasks: tasks
+            tasks: tasks,
+            foundationCall: foundationCall
         )
     }
 

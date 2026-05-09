@@ -68,6 +68,15 @@ struct LifecycleContext {
     let communications: [ClientCommunication]
     let notes: [ClientNote]
     let tasks: [ClientTask]
+    let foundationCall: FoundationCall?
+
+    var hasFoundationCallScheduled: Bool {
+        guard let c = foundationCall else { return false }
+        return c.status == .scheduled || c.status == .completed
+    }
+    var hasFoundationCallCompleted: Bool {
+        foundationCall?.status == .completed
+    }
 
     var hasAnyCommunication: Bool { !communications.isEmpty || profile.lastContactedAt != nil }
     var hasMeetingOrCall: Bool { communications.contains { $0.kind == .call || $0.kind == .meeting } }
@@ -95,6 +104,13 @@ enum LifecycleStageGuide {
         case .new:
             return [
                 StageRequirement(
+                    id: "new.foundationCall",
+                    title: "Book Foundation Call",
+                    detail: "Primary goal — book the 30-min Cal.com video call to qualify the lead.",
+                    icon: "video.fill",
+                    isComplete: ctx.hasFoundationCallScheduled
+                ),
+                StageRequirement(
                     id: "new.firstContact",
                     title: "Log first contact",
                     detail: "Call, email, or SMS the client and log the touchpoint.",
@@ -112,11 +128,18 @@ enum LifecycleStageGuide {
         case .contacted:
             return [
                 StageRequirement(
+                    id: "contacted.foundationCall",
+                    title: "Complete Foundation Call",
+                    detail: "Run the Cal.com video call and log the outcome to qualify them.",
+                    icon: "video.fill",
+                    isComplete: ctx.hasFoundationCallCompleted
+                ),
+                StageRequirement(
                     id: "contacted.discovery",
                     title: "Discovery conversation",
                     detail: "Have a call or meeting to understand their goals.",
                     icon: "bubble.left.and.bubble.right.fill",
-                    isComplete: ctx.hasMeetingOrCall
+                    isComplete: ctx.hasMeetingOrCall || ctx.hasFoundationCallCompleted
                 ),
                 StageRequirement(
                     id: "contacted.notes",

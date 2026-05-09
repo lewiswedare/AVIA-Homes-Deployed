@@ -2897,4 +2897,56 @@ class SupabaseService {
             return false
         }
     }
+
+    // MARK: - Foundation Calls (Cal.com)
+
+    func fetchFoundationCalls(clientId: String) async -> [FoundationCall] {
+        guard isConfigured else { return [] }
+        do {
+            let rows: [FoundationCallRow] = try await client
+                .from("client_foundation_calls")
+                .select()
+                .eq("client_id", value: clientId)
+                .order("scheduled_at", ascending: false)
+                .execute()
+                .value
+            return rows.map { $0.toCall() }
+        } catch {
+            print("[SupabaseService] fetchFoundationCalls FAILED: \(error)")
+            return []
+        }
+    }
+
+    func fetchLatestFoundationCall(clientId: String) async -> FoundationCall? {
+        await fetchFoundationCalls(clientId: clientId).first
+    }
+
+    @discardableResult
+    func upsertFoundationCall(_ call: FoundationCall) async -> Bool {
+        guard isConfigured else { return false }
+        var updated = call
+        updated.updatedAt = .now
+        let row = FoundationCallRow(call: updated)
+        do {
+            try await client.from("client_foundation_calls")
+                .upsert(row, onConflict: "id")
+                .execute()
+            return true
+        } catch {
+            print("[SupabaseService] upsertFoundationCall FAILED: \(error)")
+            return false
+        }
+    }
+
+    @discardableResult
+    func deleteFoundationCall(id: String) async -> Bool {
+        guard isConfigured else { return false }
+        do {
+            try await client.from("client_foundation_calls").delete().eq("id", value: id).execute()
+            return true
+        } catch {
+            print("[SupabaseService] deleteFoundationCall FAILED: \(error)")
+            return false
+        }
+    }
 }
