@@ -11,9 +11,9 @@ struct DesignComparisonView: View {
             ScrollView {
                 VStack(spacing: 20) {
                     floorplanRow
-                    statsSection
-                    dimensionsSection
-                    detailsSection
+                    descriptionSection
+                    keyRoomsAndDimensionsSection
+                    specificationsSection
                 }
                 .padding(.horizontal, 16)
                 .padding(.bottom, 40)
@@ -100,11 +100,48 @@ struct DesignComparisonView: View {
         .buttonStyle(.plain)
     }
 
-    // MARK: - Stats Section
+    // MARK: - Description Section
 
-    private var statsSection: some View {
+    private var descriptionSection: some View {
         VStack(alignment: .leading, spacing: 10) {
-            sectionHeader("KEY STATS")
+            sectionHeader("DESCRIPTION")
+
+            HStack(alignment: .top, spacing: 10) {
+                descriptionCard(design: designA)
+                descriptionCard(design: designB)
+            }
+        }
+    }
+
+    private func descriptionCard(design: HomeDesign) -> some View {
+        BentoCard(cornerRadius: 13) {
+            VStack(alignment: .leading, spacing: 8) {
+                Text(design.name)
+                    .font(.neueSubheadlineMedium)
+                    .foregroundStyle(AVIATheme.timelessBrown)
+
+                if !design.priceFrom.isEmpty {
+                    Text("From \(design.priceFrom)")
+                        .font(.neueCaption2Medium)
+                        .foregroundStyle(AVIATheme.textSecondary)
+                }
+
+                Text(design.description.isEmpty ? "No description available." : design.description)
+                    .font(.neueCaption)
+                    .foregroundStyle(AVIATheme.textPrimary)
+                    .fixedSize(horizontal: false, vertical: true)
+                    .multilineTextAlignment(.leading)
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .padding(14)
+        }
+    }
+
+    // MARK: - Key Rooms & Dimensions Section
+
+    private var keyRoomsAndDimensionsSection: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            sectionHeader("KEY ROOMS & DIMENSIONS")
 
             BentoCard(cornerRadius: 13) {
                 VStack(spacing: 0) {
@@ -117,19 +154,7 @@ struct DesignComparisonView: View {
                     comparisonRow(label: "Living Areas", icon: "sofa.fill", valueA: "\(designA.livingAreas)", valueB: "\(designB.livingAreas)")
                     rowDivider
                     comparisonRow(label: "Storeys", icon: "building.2.fill", valueA: designA.storeys == 1 ? "Single" : "Double", valueB: designB.storeys == 1 ? "Single" : "Double")
-                }
-            }
-        }
-    }
-
-    // MARK: - Dimensions Section
-
-    private var dimensionsSection: some View {
-        VStack(alignment: .leading, spacing: 10) {
-            sectionHeader("DIMENSIONS")
-
-            BentoCard(cornerRadius: 13) {
-                VStack(spacing: 0) {
+                    rowDivider
                     comparisonRow(label: "Total Area", icon: "square.dashed", valueA: String(format: "%.0f m²", designA.squareMeters), valueB: String(format: "%.0f m²", designB.squareMeters))
                     rowDivider
                     comparisonRow(label: "Width", icon: "arrow.left.and.right", valueA: String(format: "%.1fm", designA.houseWidth), valueB: String(format: "%.1fm", designB.houseWidth))
@@ -142,21 +167,70 @@ struct DesignComparisonView: View {
         }
     }
 
-    // MARK: - Details Section
+    // MARK: - Specifications Section
 
-    private var detailsSection: some View {
+    private var specificationsSection: some View {
         VStack(alignment: .leading, spacing: 10) {
-            sectionHeader("DETAILS")
+            sectionHeader("SPECIFICATIONS")
 
-            BentoCard(cornerRadius: 13) {
-                VStack(spacing: 0) {
-                    comparisonRow(label: "Price From", icon: "dollarsign.circle.fill", valueA: designA.priceFrom.isEmpty ? "–" : designA.priceFrom, valueB: designB.priceFrom.isEmpty ? "–" : designB.priceFrom)
-                    rowDivider
-                    comparisonRow(label: "Room Highlights", icon: "list.star", valueA: "\(designA.roomHighlights.count)", valueB: "\(designB.roomHighlights.count)")
-                    rowDivider
-                    comparisonRow(label: "Inclusions", icon: "checkmark.circle.fill", valueA: "\(designA.inclusions.count)", valueB: "\(designB.inclusions.count)")
+            HStack(alignment: .top, spacing: 10) {
+                specificationsCard(design: designA)
+                specificationsCard(design: designB)
+            }
+        }
+    }
+
+    private func specificationsCard(design: HomeDesign) -> some View {
+        BentoCard(cornerRadius: 13) {
+            VStack(alignment: .leading, spacing: 12) {
+                Text(design.name)
+                    .font(.neueCaption2Medium)
+                    .kerning(0.6)
+                    .foregroundStyle(AVIATheme.timelessBrown)
+
+                if !design.roomHighlights.isEmpty {
+                    VStack(alignment: .leading, spacing: 6) {
+                        Text("Room Highlights")
+                            .font(.system(size: 10, weight: .semibold))
+                            .foregroundStyle(AVIATheme.textTertiary)
+                        ForEach(design.roomHighlights, id: \.self) { item in
+                            specBullet(item)
+                        }
+                    }
+                }
+
+                if !design.inclusions.isEmpty {
+                    VStack(alignment: .leading, spacing: 6) {
+                        Text("Inclusions")
+                            .font(.system(size: 10, weight: .semibold))
+                            .foregroundStyle(AVIATheme.textTertiary)
+                        ForEach(design.inclusions, id: \.self) { item in
+                            specBullet(item)
+                        }
+                    }
+                }
+
+                if design.roomHighlights.isEmpty && design.inclusions.isEmpty {
+                    Text("No specifications listed.")
+                        .font(.neueCaption)
+                        .foregroundStyle(AVIATheme.textTertiary)
                 }
             }
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .padding(14)
+        }
+    }
+
+    private func specBullet(_ text: String) -> some View {
+        HStack(alignment: .top, spacing: 6) {
+            Image(systemName: "checkmark.circle.fill")
+                .font(.system(size: 10, weight: .semibold))
+                .foregroundStyle(AVIATheme.timelessBrown)
+                .padding(.top, 2)
+            Text(text)
+                .font(.neueCaption)
+                .foregroundStyle(AVIATheme.textPrimary)
+                .fixedSize(horizontal: false, vertical: true)
         }
     }
 
