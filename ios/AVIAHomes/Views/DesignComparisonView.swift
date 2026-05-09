@@ -11,7 +11,6 @@ struct DesignComparisonView: View {
             ScrollView {
                 VStack(spacing: 20) {
                     floorplanRow
-                    imageRow
                     statsSection
                     dimensionsSection
                     detailsSection
@@ -63,7 +62,7 @@ struct DesignComparisonView: View {
         return Button {
             zoomedFloorplan = ZoomedFloorplan(design: design)
         } label: {
-            AVIATheme.aviaWhite
+            AVIATheme.timelessBrown
                 .aspectRatio(3 / 4, contentMode: .fit)
                 .overlay {
                     AsyncImage(url: URL(string: url)) { phase in
@@ -72,9 +71,9 @@ struct DesignComparisonView: View {
                         } else if phase.error != nil {
                             Image(systemName: "rectangle.split.2x2")
                                 .font(.neueCorpMedium(28))
-                                .foregroundStyle(AVIATheme.timelessBrown.opacity(0.3))
+                                .foregroundStyle(AVIATheme.aviaWhite.opacity(0.4))
                         } else {
-                            ProgressView()
+                            ProgressView().tint(AVIATheme.aviaWhite)
                         }
                     }
                     .allowsHitTesting(false)
@@ -82,73 +81,23 @@ struct DesignComparisonView: View {
                 .overlay(alignment: .topLeading) {
                     Text(design.name)
                         .font(.neueCaption2Medium)
-                        .foregroundStyle(AVIATheme.textPrimary)
+                        .foregroundStyle(AVIATheme.aviaWhite)
                         .padding(.horizontal, 8)
                         .padding(.vertical, 4)
-                        .background(.ultraThinMaterial, in: .capsule)
+                        .background(AVIATheme.timelessBrown.opacity(0.6), in: .capsule)
                         .padding(8)
                 }
                 .overlay(alignment: .topTrailing) {
                     Image(systemName: "arrow.up.left.and.arrow.down.right")
                         .font(.system(size: 11, weight: .semibold))
-                        .foregroundStyle(AVIATheme.aviaWhite)
+                        .foregroundStyle(AVIATheme.timelessBrown)
                         .padding(6)
-                        .background(AVIATheme.timelessBrown.opacity(0.85), in: .circle)
+                        .background(AVIATheme.aviaWhite.opacity(0.95), in: .circle)
                         .padding(8)
                 }
                 .clipShape(.rect(cornerRadius: 11))
-                .overlay {
-                    RoundedRectangle(cornerRadius: 11)
-                        .stroke(AVIATheme.surfaceBorder, lineWidth: 1)
-                }
         }
         .buttonStyle(.plain)
-    }
-
-    // MARK: - Image Row
-
-    private var imageRow: some View {
-        VStack(alignment: .leading, spacing: 10) {
-            sectionHeader("EXTERIOR")
-            HStack(spacing: 10) {
-                designImageCard(design: designA)
-                designImageCard(design: designB)
-            }
-        }
-    }
-
-    private func designImageCard(design: HomeDesign) -> some View {
-        AVIATheme.surfaceElevated
-            .aspectRatio(4 / 3, contentMode: .fit)
-            .overlay {
-                AsyncImage(url: URL(string: design.imageURL)) { phase in
-                    if let image = phase.image {
-                        image.resizable().aspectRatio(contentMode: .fill)
-                    } else if phase.error != nil {
-                        Image(systemName: "house.fill")
-                            .font(.neueCorpMedium(28))
-                            .foregroundStyle(AVIATheme.timelessBrown.opacity(0.3))
-                    } else {
-                        ProgressView()
-                    }
-                }
-                .allowsHitTesting(false)
-            }
-            .overlay(alignment: .bottom) {
-                VStack(spacing: 2) {
-                    Text(design.name)
-                        .font(.neueCaptionMedium)
-                        .foregroundStyle(AVIATheme.aviaWhite)
-                        .lineLimit(1)
-                    Text(String(format: "%.0fm²", design.squareMeters))
-                        .font(.neueCaption2)
-                        .foregroundStyle(AVIATheme.aviaWhite.opacity(0.85))
-                }
-                .frame(maxWidth: .infinity)
-                .padding(.vertical, 10)
-                .background(.ultraThinMaterial)
-            }
-            .clipShape(.rect(cornerRadius: 11))
     }
 
     // MARK: - Stats Section
