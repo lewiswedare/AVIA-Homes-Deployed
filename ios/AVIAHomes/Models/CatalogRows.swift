@@ -262,6 +262,13 @@ nonisolated struct SpecItemFlatRow: Codable, Sendable {
     }
 }
 
+nonisolated struct SpecCategoryUpsertRow: Codable, Sendable {
+    let id: String
+    let name: String
+    let icon: String
+    let sort_order: Int
+}
+
 nonisolated struct SpecToColourMappingRow: Codable, Sendable {
     let spec_item_id: String
     let colour_category_ids: [String]

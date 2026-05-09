@@ -3,6 +3,7 @@ import SwiftUI
 @Observable
 class AdminCatalogViewModel {
     var specItems: [SpecItemFlatRow] = []
+    var specCategoriesDB: [SpecCategoryRow] = []
     var colourCategories: [ColourCategory] = []
     var homeDesigns: [HomeDesign] = []
     var facades: [Facade] = []
@@ -13,30 +14,37 @@ class AdminCatalogViewModel {
 
     private let catalog = CatalogDataManager.shared
 
+    static let defaultSpecCategorySeed: [(id: String, name: String, icon: String)] = [
+        ("pre_construction", "Pre-Construction", "doc.text.fill"),
+        ("construction", "Construction", "hammer.fill"),
+        ("insulation", "Insulation", "thermometer.medium"),
+        ("site_requirements", "Site Requirements", "map.fill"),
+        ("frame", "Frame", "square.split.bottomrightquarter.fill"),
+        ("external", "External", "house.fill"),
+        ("windows", "Windows", "rectangle.split.2x1.fill"),
+        ("doors", "Doors", "door.left.hand.open"),
+        ("electrical", "Electrical", "lightbulb.fill"),
+        ("internal_living", "Internal Living", "sofa.fill"),
+        ("kitchen", "Kitchen", "fork.knife"),
+        ("bath_ensuite", "Bath/Ensuite", "shower.fill"),
+        ("laundry", "Laundry", "washer.fill"),
+        ("flooring", "Flooring", "square.grid.3x3.fill"),
+        ("paintwork", "Paintwork", "paintbrush.fill"),
+        ("storage", "Storage", "archivebox.fill"),
+        ("colour_selections", "Colour Selections", "paintpalette.fill"),
+        ("landscaping", "Landscaping", "leaf.fill"),
+        ("garage", "Garage", "car.fill"),
+        ("post_construction", "Post-Construction", "checkmark.seal.fill"),
+        ("warranties", "Warranties", "shield.lefthalf.filled"),
+    ]
+
     var specCategoryOrder: [(id: String, name: String, icon: String)] {
-        [
-            ("pre_construction", "Pre-Construction", "doc.text.fill"),
-            ("construction", "Construction", "hammer.fill"),
-            ("insulation", "Insulation", "thermometer.medium"),
-            ("site_requirements", "Site Requirements", "map.fill"),
-            ("frame", "Frame", "square.split.bottomrightquarter.fill"),
-            ("external", "External", "house.fill"),
-            ("windows", "Windows", "rectangle.split.2x1.fill"),
-            ("doors", "Doors", "door.left.hand.open"),
-            ("electrical", "Electrical", "lightbulb.fill"),
-            ("internal_living", "Internal Living", "sofa.fill"),
-            ("kitchen", "Kitchen", "fork.knife"),
-            ("bath_ensuite", "Bath/Ensuite", "shower.fill"),
-            ("laundry", "Laundry", "washer.fill"),
-            ("flooring", "Flooring", "square.grid.3x3.fill"),
-            ("paintwork", "Paintwork", "paintbrush.fill"),
-            ("storage", "Storage", "archivebox.fill"),
-            ("colour_selections", "Colour Selections", "paintpalette.fill"),
-            ("landscaping", "Landscaping", "leaf.fill"),
-            ("garage", "Garage", "car.fill"),
-            ("post_construction", "Post-Construction", "checkmark.seal.fill"),
-            ("warranties", "Warranties", "shield.lefthalf.filled"),
-        ]
+        if !specCategoriesDB.isEmpty {
+            return specCategoriesDB
+                .sorted { $0.sort_order < $1.sort_order }
+                .map { (id: $0.id, name: $0.name, icon: $0.icon) }
+        }
+        return Self.defaultSpecCategorySeed
     }
 
     func categoryName(for id: String) -> String {
@@ -48,7 +56,61 @@ class AdminCatalogViewModel {
 
     func loadSpecItems() async {
         isLoading = true
-        specItems = await SupabaseService.shared.fetchSpecItemsFlat()
+        async let itemsTask = SupabaseService.shared.fetchSpecItemsFlat()
+        async let catsTask = SupabaseService.shared.fetchSpecCategoryRowsPublic()
+        specItems = await itemsTask
+        specCategoriesDB = await catsTask
+        isLoading = false
+    }
+
+    func loadSpecCategories() async {
+        isLoading = true
+        specCategoriesDB = await SupabaseService.shared.fetchSpecCategoryRowsPublic()
+        isLoading = false
+    }
+
+    func saveSpecCategory(id: String, name: String, icon: String, sortOrder: Int) async {
+        errorMessage = nil
+        let row = SpecCategoryUpsertRow(id: id, name: name, icon: icon, sort_order: sortOrder)
+        let success = await SupabaseService.shared.upsertSpecCategory(row)
+        if success {
+            successMessage = "Category saved"
+            await loadSpecCategories()
+            await catalog.loadAll()
+        } else {
+            errorMessage = "Failed to save category"
+        }
+    }
+
+    func deleteSpecCategory(id: String) async {
+        errorMessage = nil
+        // Block deletion if items still reference this category.
+        let itemsInCategory = specItems.filter { $0.category_id == id }
+        if !itemsInCategory.isEmpty {
+            errorMessage = "Cannot delete: \(itemsInCategory.count) item(s) still in this category"
+            return
+        }
+        let success = await SupabaseService.shared.deleteSpecCategory(id: id)
+        if success {
+            successMessage = "Category deleted"
+            await loadSpecCategories()
+            await catalog.loadAll()
+        } else {
+            errorMessage = "Failed to delete category"
+        }
+    }
+
+    func seedDefaultSpecCategories() async {
+        isLoading = true
+        errorMessage = nil
+        var count = 0
+        for (index, cat) in Self.defaultSpecCategorySeed.enumerated() {
+            let row = SpecCategoryUpsertRow(id: cat.id, name: cat.name, icon: cat.icon, sort_order: index)
+            if await SupabaseService.shared.upsertSpecCategory(row) { count += 1 }
+        }
+        successMessage = "Seeded \(count) categories"
+        await loadSpecCategories()
+        await catalog.loadAll()
         isLoading = false
     }
 

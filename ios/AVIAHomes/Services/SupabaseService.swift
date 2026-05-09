@@ -1005,6 +1005,32 @@ class SupabaseService {
         return categoryRows.map { $0.toSpecCategory() }
     }
 
+    func fetchSpecCategoryRowsPublic() async -> [SpecCategoryRow] {
+        await fetchSpecCategoryRows()
+    }
+
+    func upsertSpecCategory(_ row: SpecCategoryUpsertRow) async -> Bool {
+        guard isConfigured else { return false }
+        do {
+            try await client.from("spec_categories").upsert(row).execute()
+            return true
+        } catch {
+            print("[SupabaseService] upsertSpecCategory FAILED: \(error)")
+            return false
+        }
+    }
+
+    func deleteSpecCategory(id: String) async -> Bool {
+        guard isConfigured else { return false }
+        do {
+            try await client.from("spec_categories").delete().eq("id", value: id).execute()
+            return true
+        } catch {
+            print("[SupabaseService] deleteSpecCategory FAILED: \(error)")
+            return false
+        }
+    }
+
     private func fetchSpecCategoryRows() async -> [SpecCategoryRow] {
         guard isConfigured else { return [] }
         do {
