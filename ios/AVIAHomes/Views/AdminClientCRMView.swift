@@ -117,6 +117,7 @@ struct AdminClientCRMView: View {
         ScrollView {
             VStack(spacing: 16) {
                 profileHeader
+                lifecycleStageCard
                 statusAndScoreCard
                 tagsCard
                 quickActions
@@ -252,6 +253,277 @@ struct AdminClientCRMView: View {
             }
             .padding(16)
         }
+    }
+
+    // MARK: - Lifecycle Stage (primary CRM feature)
+
+    private var lifecycleContext: LifecycleContext {
+        LifecycleContext(
+            profile: crmProfile,
+            activities: activities,
+            communications: communications,
+            notes: notes,
+            tasks: tasks
+        )
+    }
+
+    private var stageRequirements: [StageRequirement] {
+        LifecycleStageGuide.requirements(for: crmProfile.leadStatus, ctx: lifecycleContext)
+    }
+
+    private var completedRequirementsCount: Int {
+        stageRequirements.filter { $0.isComplete }.count
+    }
+
+    private var canAdvance: Bool {
+        guard !crmProfile.leadStatus.isTerminal else { return false }
+        guard let _ = crmProfile.leadStatus.nextStage else { return false }
+        if stageRequirements.isEmpty { return true }
+        return completedRequirementsCount >= max(1, stageRequirements.count - 1)
+    }
+
+    private var lifecycleStageCard: some View {
+        BentoCard(cornerRadius: 16) {
+            VStack(alignment: .leading, spacing: 14) {
+                lifecycleHeader
+                lifecycleStepper
+                Rectangle().fill(AVIATheme.surfaceBorder).frame(height: 1)
+                lifecycleNextSteps
+                lifecycleAdvanceButton
+            }
+            .padding(16)
+            .frame(maxWidth: .infinity, alignment: .leading)
+        }
+    }
+
+    private var lifecycleHeader: some View {
+        HStack(alignment: .top, spacing: 12) {
+            VStack(alignment: .leading, spacing: 4) {
+                Text("LIFECYCLE STAGE")
+                    .font(.neueCaption2Medium)
+                    .tracking(1.2)
+                    .foregroundStyle(AVIATheme.textTertiary)
+                HStack(spacing: 8) {
+                    Image(systemName: crmProfile.leadStatus.icon)
+                        .font(.neueSubheadlineMedium)
+                        .foregroundStyle(crmProfile.leadStatus.stageColor)
+                    Text(crmProfile.leadStatus.label)
+                        .font(.neueCorpMedium(20))
+                        .foregroundStyle(AVIATheme.textPrimary)
+                }
+                Text(crmProfile.leadStatus.lifecycleSubtitle)
+                    .font(.neueCaption)
+                    .foregroundStyle(AVIATheme.textSecondary)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+            Spacer()
+            if !stageRequirements.isEmpty {
+                VStack(spacing: 2) {
+                    Text("\(completedRequirementsCount)/\(stageRequirements.count)")
+                        .font(.neueCorpMedium(16))
+                        .foregroundStyle(AVIATheme.textPrimary)
+                    Text("DONE")
+                        .font(.neueCaption2Medium)
+                        .tracking(0.8)
+                        .foregroundStyle(AVIATheme.textTertiary)
+                }
+                .padding(.horizontal, 10)
+                .padding(.vertical, 6)
+                .background(AVIATheme.warmAccent)
+                .clipShape(.rect(cornerRadius: 10))
+            }
+        }
+    }
+
+    private var lifecycleStepper: some View {
+        HStack(spacing: 0) {
+            ForEach(Array(LeadStatus.pipeline.enumerated()), id: \.element) { index, stage in
+                let isCurrent = stage == crmProfile.leadStatus
+                let isPast = stage.pipelineIndex < crmProfile.leadStatus.pipelineIndex
+                let isLost = crmProfile.leadStatus == .lost
+
+                VStack(spacing: 6) {
+                    ZStack {
+                        Circle()
+                            .fill(isPast ? AVIATheme.success : (isCurrent ? stage.stageColor : AVIATheme.surfaceBorder))
+                            .frame(width: isCurrent ? 26 : 18, height: isCurrent ? 26 : 18)
+                        if isPast {
+                            Image(systemName: "checkmark")
+                                .font(.system(size: 10, weight: .bold))
+                                .foregroundStyle(AVIATheme.aviaWhite)
+                        } else if isCurrent {
+                            Circle()
+                                .fill(AVIATheme.aviaWhite)
+                                .frame(width: 8, height: 8)
+                        }
+                    }
+                    .opacity(isLost ? 0.35 : 1)
+                    .animation(.spring(response: 0.45, dampingFraction: 0.8), value: crmProfile.leadStatus)
+
+                    Text(stage.label)
+                        .font(.neueCaption2Medium)
+                        .tracking(0.4)
+                        .foregroundStyle(isCurrent ? AVIATheme.textPrimary : AVIATheme.textTertiary)
+                        .lineLimit(1)
+                        .minimumScaleFactor(0.7)
+                }
+                .frame(maxWidth: .infinity)
+
+                if index < LeadStatus.pipeline.count - 1 {
+                    Rectangle()
+                        .fill(isPast ? AVIATheme.success : AVIATheme.surfaceBorder)
+                        .frame(height: 2)
+                        .padding(.bottom, 22)
+                        .opacity(isLost ? 0.35 : 1)
+                }
+            }
+        }
+    }
+
+    @ViewBuilder
+    private var lifecycleNextSteps: some View {
+        if crmProfile.leadStatus == .won {
+            HStack(spacing: 10) {
+                Image(systemName: "trophy.fill")
+                    .font(.neueTitle3)
+                    .foregroundStyle(AVIATheme.success)
+                VStack(alignment: .leading, spacing: 2) {
+                    Text("Deal won — handover next")
+                        .font(.neueCaptionMedium)
+                        .foregroundStyle(AVIATheme.textPrimary)
+                    Text("Trigger build handover or assign a project manager.")
+                        .font(.neueCaption2)
+                        .foregroundStyle(AVIATheme.textSecondary)
+                }
+                Spacer()
+            }
+        } else if crmProfile.leadStatus == .lost {
+            HStack(spacing: 10) {
+                Image(systemName: "xmark.seal.fill")
+                    .font(.neueTitle3)
+                    .foregroundStyle(AVIATheme.textTertiary)
+                VStack(alignment: .leading, spacing: 2) {
+                    Text("Lead archived")
+                        .font(.neueCaptionMedium)
+                        .foregroundStyle(AVIATheme.textPrimary)
+                    Text("Capture the reason in a pinned note for future re-engagement.")
+                        .font(.neueCaption2)
+                        .foregroundStyle(AVIATheme.textSecondary)
+                }
+                Spacer()
+            }
+        } else if let next = crmProfile.leadStatus.nextStage {
+            VStack(alignment: .leading, spacing: 10) {
+                HStack(spacing: 6) {
+                    Image(systemName: "arrow.forward.circle.fill")
+                        .font(.neueCaption)
+                        .foregroundStyle(AVIATheme.timelessBrown)
+                    Text("NEXT STEPS TO REACH \(next.label.uppercased())")
+                        .font(.neueCaption2Medium)
+                        .tracking(1.0)
+                        .foregroundStyle(AVIATheme.textSecondary)
+                }
+                VStack(spacing: 8) {
+                    ForEach(stageRequirements) { req in
+                        requirementRow(req)
+                    }
+                }
+            }
+        }
+    }
+
+    private func requirementRow(_ req: StageRequirement) -> some View {
+        HStack(alignment: .top, spacing: 10) {
+            Image(systemName: req.isComplete ? "checkmark.circle.fill" : "circle")
+                .font(.neueSubheadlineMedium)
+                .foregroundStyle(req.isComplete ? AVIATheme.success : AVIATheme.textTertiary)
+                .animation(.spring(response: 0.4), value: req.isComplete)
+            VStack(alignment: .leading, spacing: 2) {
+                HStack(spacing: 6) {
+                    Image(systemName: req.icon)
+                        .font(.neueCaption2)
+                        .foregroundStyle(req.isComplete ? AVIATheme.success : AVIATheme.timelessBrown)
+                    Text(req.title)
+                        .font(.neueCaptionMedium)
+                        .foregroundStyle(AVIATheme.textPrimary)
+                        .strikethrough(req.isComplete, color: AVIATheme.textTertiary)
+                }
+                Text(req.detail)
+                    .font(.neueCaption2)
+                    .foregroundStyle(AVIATheme.textSecondary)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+            Spacer(minLength: 0)
+        }
+        .padding(10)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(req.isComplete ? AVIATheme.success.opacity(0.07) : AVIATheme.cardBackground)
+        .clipShape(.rect(cornerRadius: 10))
+        .overlay {
+            RoundedRectangle(cornerRadius: 10)
+                .stroke(req.isComplete ? AVIATheme.success.opacity(0.3) : AVIATheme.surfaceBorder, lineWidth: 1)
+        }
+    }
+
+    @ViewBuilder
+    private var lifecycleAdvanceButton: some View {
+        if let next = crmProfile.leadStatus.nextStage, !crmProfile.leadStatus.isTerminal {
+            HStack(spacing: 10) {
+                if let prev = crmProfile.leadStatus.previousStage {
+                    Button {
+                        moveStage(to: prev)
+                    } label: {
+                        Image(systemName: "arrow.uturn.backward")
+                            .font(.neueCaptionMedium)
+                            .foregroundStyle(AVIATheme.textSecondary)
+                            .frame(width: 44, height: 44)
+                            .background(AVIATheme.cardBackground)
+                            .clipShape(.rect(cornerRadius: 12))
+                            .overlay {
+                                RoundedRectangle(cornerRadius: 12).stroke(AVIATheme.surfaceBorder, lineWidth: 1)
+                            }
+                    }
+                    .buttonStyle(.plain)
+                }
+
+                Button {
+                    moveStage(to: next)
+                } label: {
+                    HStack(spacing: 8) {
+                        Image(systemName: next.icon)
+                            .font(.neueSubheadlineMedium)
+                        Text("Advance to \(next.label)")
+                            .font(.neueCaptionMedium)
+                        Image(systemName: "arrow.right")
+                            .font(.neueCaption)
+                    }
+                    .foregroundStyle(AVIATheme.aviaWhite)
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, 13)
+                    .background {
+                        if canAdvance {
+                            AVIATheme.primaryGradient
+                        } else {
+                            AVIATheme.textTertiary.opacity(0.5)
+                        }
+                    }
+                    .clipShape(.rect(cornerRadius: 12))
+                }
+                .buttonStyle(.plain)
+            }
+        } else if crmProfile.leadStatus != .lost && crmProfile.leadStatus != .won {
+            EmptyView()
+        }
+    }
+
+    private func moveStage(to stage: LeadStatus) {
+        withAnimation(.spring(response: 0.5, dampingFraction: 0.8)) {
+            crmProfile.leadStatus = stage
+        }
+        if stage == .contacted || stage == .negotiation {
+            crmProfile.lastContactedAt = .now
+        }
+        saveProfile()
     }
 
     private var statusAndScoreCard: some View {
