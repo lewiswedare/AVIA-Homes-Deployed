@@ -624,12 +624,15 @@ private struct SpecRangeEditSheet: View {
     }
 
     private func save() {
+        // Keep any row the admin has touched at all. Previously rows were
+        // silently dropped if a single field (title / image / name) was empty,
+        // which made it look like "items aren't saving".
         let row = SpecRangeTierRow(
             tier: tier.rawValue,
             hero_image_url: heroImageURL,
             summary: summary,
             highlights: highlights
-                .filter { !$0.title.isEmpty }
+                .filter { !$0.title.isEmpty || !$0.subtitle.isEmpty || !$0.iconImageURL.isEmpty || !$0.detailImageURL.isEmpty }
                 .map {
                     SpecRangeTierRow.HighlightRow(
                         icon: $0.icon,
@@ -640,10 +643,10 @@ private struct SpecRangeEditSheet: View {
                     )
                 },
             room_images: roomImages
-                .filter { !$0.name.isEmpty && !$0.imageURL.isEmpty }
+                .filter { !$0.name.isEmpty || !$0.imageURL.isEmpty }
                 .map { SpecRangeTierRow.RoomImageRow(name: $0.name, image_url: $0.imageURL) },
             partner_logos: partnerLogos
-                .filter { !$0.name.isEmpty && !$0.imageURL.isEmpty }
+                .filter { !$0.name.isEmpty || !$0.imageURL.isEmpty }
                 .map { SpecRangeTierRow.PartnerLogoRow(name: $0.name, image_url: $0.imageURL) },
             pdf_url: pdfURL.isEmpty ? nil : pdfURL,
             pdf_preview_image_url: pdfPreviewImageURL.isEmpty ? nil : pdfPreviewImageURL
