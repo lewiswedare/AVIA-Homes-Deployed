@@ -45,6 +45,8 @@ class AppViewModel {
     var allBlogPosts: [BlogPost] = []
     var allLandEstates: [LandEstate] = []
     var allFacades: [Facade] = []
+    var allDisplayHomes: [DisplayHome] = []
+    var displayHomeVisits: [DisplayHomeVisit] = []
     var contentLoaded: Bool = false
     var catalogManager = CatalogDataManager.shared
 
@@ -208,6 +210,7 @@ class AppViewModel {
         await loadRequestsFromSupabase()
         await loadDocumentsFromSupabase()
         await loadScheduleItemsFromSupabase()
+        await loadDisplayHomeVisitsFromSupabase()
         await loadPendingSpecReviews()
         await loadMilestonesForCurrentBuilds()
         await loadRemindersForCurrentUser()
@@ -241,13 +244,14 @@ class AppViewModel {
         async let e: () = loadRequestsFromSupabase()
         async let f: () = loadDocumentsFromSupabase()
         async let g: () = loadScheduleItemsFromSupabase()
+        async let g2: () = loadDisplayHomeVisitsFromSupabase()
         async let h: () = loadPendingSpecReviews()
         async let i: () = loadMilestonesForCurrentBuilds()
         async let j: () = loadRemindersForCurrentUser()
         async let k: () = notificationService.loadNotifications(for: currentUser.id)
         async let l: () = messagingService.loadConversations(for: currentUser.id)
         async let m: () = catalogManager.loadAll()
-        _ = await (a, b, c, d, e, f, g, h, i, j, k, l, m)
+        _ = await (a, b, c, d, e, f, g, g2, h, i, j, k, l, m)
         syncBuildStagesForCurrentUser()
         await WidgetSnapshotBuilder.update(from: self)
     }
@@ -310,15 +314,17 @@ class AppViewModel {
         async let postsTask = SupabaseService.shared.fetchBlogPosts()
         async let estatesTask = SupabaseService.shared.fetchLandEstates()
         async let facadesTask = SupabaseService.shared.fetchFacades()
+        async let displayHomesTask = SupabaseService.shared.fetchDisplayHomes(includeInactive: currentRole.isAnyStaffRole)
         async let catalogTask: () = catalogManager.loadAll()
 
-        let (designs, packages, posts, estates, facades, _) = await (designsTask, packagesTask, postsTask, estatesTask, facadesTask, catalogTask)
+        let (designs, packages, posts, estates, facades, displayHomes, _) = await (designsTask, packagesTask, postsTask, estatesTask, facadesTask, displayHomesTask, catalogTask)
 
         allHomeDesigns = designs
         allPackages = packages
         allBlogPosts = posts
         allLandEstates = estates
         allFacades = facades
+        allDisplayHomes = displayHomes
 
         contentLoaded = true
     }
@@ -346,6 +352,56 @@ class AppViewModel {
         guard !currentUser.id.isEmpty else { return }
         let items = await SupabaseService.shared.fetchScheduleItems(clientId: currentUser.id)
         scheduleItems = items
+    }
+
+    func loadDisplayHomeVisitsFromSupabase() async {
+        guard !currentUser.id.isEmpty else { return }
+        if currentRole.isAnyStaffRole {
+            displayHomeVisits = await SupabaseService.shared.fetchDisplayHomeVisits()
+        } else {
+            displayHomeVisits = await SupabaseService.shared.fetchDisplayHomeVisits(forClient: currentUser.id)
+        }
+    }
+
+    func reloadDisplayHomes() async {
+        let homes = await SupabaseService.shared.fetchDisplayHomes(includeInactive: currentRole.isAnyStaffRole)
+        allDisplayHomes = homes
+        await loadDisplayHomeVisitsFromSupabase()
+    }
+
+    @discardableResult
+    func saveDisplayHome(_ home: DisplayHome) async -> Bool {
+        let ok = await SupabaseService.shared.upsertDisplayHome(home)
+        if ok { await reloadDisplayHomes() }
+        return ok
+    }
+
+    @discardableResult
+    func deleteDisplayHome(id: String) async -> Bool {
+        let ok = await SupabaseService.shared.deleteDisplayHome(id: id)
+        if ok { await reloadDisplayHomes() }
+        return ok
+    }
+
+    @discardableResult
+    func bookDisplayHomeVisit(_ visit: DisplayHomeVisit) async -> Bool {
+        let ok = await SupabaseService.shared.upsertDisplayHomeVisit(visit)
+        if ok { await loadDisplayHomeVisitsFromSupabase() }
+        return ok
+    }
+
+    @discardableResult
+    func updateDisplayHomeVisit(_ visit: DisplayHomeVisit) async -> Bool {
+        let ok = await SupabaseService.shared.upsertDisplayHomeVisit(visit)
+        if ok { await loadDisplayHomeVisitsFromSupabase() }
+        return ok
+    }
+
+    @discardableResult
+    func deleteDisplayHomeVisit(id: String) async -> Bool {
+        let ok = await SupabaseService.shared.deleteDisplayHomeVisit(id: id)
+        if ok { await loadDisplayHomeVisitsFromSupabase() }
+        return ok
     }
 
     func loadMilestonesForCurrentBuilds() async {
@@ -546,6 +602,10 @@ class AppViewModel {
         }
         // Milestones / reminders / upgrade requests — admin-driven changes
         // that must show up on the client without a restart.
+        SupabaseService.shared.subscribeToDisplayHomeChanges { [weak self] in
+            guard let self else { return }
+            Task { await self.reloadDisplayHomes() }
+        }
         SupabaseService.shared.subscribeToBuildExtras { [weak self] in
             guard let self else { return }
             Task {
@@ -726,6 +786,8 @@ class AppViewModel {
         allBlogPosts = []
         allLandEstates = []
         allFacades = []
+        allDisplayHomes = []
+        displayHomeVisits = []
         contentLoaded = false
         notificationService.notifications = []
         messagingService.conversations = []

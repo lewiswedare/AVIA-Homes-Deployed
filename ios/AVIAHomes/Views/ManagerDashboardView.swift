@@ -45,6 +45,9 @@ struct AdminDashboardView: View {
                         NavigationLink { AdminEOIReviewView() } label: {
                             Label("EOI Reviews", systemImage: "doc.text.magnifyingglass")
                         }
+                        NavigationLink { AdminDisplayHomesView() } label: {
+                            Label("Display Homes", systemImage: "house.lodge.fill")
+                        }
                     } label: {
                         Image(systemName: "ellipsis.circle.fill")
                             .foregroundStyle(AVIATheme.timelessBrown)

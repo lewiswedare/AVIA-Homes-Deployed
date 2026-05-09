@@ -1,13 +1,14 @@
-# Client-facing Foundation Call banner
+# Display Homes
 
 ## Goal
-When a client has a scheduled Foundation Call (synced from Cal.com), surface a prominent "Join your Foundation Call" banner on the client dashboard with a one-tap join button. Update live as Cal.com webhooks fire. Also let clients self-schedule a Foundation Call with the AVIA team via Cal.com.
+Let clients browse AVIA display homes, see opening hours/details, and request
+a visit. Visits flow through to admin/staff who can confirm, reschedule, mark
+completed/no-show, and assign a host. Clients see live status updates.
 
 ## Tasks
-- [x] Add `ClientFoundationCallBanner` view (scheduled state, with countdown + Join button)
-- [x] Wire it into `ClientDiscoverDashboardView` (only for `.client` role users with a scheduled call)
-- [x] Fetch latest call on appear; subscribe to `client_foundation_calls` realtime updates
-- [x] Refresh on Cal.com webhook updates so the banner appears/updates without manual refresh
-- [x] Client-initiated booking: "Schedule a Call" CTA when no upcoming call, opens Cal.com prefilled with name/email/clientId
-- [x] Optimistic pending record so the webhook can reconcile by client_id
-- [x] Build & verify (runChecks ios)
+- [x] Migration: `display_homes` + `display_home_visits` with RLS + realtime
+- [x] Models: `DisplayHome`, `DisplayHomeVisit` + Codable rows
+- [x] Service: `SupabaseService` CRUD + realtime + state on `AppViewModel`
+- [x] Client UI: list, detail, booking sheet, my-bookings
+- [x] Admin UI: manage display homes + visit pipeline
+- [x] Wire entry points (Discover, More, Admin menu) + runChecks ios

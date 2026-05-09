@@ -522,6 +522,25 @@ struct MoreView: View {
                                 Rectangle().fill(AVIATheme.surfaceBorder).frame(height: 1).padding(.leading, 66)
 
                                 NavigationLink {
+                                    DisplayHomesListView()
+                                } label: {
+                                    HStack(spacing: 14) {
+                                        BentoIconCircle(icon: "house.lodge.fill", color: AVIATheme.timelessBrown)
+                                        Text("Display Homes")
+                                            .font(.neueSubheadlineMedium)
+                                            .foregroundStyle(AVIATheme.textPrimary)
+                                        Spacer()
+                                        Image(systemName: "chevron.right")
+                                            .font(.neueCaption2Medium)
+                                            .foregroundStyle(AVIATheme.textTertiary)
+                                    }
+                                    .padding(.horizontal, 16)
+                                    .padding(.vertical, 14)
+                                }
+
+                                Rectangle().fill(AVIATheme.surfaceBorder).frame(height: 1).padding(.leading, 66)
+
+                                NavigationLink {
                                     ClientPackageReviewView()
                                 } label: {
                                     HStack(spacing: 14) {
