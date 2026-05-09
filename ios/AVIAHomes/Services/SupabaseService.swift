@@ -993,11 +993,20 @@ class SupabaseService {
     func fetchSpecCategories() async -> [SpecCategory] {
         guard isConfigured else { return [] }
 
-        let flatItems = await fetchSpecItemsFlat()
+        async let flatItemsTask = fetchSpecItemsFlat()
+        async let categoryRowsTask = fetchSpecCategoryRows()
+        let flatItems = await flatItemsTask
+        let categoryRows = await categoryRowsTask
+
         if !flatItems.isEmpty {
-            return assembleCategories(from: flatItems)
+            return assembleCategories(from: flatItems, categoryRows: categoryRows)
         }
 
+        return categoryRows.map { $0.toSpecCategory() }
+    }
+
+    private func fetchSpecCategoryRows() async -> [SpecCategoryRow] {
+        guard isConfigured else { return [] }
         do {
             let rows: [SpecCategoryRow] = try await client
                 .from("spec_categories")
@@ -1005,9 +1014,9 @@ class SupabaseService {
                 .order("sort_order", ascending: true)
                 .execute()
                 .value
-            return rows.map { $0.toSpecCategory() }
+            return rows
         } catch {
-            print("[SupabaseService] fetchSpecCategories FAILED: \(error)")
+            print("[SupabaseService] fetchSpecCategoryRows FAILED: \(error)")
             return []
         }
     }
@@ -1028,27 +1037,62 @@ class SupabaseService {
         }
     }
 
-    private func assembleCategories(from items: [SpecItemFlatRow]) -> [SpecCategory] {
-        let categoryOrder: [(id: String, name: String, icon: String)] = [
-            ("structure", "Structure & Ceiling", "building.2.fill"),
-            ("exterior", "External Finishes", "house.fill"),
-            ("windows_doors", "Windows & Doors", "door.left.hand.open"),
-            ("kitchen", "Kitchen", "fork.knife"),
-            ("bathroom", "Bathroom & Ensuite", "shower.fill"),
-            ("flooring", "Flooring", "square.grid.3x3.fill"),
-            ("internal", "Internal Finishes", "paintbrush.fill"),
-            ("electrical", "Electrical & Lighting", "lightbulb.fill"),
-            ("outdoor", "Outdoor & Landscaping", "leaf.fill"),
+    private func assembleCategories(from items: [SpecItemFlatRow], categoryRows: [SpecCategoryRow]) -> [SpecCategory] {
+        // Legacy fallback for any category_id not present in spec_categories table.
+        let legacyMeta: [String: (name: String, icon: String, order: Int)] = [
+            "structure": ("Structure & Ceiling", "building.2.fill", 0),
+            "exterior": ("External Finishes", "house.fill", 1),
+            "windows_doors": ("Windows & Doors", "door.left.hand.open", 2),
+            "kitchen": ("Kitchen", "fork.knife", 3),
+            "bathroom": ("Bathroom & Ensuite", "shower.fill", 4),
+            "flooring": ("Flooring", "square.grid.3x3.fill", 5),
+            "internal": ("Internal Finishes", "paintbrush.fill", 6),
+            "electrical": ("Electrical & Lighting", "lightbulb.fill", 7),
+            "outdoor": ("Outdoor & Landscaping", "leaf.fill", 8),
         ]
 
         let grouped = Dictionary(grouping: items, by: { $0.category_id })
 
-        return categoryOrder.compactMap { cat in
-            guard let catItems = grouped[cat.id], !catItems.isEmpty else { return nil }
+        struct CategoryMeta {
+            let id: String
+            let name: String
+            let icon: String
+            let order: Int
+        }
+
+        var metaById: [String: CategoryMeta] = [:]
+        var nextFallbackOrder = 1000
+
+        for row in categoryRows {
+            metaById[row.id] = CategoryMeta(id: row.id, name: row.name, icon: row.icon, order: row.sort_order)
+        }
+
+        // Ensure every category_id present in items has a meta entry, even if
+        // no row exists in spec_categories (legacy data or out-of-sync schema).
+        for catId in grouped.keys where metaById[catId] == nil {
+            if let legacy = legacyMeta[catId] {
+                metaById[catId] = CategoryMeta(id: catId, name: legacy.name, icon: legacy.icon, order: legacy.order)
+            } else {
+                let humanName = catId
+                    .split(separator: "_")
+                    .map { $0.prefix(1).uppercased() + $0.dropFirst() }
+                    .joined(separator: " ")
+                metaById[catId] = CategoryMeta(id: catId, name: humanName, icon: "square.grid.2x2", order: nextFallbackOrder)
+                nextFallbackOrder += 1
+            }
+        }
+
+        let ordered = metaById.values.sorted { lhs, rhs in
+            if lhs.order != rhs.order { return lhs.order < rhs.order }
+            return lhs.name.localizedCaseInsensitiveCompare(rhs.name) == .orderedAscending
+        }
+
+        return ordered.compactMap { meta in
+            guard let catItems = grouped[meta.id], !catItems.isEmpty else { return nil }
             return SpecCategory(
-                id: cat.id,
-                name: cat.name,
-                icon: cat.icon,
+                id: meta.id,
+                name: meta.name,
+                icon: meta.icon,
                 items: catItems.map { $0.toSpecItem() }
             )
         }
