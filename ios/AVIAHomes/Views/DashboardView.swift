@@ -84,7 +84,7 @@ struct DashboardView: View {
             .sheet(isPresented: $showJourneyDetail) {
                 BuildJourneyDetailView(
                     onNavigateToSpecs: { selectedTab = 1 },
-                    onNavigateToColours: { selectedTab = 2 }
+                    onNavigateToColours: { selectedTab = 1 }
                 )
             }
             .alert(calendarService.lastResultMessage ?? "", isPresented: $calendarService.showResultAlert) {
@@ -223,7 +223,7 @@ struct DashboardView: View {
         BuildJourneyCard(
             onTapAction: { showJourneyDetail = true },
             onNavigateToSpecs: { selectedTab = 1 },
-            onNavigateToColours: { selectedTab = 2 }
+            onNavigateToColours: { selectedTab = 1 }
         )
     }
 

@@ -154,7 +154,11 @@ struct NotificationsView: View {
             }
         case .colourSelectionSubmitted:
             if let buildId = resolveBuildId(for: notification) {
-                BuildColourSelectionView(buildId: buildId)
+                if isAdminOrStaff {
+                    AdminUnifiedSelectionsView(buildId: buildId, clientName: "", clientId: "")
+                } else {
+                    SelectionsHomeView(buildId: buildId)
+                }
             }
         case .requestSubmitted, .requestResponse:
             RequestsView()
