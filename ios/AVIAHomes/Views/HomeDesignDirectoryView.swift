@@ -374,24 +374,33 @@ struct HomeDesignDirectoryView: View {
                 }
             }
             .overlay(alignment: .bottom) {
-                VStack(alignment: .leading, spacing: 3) {
-                    Text(design.name)
-                        .font(.neueSubheadlineMedium)
-                        .foregroundStyle(AVIATheme.textPrimary)
+                ZStack(alignment: .bottom) {
+                    LinearGradient(
+                        colors: [Color(hex: "f5f5f5").opacity(0), Color(hex: "f5f5f5")],
+                        startPoint: .top,
+                        endPoint: .bottom
+                    )
+                    .frame(height: 110)
+                    .allowsHitTesting(false)
 
-                    Text("\(design.bedrooms) Bed · \(design.bathrooms) Bath · \(design.garages) Car")
-                        .font(.neueCaption2)
-                        .foregroundStyle(AVIATheme.textSecondary)
+                    VStack(alignment: .leading, spacing: 3) {
+                        Text(design.name)
+                            .font(.neueSubheadlineMedium)
+                            .foregroundStyle(AVIATheme.textPrimary)
 
-                    Text(String(format: "%.0fm²", design.squareMeters))
-                        .font(.neueCaption2Medium)
-                        .foregroundStyle(AVIATheme.timelessBrown)
+                        Text("\(design.bedrooms) Bed · \(design.bathrooms) Bath · \(design.garages) Car")
+                            .font(.neueCaption2)
+                            .foregroundStyle(AVIATheme.textSecondary)
+
+                        Text(String(format: "%.0fm²", design.squareMeters))
+                            .font(.neueCaption2Medium)
+                            .foregroundStyle(AVIATheme.timelessBrown)
+                    }
+                    .padding(.horizontal, 10)
+                    .padding(.vertical, 8)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .background(Color(hex: "f5f5f5"))
                 }
-                .padding(.horizontal, 10)
-                .padding(.vertical, 8)
-                .frame(maxWidth: .infinity, alignment: .leading)
-                .background(Color(hex: "f5f5f5"))
-                .clipShape(.rect(cornerRadii: .init(bottomLeading: 14, bottomTrailing: 14)))
             }
             .clipShape(.rect(cornerRadius: 11))
     }
