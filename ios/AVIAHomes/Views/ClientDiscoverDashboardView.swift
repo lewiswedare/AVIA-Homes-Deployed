@@ -14,6 +14,9 @@ struct ClientDiscoverDashboardView: View {
 
                     VStack(spacing: 32) {
                         headerRow
+                        if viewModel.currentUser.role == .client && !viewModel.currentUser.id.isEmpty {
+                            ClientFoundationCallBanner(clientId: viewModel.currentUser.id)
+                        }
                         DiscoverFeedView()
                     }
                     .padding(.horizontal, 16)
