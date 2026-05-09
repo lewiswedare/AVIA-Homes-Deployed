@@ -9,6 +9,7 @@ struct ClientBuildDetailView: View {
     enum DetailSection: String, CaseIterable {
         case overview = "Overview"
         case progress = "Progress"
+        case selections = "Selections"
         case specs = "Specs"
         case colours = "Colours"
         case documents = "Documents"
@@ -18,12 +19,31 @@ struct ClientBuildDetailView: View {
             switch self {
             case .overview: "house.fill"
             case .progress: "chart.bar.fill"
+            case .selections: "square.grid.2x2.fill"
             case .specs: "checklist"
             case .colours: "paintpalette.fill"
             case .documents: "doc.text.fill"
             case .requests: "bubble.left.and.bubble.right.fill"
             }
         }
+    }
+
+    /// Cutoff for the new unified Selections experience. Builds with contracts
+    /// from this date onwards use the combined Selections flow; older builds
+    /// keep the legacy split Specs + Colours tabs so nothing in flight breaks.
+    private static let unifiedSelectionsCutoff: Date = {
+        DateComponents(calendar: .current, year: 2026, month: 5, day: 8).date ?? .distantFuture
+    }()
+
+    private var usesUnifiedSelections: Bool {
+        build.contractDate >= Self.unifiedSelectionsCutoff
+    }
+
+    private var availableSections: [DetailSection] {
+        if usesUnifiedSelections {
+            return [.overview, .progress, .selections, .documents, .requests]
+        }
+        return [.overview, .progress, .specs, .colours, .documents, .requests]
     }
 
     var body: some View {
@@ -146,7 +166,7 @@ struct ClientBuildDetailView: View {
     private var sectionPicker: some View {
         ScrollView(.horizontal) {
             HStack(spacing: 6) {
-                ForEach(DetailSection.allCases, id: \.self) { section in
+                ForEach(availableSections, id: \.self) { section in
                     Button {
                         withAnimation(.spring(response: 0.3)) {
                             selectedSection = section
@@ -187,6 +207,12 @@ struct ClientBuildDetailView: View {
             overviewSection
         case .progress:
             progressSection
+        case .selections:
+            if isAdmin {
+                AdminUnifiedSelectionsView(buildId: build.id, clientName: build.clientDisplayName, clientId: build.client.id)
+            } else {
+                SelectionsHomeView(buildId: build.id)
+            }
         case .specs:
             if isAdmin {
                 AdminBuildSpecReviewView(buildId: build.id, clientName: build.clientDisplayName, clientId: build.client.id)

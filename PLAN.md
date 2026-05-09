@@ -1,42 +1,48 @@
-# Add a Mac version of AVIA Homes via Mac Catalyst
+# Unified "Selections" — pick upgrades & colours together, by room
 
-## What you'll get
+## What's changing
 
-A native Mac app that mirrors the iOS app exactly — same screens, same data, same login. Staff and clients can open AVIA Homes on their Mac and use every feature available on iPhone and iPad.
+Today, clients have to bounce between two separate screens — Spec Range (to request upgrades on items) and Colour Selections (to pick colours after spec approval). We'll merge both into a single, visual feature called **Selections** that walks clients room-by-room and lets them pick the item finish *and* the colour on the same card.
 
-## Features
+## Features (Client side)
 
-- Full parity with the iOS app — CRM, leads, foundation calls, scheduling, display home visits, messaging, and admin tools all available on Mac
-- Single sign-on across iPhone, iPad and Mac (same account, same data, synced live)
-- Native Mac window with resizable layout that adapts to larger screens
-- Mac menu bar with standard shortcuts (copy, paste, find, new, close window)
-- Keyboard shortcuts for common actions (search leads, create new contact, jump between tabs)
-- Click-to-call and click-to-email handled by macOS so calls and emails open in the right Mac apps
-- Drag-and-drop file uploads (e.g. dropping a document onto a lead) where the iOS app uses pickers
-- Trackpad-friendly scrolling, hover states on buttons and rows, and right-click context menus on lists
+- **Single "Selections" tab** replaces both Spec Range and Colour Selections screens for new builds.
+- **Room-based browsing**: Kitchen, Bathroom & Ensuite, Living, Bedrooms, Laundry, External, Outdoor — each room shown as a visual card with hero image and progress.
+- **One unified card per item**: shows the item name, what's included as standard, and any available upgrade tiers with pricing.
+- **Two-step flow on the same card**:
+  1. Pick the tier — Standard (included) or an upgrade option with its price.
+  2. Pick the colour/finish — colour swatches appear right below the tier choice, filtered to what's available for that tier.
+- **Live running total** of upgrade costs at the top of each room and overall.
+- **Submit when ready** — one button sends everything (item upgrades + colour choices) to the AVIA team for review and quoting.
+- **Status pills** on each item: Not started, In progress, Submitted, Quoted, Approved, Changes requested.
+- Existing builds continue using the old Spec + Colour screens; only new builds use Selections.
+
+## Features (Admin side)
+
+- **One combined review screen** per build with every selection on a single line: item, chosen tier, colour swatch + name, upgrade cost, status.
+- Filter by room or by status (needs quote, needs approval, approved).
+- Approve, send back, or quote directly from any line.
+- Total upgrade quote for the build shown at the top, with a single PDF export.
 
 ## Design
 
-- Clean, Mac-native feel using the same AVIA branding, colours and typography as the iOS app
-- Wider layouts on larger windows: lists on the left, details on the right, instead of stacking screens
-- Sidebar navigation on Mac (replacing the bottom tab bar) with the same sections — Dashboard, Leads, Calendar, Display Homes, Messages, Settings
-- Smooth window resizing with a sensible minimum size so layouts never feel cramped
-- Same liquid-glass cards, gradients and accent colours as iOS for a consistent brand experience
+- Warm, editorial AVIA aesthetic — same palette (timeless brown, cream, soft accents).
+- Each room card uses a real room photograph as the hero, with a subtle progress ring overlaid.
+- Selection cards feel like a tactile sample board: large colour swatches, small tier chips, a clear price tag for upgrades.
+- Smooth expand/collapse animation when a card is opened to reveal swatches.
+- Haptic feedback on tier and swatch taps; small confirmation checkmark animation when an item is fully selected.
+- A floating "Selections summary" pill at the bottom of the screen shows count complete and running upgrade total — tap to review and submit.
 
-## How it's delivered
+## Screens
 
-- The Mac version runs from the same codebase as the iOS app, so any future change you ask for shows up on iPhone, iPad and Mac at once
-- Built with Apple's Mac Catalyst, meaning it's a true Mac app (not a window mirror) — installable from the Mac App Store later if you choose
-- Distributed alongside the iOS app under the same Apple developer account
+- **Selections home** — list of rooms with hero images, progress, and overall upgrade total.
+- **Room detail** — every selectable item in that room as expandable cards with tier picker + swatch picker.
+- **Review & submit** — checklist of every selection grouped by room, total upgrade cost, submit button.
+- **Status / quote screen** — shown after submission, lists each item with admin's quote and approval status, with accept / change buttons per line.
+- **Admin combined review** — one table per build showing item + tier + colour + cost + status, with approve / quote actions.
 
-## What I'll set up
+## Data & rollout
 
-- Turn on Mac support for the existing app
-- Adjust a handful of screens that need a slightly different layout on Mac (sidebar instead of tabs, wider detail panes)
-- Wire up Mac-specific niceties: window title, menu bar items, keyboard shortcuts, hover effects
-- Confirm the camera/permissions/notifications behave correctly on Mac (and gracefully hide anything that doesn't apply, like in-app camera capture)
-- Test the build to make sure everything compiles for Mac
-
-## What you'll need to do later
-
-- When you're ready to ship, sign in to App Store Connect and add Mac as a distribution platform — I'll prepare everything on the build side so it's ready when you are
+- New builds automatically use the unified Selections flow.
+- Existing in-progress builds keep the current Spec + Colour screens so nothing in flight breaks.
+- Admin catalog (item categories, tiers, colour options) stays as-is — Selections reads from the same catalog.
