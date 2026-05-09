@@ -1,15 +1,18 @@
 -- Communication log for CRM: track admin↔client interactions (calls, emails, meetings, sms, notes).
 -- Self-contained: re-declares the is_admin_or_staff helper so this migration runs
 -- independently of the CRM migration.
+-- STATUS: APPLIED to production on 2026-05-09. Kept here for repo/source-of-truth
+-- parity. Re-running is safe (all DDL is `if not exists` / `create or replace`).
 
 create or replace function public.is_admin_or_staff(uid uuid)
 returns boolean
 language sql
 stable
 as $$
+    -- profiles.id is `text` in this schema, so cast the incoming uuid before comparing.
     select exists (
         select 1 from public.profiles p
-        where p.id = uid
+        where p.id = uid::text
           and lower(coalesce(p.role, '')) in (
               'admin','superadmin','super_admin','salesadmin','sales_admin',
               'staff','preconstruction','pre_construction','buildingsupport','building_support','partner','salespartner','sales_partner'

@@ -6,29 +6,61 @@ class SupabaseService {
     static let shared = SupabaseService()
 
     let client: SupabaseClient
+    private let configuredFlag: Bool
 
+    /// Single source of truth for the Supabase URL. Trimmed of any whitespace/newlines
+    /// that can sneak in from build-time env injection.
     private static var supabaseURL: String {
-        Config.EXPO_PUBLIC_SUPABASE_URL
+        Config.EXPO_PUBLIC_SUPABASE_URL.trimmingCharacters(in: .whitespacesAndNewlines)
     }
 
+    /// Single source of truth for the Supabase anon key. Trimmed for the same reason.
     private static var supabaseKey: String {
-        Config.EXPO_PUBLIC_SUPABASE_ANON_KEY
+        Config.EXPO_PUBLIC_SUPABASE_ANON_KEY.trimmingCharacters(in: .whitespacesAndNewlines)
     }
+
+    private static let placeholderURLString = "https://placeholder.supabase.co"
+    private static let placeholderKey = "placeholder-key"
 
     private init() {
-        let url = Self.supabaseURL.isEmpty ? "https://placeholder.supabase.co" : Self.supabaseURL
-        let key = Self.supabaseKey.isEmpty ? "placeholder-key" : Self.supabaseKey
+        let rawURL = Self.supabaseURL
+        let rawKey = Self.supabaseKey
+
+        // Resolve URL safely. Never force-unwrap — a bad/empty value used to crash
+        // the app on launch right here.
+        let resolvedURL: URL
+        if let parsed = URL(string: rawURL), !rawURL.isEmpty {
+            resolvedURL = parsed
+            configuredFlag = !rawKey.isEmpty
+        } else {
+            #if DEBUG
+            // Surface mis-configuration loudly in development so it’s caught before shipping.
+            assertionFailure("[SupabaseService] Missing or invalid EXPO_PUBLIC_SUPABASE_URL — falling back to placeholder so the app does not crash.")
+            #endif
+            print("[SupabaseService] ERROR: Missing/invalid Supabase URL (got: '\(rawURL)') — using placeholder. Network calls will be skipped via isConfigured.")
+            // swiftlint:disable:next force_unwrapping  // placeholder is a known-valid literal
+            resolvedURL = URL(string: Self.placeholderURLString)!
+            configuredFlag = false
+        }
+
+        let resolvedKey = rawKey.isEmpty ? Self.placeholderKey : rawKey
+        if rawKey.isEmpty {
+            #if DEBUG
+            assertionFailure("[SupabaseService] Missing EXPO_PUBLIC_SUPABASE_ANON_KEY — using placeholder.")
+            #endif
+            print("[SupabaseService] ERROR: Missing Supabase anon key — using placeholder. Network calls will be skipped via isConfigured.")
+        }
 
         client = SupabaseClient(
-            supabaseURL: URL(string: url)!,
-            supabaseKey: key
+            supabaseURL: resolvedURL,
+            supabaseKey: resolvedKey
         )
     }
 
     var realtimeChannels: [RealtimeChannelV2] = []
 
     var isConfigured: Bool {
-        !Self.supabaseURL.isEmpty && !Self.supabaseKey.isEmpty
+        configuredFlag
     }
 
     func removeAllChannels() async {
