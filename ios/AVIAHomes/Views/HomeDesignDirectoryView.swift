@@ -99,9 +99,9 @@ struct HomeDesignDirectoryView: View {
             .navigationDestination(for: HomeDesign.self) { design in
                 HomeDesignDetailView(design: design)
             }
-            .sheet(item: $comparisonPair) { pair in
-                DesignComparisonView(designA: pair.designA, designB: pair.designB)
-            }
+        }
+        .fullScreenCover(item: $comparisonPair) { pair in
+            DesignComparisonView(designA: pair.designA, designB: pair.designB)
         }
     }
 
@@ -310,12 +310,15 @@ struct HomeDesignDirectoryView: View {
     private var compareActionButton: some View {
         Button {
             guard compareSelections.count == 2 else { return }
-            let pair = DesignComparisonPair(designA: compareSelections[0], designB: compareSelections[1])
-            // Defer state assignment to avoid presenting the sheet while the
-            // floating button's transition is still mid-flight (which crashes
-            // with "Modifying state during view update" on iOS 18+).
-            DispatchQueue.main.async {
-                comparisonPair = pair
+            let designA = compareSelections[0]
+            let designB = compareSelections[1]
+            // Dismiss any active search/keyboard responder before presenting,
+            // then schedule presentation on the next runloop tick to avoid
+            // racing with NavigationStack/.searchable focus changes.
+            UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
+            Task { @MainActor in
+                try? await Task.sleep(for: .milliseconds(50))
+                comparisonPair = DesignComparisonPair(designA: designA, designB: designB)
             }
         } label: {
             HStack(spacing: 8) {
