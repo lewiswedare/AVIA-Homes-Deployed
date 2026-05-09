@@ -18,6 +18,7 @@ struct AVIAHomesApp: App {
                 .environment(specViewModel)
                 .environment(journeyViewModel)
                 .preferredColorScheme(.light)
+                .macCatalystMinFrame()
                 .onAppear {
                     colourViewModel.specTier = specViewModel.currentTier
                     appDelegate.appViewModel = appViewModel
@@ -55,6 +56,28 @@ struct AVIAHomesApp: App {
                     }
                 }
         }
+        .commands {
+            #if targetEnvironment(macCatalyst)
+            CommandGroup(replacing: .newItem) {}
+            CommandGroup(after: .appInfo) {
+                Button("Refresh") {
+                    Task { await appViewModel.refreshAllData() }
+                }
+                .keyboardShortcut("r", modifiers: .command)
+            }
+            #endif
+        }
+    }
+}
+
+private extension View {
+    @ViewBuilder
+    func macCatalystMinFrame() -> some View {
+        #if targetEnvironment(macCatalyst)
+        self.frame(minWidth: 900, minHeight: 600)
+        #else
+        self
+        #endif
     }
 }
 
