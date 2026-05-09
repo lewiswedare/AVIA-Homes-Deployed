@@ -48,12 +48,19 @@ struct FoundationCallCard: View {
         }
     }
 
+    private var meetingURL: URL? {
+        guard let raw = call?.meetingURL?.trimmingCharacters(in: .whitespaces),
+              !raw.isEmpty else { return nil }
+        return URL(string: raw)
+    }
+
     var body: some View {
         BentoCard(cornerRadius: 16) {
             VStack(alignment: .leading, spacing: 14) {
                 header
-                if status == .scheduled, let url = call?.meetingURL, let meetingURL = URL(string: url) {
-                    meetingLinkRow(url: meetingURL)
+                if status == .scheduled, let url = meetingURL {
+                    startCallButton(url: url)
+                    scheduledDetails(url: url)
                 }
                 actions
                 if !CalComService.isConfigured {
@@ -65,6 +72,63 @@ struct FoundationCallCard: View {
         }
         .sheet(isPresented: $showSchedule) { scheduleSheet }
         .sheet(isPresented: $showLogResult) { logResultSheet }
+    }
+
+    /// Prominent primary CTA when a call is scheduled — lets the admin
+    /// jump straight into the Cal.com / Google Meet / Zoom video call.
+    private func startCallButton(url: URL) -> some View {
+        Link(destination: url) {
+            HStack(spacing: 10) {
+                Image(systemName: "video.fill")
+                    .font(.neueSubheadlineMedium)
+                VStack(alignment: .leading, spacing: 2) {
+                    Text("Start Video Call")
+                        .font(.neueCorpMedium(16))
+                    if let when = call?.scheduledAt {
+                        Text(when.formatted(.relative(presentation: .named)).capitalized)
+                            .font(.neueCaption2)
+                            .opacity(0.85)
+                    }
+                }
+                Spacer()
+                Image(systemName: "arrow.up.right.square.fill")
+                    .font(.neueSubheadline)
+                    .opacity(0.9)
+            }
+            .foregroundStyle(AVIATheme.aviaWhite)
+            .padding(.horizontal, 14)
+            .padding(.vertical, 14)
+            .frame(maxWidth: .infinity)
+            .background(AVIATheme.primaryGradient)
+            .clipShape(.rect(cornerRadius: 12))
+        }
+        .buttonStyle(.plain)
+    }
+
+    private func scheduledDetails(url: URL) -> some View {
+        VStack(alignment: .leading, spacing: 6) {
+            HStack(spacing: 8) {
+                Image(systemName: "link")
+                    .font(.neueCaption2)
+                    .foregroundStyle(AVIATheme.textTertiary)
+                Text(url.host ?? url.absoluteString)
+                    .font(.neueCaption2)
+                    .foregroundStyle(AVIATheme.textSecondary)
+                    .lineLimit(1)
+                    .truncationMode(.middle)
+                Spacer()
+            }
+            if let attendee = call?.attendeeName, !attendee.isEmpty {
+                HStack(spacing: 8) {
+                    Image(systemName: "person.fill")
+                        .font(.neueCaption2)
+                        .foregroundStyle(AVIATheme.textTertiary)
+                    Text(attendee)
+                        .font(.neueCaption2)
+                        .foregroundStyle(AVIATheme.textSecondary)
+                }
+            }
+        }
     }
 
     private var header: some View {
@@ -103,26 +167,6 @@ struct FoundationCallCard: View {
             .clipShape(.capsule)
     }
 
-    private func meetingLinkRow(url: URL) -> some View {
-        Link(destination: url) {
-            HStack(spacing: 8) {
-                Image(systemName: "video.fill")
-                    .font(.neueCaption)
-                    .foregroundStyle(AVIATheme.timelessBrown)
-                Text("Join meeting")
-                    .font(.neueCaptionMedium)
-                    .foregroundStyle(AVIATheme.textPrimary)
-                Spacer()
-                Image(systemName: "arrow.up.right.square")
-                    .font(.neueCaption2)
-                    .foregroundStyle(AVIATheme.textTertiary)
-            }
-            .padding(10)
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .background(AVIATheme.warmAccent)
-            .clipShape(.rect(cornerRadius: 10))
-        }
-    }
 
     @ViewBuilder
     private var actions: some View {

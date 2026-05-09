@@ -2949,4 +2949,15 @@ class SupabaseService {
             return false
         }
     }
+
+    /// Subscribe to live changes on `client_foundation_calls` (e.g. Cal.com
+    /// webhook updates). The closure fires on the MainActor any time a row
+    /// changes — call sites should refetch the latest call.
+    func subscribeToFoundationCalls(onUpdate: @escaping @Sendable () -> Void) {
+        installChannel(
+            name: "client_foundation_calls_sync",
+            table: "client_foundation_calls",
+            onUpdate: onUpdate
+        )
+    }
 }

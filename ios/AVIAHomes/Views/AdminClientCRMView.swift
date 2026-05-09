@@ -145,6 +145,12 @@ struct AdminClientCRMView: View {
             crmProfile = .empty(clientId: client.id)
             await loadActivity()
             await loadCRM()
+            SupabaseService.shared.subscribeToFoundationCalls {
+                Task { @MainActor in
+                    let latest = await SupabaseService.shared.fetchLatestFoundationCall(clientId: client.id)
+                    foundationCall = latest
+                }
+            }
         }
         .refreshable {
             await loadActivity()
