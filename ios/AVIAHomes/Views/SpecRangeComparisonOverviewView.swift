@@ -4,6 +4,7 @@ struct SpecRangeComparisonOverviewView: View {
     @State private var expandedItemId: String?
     @State private var leftTier: SpecTier = .volos
     @State private var rightTier: SpecTier = .messina
+    @State private var collapsedCategoryIds: Set<String> = []
 
     private var categories: [SpecCategory] { CatalogDataManager.shared.allSpecCategories }
 
@@ -15,6 +16,28 @@ struct SpecRangeComparisonOverviewView: View {
                 if categories.isEmpty {
                     emptyState
                 } else {
+                    HStack {
+                        Spacer()
+                        Button {
+                            withAnimation(.spring(response: 0.35, dampingFraction: 0.85)) {
+                                if collapsedCategoryIds.count == categories.count {
+                                    collapsedCategoryIds.removeAll()
+                                } else {
+                                    collapsedCategoryIds = Set(categories.map(\.id))
+                                }
+                            }
+                        } label: {
+                            HStack(spacing: 4) {
+                                Image(systemName: collapsedCategoryIds.count == categories.count ? "chevron.down.square" : "chevron.up.square")
+                                    .font(.system(size: 11, weight: .semibold))
+                                Text(collapsedCategoryIds.count == categories.count ? "Expand all" : "Collapse all")
+                                    .font(.neueCaption2Medium)
+                            }
+                            .foregroundStyle(AVIATheme.timelessBrown)
+                        }
+                    }
+                    .padding(.horizontal, 4)
+
                     ForEach(categories) { category in
                         categorySection(category)
                     }
@@ -117,27 +140,57 @@ struct SpecRangeComparisonOverviewView: View {
     }
 
     private func categorySection(_ category: SpecCategory) -> some View {
-        VStack(alignment: .leading, spacing: 10) {
-            HStack(spacing: 10) {
-                Image(systemName: category.icon)
-                    .font(.neueCaptionMedium)
-                    .foregroundStyle(AVIATheme.timelessBrown)
-                    .frame(width: 32, height: 32)
-                    .background(AVIATheme.timelessBrown.opacity(0.08))
-                    .clipShape(.rect(cornerRadius: 6))
+        let isCollapsed = collapsedCategoryIds.contains(category.id)
 
-                Text(category.name)
-                    .font(.neueHeadline)
-                    .foregroundStyle(AVIATheme.textPrimary)
-
-                Spacer(minLength: 0)
-            }
-            .padding(.horizontal, 4)
-
-            VStack(spacing: 14) {
-                ForEach(category.items) { item in
-                    comparisonCard(item: item)
+        return VStack(alignment: .leading, spacing: 10) {
+            Button {
+                withAnimation(.spring(response: 0.35, dampingFraction: 0.85)) {
+                    if isCollapsed {
+                        collapsedCategoryIds.remove(category.id)
+                    } else {
+                        collapsedCategoryIds.insert(category.id)
+                    }
                 }
+            } label: {
+                HStack(spacing: 10) {
+                    Image(systemName: category.icon)
+                        .font(.neueCaptionMedium)
+                        .foregroundStyle(AVIATheme.timelessBrown)
+                        .frame(width: 32, height: 32)
+                        .background(AVIATheme.timelessBrown.opacity(0.08))
+                        .clipShape(.rect(cornerRadius: 6))
+
+                    Text(category.name)
+                        .font(.neueHeadline)
+                        .foregroundStyle(AVIATheme.textPrimary)
+
+                    Spacer(minLength: 0)
+
+                    Text("\(category.items.count)")
+                        .font(.neueCaption2Medium)
+                        .foregroundStyle(AVIATheme.textTertiary)
+                        .padding(.horizontal, 8)
+                        .padding(.vertical, 3)
+                        .background(AVIATheme.surfaceElevated.opacity(0.6))
+                        .clipShape(Capsule())
+
+                    Image(systemName: "chevron.down")
+                        .font(.system(size: 11, weight: .semibold))
+                        .foregroundStyle(AVIATheme.textTertiary)
+                        .rotationEffect(.degrees(isCollapsed ? -90 : 0))
+                }
+                .padding(.horizontal, 4)
+                .contentShape(Rectangle())
+            }
+            .buttonStyle(.plain)
+
+            if !isCollapsed {
+                VStack(spacing: 14) {
+                    ForEach(category.items) { item in
+                        comparisonCard(item: item)
+                    }
+                }
+                .transition(.opacity.combined(with: .move(edge: .top)))
             }
         }
     }
