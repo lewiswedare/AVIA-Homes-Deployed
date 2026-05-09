@@ -1,31 +1,46 @@
 import SwiftUI
 import Combine
 
-/// Client-facing banner for an upcoming Foundation Call. Subscribes to live
-/// updates on `client_foundation_calls` so it appears/updates the moment the
-/// Cal.com webhook fires — no refresh required.
+/// Client-facing banner for the Foundation Call. Two states:
+/// 1) Scheduled — shows live countdown + Join button.
+/// 2) Not scheduled — shows a prominent CTA so the client can book a
+///    Cal.com video call with the AVIA team themselves.
+///
+/// Subscribes to live updates on `client_foundation_calls` so it appears/updates
+/// the moment the Cal.com webhook fires — no refresh required.
 struct ClientFoundationCallBanner: View {
     let clientId: String
+    var clientFullName: String = ""
+    var clientEmail: String = ""
 
     @State private var call: FoundationCall?
     @State private var now: Date = .now
+    @State private var isBooking: Bool = false
 
     private let ticker = Timer.publish(every: 30, on: .main, in: .common).autoconnect()
 
-    private var isVisible: Bool {
-        guard let call else { return false }
-        // Show while scheduled, or for 30 minutes after start time so a client
-        // who joins late still sees the join button.
-        switch call.status {
-        case .scheduled:
-            if let when = call.scheduledAt {
-                return when.timeIntervalSince(now) > -60 * 30
-            }
-            return true
-        default:
-            return false
-        }
+    private enum BannerMode {
+        case scheduled, schedule, hidden
     }
+
+    private var mode: BannerMode {
+        if let call {
+            switch call.status {
+            case .scheduled:
+                if let when = call.scheduledAt, when.timeIntervalSince(now) <= -60 * 30 {
+                    return .hidden // hide 30 min after start
+                }
+                return .scheduled
+            case .completed:
+                return .hidden
+            default:
+                return .schedule
+            }
+        }
+        return .schedule
+    }
+
+    private var isVisible: Bool { mode != .hidden }
 
     private var meetingURL: URL? {
         guard let raw = call?.meetingURL?.trimmingCharacters(in: .whitespaces),
@@ -61,12 +76,21 @@ struct ClientFoundationCallBanner: View {
 
     var body: some View {
         Group {
-            if isVisible {
-                content
+            switch mode {
+            case .scheduled:
+                scheduledContent
                     .transition(.asymmetric(
                         insertion: .move(edge: .top).combined(with: .opacity),
                         removal: .opacity
                     ))
+            case .schedule:
+                scheduleCTA
+                    .transition(.asymmetric(
+                        insertion: .move(edge: .top).combined(with: .opacity),
+                        removal: .opacity
+                    ))
+            case .hidden:
+                EmptyView()
             }
         }
         .animation(.spring(response: 0.45, dampingFraction: 0.85), value: isVisible)
@@ -81,7 +105,134 @@ struct ClientFoundationCallBanner: View {
         }
     }
 
-    private var content: some View {
+    // MARK: - Schedule CTA (no upcoming call)
+
+    private var scheduleCTA: some View {
+        VStack(alignment: .leading, spacing: 0) {
+            Color(AVIATheme.timelessBrown)
+                .frame(height: 4)
+                .frame(maxWidth: .infinity)
+
+            VStack(alignment: .leading, spacing: 14) {
+                HStack(alignment: .top, spacing: 12) {
+                    Image(systemName: "video.badge.plus")
+                        .font(.neueSubheadlineMedium)
+                        .foregroundStyle(AVIATheme.aviaWhite)
+                        .frame(width: 36, height: 36)
+                        .background(AVIATheme.primaryGradient)
+                        .clipShape(Circle())
+
+                    VStack(alignment: .leading, spacing: 4) {
+                        Text("BOOK A CALL")
+                            .font(.neueCaption2Medium)
+                            .tracking(1.2)
+                            .foregroundStyle(AVIATheme.timelessBrown)
+
+                        Text("Schedule your Foundation Call")
+                            .font(.neueCorpMedium(20))
+                            .foregroundStyle(AVIATheme.textPrimary)
+                            .lineLimit(2)
+
+                        Text("Pick a time that suits you for a 30-minute video call with our team.")
+                            .font(.neueCaption)
+                            .foregroundStyle(AVIATheme.textSecondary)
+                            .fixedSize(horizontal: false, vertical: true)
+                    }
+
+                    Spacer(minLength: 0)
+                }
+
+                Button {
+                    openBooking()
+                } label: {
+                    HStack(spacing: 10) {
+                        Image(systemName: "calendar.badge.plus")
+                            .font(.neueSubheadlineMedium)
+                        Text("Schedule a Call")
+                            .font(.neueCorpMedium(16))
+                        Spacer()
+                        Image(systemName: "arrow.up.right.square.fill")
+                            .font(.neueSubheadline)
+                            .opacity(0.9)
+                    }
+                    .foregroundStyle(AVIATheme.aviaWhite)
+                    .padding(.horizontal, 14)
+                    .padding(.vertical, 13)
+                    .frame(maxWidth: .infinity)
+                    .background(AVIATheme.primaryGradient)
+                    .clipShape(.rect(cornerRadius: 12))
+                }
+                .buttonStyle(.plain)
+                .disabled(isBooking)
+
+                if call?.status == .pending,
+                   call?.notes?.contains("opened") == true {
+                    HStack(spacing: 6) {
+                        Image(systemName: "hourglass")
+                            .font(.neueCaption2)
+                            .foregroundStyle(AVIATheme.textTertiary)
+                        Text("Waiting for your booking to confirm…")
+                            .font(.neueCaption2)
+                            .foregroundStyle(AVIATheme.textSecondary)
+                    }
+                }
+            }
+            .padding(16)
+        }
+        .background(AVIATheme.cardBackground)
+        .clipShape(.rect(cornerRadius: 16))
+        .overlay {
+            RoundedRectangle(cornerRadius: 16)
+                .stroke(AVIATheme.timelessBrown.opacity(0.18), lineWidth: 1)
+        }
+        .shadow(color: AVIATheme.timelessBrown.opacity(0.08), radius: 12, x: 0, y: 4)
+    }
+
+    private func openBooking() {
+        let trimmedName = clientFullName.trimmingCharacters(in: .whitespaces)
+        let trimmedEmail = clientEmail.trimmingCharacters(in: .whitespaces)
+        let notes = "AVIA Foundation Call — Client: \(trimmedName.isEmpty ? trimmedEmail : trimmedName)"
+        guard let url = CalComService.bookingURL(
+            name: trimmedName.isEmpty ? nil : trimmedName,
+            email: trimmedEmail.isEmpty ? nil : trimmedEmail,
+            notes: notes,
+            clientId: clientId
+        ) else { return }
+
+        // Optimistically create a pending record so the webhook can reconcile
+        // by client_id + cal_booking_uid.
+        if call == nil {
+            let pending = FoundationCall(
+                id: UUID().uuidString,
+                clientId: clientId,
+                organizerId: nil,
+                status: .pending,
+                scheduledAt: nil,
+                durationMinutes: 30,
+                meetingURL: nil,
+                calBookingId: nil,
+                calBookingUid: nil,
+                calEventType: nil,
+                attendeeEmail: trimmedEmail.isEmpty ? nil : trimmedEmail,
+                attendeeName: trimmedName.isEmpty ? nil : trimmedName,
+                notes: "Booking link opened by client",
+                createdAt: .now,
+                updatedAt: .now
+            )
+            call = pending
+            isBooking = true
+            Task {
+                await SupabaseService.shared.upsertFoundationCall(pending)
+                await MainActor.run { isBooking = false }
+            }
+        }
+
+        UIApplication.shared.open(url)
+    }
+
+    // MARK: - Scheduled content
+
+    private var scheduledContent: some View {
         VStack(alignment: .leading, spacing: 0) {
             Color(AVIATheme.timelessBrown)
                 .frame(height: 4)
