@@ -15,15 +15,27 @@ class AdminCatalogViewModel {
 
     var specCategoryOrder: [(id: String, name: String, icon: String)] {
         [
-            ("structure", "Structure & Ceiling", "building.2.fill"),
-            ("exterior", "External Finishes", "house.fill"),
-            ("windows_doors", "Windows & Doors", "door.left.hand.open"),
+            ("pre_construction", "Pre-Construction", "doc.text.fill"),
+            ("construction", "Construction", "hammer.fill"),
+            ("insulation", "Insulation", "thermometer.medium"),
+            ("site_requirements", "Site Requirements", "map.fill"),
+            ("frame", "Frame", "square.split.bottomrightquarter.fill"),
+            ("external", "External", "house.fill"),
+            ("windows", "Windows", "rectangle.split.2x1.fill"),
+            ("doors", "Doors", "door.left.hand.open"),
+            ("electrical", "Electrical", "lightbulb.fill"),
+            ("internal_living", "Internal Living", "sofa.fill"),
             ("kitchen", "Kitchen", "fork.knife"),
-            ("bathroom", "Bathroom & Ensuite", "shower.fill"),
+            ("bath_ensuite", "Bath/Ensuite", "shower.fill"),
+            ("laundry", "Laundry", "washer.fill"),
             ("flooring", "Flooring", "square.grid.3x3.fill"),
-            ("internal", "Internal Finishes", "paintbrush.fill"),
-            ("electrical", "Electrical & Lighting", "lightbulb.fill"),
-            ("outdoor", "Outdoor & Landscaping", "leaf.fill"),
+            ("paintwork", "Paintwork", "paintbrush.fill"),
+            ("storage", "Storage", "archivebox.fill"),
+            ("colour_selections", "Colour Selections", "paintpalette.fill"),
+            ("landscaping", "Landscaping", "leaf.fill"),
+            ("garage", "Garage", "car.fill"),
+            ("post_construction", "Post-Construction", "checkmark.seal.fill"),
+            ("warranties", "Warranties", "shield.lefthalf.filled"),
         ]
     }
 
