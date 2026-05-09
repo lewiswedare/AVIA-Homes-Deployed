@@ -20,8 +20,8 @@ struct AdminCatalogHubView: View {
                     } label: {
                         catalogCard(
                             icon: "square.stack.3d.up.fill",
-                            title: "Spec Categories",
-                            subtitle: "Create, rename, reorder & delete spec categories",
+                            title: "Selection Categories",
+                            subtitle: "Create, rename, reorder & delete selection categories",
                             count: specCategoryCount,
                             countLabel: "categories",
                             color: AVIATheme.heritageBlue

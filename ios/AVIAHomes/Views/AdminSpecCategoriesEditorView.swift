@@ -29,7 +29,7 @@ struct AdminSpecCategoriesEditorView: View {
                 } else if viewModel.specCategoriesDB.isEmpty {
                     AdminEmptyState(
                         icon: "square.stack.3d.up",
-                        title: "No Spec Categories",
+                        title: "No Selection Categories",
                         subtitle: "Add your first spec category, or seed the defaults to get started."
                     )
                     Button {
@@ -65,7 +65,7 @@ struct AdminSpecCategoriesEditorView: View {
             .padding(.bottom, 40)
         }
         .background(AVIATheme.background)
-        .navigationTitle("Spec Categories")
+        .navigationTitle("Selection Categories")
         .navigationBarTitleDisplayMode(.large)
         .searchable(text: $searchText, prompt: "Search categories...")
         .toolbar {
