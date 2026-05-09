@@ -79,17 +79,14 @@ struct ClientTabView: View {
             Tab("Home", systemImage: "house.fill", value: 0) {
                 DashboardView(selectedTab: $selectedTab)
             }
-            Tab("Specs", systemImage: "list.clipboard.fill", value: 1) {
-                SpecificationsOverviewView()
+            Tab("Selections", systemImage: "square.grid.2x2.fill", value: 1) {
+                ClientSelectionsTabView()
             }
             .badge(specVM.upgradeRequests.filter { $0.status == .pending }.count)
-            Tab("Colours", systemImage: "paintpalette.fill", value: 2) {
-                ClientColourTabView()
-            }
-            Tab("Progress", systemImage: "chart.bar.fill", value: 3) {
+            Tab("Progress", systemImage: "chart.bar.fill", value: 2) {
                 BuildProgressView()
             }
-            Tab("More", systemImage: "ellipsis.circle.fill", value: 4) {
+            Tab("More", systemImage: "ellipsis.circle.fill", value: 3) {
                 MoreView()
             }
             .badge(viewModel.notificationService.unreadCount)
@@ -491,6 +488,46 @@ struct ClientColourTabView: View {
         } else {
             BuildColourSelectionView(buildId: specVM.buildId)
         }
+    }
+}
+
+struct ClientSelectionsTabView: View {
+    @Environment(AppViewModel.self) private var appViewModel
+    @Environment(SpecificationViewModel.self) private var specVM
+
+    var body: some View {
+        NavigationStack {
+            Group {
+                if specVM.buildId.isEmpty {
+                    SelectionsEmptyState()
+                } else {
+                    SelectionsHomeView(buildId: specVM.buildId)
+                }
+            }
+            .background(AVIATheme.background)
+            .navigationTitle("Selections")
+            .navigationBarTitleDisplayMode(.large)
+        }
+    }
+}
+
+private struct SelectionsEmptyState: View {
+    var body: some View {
+        VStack(spacing: 12) {
+            Image(systemName: "square.grid.2x2")
+                .font(.system(size: 40))
+                .foregroundStyle(AVIATheme.textTertiary)
+            Text("Selections Unlock With Your Build")
+                .font(.neueCorpMedium(20))
+                .foregroundStyle(AVIATheme.textPrimary)
+            Text("Once your contract is signed, you'll be able to pick item upgrades and colours together, room by room.")
+                .font(.neueCaption)
+                .foregroundStyle(AVIATheme.textSecondary)
+                .multilineTextAlignment(.center)
+                .padding(.horizontal, 32)
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .background(AVIATheme.background)
     }
 }
 
