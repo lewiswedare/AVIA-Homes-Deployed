@@ -990,14 +990,24 @@ class SupabaseService {
         }
     }
 
+    private struct SpecCategoryMetaRow: Codable, Sendable {
+        let id: String
+        let name: String
+        let icon: String
+        let sort_order: Int
+    }
+
     func fetchSpecCategories() async -> [SpecCategory] {
         guard isConfigured else { return [] }
 
+        let categoryMeta = await fetchSpecCategoryMeta()
         let flatItems = await fetchSpecItemsFlat()
-        if !flatItems.isEmpty {
-            return assembleCategories(from: flatItems)
+
+        if !categoryMeta.isEmpty {
+            return assembleCategories(metadata: categoryMeta, items: flatItems)
         }
 
+        // Fallback: legacy embedded-items shape on spec_categories
         do {
             let rows: [SpecCategoryRow] = try await client
                 .from("spec_categories")
@@ -1008,6 +1018,22 @@ class SupabaseService {
             return rows.map { $0.toSpecCategory() }
         } catch {
             print("[SupabaseService] fetchSpecCategories FAILED: \(error)")
+            return []
+        }
+    }
+
+    private func fetchSpecCategoryMeta() async -> [SpecCategoryMetaRow] {
+        guard isConfigured else { return [] }
+        do {
+            let rows: [SpecCategoryMetaRow] = try await client
+                .from("spec_categories")
+                .select("id,name,icon,sort_order")
+                .order("sort_order", ascending: true)
+                .execute()
+                .value
+            return rows
+        } catch {
+            print("[SupabaseService] fetchSpecCategoryMeta FAILED: \(error)")
             return []
         }
     }
@@ -1028,28 +1054,19 @@ class SupabaseService {
         }
     }
 
-    private func assembleCategories(from items: [SpecItemFlatRow]) -> [SpecCategory] {
-        let categoryOrder: [(id: String, name: String, icon: String)] = [
-            ("structure", "Structure & Ceiling", "building.2.fill"),
-            ("exterior", "External Finishes", "house.fill"),
-            ("windows_doors", "Windows & Doors", "door.left.hand.open"),
-            ("kitchen", "Kitchen", "fork.knife"),
-            ("bathroom", "Bathroom & Ensuite", "shower.fill"),
-            ("flooring", "Flooring", "square.grid.3x3.fill"),
-            ("internal", "Internal Finishes", "paintbrush.fill"),
-            ("electrical", "Electrical & Lighting", "lightbulb.fill"),
-            ("outdoor", "Outdoor & Landscaping", "leaf.fill"),
-        ]
-
+    private func assembleCategories(metadata: [SpecCategoryMetaRow], items: [SpecItemFlatRow]) -> [SpecCategory] {
         let grouped = Dictionary(grouping: items, by: { $0.category_id })
+        let orderedMeta = metadata.sorted { $0.sort_order < $1.sort_order }
 
-        return categoryOrder.compactMap { cat in
-            guard let catItems = grouped[cat.id], !catItems.isEmpty else { return nil }
+        return orderedMeta.compactMap { meta in
+            let catItems = grouped[meta.id] ?? []
+            guard !catItems.isEmpty else { return nil }
+            let sortedItems = catItems.sorted { ($0.sort_order ?? 0) < ($1.sort_order ?? 0) }
             return SpecCategory(
-                id: cat.id,
-                name: cat.name,
-                icon: cat.icon,
-                items: catItems.map { $0.toSpecItem() }
+                id: meta.id,
+                name: meta.name,
+                icon: meta.icon,
+                items: sortedItems.map { $0.toSpecItem() }
             )
         }
     }
