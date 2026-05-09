@@ -310,7 +310,13 @@ struct HomeDesignDirectoryView: View {
     private var compareActionButton: some View {
         Button {
             guard compareSelections.count == 2 else { return }
-            comparisonPair = DesignComparisonPair(designA: compareSelections[0], designB: compareSelections[1])
+            let pair = DesignComparisonPair(designA: compareSelections[0], designB: compareSelections[1])
+            // Defer state assignment to avoid presenting the sheet while the
+            // floating button's transition is still mid-flight (which crashes
+            // with "Modifying state during view update" on iOS 18+).
+            DispatchQueue.main.async {
+                comparisonPair = pair
+            }
         } label: {
             HStack(spacing: 8) {
                 Image(systemName: "arrow.left.arrow.right")

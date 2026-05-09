@@ -45,7 +45,7 @@ struct DesignComparisonView: View {
     }
 
     private func designImageCard(design: HomeDesign) -> some View {
-        Color(AVIATheme.surfaceElevated)
+        AVIATheme.surfaceElevated
             .aspectRatio(4 / 3, contentMode: .fit)
             .overlay {
                 AsyncImage(url: URL(string: design.imageURL)) { phase in
