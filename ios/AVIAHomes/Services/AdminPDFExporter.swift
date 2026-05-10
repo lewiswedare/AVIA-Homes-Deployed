@@ -163,6 +163,40 @@ enum AdminPDFExporter {
                         y += 10
                     }
 
+                    // Chosen product + colour (new product-driven flow)
+                    if let pid = item.productId, let product = catalog.specProducts[pid] {
+                        let colour = item.colourId.flatMap { cid in
+                            catalog.coloursByProduct[pid]?.first(where: { $0.id == cid })
+                        }
+                        let rangeId = item.specTier.lowercased()
+                        let membership = catalog.rangeProductMemberships["\(rangeId)|\(pid)"]
+                        let inclusion = ProductRangeInclusion(rawValue: membership?.inclusion_override ?? "included") ?? .included
+                        let upgradeCost = membership?.upgrade_price_override ?? 0
+                        let colourExtra = colour?.extra_cost ?? 0
+
+                        var productLine = "Product: \(product.name)"
+                        if let brand = product.brand, !brand.isEmpty { productLine += " — \(brand)" }
+                        if let colour { productLine += " / \(colour.name)" }
+                        productLine.draw(at: CGPoint(x: colItem + 4, y: y), withAttributes: [
+                            .font: smallFont, .foregroundColor: UIColor(red: 55/255, green: 51/255, blue: 43/255, alpha: 0.9)
+                        ])
+                        y += 10
+
+                        if (inclusion == .upgrade && upgradeCost > 0) || colourExtra > 0 {
+                            var bits: [String] = []
+                            if inclusion == .upgrade && upgradeCost > 0 {
+                                bits.append("Range upgrade $\(String(format: "%.2f", upgradeCost))")
+                            }
+                            if colourExtra > 0 {
+                                bits.append("Colour extra $\(String(format: "%.2f", colourExtra))")
+                            }
+                            bits.joined(separator: "  ·  ").draw(at: CGPoint(x: colItem + 4, y: y), withAttributes: [
+                                .font: smallItalicFont, .foregroundColor: UIColor(red: 55/255, green: 51/255, blue: 43/255, alpha: 0.7)
+                            ])
+                            y += 10
+                        }
+                    }
+
                     y += 4
                 }
                 y += 8
