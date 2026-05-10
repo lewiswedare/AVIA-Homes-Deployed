@@ -1647,6 +1647,50 @@ class AppViewModel {
         }
     }
 
+    /// Called when admin locks in the final quote after all selections are resolved.
+    /// Advances the build out of the Pre-Construction (selections) phase into the next
+    /// construction stage so the client's build dashboard reflects that build is underway.
+    /// Also notifies all clients on the build.
+    func finaliseSelectionsAndAdvanceToConstruction(buildId: String) async {
+        guard let buildIndex = allClientBuilds.firstIndex(where: { $0.id == buildId }) else { return }
+        let build = allClientBuilds[buildIndex]
+        let stages = build.constructionStages
+        guard !stages.isEmpty else { return }
+
+        // Find the Pre-Construction stage (or the first stage that isn't yet completed)
+        // and mark it completed; mark the next non-completed stage as in progress.
+        let preIndex = stages.firstIndex { $0.name == "Pre-Construction" }
+            ?? stages.firstIndex { $0.status != .completed }
+        guard let preIdx = preIndex else { return }
+
+        let preStage = stages[preIdx]
+        if preStage.status != .completed {
+            updateBuildStageProgress(buildId: buildId, stageId: preStage.id, progress: 1.0, notes: preStage.notes)
+        }
+
+        if preIdx + 1 < stages.count {
+            let next = stages[preIdx + 1]
+            if next.status == .upcoming {
+                updateBuildStageProgress(buildId: buildId, stageId: next.id, progress: 0.05, notes: next.notes)
+            }
+        }
+
+        Task {
+            for clientUser in build.allClients {
+                await notificationService.createNotification(
+                    recipientId: clientUser.id,
+                    senderId: currentUser.id,
+                    senderName: "AVIA Homes",
+                    type: .buildUpdate,
+                    title: "Final Quote Locked In",
+                    message: "Your final quote has been locked in and your build is now underway.",
+                    referenceId: buildId,
+                    referenceType: "build"
+                )
+            }
+        }
+    }
+
     func updateBuildStageWithNotification(buildId: String, stageId: String, progress: Double, notes: String?) {
         updateBuildStageProgress(buildId: buildId, stageId: stageId, progress: progress, notes: notes)
 

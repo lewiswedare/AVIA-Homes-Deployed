@@ -5,6 +5,9 @@ struct AdminBuildSpecReviewView: View {
     @State private var viewModel = BuildSpecViewModel()
     @State private var showApproveAllAlert = false
     @State private var showReopenAlert = false
+    @State private var showFinaliseAlert = false
+    @State private var isFinalising = false
+    @State private var hasFinalised = false
     @State private var selectedItem: BuildSpecSelection?
     @State private var isExportingPDF = false
     @State private var exportedPDFURL: URL?
@@ -65,6 +68,14 @@ struct AdminBuildSpecReviewView: View {
             }
         } message: {
             Text("This will approve all specification items for \(clientName)'s build. A PDF summary will be generated.")
+        }
+        .alert("Lock In Final Quote & Begin Build", isPresented: $showFinaliseAlert) {
+            Button("Cancel", role: .cancel) {}
+            Button("Lock In & Begin Build") {
+                Task { await finaliseAndAdvance() }
+            }
+        } message: {
+            Text("This will lock all selections for \(clientName) and move the build into construction. The client will be notified.")
         }
         .alert("Reopen for Client", isPresented: $showReopenAlert) {
             Button("Cancel", role: .cancel) {}
@@ -133,6 +144,8 @@ struct AdminBuildSpecReviewView: View {
                 }
 
                 adminActionButtons
+
+                finalLockInCapstone
 
                 exportPDFButton
 
@@ -813,6 +826,171 @@ struct AdminBuildSpecReviewView: View {
             .clipShape(.rect(cornerRadius: 8))
         }
         .buttonStyle(.pressable(.subtle))
+    }
+
+    // MARK: - Final Lock-In Capstone
+
+    private var allUpgradesResolved: Bool {
+        let pendingSpec = viewModel.selections.contains {
+            $0.selectionType == .upgradeDraft ||
+            $0.selectionType == .upgradeRequested ||
+            $0.selectionType == .upgradeCosted ||
+            $0.selectionType == .upgradeAccepted
+        }
+        let pendingColour = viewModel.colourSelections.contains {
+            $0.isUpgrade && (
+                $0.selectionStatus == .upgradeRequested ||
+                $0.selectionStatus == .upgradePendingClient ||
+                $0.selectionStatus == .upgradeAcceptedByClient
+            )
+        }
+        let pendingRange = viewModel.rangeUpgradeRequests.contains {
+            $0.status == .pendingAdminCost ||
+            $0.status == .pendingClient ||
+            $0.status == .clientAccepted
+        }
+        return !pendingSpec && !pendingColour && !pendingRange
+    }
+
+    private var allColoursApproved: Bool {
+        viewModel.colourSelections.isEmpty ||
+        viewModel.colourSelections.allSatisfy { $0.selectionStatus == .approved }
+    }
+
+    private var canFinalise: Bool {
+        viewModel.overallStatus == .approved && allUpgradesResolved && allColoursApproved
+    }
+
+    private var finalQuoteTotal: Double {
+        viewModel.totalUpgradeCost
+    }
+
+    private var lockedSpecUpgradeCount: Int {
+        viewModel.selections.filter {
+            $0.selectionType == .upgradeApproved && ($0.upgradeCost ?? 0) > 0
+        }.count
+    }
+
+    private var lockedColourUpgradeCount: Int {
+        viewModel.colourSelections.filter {
+            $0.isUpgrade && $0.selectionStatus == .approved && ($0.cost ?? 0) > 0
+        }.count
+    }
+
+    private var buildHasAdvancedToConstruction: Bool {
+        guard let build = appViewModel.allClientBuilds.first(where: { $0.id == buildId }) else { return false }
+        let stages = build.constructionStages
+        guard let preIdx = stages.firstIndex(where: { $0.name == "Pre-Construction" }) else { return false }
+        return stages[preIdx].status == .completed
+    }
+
+    @ViewBuilder
+    private var finalLockInCapstone: some View {
+        if canFinalise {
+            VStack(alignment: .leading, spacing: 14) {
+                HStack(spacing: 10) {
+                    Image(systemName: buildHasAdvancedToConstruction ? "checkmark.seal.fill" : "lock.shield.fill")
+                        .font(.neueCorpMedium(20))
+                        .foregroundStyle(buildHasAdvancedToConstruction ? AVIATheme.success : AVIATheme.timelessBrown)
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text(buildHasAdvancedToConstruction ? "Final Quote Locked In" : "Ready to Lock In Final Quote")
+                            .font(.neueSubheadlineMedium)
+                            .foregroundStyle(AVIATheme.textPrimary)
+                        Text(buildHasAdvancedToConstruction
+                             ? "Build has moved into the construction stages."
+                             : "All selections are resolved. Lock in the final quote and move \(clientName) into construction.")
+                            .font(.neueCaption2)
+                            .foregroundStyle(AVIATheme.textSecondary)
+                    }
+                    Spacer()
+                }
+
+                Rectangle().fill(AVIATheme.surfaceBorder).frame(height: 1)
+
+                VStack(spacing: 8) {
+                    quoteLine(label: "Spec range", value: viewModel.specTier.capitalized)
+                    quoteLine(label: "Locked spec upgrades", value: "\(lockedSpecUpgradeCount)")
+                    quoteLine(label: "Locked colour upgrades", value: "\(lockedColourUpgradeCount)")
+                    Rectangle().fill(AVIATheme.surfaceBorder).frame(height: 1)
+                    HStack {
+                        Text("Final upgrade total")
+                            .font(.neueSubheadlineMedium)
+                            .foregroundStyle(AVIATheme.textPrimary)
+                        Spacer()
+                        Text(AVIATheme.formatCost(finalQuoteTotal))
+                            .font(.neueCorpMedium(20))
+                            .foregroundStyle(AVIATheme.timelessBrown)
+                    }
+                }
+
+                if buildHasAdvancedToConstruction {
+                    HStack(spacing: 8) {
+                        Image(systemName: "hammer.fill")
+                            .foregroundStyle(AVIATheme.success)
+                        Text("Build is underway — use Reopen above if changes are needed.")
+                            .font(.neueCaption)
+                            .foregroundStyle(AVIATheme.textSecondary)
+                    }
+                    .padding(10)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .background(AVIATheme.success.opacity(0.08))
+                    .clipShape(.rect(cornerRadius: 8))
+                } else {
+                    Button {
+                        showFinaliseAlert = true
+                    } label: {
+                        HStack(spacing: 8) {
+                            if isFinalising {
+                                ProgressView().tint(AVIATheme.aviaWhite)
+                            } else {
+                                Image(systemName: "lock.shield.fill")
+                                Text("Lock In Final Quote & Begin Build")
+                            }
+                        }
+                        .font(.neueSubheadlineMedium)
+                        .frame(maxWidth: .infinity)
+                        .frame(height: 52)
+                        .foregroundStyle(AVIATheme.aviaWhite)
+                        .background(AVIATheme.timelessBrown)
+                        .clipShape(.rect(cornerRadius: 11))
+                    }
+                    .disabled(isFinalising)
+                }
+            }
+            .padding(16)
+            .background(
+                LinearGradient(
+                    colors: [AVIATheme.timelessBrown.opacity(0.06), AVIATheme.cardBackground],
+                    startPoint: .topLeading,
+                    endPoint: .bottomTrailing
+                )
+            )
+            .clipShape(.rect(cornerRadius: 13))
+            .overlay {
+                RoundedRectangle(cornerRadius: 13)
+                    .stroke(AVIATheme.timelessBrown.opacity(0.25), lineWidth: 1)
+            }
+        }
+    }
+
+    private func quoteLine(label: String, value: String) -> some View {
+        HStack {
+            Text(label)
+                .font(.neueCaption)
+                .foregroundStyle(AVIATheme.textSecondary)
+            Spacer()
+            Text(value)
+                .font(.neueCaptionMedium)
+                .foregroundStyle(AVIATheme.textPrimary)
+        }
+    }
+
+    private func finaliseAndAdvance() async {
+        isFinalising = true
+        await appViewModel.finaliseSelectionsAndAdvanceToConstruction(buildId: buildId)
+        viewModel.successMessage = "Final quote locked in — build moved into construction."
+        hasFinalised = true
+        isFinalising = false
     }
 
     // MARK: - Existing Components

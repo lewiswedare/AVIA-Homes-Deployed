@@ -21,3 +21,32 @@ Some items in a build (like structural inclusions) aren't choices — the custom
 ## Result
 
 Customers only see action prompts on items they actually need to make a decision on. Fixed inclusions read clearly as part of their build with no false invitation to interact.
+
+---
+
+# Final admin lock-in of the quote before construction
+
+## What this changes
+
+Once every selection is resolved (all upgrades priced, accepted/declined, all colours approved), the admin needs an explicit final step that **locks in the final quote** and **moves the build out of the Selections phase into the construction stages**.
+
+## Where it lives
+
+A new capstone section at the bottom of `AdminBuildSpecReviewView` that only appears when:
+
+- No spec/colour/range upgrades are still pending on either side.
+- All selections are admin-approved (`overallStatus == .approved`).
+
+## What the capstone shows
+
+- Final quote total (sum of all locked-in upgrades) with a short breakdown.
+- A primary `Lock In Final Quote & Begin Build` button.
+- A confirm alert: "This will lock all selections and move the build into construction. Are you sure?"
+
+## What it does
+
+- Marks the Pre-Construction stage (or first non-completed stage) as **completed**.
+- Marks the next stage as **in progress** so the client's build dashboard advances.
+- Sends a notification to the client: "Your final quote is locked in and your build is now underway."
+
+Reopening for the client (existing button) remains available if changes are needed later.
