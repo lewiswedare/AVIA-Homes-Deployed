@@ -9,13 +9,16 @@ struct DesignComparisonView: View {
     var body: some View {
         NavigationStack {
             ScrollView {
-                VStack(spacing: 20) {
-                    floorplanRow
-                    descriptionSection
-                    keyRoomsAndDimensionsSection
-                    specificationsSection
+                VStack(alignment: .leading, spacing: 18) {
+                    floorPlansHeader
+
+                    HStack(alignment: .top, spacing: 12) {
+                        designColumn(design: designA)
+                        designColumn(design: designB)
+                    }
                 }
                 .padding(.horizontal, 16)
+                .padding(.top, 4)
                 .padding(.bottom, 40)
             }
             .background(AVIATheme.background)
@@ -39,23 +42,48 @@ struct DesignComparisonView: View {
         }
     }
 
-    // MARK: - Floor Plan Row (Priority)
+    // MARK: - Top Header
 
-    private var floorplanRow: some View {
-        VStack(alignment: .leading, spacing: 10) {
-            HStack {
-                sectionHeader("FLOOR PLANS")
-                Spacer()
-                Label("Tap to zoom", systemImage: "arrow.up.left.and.arrow.down.right")
-                    .font(.neueCaption2)
-                    .foregroundStyle(AVIATheme.textTertiary)
-            }
-            HStack(spacing: 10) {
-                floorplanCard(design: designA)
-                floorplanCard(design: designB)
-            }
+    private var floorPlansHeader: some View {
+        HStack {
+            sectionHeader("FLOOR PLANS")
+            Spacer()
+            Label("Tap to zoom", systemImage: "arrow.up.left.and.arrow.down.right")
+                .font(.neueCaption2)
+                .foregroundStyle(AVIATheme.textTertiary)
         }
     }
+
+    // MARK: - Per-Design Column
+
+    private func designColumn(design: HomeDesign) -> some View {
+        VStack(alignment: .leading, spacing: 14) {
+            floorplanCard(design: design)
+
+            VStack(alignment: .leading, spacing: 6) {
+                Text(design.name)
+                    .font(.neueHeadline)
+                    .foregroundStyle(AVIATheme.timelessBrown)
+
+                sectionHeader("ABOUT THIS DESIGN")
+            }
+
+            descriptionCard(design: design)
+
+            statsChipRow(design: design)
+            dimensionsChipRow(design: design)
+
+            sectionHeader("SPECIFICATIONS")
+            specificationsTable(design: design)
+
+            if !design.floorplanPDFURL.isEmpty {
+                floorplanPDFCard(design: design)
+            }
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+    }
+
+    // MARK: - Floor Plan Card
 
     private func floorplanCard(design: HomeDesign) -> some View {
         let url = design.floorplanImageURL
@@ -84,8 +112,6 @@ struct DesignComparisonView: View {
                         .foregroundStyle(AVIATheme.aviaWhite)
                         .padding(.horizontal, 8)
                         .padding(.vertical, 4)
-                        .background(AVIATheme.timelessBrown.opacity(0.6), in: .capsule)
-                        .padding(8)
                 }
                 .overlay(alignment: .topTrailing) {
                     Image(systemName: "arrow.up.left.and.arrow.down.right")
@@ -95,186 +121,210 @@ struct DesignComparisonView: View {
                         .background(AVIATheme.aviaWhite.opacity(0.95), in: .circle)
                         .padding(8)
                 }
-                .clipShape(.rect(cornerRadius: 11))
+                .clipShape(.rect(cornerRadius: 13))
         }
         .buttonStyle(.plain)
     }
 
-    // MARK: - Description Section
-
-    private var descriptionSection: some View {
-        VStack(alignment: .leading, spacing: 10) {
-            sectionHeader("DESCRIPTION")
-
-            HStack(alignment: .top, spacing: 10) {
-                descriptionCard(design: designA)
-                descriptionCard(design: designB)
-            }
-        }
-    }
+    // MARK: - Description
 
     private func descriptionCard(design: HomeDesign) -> some View {
         BentoCard(cornerRadius: 13) {
-            VStack(alignment: .leading, spacing: 8) {
-                Text(design.name)
-                    .font(.neueSubheadlineMedium)
-                    .foregroundStyle(AVIATheme.timelessBrown)
-
-                if !design.priceFrom.isEmpty {
-                    Text("From \(design.priceFrom)")
-                        .font(.neueCaption2Medium)
-                        .foregroundStyle(AVIATheme.textSecondary)
-                }
-
-                Text(design.description.isEmpty ? "No description available." : design.description)
-                    .font(.neueCaption)
-                    .foregroundStyle(AVIATheme.textPrimary)
-                    .fixedSize(horizontal: false, vertical: true)
-                    .multilineTextAlignment(.leading)
-            }
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .padding(14)
-        }
-    }
-
-    // MARK: - Key Rooms & Dimensions Section
-
-    private var keyRoomsAndDimensionsSection: some View {
-        VStack(alignment: .leading, spacing: 10) {
-            sectionHeader("KEY ROOMS & DIMENSIONS")
-
-            BentoCard(cornerRadius: 13) {
-                VStack(spacing: 0) {
-                    comparisonRow(label: "Bedrooms", icon: "bed.double.fill", valueA: "\(designA.bedrooms)", valueB: "\(designB.bedrooms)")
-                    rowDivider
-                    comparisonRow(label: "Bathrooms", icon: "shower.fill", valueA: "\(designA.bathrooms)", valueB: "\(designB.bathrooms)")
-                    rowDivider
-                    comparisonRow(label: "Car Spaces", icon: "car.fill", valueA: "\(designA.garages)", valueB: "\(designB.garages)")
-                    rowDivider
-                    comparisonRow(label: "Living Areas", icon: "sofa.fill", valueA: "\(designA.livingAreas)", valueB: "\(designB.livingAreas)")
-                    rowDivider
-                    comparisonRow(label: "Storeys", icon: "building.2.fill", valueA: designA.storeys == 1 ? "Single" : "Double", valueB: designB.storeys == 1 ? "Single" : "Double")
-                    rowDivider
-                    comparisonRow(label: "Total Area", icon: "square.dashed", valueA: String(format: "%.0f m²", designA.squareMeters), valueB: String(format: "%.0f m²", designB.squareMeters))
-                    rowDivider
-                    comparisonRow(label: "Width", icon: "arrow.left.and.right", valueA: String(format: "%.1fm", designA.houseWidth), valueB: String(format: "%.1fm", designB.houseWidth))
-                    rowDivider
-                    comparisonRow(label: "Length", icon: "arrow.up.and.down", valueA: String(format: "%.1fm", designA.houseLength), valueB: String(format: "%.1fm", designB.houseLength))
-                    rowDivider
-                    comparisonRow(label: "Min. Lot Width", icon: "ruler", valueA: String(format: "%.1fm", designA.lotWidth), valueB: String(format: "%.1fm", designB.lotWidth))
-                }
-            }
-        }
-    }
-
-    // MARK: - Specifications Section
-
-    private var specificationsSection: some View {
-        VStack(alignment: .leading, spacing: 10) {
-            sectionHeader("SPECIFICATIONS")
-
-            HStack(alignment: .top, spacing: 10) {
-                specificationsCard(design: designA)
-                specificationsCard(design: designB)
-            }
-        }
-    }
-
-    private func specificationsCard(design: HomeDesign) -> some View {
-        BentoCard(cornerRadius: 13) {
-            VStack(alignment: .leading, spacing: 12) {
-                Text(design.name)
-                    .font(.neueCaption2Medium)
-                    .kerning(0.6)
-                    .foregroundStyle(AVIATheme.timelessBrown)
-
-                if !design.roomHighlights.isEmpty {
-                    VStack(alignment: .leading, spacing: 6) {
-                        Text("Room Highlights")
-                            .font(.system(size: 10, weight: .semibold))
-                            .foregroundStyle(AVIATheme.textTertiary)
-                        ForEach(design.roomHighlights, id: \.self) { item in
-                            specBullet(item)
-                        }
-                    }
-                }
-
-                if !design.inclusions.isEmpty {
-                    VStack(alignment: .leading, spacing: 6) {
-                        Text("Inclusions")
-                            .font(.system(size: 10, weight: .semibold))
-                            .foregroundStyle(AVIATheme.textTertiary)
-                        ForEach(design.inclusions, id: \.self) { item in
-                            specBullet(item)
-                        }
-                    }
-                }
-
-                if design.roomHighlights.isEmpty && design.inclusions.isEmpty {
-                    Text("No specifications listed.")
-                        .font(.neueCaption)
-                        .foregroundStyle(AVIATheme.textTertiary)
-                }
-            }
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .padding(14)
-        }
-    }
-
-    private func specBullet(_ text: String) -> some View {
-        HStack(alignment: .top, spacing: 6) {
-            Image(systemName: "checkmark.circle.fill")
-                .font(.system(size: 10, weight: .semibold))
-                .foregroundStyle(AVIATheme.timelessBrown)
-                .padding(.top, 2)
-            Text(text)
+            Text(design.description.isEmpty ? "No description available." : design.description)
                 .font(.neueCaption)
                 .foregroundStyle(AVIATheme.textPrimary)
                 .fixedSize(horizontal: false, vertical: true)
+                .multilineTextAlignment(.leading)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .padding(12)
         }
     }
 
-    // MARK: - Shared Components
+    // MARK: - Chip Rows
 
-    private func sectionHeader(_ title: String) -> some View {
-        Text(title)
-            .font(.neueCaption2Medium)
-            .kerning(1.0)
-            .foregroundStyle(AVIATheme.timelessBrown)
-            .padding(.leading, 12)
-            .overlay(alignment: .leading) {
-                Rectangle()
-                    .fill(AVIATheme.timelessBrown)
-                    .frame(width: 3)
+    private func statsChipRow(design: HomeDesign) -> some View {
+        BentoCard(cornerRadius: 13) {
+            HStack(spacing: 0) {
+                statChip(value: "\(design.bedrooms)", label: "Bed")
+                statChip(value: "\(design.bathrooms)", label: "Bath")
+                statChip(value: "\(design.garages)", label: "Car")
+                statChip(value: "\(design.livingAreas)", label: "Living")
             }
+            .padding(.vertical, 12)
+        }
     }
 
-    private func comparisonRow(label: String, icon: String, valueA: String, valueB: String) -> some View {
-        HStack(spacing: 0) {
-            Text(valueA)
-                .font(.neueSubheadlineMedium)
-                .foregroundStyle(AVIATheme.textPrimary)
-                .frame(maxWidth: .infinity)
-
-            Text(label)
-                .font(.system(size: 10, weight: .medium))
-                .foregroundStyle(AVIATheme.textTertiary)
-                .frame(width: 80)
-
-            Text(valueB)
-                .font(.neueSubheadlineMedium)
-                .foregroundStyle(AVIATheme.textPrimary)
-                .frame(maxWidth: .infinity)
+    private func dimensionsChipRow(design: HomeDesign) -> some View {
+        BentoCard(cornerRadius: 13) {
+            HStack(spacing: 0) {
+                statChip(value: String(format: "%.1fm", design.houseWidth), label: "Width")
+                statChip(value: String(format: "%.1fm", design.houseLength), label: "Length")
+                statChip(value: "\(Int(design.squareMeters))m²", label: "Total")
+                statChip(value: String(format: "%.1fm", design.lotWidth), label: "Lot Min")
+            }
+            .padding(.vertical, 10)
         }
-        .padding(.vertical, 14)
+    }
+
+    private func statChip(value: String, label: String) -> some View {
+        VStack(spacing: 2) {
+            Text(value)
+                .font(.neueSubheadlineMedium)
+                .foregroundStyle(AVIATheme.textPrimary)
+                .lineLimit(1)
+                .minimumScaleFactor(0.7)
+            Text(label)
+                .font(.system(size: 9, weight: .medium))
+                .foregroundStyle(AVIATheme.textTertiary)
+        }
+        .frame(maxWidth: .infinity)
+    }
+
+    // MARK: - Specifications Table
+
+    private func specificationsTable(design: HomeDesign) -> some View {
+        BentoCard(cornerRadius: 13) {
+            VStack(spacing: 0) {
+                specRow(label: "Total Area", value: String(format: "%.2f m²", design.squareMeters))
+                rowDivider
+                specRow(label: "House Width", value: String(format: "%.2f m", design.houseWidth))
+                rowDivider
+                specRow(label: "House Length", value: String(format: "%.2f m", design.houseLength))
+                rowDivider
+                specRow(label: "Bedrooms", value: "\(design.bedrooms)")
+                rowDivider
+                specRow(label: "Bathrooms", value: "\(design.bathrooms)")
+                rowDivider
+                specRow(label: "Living Areas", value: "\(design.livingAreas)")
+                rowDivider
+                specRow(label: "Garage", value: "\(design.garages)-car")
+                rowDivider
+                specRow(label: "Storeys", value: design.storeys == 1 ? "Single" : "Double")
+                rowDivider
+                specRow(label: "Min. Lot Width", value: String(format: "%.1f m", design.lotWidth))
+            }
+            .padding(.vertical, 4)
+        }
+    }
+
+    private func specRow(label: String, value: String) -> some View {
+        HStack(alignment: .firstTextBaseline) {
+            Text(label)
+                .font(.neueCaption)
+                .foregroundStyle(AVIATheme.textSecondary)
+                .lineLimit(1)
+                .minimumScaleFactor(0.7)
+            Spacer(minLength: 4)
+            Text(value)
+                .font(.neueCaptionMedium)
+                .foregroundStyle(AVIATheme.textPrimary)
+                .lineLimit(1)
+                .minimumScaleFactor(0.7)
+        }
         .padding(.horizontal, 12)
+        .padding(.vertical, 10)
     }
 
     private var rowDivider: some View {
         Rectangle()
             .fill(AVIATheme.surfaceBorder)
             .frame(height: 1)
-            .padding(.horizontal, 16)
+            .padding(.horizontal, 12)
+    }
+
+    // MARK: - Floor Plan PDF Card
+
+    private func floorplanPDFCard(design: HomeDesign) -> some View {
+        let pdfImageURL = design.floorplanPDFImageURL.isEmpty ? design.floorplanImageURL : design.floorplanPDFImageURL
+
+        return Group {
+            if let url = URL(string: design.floorplanPDFURL) {
+                ShareLink(item: url) {
+                    Color(.secondarySystemBackground)
+                        .frame(height: 160)
+                        .overlay {
+                            AsyncImage(url: URL(string: pdfImageURL)) { phase in
+                                if let image = phase.image {
+                                    image
+                                        .resizable()
+                                        .aspectRatio(contentMode: .fill)
+                                        .blur(radius: design.floorplanPDFImageURL.isEmpty ? 2 : 0)
+                                        .allowsHitTesting(false)
+                                }
+                            }
+                        }
+                        .overlay {
+                            LinearGradient(
+                                colors: [
+                                    Color.black.opacity(0.15),
+                                    Color.black.opacity(0.55),
+                                    Color.black.opacity(0.85)
+                                ],
+                                startPoint: .top,
+                                endPoint: .bottom
+                            )
+                            .allowsHitTesting(false)
+                        }
+                        .clipShape(.rect(cornerRadius: 13))
+                        .overlay(alignment: .topLeading) {
+                            HStack(spacing: 4) {
+                                Image(systemName: "doc.richtext.fill")
+                                    .font(.system(size: 9, weight: .semibold))
+                                Text("PDF")
+                                    .font(.neueCorpMedium(9))
+                                    .tracking(1.0)
+                            }
+                            .foregroundStyle(.white)
+                            .padding(.horizontal, 8)
+                            .padding(.vertical, 4)
+                            .background(.ultraThinMaterial, in: .capsule)
+                            .environment(\.colorScheme, .dark)
+                            .padding(10)
+                        }
+                        .overlay(alignment: .bottomLeading) {
+                            VStack(alignment: .leading, spacing: 2) {
+                                Text("Floor Plan")
+                                    .font(.neueCorpMedium(15))
+                                    .foregroundStyle(.white)
+                                Text("Download the full \(design.name) plan")
+                                    .font(.system(size: 10))
+                                    .foregroundStyle(.white.opacity(0.85))
+                                    .lineLimit(2)
+                            }
+                            .padding(10)
+                        }
+                        .overlay(alignment: .bottomTrailing) {
+                            HStack(spacing: 4) {
+                                Image(systemName: "arrow.down.circle.fill")
+                                    .font(.system(size: 11, weight: .semibold))
+                                Text("Download")
+                                    .font(.system(size: 10, weight: .medium))
+                            }
+                            .foregroundStyle(AVIATheme.textPrimary)
+                            .padding(.horizontal, 10)
+                            .padding(.vertical, 6)
+                            .background(.white, in: .capsule)
+                            .padding(10)
+                        }
+                }
+                .buttonStyle(.plain)
+            }
+        }
+    }
+
+    // MARK: - Section Header
+
+    private func sectionHeader(_ title: String) -> some View {
+        Text(title)
+            .font(.neueCaption2Medium)
+            .kerning(1.0)
+            .foregroundStyle(AVIATheme.timelessBrown)
+            .padding(.leading, 10)
+            .overlay(alignment: .leading) {
+                Rectangle()
+                    .fill(AVIATheme.timelessBrown)
+                    .frame(width: 2.5)
+            }
     }
 }
 
