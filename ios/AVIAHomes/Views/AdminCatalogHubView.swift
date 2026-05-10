@@ -3,6 +3,7 @@ import SwiftUI
 struct AdminCatalogHubView: View {
     @Environment(AppViewModel.self) private var appViewModel
     @State private var specCount: Int = 0
+    @State private var categoryCount: Int = 0
     @State private var designCount: Int = 0
     @State private var facadeCount: Int = 0
     @State private var newsCount: Int = 0
@@ -13,6 +14,19 @@ struct AdminCatalogHubView: View {
                 headerCard
 
                 VStack(spacing: 10) {
+                    NavigationLink {
+                        AdminSpecCategoriesEditorView()
+                    } label: {
+                        catalogCard(
+                            icon: "square.grid.2x2.fill",
+                            title: "Spec Categories",
+                            subtitle: "Manage selection categories & their banner images (Kitchen, Bathroom, etc.)",
+                            count: categoryCount,
+                            countLabel: "categories",
+                            color: AVIATheme.heritageBlue
+                        )
+                    }
+
                     NavigationLink {
                         AdminSpecItemsEditorView()
                     } label: {
@@ -234,6 +248,7 @@ struct AdminCatalogHubView: View {
         if !catalog.isLoaded { await catalog.loadAll() }
 
         specCount = catalog.allSpecCategories.flatMap(\.items).count
+        categoryCount = catalog.allSpecCategories.count
         let designs = await SupabaseService.shared.fetchHomeDesigns()
         designCount = designs.count
         let facades = await SupabaseService.shared.fetchFacades()
