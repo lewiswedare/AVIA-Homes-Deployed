@@ -1,5 +1,6 @@
 import SwiftUI
 import PhotosUI
+import UniformTypeIdentifiers
 
 struct AdminImagePickerField: View {
     let label: String
@@ -11,6 +12,8 @@ struct AdminImagePickerField: View {
     @State private var isUploading = false
     @State private var uploadError: String?
     @State private var previewImage: UIImage?
+    @State private var showFileImporter = false
+    @State private var showPhotosPicker = false
 
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
@@ -23,7 +26,18 @@ struct AdminImagePickerField: View {
             }
 
             HStack(spacing: 10) {
-                PhotosPicker(selection: $selectedItem, matching: .images) {
+                Menu {
+                    Button {
+                        showPhotosPicker = true
+                    } label: {
+                        Label("Photo Library", systemImage: "photo.on.rectangle")
+                    }
+                    Button {
+                        showFileImporter = true
+                    } label: {
+                        Label("Choose from Files", systemImage: "folder")
+                    }
+                } label: {
                     HStack(spacing: 6) {
                         if isUploading {
                             ProgressView()
@@ -71,9 +85,55 @@ struct AdminImagePickerField: View {
             }
         }
         .padding(.horizontal, 14)
+        .photosPicker(isPresented: $showPhotosPicker, selection: $selectedItem, matching: .images)
+        .fileImporter(
+            isPresented: $showFileImporter,
+            allowedContentTypes: [.image],
+            allowsMultipleSelection: false
+        ) { result in
+            handleFileImport(result)
+        }
         .onChange(of: selectedItem) { _, newItem in
             guard let newItem else { return }
             Task { await handleImageSelection(newItem) }
+        }
+    }
+
+    private func handleFileImport(_ result: Result<[URL], Error>) {
+        switch result {
+        case .success(let urls):
+            guard let url = urls.first else { return }
+            Task { await loadFromFileURL(url) }
+        case .failure(let error):
+            uploadError = error.localizedDescription
+        }
+    }
+
+    private func loadFromFileURL(_ url: URL) async {
+        isUploading = true
+        uploadError = nil
+        defer { isUploading = false }
+
+        let didStartAccess = url.startAccessingSecurityScopedResource()
+        defer { if didStartAccess { url.stopAccessingSecurityScopedResource() } }
+
+        guard let rawData = try? Data(contentsOf: url),
+              let uiImg = UIImage(data: rawData),
+              let pngData = uiImg.pngData() else {
+            uploadError = "Failed to load file"
+            return
+        }
+
+        previewImage = uiImg
+
+        let timestamp = Int(Date().timeIntervalSince1970)
+        let safeName = itemId.isEmpty ? "image" : itemId.replacingOccurrences(of: " ", with: "_").lowercased()
+        let fileName = "\(safeName)_\(timestamp).png"
+
+        if let publicURL = await ImageUploadService.shared.uploadImage(pngData, folder: folder, fileName: fileName) {
+            imageURL = publicURL
+        } else {
+            uploadError = "Upload failed. Check storage bucket setup."
         }
     }
 
@@ -149,10 +209,23 @@ struct AdminCompactImagePicker: View {
 
     @State private var selectedItem: PhotosPickerItem?
     @State private var isUploading = false
+    @State private var showFileImporter = false
+    @State private var showPhotosPicker = false
 
     var body: some View {
         HStack(spacing: 6) {
-            PhotosPicker(selection: $selectedItem, matching: .images) {
+            Menu {
+                Button {
+                    showPhotosPicker = true
+                } label: {
+                    Label("Photo Library", systemImage: "photo.on.rectangle")
+                }
+                Button {
+                    showFileImporter = true
+                } label: {
+                    Label("Choose from Files", systemImage: "folder")
+                }
+            } label: {
                 HStack(spacing: 4) {
                     if isUploading {
                         ProgressView()
@@ -178,9 +251,39 @@ struct AdminCompactImagePicker: View {
                 .textInputAutocapitalization(.never)
                 .autocorrectionDisabled()
         }
+        .photosPicker(isPresented: $showPhotosPicker, selection: $selectedItem, matching: .images)
+        .fileImporter(
+            isPresented: $showFileImporter,
+            allowedContentTypes: [.image],
+            allowsMultipleSelection: false
+        ) { result in
+            if case .success(let urls) = result, let url = urls.first {
+                Task { await handleFileURL(url) }
+            }
+        }
         .onChange(of: selectedItem) { _, newItem in
             guard let newItem else { return }
             Task { await handleSelection(newItem) }
+        }
+    }
+
+    private func handleFileURL(_ url: URL) async {
+        isUploading = true
+        defer { isUploading = false }
+
+        let didStartAccess = url.startAccessingSecurityScopedResource()
+        defer { if didStartAccess { url.stopAccessingSecurityScopedResource() } }
+
+        guard let rawData = try? Data(contentsOf: url),
+              let uiImg = UIImage(data: rawData),
+              let pngData = uiImg.pngData() else { return }
+
+        let timestamp = Int(Date().timeIntervalSince1970)
+        let safeName = itemId.isEmpty ? "image" : itemId.replacingOccurrences(of: " ", with: "_").lowercased()
+        let fileName = "\(safeName)_\(timestamp).png"
+
+        if let publicURL = await ImageUploadService.shared.uploadImage(pngData, folder: folder, fileName: fileName) {
+            imageURL = publicURL
         }
     }
 
