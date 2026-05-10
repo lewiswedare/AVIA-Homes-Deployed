@@ -11,8 +11,21 @@ struct SelectionProductPickerView: View {
     let products: [(product: SpecProductRow, membership: SpecRangeItemProductRow)]
 
     @State private var expandedProductId: String?
+    @State private var previewImageURL: IdentifiedURL?
 
     private var catalog: CatalogDataManager { CatalogDataManager.shared }
+
+    private var selectedIsUpgrade: Bool {
+        guard let pid = selection.productId,
+              let m = catalog.rangeProductMemberships["\(selection.specTier.lowercased())|\(pid)"] else { return false }
+        return (m.inclusion_override ?? "") == "upgrade" || (m.upgrade_price_override ?? 0) > 0
+    }
+
+    private var selectedColourHasExtra: Bool {
+        guard let pid = selection.productId, let cid = selection.colourId,
+              let colour = catalog.coloursByProduct[pid]?.first(where: { $0.id == cid }) else { return false }
+        return (colour.extra_cost ?? 0) > 0
+    }
 
     private var chosenProductId: String? {
         selection.productId ?? catalog.defaultProductId(
@@ -23,16 +36,52 @@ struct SelectionProductPickerView: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 14) {
-            Text("CHOOSE A PRODUCT")
-                .font(.neueCorpMedium(9))
-                .kerning(1.2)
-                .foregroundStyle(AVIATheme.timelessBrown)
+            HStack {
+                Text("CHOOSE A PRODUCT")
+                    .font(.neueCorpMedium(9))
+                    .kerning(1.2)
+                    .foregroundStyle(AVIATheme.timelessBrown)
+                Spacer()
+                if selectedIsUpgrade || selectedColourHasExtra {
+                    Button {
+                        AVIAHaptic.lightTap.trigger()
+                        resetToDefault()
+                    } label: {
+                        Label("Remove upgrade", systemImage: "arrow.uturn.backward")
+                            .font(.neueCorpMedium(9))
+                            .kerning(0.8)
+                            .foregroundStyle(AVIATheme.timelessBrown)
+                            .padding(.horizontal, 8).padding(.vertical, 4)
+                            .background(AVIATheme.timelessBrown.opacity(0.10), in: Capsule())
+                    }
+                    .buttonStyle(.pressable(.subtle))
+                }
+            }
 
             VStack(spacing: 10) {
                 ForEach(products, id: \.product.id) { entry in
                     productCard(product: entry.product, membership: entry.membership)
                 }
             }
+        }
+        .fullScreenCover(item: $previewImageURL) { item in
+            ZoomableImageViewer(urlString: item.urlString)
+        }
+    }
+
+    private func resetToDefault() {
+        let rangeId = selection.specTier.lowercased()
+        let defaultPid = catalog.defaultProductId(for: selection.specItemId, rangeId: rangeId)
+        let defaultCid = defaultPid.flatMap { catalog.defaultIncludedColourId(for: $0) }
+        Task {
+            await viewModel.saveProductSelection(
+                selectionId: selection.id,
+                productId: defaultPid ?? "",
+                colourId: defaultCid
+            )
+        }
+        withAnimation(.spring(response: 0.3, dampingFraction: 0.85)) {
+            expandedProductId = nil
         }
     }
 
@@ -60,6 +109,12 @@ struct SelectionProductPickerView: View {
                     productThumb(product)
                         .frame(width: 52, height: 52)
                         .clipShape(.rect(cornerRadius: 8))
+                        .onTapGesture {
+                            if let urlStr = product.image_url, !urlStr.isEmpty {
+                                AVIAHaptic.lightTap.trigger()
+                                previewImageURL = IdentifiedURL(urlString: urlStr)
+                            }
+                        }
 
                     VStack(alignment: .leading, spacing: 4) {
                         HStack(spacing: 6) {

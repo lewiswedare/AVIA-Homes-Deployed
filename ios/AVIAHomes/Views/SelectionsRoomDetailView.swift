@@ -11,6 +11,11 @@ struct SelectionsRoomDetailView: View {
     @State private var expandedItemId: String?
     @State private var pendingUpgradeItem: BuildSpecSelection?
     @State private var upgradeNotes: String = ""
+    @State private var previewImageURL: IdentifiedURL?
+
+    private func openPreview(_ urlString: String) {
+        previewImageURL = IdentifiedURL(urlString: urlString)
+    }
 
     private var catalog: CatalogDataManager { CatalogDataManager.shared }
 
@@ -56,7 +61,8 @@ struct SelectionsRoomDetailView: View {
                             onRequestUpgrade: {
                                 pendingUpgradeItem = item
                                 upgradeNotes = item.clientNotes ?? ""
-                            }
+                            },
+                            onPreviewImage: openPreview
                         )
                     }
                 }
@@ -74,6 +80,9 @@ struct SelectionsRoomDetailView: View {
                 viewModel.requestUpgrade(selectionId: item.id, notes: upgradeNotes.isEmpty ? nil : upgradeNotes)
                 AVIAHaptic.success.trigger()
             }
+        }
+        .fullScreenCover(item: $previewImageURL) { item in
+            ZoomableImageViewer(urlString: item.urlString)
         }
     }
 
@@ -138,6 +147,7 @@ private struct SelectionItemCard: View {
     let isExpanded: Bool
     let onToggle: () -> Void
     let onRequestUpgrade: () -> Void
+    let onPreviewImage: (String) -> Void
 
     private var catalog: CatalogDataManager { CatalogDataManager.shared }
 
@@ -243,10 +253,12 @@ private struct SelectionItemCard: View {
         }
     }
 
-    private var hasImage: Bool {
-        if let s = selection.snapshotImageURL, !s.isEmpty, URL(string: s) != nil { return true }
-        if linkedSpecItem?.imageURL != nil { return true }
-        return false
+    private var hasImage: Bool { currentImageURL != nil }
+
+    private var currentImageURL: String? {
+        if let s = selection.snapshotImageURL, !s.isEmpty, URL(string: s) != nil { return s }
+        if let url = linkedSpecItem?.imageURL { return url.absoluteString }
+        return nil
     }
 
     private var header: some View {
@@ -268,6 +280,12 @@ private struct SelectionItemCard: View {
                 itemThumbnail
                     .frame(width: 56, height: 56)
                     .clipShape(.rect(cornerRadius: 10))
+                    .onTapGesture {
+                        if let urlStr = currentImageURL {
+                            AVIAHaptic.lightTap.trigger()
+                            onPreviewImage(urlStr)
+                        }
+                    }
             }
 
             VStack(alignment: .leading, spacing: 4) {

@@ -1635,8 +1635,11 @@ class SupabaseService {
                 let now = Date.now
                 // Pre-seed the default Product + Colour for this range so the
                 // client lands on a sensible choice without manual taps.
+                // Only seed defaults when the product is *included* in the
+                // range and the colour has no extra cost — never auto-pick an
+                // upgrade for the client.
                 let defaultProductId = catalog.defaultProductId(for: item.id, rangeId: tierKey)
-                let defaultColourId = defaultProductId.flatMap { catalog.defaultColourId(for: $0) }
+                let defaultColourId = defaultProductId.flatMap { catalog.defaultIncludedColourId(for: $0) }
                 let selection = BuildSpecSelection(
                     id: UUID().uuidString,
                     buildId: buildId,

@@ -303,6 +303,10 @@ class CatalogDataManager {
         coloursByProduct[productId] ?? []
     }
 
+    /// Returns the default product for a spec item in a range. Only returns
+    /// products that are *included* in the range — never auto-selects an
+    /// upgrade product, so clients always start at the standard price and
+    /// have to opt in to upgrades.
     func defaultProductId(for specItemId: String, rangeId: String) -> String? {
         let candidates = products(for: specItemId, rangeId: rangeId)
         if let pickedDefault = candidates.first(where: { $0.membership.is_default == true && ($0.membership.inclusion_override == "included") }) {
@@ -311,7 +315,18 @@ class CatalogDataManager {
         if let firstIncluded = candidates.first(where: { $0.membership.inclusion_override == "included" }) {
             return firstIncluded.product.id
         }
-        return candidates.first?.product.id
+        return nil
+    }
+
+    /// Returns the default colour for a product, but only when it is included
+    /// (no extra cost). Prevents a paid upgrade colour from being silently
+    /// pre-selected on a new build.
+    func defaultIncludedColourId(for productId: String) -> String? {
+        let cols = productColours(for: productId)
+        if let pickedDefault = cols.first(where: { $0.is_default == true && ($0.extra_cost ?? 0) == 0 }) {
+            return pickedDefault.id
+        }
+        return cols.first(where: { ($0.extra_cost ?? 0) == 0 })?.id
     }
 
     func defaultColourId(for productId: String) -> String? {
