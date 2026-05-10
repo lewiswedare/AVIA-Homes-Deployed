@@ -249,15 +249,53 @@ class CatalogDataManager {
     // MARK: - Product helpers
 
     /// Returns products available for a spec item in a given range. Filters out
-    /// memberships marked Unavailable. Each tuple is (product, membership).
+    /// memberships marked Unavailable in the current range, but ALSO surfaces
+    /// products that are Included or Upgrade in any higher-tier range — the
+    /// client can always pay more to upgrade, but never sees options that are
+    /// only available in cheaper ranges. Each tuple is (product, membership).
     func products(for specItemId: String, rangeId: String) -> [(product: SpecProductRow, membership: SpecRangeItemProductRow)] {
         let ids = productsBySpecItem[specItemId] ?? []
+        let currentTier = SpecTier(rawValue: rangeId.lowercased())
+        // Tiers strictly higher than the client's range, ordered cheapest -> most expensive.
+        let higherTiers: [SpecTier] = {
+            guard let cur = currentTier else { return [] }
+            return SpecTier.allCases
+                .filter { $0.tierIndex > cur.tierIndex }
+                .sorted { $0.tierIndex < $1.tierIndex }
+        }()
+
         return ids.compactMap { pid -> (SpecProductRow, SpecRangeItemProductRow)? in
-            guard let p = specProducts[pid],
-                  let m = rangeProductMemberships["\(rangeId)|\(pid)"] else { return nil }
-            let inclusion = ProductRangeInclusion(rawValue: m.inclusion_override ?? "unavailable") ?? .unavailable
-            guard inclusion != .unavailable else { return nil }
-            return (p, m)
+            guard let p = specProducts[pid] else { return nil }
+
+            // 1) Prefer the membership in the client's current range.
+            if let m = rangeProductMemberships["\(rangeId)|\(pid)"] {
+                let inclusion = ProductRangeInclusion(rawValue: m.inclusion_override ?? "unavailable") ?? .unavailable
+                if inclusion != .unavailable {
+                    return (p, m)
+                }
+            }
+
+            // 2) Otherwise, surface from the lowest higher tier where the
+            //    product is Included or Upgrade — exposed to the client as an
+            //    upgrade option from that range.
+            for tier in higherTiers {
+                guard let m = rangeProductMemberships["\(tier.rawValue)|\(pid)"] else { continue }
+                let inclusion = ProductRangeInclusion(rawValue: m.inclusion_override ?? "unavailable") ?? .unavailable
+                guard inclusion != .unavailable else { continue }
+                let synthetic = SpecRangeItemProductRow(
+                    id: m.id,
+                    range_id: rangeId,
+                    spec_item_id: m.spec_item_id,
+                    product_id: m.product_id,
+                    is_default: false,
+                    inclusion_override: ProductRangeInclusion.upgrade.rawValue,
+                    upgrade_price_override: m.upgrade_price_override,
+                    sort_order: m.sort_order
+                )
+                return (p, synthetic)
+            }
+
+            return nil
         }
     }
 
