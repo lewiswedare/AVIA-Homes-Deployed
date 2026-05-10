@@ -1582,7 +1582,12 @@ class SupabaseService {
     func upsertBuildSpecSelection(_ selection: BuildSpecSelection) async -> Bool {
         guard isConfigured else { return false }
         do {
-            try await client.from("build_spec_selections").upsert(selection.toRow()).execute()
+            // Conflict on (build_id, spec_item_id) — Phase-1 schema enforces a unique
+            // index there to prevent duplicate selections per item per build.
+            try await client
+                .from("build_spec_selections")
+                .upsert(selection.toRow(), onConflict: "build_id,spec_item_id")
+                .execute()
             return true
         } catch {
             print("[SupabaseService] upsertBuildSpecSelection FAILED: \(error)")
@@ -1594,7 +1599,10 @@ class SupabaseService {
         guard isConfigured else { return false }
         let rows = selections.map { $0.toRow() }
         do {
-            try await client.from("build_spec_selections").upsert(rows).execute()
+            try await client
+                .from("build_spec_selections")
+                .upsert(rows, onConflict: "build_id,spec_item_id")
+                .execute()
             return true
         } catch {
             print("[SupabaseService] upsertBuildSpecSelections FAILED: \(error)")
@@ -1651,6 +1659,9 @@ class SupabaseService {
             }
         }
 
+        // Idempotent rebuild: upsert by (build_id, spec_item_id) so re-running
+        // never produces duplicate rows. The unique constraint enforced in the
+        // Phase-1 migration backs this contract at the DB level.
         return await upsertBuildSpecSelections(selections)
     }
 
