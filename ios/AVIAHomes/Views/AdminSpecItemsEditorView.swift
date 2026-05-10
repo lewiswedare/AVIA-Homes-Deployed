@@ -179,26 +179,37 @@ struct AdminSpecItemsEditorView: View {
     }
 
     private func specItemRow(_ item: SpecItemFlatRow) -> some View {
-        Button { editingItem = item } label: {
+        NavigationLink {
+            AdminSpecProductsView(specItemId: item.id, specItemName: item.name)
+        } label: {
             HStack(spacing: 12) {
-                Image(systemName: (item.is_upgradeable ?? false) ? "arrow.up.circle.fill" : "circle.fill")
+                Image(systemName: "shippingbox.fill")
                     .font(.neueCorp(12))
-                    .foregroundStyle((item.is_upgradeable ?? false) ? AVIATheme.warning : AVIATheme.timelessBrown)
+                    .foregroundStyle(AVIATheme.timelessBrown)
                     .frame(width: 32, height: 32)
-                    .background(((item.is_upgradeable ?? false) ? AVIATheme.warning : AVIATheme.timelessBrown).opacity(0.12))
+                    .background(AVIATheme.timelessBrown.opacity(0.12))
                     .clipShape(Circle())
 
                 VStack(alignment: .leading, spacing: 3) {
                     Text(item.name)
                         .font(.neueCaptionMedium)
                         .foregroundStyle(AVIATheme.textPrimary)
-                    Text(item.volos_description)
+                    Text("Manage products & colours")
                         .font(.neueCaption2)
                         .foregroundStyle(AVIATheme.textTertiary)
                         .lineLimit(1)
                 }
 
                 Spacer()
+
+                Button {
+                    editingItem = item
+                } label: {
+                    Image(systemName: "pencil.circle")
+                        .font(.neueCorp(16))
+                        .foregroundStyle(AVIATheme.textTertiary)
+                }
+                .buttonStyle(.plain)
 
                 Image(systemName: "chevron.right")
                     .font(.neueCaption2)
@@ -207,9 +218,10 @@ struct AdminSpecItemsEditorView: View {
             .padding(.horizontal, 14)
             .padding(.vertical, 12)
         }
+        .buttonStyle(.plain)
         .contextMenu {
             Button { editingItem = item } label: {
-                Label("Edit", systemImage: "pencil")
+                Label("Edit slot details", systemImage: "pencil")
             }
             Button(role: .destructive) { itemToDelete = item } label: {
                 Label("Delete", systemImage: "trash")

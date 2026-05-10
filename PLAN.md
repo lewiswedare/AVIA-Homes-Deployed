@@ -1,38 +1,56 @@
-# Simplify catalogue: one place for spec range items with colours built in
+# Spec catalogue v2: Slot → Products → Colours
 
-## What changes for admins
+## Mental model
 
-**Catalog Management hub becomes simpler.** The standalone "Selection Categories" and "Colour Selections" cards are removed. Admins now manage everything product-related from a single place: **Spec Range Items**.
+- **Spec Item = slot** (e.g. "Kitchen Benchtop", "Front Entry Door"). Grouped by category (Kitchen, Bathroom, External). The slot itself is not a product anymore — it's a placeholder.
+- Inside each slot, admins upload **multiple Products** (e.g. "Caesarstone Cloudburst", "Smartstone Statuario").
+- Each Product is tagged per range (Volos / Messina / Portobello) as one of:
+  - **Included** (free with that range)
+  - **Upgrade** (available at extra cost)
+  - **Unavailable** (not offered in that range)
+- Each Product can carry a **base upgrade cost** per range, and each **Colour swatch** on the product can carry an additional **extra cost** on top.
+- Client picks the Product first, then a Colour for it.
 
-Inside each spec range product, admins will now see a new **Colours** section where they can:
-- Add colour swatches directly to that product (name, hex/colour image, brand/finish notes)
-- Mark colours as included or as upgrades (with optional upgrade cost)
-- Reorder and remove swatches inline
-- Choose "No colour variants" for fixed-inclusion products that don't need a colour pick
+## Data model (already created in `20260517_spec_v2_phase1.sql`)
 
-Spec items remain grouped by category (Kitchen, Bathroom, External Finishes, etc.) for organisation — that grouping stays exactly as it is today, just managed implicitly through the product editor.
+- `spec_products` — products inside a `spec_items` slot
+- `spec_product_colours` — colours per product (needs `extra_cost numeric` added — phase 2)
+- `spec_range_items` — per-range/per-slot inclusion + default product
+- `spec_range_item_products` — when a range offers multiple products in a slot, the per-(range, slot, product) settings (`inclusion_override`, `upgrade_price_override`, `is_default`)
+- `build_spec_selections` — already extended with `product_id`, `colour_id`, `upgrade_delta`, `manual_price_override`, `selection_state`
 
-The old Colour Categories editor and Selection Categories editor are hidden from the hub. Existing shared colour palettes are auto-migrated into per-product swatches and the legacy shared categories are deleted — the per-product list is the only source of truth.
+Phase 2 migration adds:
+- `spec_product_colours.extra_cost numeric` — additional cost per colour on top of the product's range upgrade price.
 
-## What changes for clients
+## Admin flow
 
-When a client confirms a spec range product, the **colour picker for that exact product** appears in their Stage 2 selections — pulling from the swatches the admin attached to it.
+- **Catalog Management → Spec Range Items**: lists spec slots grouped by category (existing UI keeps working — it edits slot metadata + tier descriptions).
+- New entry point on each slot row: **Manage Products** → opens product list for that slot.
+- **Product list**: shows products inside the slot with name, brand, range badges (Included / Upgrade / Unavailable per Volos/Messina/Portobello). Add / Edit / Reorder / Delete.
+- **Product editor**:
+  - Basic: name, brand, model/SKU, description, image, dimensions, sort order
+  - **Range matrix**: 3 rows (Volos / Messina / Portobello), each with:
+    - Status: Included / Upgrade / Unavailable
+    - Upgrade cost (AUD, only when status = Upgrade)
+    - Default-for-range toggle (auto when only one product is Included for that range)
+  - **Colours**: list of swatches with name, hex, image, brand/finish, default flag, **Extra cost (AUD)** per colour (added on top of the range upgrade)
 
-- Products with "No colour variants" skip the colour step entirely
-- Products with multiple colours show the swatches the admin uploaded for that specific product
-- The overall colour selections screen now lists one colour pick per approved spec product, in the same room/category groupings as today
+## Client flow
 
-## Pages affected
+- On the spec range page, each slot shows the Included product for that range.
+- If the slot offers multiple products in this range (Included + Upgrades), client can tap to **swap product**, with upgrade cost shown.
+- After choosing product, client picks **colour** from that product's swatches. Per-colour extra cost shown if any.
+- Total upgrade delta = product upgrade cost (vs. range default) + colour extra cost.
 
-- **Admin → Catalog Management**: Two cards removed, info card updated to reflect the new flow
-- **Admin → Spec Range Items → Edit Product**: New inline "Colours" section replaces the "Linked colour categories" chip grid
-- **Client → Build → Colour Selections**: Pulls colours from each spec product directly instead of from the shared colour categories
+## Tasks
 
-## Migration (confirmed: clean slate)
+- [x] Update PLAN.md to product-inside-slot model
+- [x] Phase 2 migration: `extra_cost` on `spec_product_colours`
+- [x] Swift models: `SpecProduct`, `SpecProductColour`, `SpecRangeItemProduct`
+- [x] `SupabaseService` CRUD for products + colours + per-range membership
+- [x] Admin: products list view inside spec slot
+- [x] Admin: product editor with range matrix + colours-with-cost
+- [x] Wire entry point from `AdminSpecItemsEditorView` rows
+- [x] Run `runChecks`
 
-Implemented in `supabase/migrations/20260516_migrate_to_per_product_colours.sql`:
-
-- For each existing `spec_to_colour_mapping` link, copy the shared category's options into a per-product palette `spec_<spec_item_id>_colours` (merging when an item was linked to multiple shared categories, dedup by option id).
-- Repoint mappings so each spec item points only at its own per-product palette.
-- Delete every legacy shared `colour_categories` row.
-- Wipe `build_colour_selections` — old in-flight builds are intentionally not carried over (confirmed acceptable: "old builds aren't important").
+Client-side range/colour pickers will be wired in a follow-up once admin can populate data.

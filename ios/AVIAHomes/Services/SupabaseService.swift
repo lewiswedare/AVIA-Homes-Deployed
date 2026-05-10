@@ -3075,4 +3075,146 @@ class SupabaseService {
             onUpdate: onUpdate
         )
     }
+
+    // MARK: - Spec Products (catalogue v2)
+
+    /// All products inside a given spec slot, ordered by sort_order.
+    func fetchSpecProducts(forSpecItem specItemId: String) async -> [SpecProductRow] {
+        guard isConfigured else { return [] }
+        do {
+            let rows: [SpecProductRow] = try await client
+                .from("spec_products")
+                .select()
+                .eq("spec_item_id", value: specItemId)
+                .order("sort_order", ascending: true)
+                .execute()
+                .value
+            return rows
+        } catch {
+            print("[SupabaseService] fetchSpecProducts FAILED: \(error)")
+            return []
+        }
+    }
+
+    func upsertSpecProduct(_ row: SpecProductRow) async -> Bool {
+        lastUpsertError = nil
+        guard isConfigured else { return false }
+        do {
+            try await client.from("spec_products").upsert(row, onConflict: "id").execute()
+            return true
+        } catch {
+            let message = String(describing: error)
+            print("[SupabaseService] upsertSpecProduct FAILED: \(message)")
+            lastUpsertError = message
+            return false
+        }
+    }
+
+    func deleteSpecProduct(id: String) async -> Bool {
+        guard isConfigured else { return false }
+        do {
+            try await client.from("spec_products").delete().eq("id", value: id).execute()
+            return true
+        } catch {
+            print("[SupabaseService] deleteSpecProduct FAILED: \(error)")
+            return false
+        }
+    }
+
+    // MARK: - Spec Product Colours
+
+    func fetchSpecProductColours(forProduct productId: String) async -> [SpecProductColourRow] {
+        guard isConfigured else { return [] }
+        do {
+            let rows: [SpecProductColourRow] = try await client
+                .from("spec_product_colours")
+                .select()
+                .eq("product_id", value: productId)
+                .order("sort_order", ascending: true)
+                .execute()
+                .value
+            return rows
+        } catch {
+            print("[SupabaseService] fetchSpecProductColours FAILED: \(error)")
+            return []
+        }
+    }
+
+    func upsertSpecProductColours(_ rows: [SpecProductColourRow]) async -> Bool {
+        lastUpsertError = nil
+        guard isConfigured, !rows.isEmpty else { return rows.isEmpty }
+        do {
+            try await client.from("spec_product_colours").upsert(rows, onConflict: "id").execute()
+            return true
+        } catch {
+            let message = String(describing: error)
+            print("[SupabaseService] upsertSpecProductColours FAILED: \(message)")
+            lastUpsertError = message
+            return false
+        }
+    }
+
+    func deleteSpecProductColours(ids: [String]) async -> Bool {
+        guard isConfigured, !ids.isEmpty else { return true }
+        do {
+            try await client.from("spec_product_colours").delete().in("id", values: ids).execute()
+            return true
+        } catch {
+            print("[SupabaseService] deleteSpecProductColours FAILED: \(error)")
+            return false
+        }
+    }
+
+    // MARK: - Spec Range / Item / Product membership
+
+    func fetchRangeItemProducts(forSpecItem specItemId: String) async -> [SpecRangeItemProductRow] {
+        guard isConfigured else { return [] }
+        do {
+            let rows: [SpecRangeItemProductRow] = try await client
+                .from("spec_range_item_products")
+                .select()
+                .eq("spec_item_id", value: specItemId)
+                .execute()
+                .value
+            return rows
+        } catch {
+            print("[SupabaseService] fetchRangeItemProducts FAILED: \(error)")
+            return []
+        }
+    }
+
+    func upsertRangeItemProduct(_ row: SpecRangeItemProductRow) async -> Bool {
+        lastUpsertError = nil
+        guard isConfigured else { return false }
+        // Use the natural unique key (range_id, spec_item_id, product_id)
+        do {
+            try await client
+                .from("spec_range_item_products")
+                .upsert(row, onConflict: "range_id,spec_item_id,product_id")
+                .execute()
+            return true
+        } catch {
+            let message = String(describing: error)
+            print("[SupabaseService] upsertRangeItemProduct FAILED: \(message)")
+            lastUpsertError = message
+            return false
+        }
+    }
+
+    func deleteRangeItemProduct(rangeId: String, specItemId: String, productId: String) async -> Bool {
+        guard isConfigured else { return false }
+        do {
+            try await client
+                .from("spec_range_item_products")
+                .delete()
+                .eq("range_id", value: rangeId)
+                .eq("spec_item_id", value: specItemId)
+                .eq("product_id", value: productId)
+                .execute()
+            return true
+        } catch {
+            print("[SupabaseService] deleteRangeItemProduct FAILED: \(error)")
+            return false
+        }
+    }
 }
