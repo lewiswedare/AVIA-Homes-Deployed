@@ -352,15 +352,29 @@ private struct SelectionItemCard: View {
             .foregroundStyle(AVIATheme.textTertiary)
     }
 
+    private var rangeProducts: [(product: SpecProductRow, membership: SpecRangeItemProductRow)] {
+        catalog.products(for: selection.specItemId, rangeId: buildSpecTier.rawValue)
+    }
+
+    private var hasProducts: Bool { !rangeProducts.isEmpty }
+
     @ViewBuilder
     private var expandedContent: some View {
         VStack(alignment: .leading, spacing: 16) {
             Divider().background(AVIATheme.surfaceBorder)
 
-            tierSection
-            if hasColours {
-                Divider().background(AVIATheme.surfaceBorder)
-                coloursSection
+            if hasProducts {
+                SelectionProductPickerView(
+                    viewModel: viewModel,
+                    selection: selection,
+                    products: rangeProducts
+                )
+            } else {
+                tierSection
+                if hasColours {
+                    Divider().background(AVIATheme.surfaceBorder)
+                    coloursSection
+                }
             }
         }
         .padding(14)

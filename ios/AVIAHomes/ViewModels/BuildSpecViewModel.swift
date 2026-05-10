@@ -87,7 +87,46 @@ class BuildSpecViewModel {
             .filter { $0.isUpgrade && $0.cost != nil }
             .compactMap(\.cost)
             .reduce(0, +)
-        return specUpgrades + colourUpgrades
+        let productUpgrades = selections.reduce(0.0) { acc, sel in
+            acc + productUpgradeCost(for: sel)
+        }
+        return specUpgrades + colourUpgrades + productUpgrades
+    }
+
+    /// Resolves the upgrade cost contribution from a chosen product + colour
+    /// (range membership upgrade price + colour extra cost). Returns 0 when the
+    /// selection has no product or the product is included for free.
+    func productUpgradeCost(for selection: BuildSpecSelection) -> Double {
+        guard let pid = selection.productId else { return 0 }
+        let rangeId = selection.specTier.lowercased()
+        let catalog = CatalogDataManager.shared
+        var total: Double = 0
+        if let m = catalog.rangeProductMemberships["\(rangeId)|\(pid)"] {
+            let inc = ProductRangeInclusion(rawValue: m.inclusion_override ?? "unavailable") ?? .unavailable
+            if inc == .upgrade {
+                total += m.upgrade_price_override ?? 0
+            }
+        }
+        if let cid = selection.colourId,
+           let colour = catalog.coloursByProduct[pid]?.first(where: { $0.id == cid }) {
+            total += colour.extra_cost ?? 0
+        }
+        return total
+    }
+
+    /// Saves a product (and optional colour) choice for a spec item selection.
+    /// Persists the productId + colourId on `build_spec_selections` and refreshes
+    /// the in-memory cache so the UI reflects the change immediately.
+    func saveProductSelection(selectionId: String, productId: String, colourId: String?) async {
+        guard let idx = selections.firstIndex(where: { $0.id == selectionId }) else { return }
+        selections[idx].productId = productId
+        selections[idx].colourId = colourId
+        let item = selections[idx]
+        let ok = await SupabaseService.shared.upsertBuildSpecSelection(item)
+        if !ok {
+            errorMessage = "Couldn't save product selection"
+            await load(buildId: buildId)
+        }
     }
 
     func load(buildId: String) async {

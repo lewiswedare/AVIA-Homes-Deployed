@@ -3201,6 +3201,55 @@ class SupabaseService {
         }
     }
 
+    /// Fetches every spec product across all spec items. Used by CatalogDataManager
+    /// to build an in-memory catalogue at startup.
+    func fetchAllSpecProducts() async -> [SpecProductRow] {
+        guard isConfigured else { return [] }
+        do {
+            let rows: [SpecProductRow] = try await client
+                .from("spec_products")
+                .select()
+                .order("sort_order", ascending: true)
+                .execute()
+                .value
+            return rows
+        } catch {
+            print("[SupabaseService] fetchAllSpecProducts FAILED: \(error)")
+            return []
+        }
+    }
+
+    func fetchAllSpecProductColours() async -> [SpecProductColourRow] {
+        guard isConfigured else { return [] }
+        do {
+            let rows: [SpecProductColourRow] = try await client
+                .from("spec_product_colours")
+                .select()
+                .order("sort_order", ascending: true)
+                .execute()
+                .value
+            return rows
+        } catch {
+            print("[SupabaseService] fetchAllSpecProductColours FAILED: \(error)")
+            return []
+        }
+    }
+
+    func fetchAllRangeItemProducts() async -> [SpecRangeItemProductRow] {
+        guard isConfigured else { return [] }
+        do {
+            let rows: [SpecRangeItemProductRow] = try await client
+                .from("spec_range_item_products")
+                .select()
+                .execute()
+                .value
+            return rows
+        } catch {
+            print("[SupabaseService] fetchAllRangeItemProducts FAILED: \(error)")
+            return []
+        }
+    }
+
     func deleteRangeItemProduct(rangeId: String, specItemId: String, productId: String) async -> Bool {
         guard isConfigured else { return false }
         do {

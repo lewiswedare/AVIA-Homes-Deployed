@@ -1,56 +1,37 @@
-# Spec catalogue v2: Slot → Products → Colours
+# Wire Spec Products + Colours into the client experience
 
-## Mental model
+## What's already in place
+The admin tools already match the hierarchy you described — Spec Range → Spec Category → Spec Item → Spec Product (assigned to one or more ranges as Included or Upgrade with a cost) → Spec Product Colour (with optional extra cost). The Spec Item editor will be left as-is.
 
-- **Spec Item = slot** (e.g. "Kitchen Benchtop", "Front Entry Door"). Grouped by category (Kitchen, Bathroom, External). The slot itself is not a product anymore — it's a placeholder.
-- Inside each slot, admins upload **multiple Products** (e.g. "Caesarstone Cloudburst", "Smartstone Statuario").
-- Each Product is tagged per range (Volos / Messina / Portobello) as one of:
-  - **Included** (free with that range)
-  - **Upgrade** (available at extra cost)
-  - **Unavailable** (not offered in that range)
-- Each Product can carry a **base upgrade cost** per range, and each **Colour swatch** on the product can carry an additional **extra cost** on top.
-- Client picks the Product first, then a Colour for it.
+The gap is on the **client side**: when a customer opens a Spec Item in their range, they currently see the old generic colour swatches instead of the new Products. This plan focuses on connecting Products end-to-end.
 
-## Data model (already created in `20260517_spec_v2_phase1.sql`)
+## What clients will see
+- **Inside a Spec Item** (e.g. Tapware in Kitchen):
+  - A list of every Product available in their selected range
+  - Each product card shows its image, name, brand, and a clear tag: "Included" (green) or "+$X Upgrade" (amber)
+  - Products marked Unavailable in their range are hidden
+  - The default Included product is pre-selected and highlighted
+- **Tapping a product** opens a colour picker:
+  - Swatches with name, hex chip, and any extra cost (e.g. "+$120")
+  - Default colour pre-selected
+  - Confirm button locks in product + colour for that Spec Item
+- **Spec Items flagged "Fixed inclusion"** keep working as today — shown as Included, no product picker
+- The cost summary updates live: range upgrade cost (if upgraded) + colour extra cost rolls into the build total
+- Admin's final-confirmation quote flow continues to lock in selections
 
-- `spec_products` — products inside a `spec_items` slot
-- `spec_product_colours` — colours per product (needs `extra_cost numeric` added — phase 2)
-- `spec_range_items` — per-range/per-slot inclusion + default product
-- `spec_range_item_products` — when a range offers multiple products in a slot, the per-(range, slot, product) settings (`inclusion_override`, `upgrade_price_override`, `is_default`)
-- `build_spec_selections` — already extended with `product_id`, `colour_id`, `upgrade_delta`, `manual_price_override`, `selection_state`
+## What admins keep
+- Catalogue → Spec Items list still works exactly as today
+- Tapping into a Spec Item opens the existing Products screen (already built)
+- Each Product editor: image, brand/model/SKU, range matrix (Included / Upgrade $ / Unavailable + Default toggle), and colours with extra cost
+- The legacy "Selections" mapping screen is kept hidden from the client flow but remains for any old data that hasn't been migrated to products yet — it stops driving the client UI
 
-Phase 2 migration adds:
-- `spec_product_colours.extra_cost numeric` — additional cost per colour on top of the product's range upgrade price.
+## Behind the scenes
+- Build selections store the chosen `productId` + `productColourId` (in addition to the existing spec item id)
+- Selection summaries on the admin review and final quote screens display the chosen product + colour name, cost line items, and totals
+- Existing builds without product data fall back to the old colour-only display so nothing breaks
 
-## Admin flow
-
-- **Catalog Management → Spec Range Items**: lists spec slots grouped by category (existing UI keeps working — it edits slot metadata + tier descriptions).
-- New entry point on each slot row: **Manage Products** → opens product list for that slot.
-- **Product list**: shows products inside the slot with name, brand, range badges (Included / Upgrade / Unavailable per Volos/Messina/Portobello). Add / Edit / Reorder / Delete.
-- **Product editor**:
-  - Basic: name, brand, model/SKU, description, image, dimensions, sort order
-  - **Range matrix**: 3 rows (Volos / Messina / Portobello), each with:
-    - Status: Included / Upgrade / Unavailable
-    - Upgrade cost (AUD, only when status = Upgrade)
-    - Default-for-range toggle (auto when only one product is Included for that range)
-  - **Colours**: list of swatches with name, hex, image, brand/finish, default flag, **Extra cost (AUD)** per colour (added on top of the range upgrade)
-
-## Client flow
-
-- On the spec range page, each slot shows the Included product for that range.
-- If the slot offers multiple products in this range (Included + Upgrades), client can tap to **swap product**, with upgrade cost shown.
-- After choosing product, client picks **colour** from that product's swatches. Per-colour extra cost shown if any.
-- Total upgrade delta = product upgrade cost (vs. range default) + colour extra cost.
-
-## Tasks
-
-- [x] Update PLAN.md to product-inside-slot model
-- [x] Phase 2 migration: `extra_cost` on `spec_product_colours`
-- [x] Swift models: `SpecProduct`, `SpecProductColour`, `SpecRangeItemProduct`
-- [x] `SupabaseService` CRUD for products + colours + per-range membership
-- [x] Admin: products list view inside spec slot
-- [x] Admin: product editor with range matrix + colours-with-cost
-- [x] Wire entry point from `AdminSpecItemsEditorView` rows
-- [x] Run `runChecks`
-
-Client-side range/colour pickers will be wired in a follow-up once admin can populate data.
+## Edge cases handled
+- Spec Item has no products yet → shows "Coming soon" placeholder, no crash
+- Product has no colours → product is selectable, no colour step
+- Default product/colour automatically picked for new builds
+- Switching range refreshes which products are Included vs Upgrade vs hidden

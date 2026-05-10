@@ -137,6 +137,8 @@ nonisolated struct BuildSpecSelectionRow: Codable, Sendable, Identifiable {
     let updated_at: String?
     let upgrade_cost: Double?
     let upgrade_cost_note: String?
+    let product_id: String?
+    let colour_id: String?
 
     enum CodingKeys: String, CodingKey {
         case id, build_id, category_id, spec_item_id, spec_tier, selection_type
@@ -144,6 +146,7 @@ nonisolated struct BuildSpecSelectionRow: Codable, Sendable, Identifiable {
         case client_confirmed_at, admin_confirmed_at, locked_for_client, status
         case snapshot_name, snapshot_description, snapshot_image_url, snapshot_category_name
         case sort_order, created_at, updated_at, upgrade_cost, upgrade_cost_note
+        case product_id, colour_id
     }
 
     func encode(to encoder: Encoder) throws {
@@ -170,6 +173,8 @@ nonisolated struct BuildSpecSelectionRow: Codable, Sendable, Identifiable {
         try container.encodeIfPresent(updated_at, forKey: .updated_at)
         try container.encodeIfPresent(upgrade_cost, forKey: .upgrade_cost)
         try container.encodeIfPresent(upgrade_cost_note, forKey: .upgrade_cost_note)
+        try container.encodeIfPresent(product_id, forKey: .product_id)
+        try container.encodeIfPresent(colour_id, forKey: .colour_id)
     }
 
     init(from decoder: Decoder) throws {
@@ -203,9 +208,11 @@ nonisolated struct BuildSpecSelectionRow: Codable, Sendable, Identifiable {
         } else {
             upgrade_cost = nil
         }
+        product_id = try container.decodeIfPresent(String.self, forKey: .product_id)
+        colour_id = try container.decodeIfPresent(String.self, forKey: .colour_id)
     }
 
-    init(id: String, build_id: String, category_id: String, spec_item_id: String, spec_tier: String, selection_type: String, client_notes: String?, admin_notes: String?, client_confirmed: Bool, admin_confirmed: Bool, client_confirmed_at: String?, admin_confirmed_at: String?, locked_for_client: Bool, status: String, snapshot_name: String, snapshot_description: String, snapshot_image_url: String?, snapshot_category_name: String, sort_order: Int, created_at: String?, updated_at: String?, upgrade_cost: Double? = nil, upgrade_cost_note: String? = nil) {
+    init(id: String, build_id: String, category_id: String, spec_item_id: String, spec_tier: String, selection_type: String, client_notes: String?, admin_notes: String?, client_confirmed: Bool, admin_confirmed: Bool, client_confirmed_at: String?, admin_confirmed_at: String?, locked_for_client: Bool, status: String, snapshot_name: String, snapshot_description: String, snapshot_image_url: String?, snapshot_category_name: String, sort_order: Int, created_at: String?, updated_at: String?, upgrade_cost: Double? = nil, upgrade_cost_note: String? = nil, product_id: String? = nil, colour_id: String? = nil) {
         self.id = id
         self.build_id = build_id
         self.category_id = category_id
@@ -229,6 +236,8 @@ nonisolated struct BuildSpecSelectionRow: Codable, Sendable, Identifiable {
         self.updated_at = updated_at
         self.upgrade_cost = upgrade_cost
         self.upgrade_cost_note = upgrade_cost_note
+        self.product_id = product_id
+        self.colour_id = colour_id
     }
 }
 
@@ -254,6 +263,8 @@ struct BuildSpecSelection: Identifiable, Sendable {
     let sortOrder: Int
     var upgradeCost: Double?
     var upgradeCostNote: String?
+    var productId: String?
+    var colourId: String?
 
     var isFullyApproved: Bool {
         clientConfirmed && adminConfirmed && status == .approved
@@ -286,7 +297,9 @@ extension BuildSpecSelectionRow {
             snapshotCategoryName: snapshot_category_name,
             sortOrder: sort_order,
             upgradeCost: upgrade_cost,
-            upgradeCostNote: upgrade_cost_note
+            upgradeCostNote: upgrade_cost_note,
+            productId: product_id,
+            colourId: colour_id
         )
     }
 }
@@ -317,7 +330,9 @@ extension BuildSpecSelection {
             created_at: nil,
             updated_at: iso.string(from: .now),
             upgrade_cost: upgradeCost,
-            upgrade_cost_note: upgradeCostNote
+            upgrade_cost_note: upgradeCostNote,
+            product_id: productId,
+            colour_id: colourId
         )
     }
 }

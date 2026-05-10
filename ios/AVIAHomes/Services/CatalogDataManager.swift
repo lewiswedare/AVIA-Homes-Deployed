@@ -11,6 +11,14 @@ class CatalogDataManager {
     var specToColourMapping: [String: [String]] = [:]
     var specItemBaseImages: [String: String] = [:]
     var specItemTierImages: [String: String] = [:]
+    /// All spec products keyed by product id.
+    var specProducts: [String: SpecProductRow] = [:]
+    /// Product ids grouped by spec item id (sorted by sort_order).
+    var productsBySpecItem: [String: [String]] = [:]
+    /// Range memberships keyed by (range_id, product_id).
+    var rangeProductMemberships: [String: SpecRangeItemProductRow] = [:]
+    /// Colour rows keyed by product id (sorted by sort_order).
+    var coloursByProduct: [String: [SpecProductColourRow]] = [:]
     var isLoaded: Bool = false
 
     private init() {}
@@ -183,9 +191,13 @@ class CatalogDataManager {
         async let schemesTask = SupabaseService.shared.fetchHomeFastSchemes()
         async let mappingTask = SupabaseService.shared.fetchSpecToColourMapping()
         async let imagesTask = SupabaseService.shared.fetchSpecItemImages()
+        async let productsTask = SupabaseService.shared.fetchAllSpecProducts()
+        async let productColoursTask = SupabaseService.shared.fetchAllSpecProductColours()
+        async let rangeMembershipsTask = SupabaseService.shared.fetchAllRangeItemProducts()
 
-        let (colours, specs, flatItems, ranges, schemes, mapping, images) = await (
-            coloursTask, specsTask, flatItemsTask, rangesTask, schemesTask, mappingTask, imagesTask
+        let (colours, specs, flatItems, ranges, schemes, mapping, images, products, productColours, memberships) = await (
+            coloursTask, specsTask, flatItemsTask, rangesTask, schemesTask, mappingTask, imagesTask,
+            productsTask, productColoursTask, rangeMembershipsTask
         )
 
         colourCategories = colours
@@ -203,7 +215,69 @@ class CatalogDataManager {
         specItemBaseImages = mergedBaseImages
         specItemTierImages = images.tier
 
+        var byProduct: [String: SpecProductRow] = [:]
+        var byItem: [String: [String]] = [:]
+        for p in products {
+            byProduct[p.id] = p
+            byItem[p.spec_item_id, default: []].append(p.id)
+        }
+        for key in byItem.keys {
+            byItem[key]?.sort { (byProduct[$0]?.sort_order ?? 0) < (byProduct[$1]?.sort_order ?? 0) }
+        }
+        specProducts = byProduct
+        productsBySpecItem = byItem
+
+        var coloursMap: [String: [SpecProductColourRow]] = [:]
+        for c in productColours {
+            coloursMap[c.product_id, default: []].append(c)
+        }
+        for key in coloursMap.keys {
+            coloursMap[key]?.sort { ($0.sort_order ?? 0) < ($1.sort_order ?? 0) }
+        }
+        coloursByProduct = coloursMap
+
+        var memMap: [String: SpecRangeItemProductRow] = [:]
+        for m in memberships {
+            memMap["\(m.range_id)|\(m.product_id)"] = m
+        }
+        rangeProductMemberships = memMap
+
         isLoaded = true
-        print("[CatalogDataManager] Loaded — colours: \(colours.count), specs: \(specs.count), flatItems: \(flatItems.count), ranges: \(ranges.count), schemes: \(schemes.count), mapping: \(mapping.count)")
+        print("[CatalogDataManager] Loaded — colours: \(colours.count), specs: \(specs.count), flatItems: \(flatItems.count), ranges: \(ranges.count), schemes: \(schemes.count), mapping: \(mapping.count), products: \(products.count), productColours: \(productColours.count), memberships: \(memberships.count)")
+    }
+
+    // MARK: - Product helpers
+
+    /// Returns products available for a spec item in a given range. Filters out
+    /// memberships marked Unavailable. Each tuple is (product, membership).
+    func products(for specItemId: String, rangeId: String) -> [(product: SpecProductRow, membership: SpecRangeItemProductRow)] {
+        let ids = productsBySpecItem[specItemId] ?? []
+        return ids.compactMap { pid -> (SpecProductRow, SpecRangeItemProductRow)? in
+            guard let p = specProducts[pid],
+                  let m = rangeProductMemberships["\(rangeId)|\(pid)"] else { return nil }
+            let inclusion = ProductRangeInclusion(rawValue: m.inclusion_override ?? "unavailable") ?? .unavailable
+            guard inclusion != .unavailable else { return nil }
+            return (p, m)
+        }
+    }
+
+    func productColours(for productId: String) -> [SpecProductColourRow] {
+        coloursByProduct[productId] ?? []
+    }
+
+    func defaultProductId(for specItemId: String, rangeId: String) -> String? {
+        let candidates = products(for: specItemId, rangeId: rangeId)
+        if let pickedDefault = candidates.first(where: { $0.membership.is_default == true && ($0.membership.inclusion_override == "included") }) {
+            return pickedDefault.product.id
+        }
+        if let firstIncluded = candidates.first(where: { $0.membership.inclusion_override == "included" }) {
+            return firstIncluded.product.id
+        }
+        return candidates.first?.product.id
+    }
+
+    func defaultColourId(for productId: String) -> String? {
+        let cols = productColours(for: productId)
+        return cols.first(where: { $0.is_default == true })?.id ?? cols.first?.id
     }
 }
