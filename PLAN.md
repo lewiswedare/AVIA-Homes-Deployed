@@ -10,10 +10,10 @@ The gap is on the **client side**: when a customer opens a Spec Item in their ra
   - A list of every Product available in their selected range
   - Each product card shows its image, name, brand, and a clear tag: "Included" (green) or "+$X Upgrade" (amber)
   - Products marked Unavailable in their range are hidden
-  - The default Included product is pre-selected and highlighted
+  - **Nothing is pre-selected** — the client must explicitly tap a product so they make a deliberate choice for every item from the start
 - **Tapping a product** opens a colour picker:
   - Swatches with name, hex chip, and any extra cost (e.g. "+$120")
-  - Default colour pre-selected
+  - **No colour pre-selected** — the client must tap a swatch; nothing is auto-chosen so upgrades/extras can never be silently accepted
   - Confirm button locks in product + colour for that Spec Item
 - **Spec Items flagged "Fixed inclusion"** keep working as today — shown as Included, no product picker
 - The cost summary updates live: range upgrade cost (if upgraded) + colour extra cost rolls into the build total
@@ -33,5 +33,5 @@ The gap is on the **client side**: when a customer opens a Spec Item in their ra
 ## Edge cases handled
 - Spec Item has no products yet → shows "Coming soon" placeholder, no crash
 - Product has no colours → product is selectable, no colour step
-- Default product/colour automatically picked for new builds
+- New builds start with **every spec item incomplete** — no product or colour is auto-picked, ensuring clients deliberately choose each option from the start
 - Switching range refreshes which products are Included vs Upgrade vs hidden

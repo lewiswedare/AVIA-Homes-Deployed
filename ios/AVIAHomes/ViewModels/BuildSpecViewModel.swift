@@ -186,6 +186,21 @@ class BuildSpecViewModel {
         }
     }
 
+    /// Clears the client's product + colour choice for a spec item so the
+    /// item is treated as "not yet selected". Used by the "Remove upgrade"
+    /// affordance and any future reset paths.
+    func clearProductSelection(selectionId: String) async {
+        guard let idx = selections.firstIndex(where: { $0.id == selectionId }) else { return }
+        selections[idx].productId = nil
+        selections[idx].colourId = nil
+        let item = selections[idx]
+        let ok = await SupabaseService.shared.upsertBuildSpecSelection(item)
+        if !ok {
+            errorMessage = "Couldn't clear product selection"
+            await load(buildId: buildId)
+        }
+    }
+
     func load(buildId: String) async {
         let isInitialLoad = self.buildId != buildId || selections.isEmpty
         self.buildId = buildId

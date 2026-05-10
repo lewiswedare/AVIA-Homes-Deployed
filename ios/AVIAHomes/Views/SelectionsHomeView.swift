@@ -36,12 +36,33 @@ struct SelectionsHomeView: View {
     private var completedSelectionsCount: Int {
         viewModel.selections.filter { sel in
             guard sel.selectionType != .removed else { return false }
-            let hasColour = viewModel.colourSelections.contains { $0.buildSpecSelectionId == sel.id }
-            let upgradeDecided = sel.selectionType == .included || sel.selectionType == .upgradeApproved || sel.selectionType == .upgradeAccepted || sel.selectionType == .upgradeDeclined
-            // Item considered "complete" once tier is decided AND colour either picked or not required
-            let needsColour = colourCategoriesRequired(for: sel)
-            return upgradeDecided && (!needsColour || hasColour)
+            return isSelectionComplete(sel)
         }.count
+    }
+
+    /// A selection is complete only when the client has explicitly chosen
+    /// a product (and a colour, if the product offers any). Nothing is
+    /// considered complete by default — every option requires a deliberate
+    /// client tap.
+    private func isSelectionComplete(_ sel: BuildSpecSelection) -> Bool {
+        let rangeId = sel.specTier.lowercased()
+        let products = catalog.products(for: sel.specItemId, rangeId: rangeId)
+        let upgradeDecided = sel.selectionType == .included || sel.selectionType == .upgradeApproved || sel.selectionType == .upgradeAccepted || sel.selectionType == .upgradeDeclined
+        guard upgradeDecided else { return false }
+
+        if !products.isEmpty {
+            // Product-driven item: needs an explicit product choice and, if
+            // that product has colours, an explicit colour choice too.
+            guard let pid = sel.productId else { return false }
+            let colours = catalog.productColours(for: pid)
+            if !colours.isEmpty && sel.colourId == nil { return false }
+            return true
+        }
+
+        // Legacy item without products — fall back to the colour-mapping flow.
+        let needsColour = colourCategoriesRequired(for: sel)
+        if !needsColour { return true }
+        return viewModel.colourSelections.contains { $0.buildSpecSelectionId == sel.id }
     }
 
     private func colourCategoriesRequired(for selection: BuildSpecSelection) -> Bool {
@@ -57,10 +78,7 @@ struct SelectionsHomeView: View {
     private func progress(for items: [BuildSpecSelection]) -> Double {
         guard !items.isEmpty else { return 0 }
         let done = items.reduce(0) { acc, sel in
-            let hasColour = viewModel.colourSelections.contains { $0.buildSpecSelectionId == sel.id }
-            let upgradeDecided = sel.selectionType == .included || sel.selectionType == .upgradeApproved || sel.selectionType == .upgradeAccepted || sel.selectionType == .upgradeDeclined
-            let needsColour = colourCategoriesRequired(for: sel)
-            return acc + ((upgradeDecided && (!needsColour || hasColour)) ? 1 : 0)
+            acc + (isSelectionComplete(sel) ? 1 : 0)
         }
         return Double(done) / Double(items.count)
     }

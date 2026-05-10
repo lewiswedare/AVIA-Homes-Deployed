@@ -1632,14 +1632,11 @@ class SupabaseService {
                 let imageURL = item.customImageURL ?? catalog.specItemBaseImages[item.id]
                 // Standard tier items are pre-confirmed by default.
                 // Only manually upgraded items will deviate from this state.
-                let now = Date.now
-                // Pre-seed the default Product + Colour for this range so the
-                // client lands on a sensible choice without manual taps.
-                // Only seed defaults when the product is *included* in the
-                // range and the colour has no extra cost — never auto-pick an
-                // upgrade for the client.
-                let defaultProductId = catalog.defaultProductId(for: item.id, rangeId: tierKey)
-                let defaultColourId = defaultProductId.flatMap { catalog.defaultIncludedColourId(for: $0) }
+                // Do NOT pre-seed product/colour. Clients must explicitly
+                // choose every product + colour from the start so nothing is
+                // accidentally accepted (especially upgrades). The selection
+                // remains "included" (range-tier inclusion) but is treated as
+                // incomplete until productId + colourId are set.
                 let selection = BuildSpecSelection(
                     id: UUID().uuidString,
                     buildId: buildId,
@@ -1649,19 +1646,19 @@ class SupabaseService {
                     selectionType: .included,
                     clientNotes: nil,
                     adminNotes: nil,
-                    clientConfirmed: true,
-                    adminConfirmed: true,
-                    clientConfirmedAt: now,
-                    adminConfirmedAt: now,
+                    clientConfirmed: false,
+                    adminConfirmed: false,
+                    clientConfirmedAt: nil,
+                    adminConfirmedAt: nil,
                     lockedForClient: false,
-                    status: .approved,
+                    status: .draft,
                     snapshotName: item.name,
                     snapshotDescription: description,
                     snapshotImageURL: imageURL,
                     snapshotCategoryName: category.name,
                     sortOrder: sortIndex,
-                    productId: defaultProductId,
-                    colourId: defaultColourId
+                    productId: nil,
+                    colourId: nil
                 )
                 selections.append(selection)
                 sortIndex += 1

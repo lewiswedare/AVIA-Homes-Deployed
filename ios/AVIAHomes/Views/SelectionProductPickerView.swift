@@ -27,11 +27,11 @@ struct SelectionProductPickerView: View {
         return (colour.extra_cost ?? 0) > 0
     }
 
+    /// The product the client has explicitly chosen, if any. We never fall
+    /// back to a default — the picker stays empty until the client taps a
+    /// product so nothing is silently pre-selected.
     private var chosenProductId: String? {
-        selection.productId ?? catalog.defaultProductId(
-            for: selection.specItemId,
-            rangeId: selection.specTier.lowercased()
-        )
+        selection.productId
     }
 
     var body: some View {
@@ -69,16 +69,11 @@ struct SelectionProductPickerView: View {
         }
     }
 
+    /// Clears the client's product + colour choice for this spec item, so
+    /// it goes back to "not yet selected" (no upgrade applied).
     private func resetToDefault() {
-        let rangeId = selection.specTier.lowercased()
-        let defaultPid = catalog.defaultProductId(for: selection.specItemId, rangeId: rangeId)
-        let defaultCid = defaultPid.flatMap { catalog.defaultIncludedColourId(for: $0) }
         Task {
-            await viewModel.saveProductSelection(
-                selectionId: selection.id,
-                productId: defaultPid ?? "",
-                colourId: defaultCid
-            )
+            await viewModel.clearProductSelection(selectionId: selection.id)
         }
         withAnimation(.spring(response: 0.3, dampingFraction: 0.85)) {
             expandedProductId = nil
@@ -289,13 +284,15 @@ struct SelectionProductPickerView: View {
         membership: SpecRangeItemProductRow,
         colours: [SpecProductColourRow]
     ) {
+        // Don't auto-pick a colour — the client must explicitly choose one
+        // so they always make a deliberate selection from the start.
         let resolvedColour: String? = {
             if let existing = selection.colourId,
                colours.contains(where: { $0.id == existing }),
                selection.productId == product.id {
                 return existing
             }
-            return colours.first(where: { $0.is_default == true })?.id ?? colours.first?.id
+            return nil
         }()
         Task {
             await viewModel.saveProductSelection(
