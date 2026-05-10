@@ -3,8 +3,6 @@ import SwiftUI
 struct AdminCatalogHubView: View {
     @Environment(AppViewModel.self) private var appViewModel
     @State private var specCount: Int = 0
-    @State private var specCategoryCount: Int = 0
-    @State private var colourCount: Int = 0
     @State private var designCount: Int = 0
     @State private var facadeCount: Int = 0
     @State private var newsCount: Int = 0
@@ -16,41 +14,15 @@ struct AdminCatalogHubView: View {
 
                 VStack(spacing: 10) {
                     NavigationLink {
-                        AdminSpecCategoriesEditorView()
-                    } label: {
-                        catalogCard(
-                            icon: "square.stack.3d.up.fill",
-                            title: "Selection Categories",
-                            subtitle: "Create, rename, reorder & delete selection categories",
-                            count: specCategoryCount,
-                            countLabel: "categories",
-                            color: AVIATheme.heritageBlue
-                        )
-                    }
-
-                    NavigationLink {
                         AdminSpecItemsEditorView()
                     } label: {
                         catalogCard(
                             icon: "list.clipboard.fill",
                             title: "Spec Range Items",
-                            subtitle: "Manage specification items across Volos, Messina & Portobello tiers",
+                            subtitle: "Manage products across Volos, Messina & Portobello — colours included per product",
                             count: specCount,
                             countLabel: "items",
                             color: AVIATheme.timelessBrown
-                        )
-                    }
-
-                    NavigationLink {
-                        AdminColourEditorView()
-                    } label: {
-                        catalogCard(
-                            icon: "paintpalette.fill",
-                            title: "Colour Selections",
-                            subtitle: "Manage colour categories, options, brands & upgrade flags",
-                            count: colourCount,
-                            countLabel: "categories",
-                            color: AVIATheme.warning
                         )
                     }
 
@@ -187,7 +159,7 @@ struct AdminCatalogHubView: View {
                     Text("Product Catalog")
                         .font(.neueSubheadlineMedium)
                         .foregroundStyle(AVIATheme.textPrimary)
-                    Text("Add, edit and manage your spec ranges, colours and home designs")
+                    Text("Manage spec range products with their colour swatches built in, plus home designs, facades and news")
                         .font(.neueCaption)
                         .foregroundStyle(AVIATheme.textSecondary)
                         .lineLimit(2)
@@ -262,8 +234,6 @@ struct AdminCatalogHubView: View {
         if !catalog.isLoaded { await catalog.loadAll() }
 
         specCount = catalog.allSpecCategories.flatMap(\.items).count
-        specCategoryCount = catalog.allSpecCategories.count
-        colourCount = catalog.allColourCategories.count
         let designs = await SupabaseService.shared.fetchHomeDesigns()
         designCount = designs.count
         let facades = await SupabaseService.shared.fetchFacades()

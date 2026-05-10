@@ -187,7 +187,8 @@ class AdminCatalogViewModel {
     func saveSpecItem(
         _ row: SpecItemFlatRow,
         tierImages: [String: String] = [:],
-        linkedColourCategoryIds: [String]? = nil
+        linkedColourCategoryIds: [String]? = nil,
+        productSwatches: [EditableColourOption]? = nil
     ) async {
         errorMessage = nil
         let success = await SupabaseService.shared.upsertSpecItem(row)
@@ -222,6 +223,59 @@ class AdminCatalogViewModel {
             let mappingOk = await SupabaseService.shared.upsertSpecToColourMapping(
                 specItemId: row.id,
                 colourCategoryIds: linkedColourCategoryIds
+            )
+            if !mappingOk {
+                errorMessage = "Spec item saved but colour linkage failed"
+                await loadSpecItems()
+                await catalog.loadAll()
+                return
+            }
+        }
+
+        if let productSwatches {
+            let perProductId = "spec_\(row.id)_colours"
+            let options = productSwatches.map {
+                ColourOption(
+                    id: $0.id,
+                    name: $0.name,
+                    hexColor: $0.hexColor,
+                    brand: $0.brand.isEmpty ? nil : $0.brand,
+                    isUpgrade: $0.isUpgrade,
+                    imageURL: $0.imageURL.isEmpty ? nil : $0.imageURL,
+                    availableTiers: $0.availableTiers.isEmpty ? Set(SpecTier.allCases.map(\.imageKeySuffix)) : $0.availableTiers,
+                    cost: Double($0.cost),
+                    applicableTiers: $0.optionApplicableTiers.isEmpty ? nil : Array($0.optionApplicableTiers).sorted()
+                )
+            }
+            let category = ColourCategory(
+                id: perProductId,
+                name: row.name,
+                icon: "paintpalette.fill",
+                section: .interior,
+                options: options,
+                note: "Colours for \(row.name)",
+                imageURL: nil,
+                defaultOptionCost: nil,
+                applicableTiers: nil,
+                specItemId: row.id
+            )
+            // Find current sort order if it already exists, else append.
+            let existingIdx = catalog.allColourCategories.firstIndex { $0.id == perProductId }
+            let sortOrder = existingIdx ?? catalog.allColourCategories.count
+            let catRow = ColourCategoryUpsertRow(from: category, sortOrder: sortOrder)
+            let catOk = await SupabaseService.shared.upsertColourCategory(catRow)
+            if !catOk {
+                errorMessage = "Spec item saved but colour swatches failed: \(SupabaseService.shared.lastUpsertError ?? "unknown")"
+                await loadSpecItems()
+                await catalog.loadAll()
+                return
+            }
+            // Link the per-product category via spec_to_colour_mapping so existing
+            // client-side colour selection logic finds it.
+            let linkIds = options.isEmpty ? [] : [perProductId]
+            let mappingOk = await SupabaseService.shared.upsertSpecToColourMapping(
+                specItemId: row.id,
+                colourCategoryIds: linkIds
             )
             if !mappingOk {
                 errorMessage = "Spec item saved but colour linkage failed"

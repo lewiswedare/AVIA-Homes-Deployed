@@ -87,13 +87,13 @@ struct AdminSpecItemsEditorView: View {
             }
         }
         .sheet(isPresented: $showingAddSheet) {
-            SpecItemEditSheet(item: nil, categories: viewModel.specCategoryOrder) { row, tierImages, linkedColours in
-                Task { await viewModel.saveSpecItem(row, tierImages: tierImages, linkedColourCategoryIds: linkedColours) }
+            SpecItemEditSheet(item: nil, categories: viewModel.specCategoryOrder) { row, tierImages, swatches in
+                Task { await viewModel.saveSpecItem(row, tierImages: tierImages, productSwatches: swatches) }
             }
         }
         .sheet(item: $editingItem) { item in
-            SpecItemEditSheet(item: item, categories: viewModel.specCategoryOrder) { row, tierImages, linkedColours in
-                Task { await viewModel.saveSpecItem(row, tierImages: tierImages, linkedColourCategoryIds: linkedColours) }
+            SpecItemEditSheet(item: item, categories: viewModel.specCategoryOrder) { row, tierImages, swatches in
+                Task { await viewModel.saveSpecItem(row, tierImages: tierImages, productSwatches: swatches) }
             }
         }
         .alert("Delete Item", isPresented: .init(
@@ -256,7 +256,7 @@ struct SpecItemEditSheet: View {
     @Environment(\.dismiss) private var dismiss
     let item: SpecItemFlatRow?
     let categories: [(id: String, name: String, icon: String)]
-    let onSave: (SpecItemFlatRow, [String: String], [String]) -> Void
+    let onSave: (SpecItemFlatRow, [String: String], [EditableColourOption]) -> Void
 
     @State private var itemId: String = ""
     @State private var name: String = ""
@@ -278,10 +278,14 @@ struct SpecItemEditSheet: View {
     @State private var volosToPortobelloCost: String = ""
     @State private var messinaToPortobelloCost: String = ""
 
-    // Linked colour categories (Stage-2 colour configurator reads this mapping)
-    @State private var linkedColourCategoryIds: Set<String> = []
+    // Per-product colour swatches — stored as a dedicated ColourCategory per spec item.
+    @State private var swatches: [EditableColourOption] = []
 
     private var isNew: Bool { item == nil }
+
+    static func productColourCategoryId(for specItemId: String) -> String {
+        "spec_\(specItemId)_colours"
+    }
 
     var body: some View {
         NavigationStack {
@@ -331,7 +335,7 @@ struct SpecItemEditSheet: View {
                             .onChange(of: isFixedInclusion) { _, newValue in
                                 if newValue {
                                     isUpgradeable = false
-                                    linkedColourCategoryIds.removeAll()
+                                    swatches.removeAll()
                                 }
                             }
 
@@ -418,15 +422,32 @@ struct SpecItemEditSheet: View {
 
                     if !isFixedInclusion {
                         BentoCard(cornerRadius: 11) {
-                            VStack(alignment: .leading, spacing: 14) {
-                                sectionHeader("Linked Colour Categories")
-                                Text("Select which colour categories this spec item unlocks. When the client confirms this item in Stage 1, the chosen colour categories appear in their Stage 2 colour selection.")
+                            VStack(alignment: .leading, spacing: 12) {
+                                HStack {
+                                    sectionHeader("Colours")
+                                    Spacer()
+                                    Button { addSwatch() } label: {
+                                        Image(systemName: "plus.circle.fill")
+                                            .foregroundStyle(AVIATheme.timelessBrown)
+                                    }
+                                    .padding(.trailing, 14)
+                                }
+                                Text("Add colour swatches the client can choose from for this product. Toggle Upgrade for swatches that cost extra. Leave empty if this product has no colour variants.")
                                     .font(.neueCaption2)
                                     .foregroundStyle(AVIATheme.textTertiary)
                                     .padding(.horizontal, 14)
 
-                                colourChipGrid
-                                    .padding(.horizontal, 14)
+                                if swatches.isEmpty {
+                                    Text("No colour swatches yet. Tap + to add one.")
+                                        .font(.neueCaption)
+                                        .foregroundStyle(AVIATheme.textTertiary)
+                                        .padding(.horizontal, 14)
+                                        .padding(.vertical, 10)
+                                } else {
+                                    ForEach($swatches) { $swatch in
+                                        swatchEditor(swatch: $swatch)
+                                    }
+                                }
                             }
                             .padding(.vertical, 14)
                         }
@@ -453,53 +474,85 @@ struct SpecItemEditSheet: View {
         .presentationDetents([.large])
     }
 
-    private var colourChipGrid: some View {
-        let categories = CatalogDataManager.shared.allColourCategories
-        return Group {
-            if categories.isEmpty {
-                Text("No colour categories found. Add them in the Colours editor first.")
-                    .font(.neueCaption2)
-                    .foregroundStyle(AVIATheme.textTertiary)
-            } else {
-                LazyVGrid(
-                    columns: [GridItem(.adaptive(minimum: 140), spacing: 8)],
-                    alignment: .leading,
-                    spacing: 8
-                ) {
-                    ForEach(categories, id: \.id) { cat in
-                        colourChip(cat: cat)
+    private func swatchEditor(swatch: Binding<EditableColourOption>) -> some View {
+        VStack(alignment: .leading, spacing: 8) {
+            HStack(spacing: 10) {
+                Circle()
+                    .fill(Color(hex: swatch.wrappedValue.hexColor))
+                    .frame(width: 28, height: 28)
+                    .overlay { Circle().stroke(AVIATheme.surfaceBorder, lineWidth: 1) }
+
+                VStack(spacing: 6) {
+                    TextField("Colour name", text: swatch.name)
+                        .font(.neueCaption)
+                    HStack(spacing: 6) {
+                        TextField("#Hex", text: swatch.hexColor)
+                            .font(.neueCaption2)
+                            .textInputAutocapitalization(.never)
+                            .frame(maxWidth: 80)
+                        TextField("Brand / finish", text: swatch.brand)
+                            .font(.neueCaption2)
+                    }
+                    HStack(spacing: 6) {
+                        Toggle("", isOn: swatch.isUpgrade)
+                            .labelsHidden()
+                            .scaleEffect(0.7)
+                        Text("Upgrade")
+                            .font(.neueCaption2)
+                            .foregroundStyle(AVIATheme.textTertiary)
+                        if swatch.wrappedValue.isUpgrade {
+                            Text("$")
+                                .font(.neueCaption2)
+                                .foregroundStyle(AVIATheme.textTertiary)
+                            TextField("Cost", text: swatch.cost)
+                                .font(.neueCaption2)
+                                .keyboardType(.decimalPad)
+                                .frame(maxWidth: 70)
+                            Text("AUD")
+                                .font(.neueCaption2)
+                                .foregroundStyle(AVIATheme.textTertiary)
+                        }
+                        Spacer(minLength: 0)
                     }
                 }
+
+                Spacer(minLength: 0)
+
+                Button {
+                    withAnimation { swatches.removeAll { $0.id == swatch.wrappedValue.id } }
+                } label: {
+                    Image(systemName: "xmark.circle.fill")
+                        .foregroundStyle(AVIATheme.destructive.opacity(0.6))
+                }
             }
+
+            AdminCompactImagePicker(
+                imageURL: swatch.imageURL,
+                folder: "spec-items/swatches",
+                itemId: swatch.wrappedValue.id
+            )
         }
+        .padding(10)
+        .background(AVIATheme.surfaceElevated)
+        .clipShape(.rect(cornerRadius: 8))
+        .padding(.horizontal, 14)
     }
 
-    private func colourChip(cat: ColourCategory) -> some View {
-        let isSelected = linkedColourCategoryIds.contains(cat.id)
-        return Button {
-            if isSelected {
-                linkedColourCategoryIds.remove(cat.id)
-            } else {
-                linkedColourCategoryIds.insert(cat.id)
-            }
-        } label: {
-            HStack(spacing: 6) {
-                Image(systemName: isSelected ? "checkmark.circle.fill" : "circle")
-                    .font(.caption)
-                Text(cat.name)
-                    .font(.neueCaption2Medium)
-            }
-            .padding(.horizontal, 10)
-            .padding(.vertical, 6)
-            .background(isSelected ? AVIATheme.timelessBrown.opacity(0.15) : AVIATheme.surfaceElevated)
-            .foregroundStyle(isSelected ? AVIATheme.timelessBrown : AVIATheme.textSecondary)
-            .overlay(
-                RoundedRectangle(cornerRadius: 6)
-                    .stroke(isSelected ? AVIATheme.timelessBrown : Color.clear, lineWidth: 1)
-            )
-            .clipShape(.rect(cornerRadius: 6))
-        }
-        .buttonStyle(.pressable(.subtle))
+    private func addSwatch() {
+        let baseId = isNew ? itemId : (item?.id ?? itemId)
+        let prefix = baseId.isEmpty ? "swatch" : "\(baseId)_swatch"
+        let newId = "\(prefix)_\(swatches.count + 1)"
+        swatches.append(EditableColourOption(
+            id: newId,
+            name: "",
+            hexColor: "CCCCCC",
+            brand: "",
+            isUpgrade: false,
+            imageURL: "",
+            availableTiers: Set(SpecTier.allCases.map(\.imageKeySuffix)),
+            cost: "",
+            optionApplicableTiers: []
+        ))
     }
 
     private func sectionHeader(_ title: String) -> some View {
@@ -603,10 +656,24 @@ struct SpecItemEditSheet: View {
         volosToMessinaCost = item.volos_to_messina_cost.map { formatCost($0) } ?? ""
         volosToPortobelloCost = item.volos_to_portobello_cost.map { formatCost($0) } ?? ""
         messinaToPortobelloCost = item.messina_to_portobello_cost.map { formatCost($0) } ?? ""
-        if let existing = CatalogDataManager.shared.specToColourMapping[item.id] {
-            linkedColourCategoryIds = Set(existing)
+        // Load per-product swatches from the dedicated colour category (id: spec_<itemId>_colours).
+        let perProductId = SpecItemEditSheet.productColourCategoryId(for: item.id)
+        if let cat = CatalogDataManager.shared.allColourCategories.first(where: { $0.id == perProductId }) {
+            swatches = cat.options.map {
+                EditableColourOption(
+                    id: $0.id,
+                    name: $0.name,
+                    hexColor: $0.hexColor,
+                    brand: $0.brand ?? "",
+                    isUpgrade: $0.isUpgrade,
+                    imageURL: $0.imageURL ?? "",
+                    availableTiers: $0.availableTiers,
+                    cost: $0.cost.map { String(format: "%.2f", $0) } ?? "",
+                    optionApplicableTiers: Set($0.applicableTiers ?? [])
+                )
+            }
         } else {
-            linkedColourCategoryIds = []
+            swatches = []
         }
         loadTierImages()
     }
@@ -645,8 +712,8 @@ struct SpecItemEditSheet: View {
         if !volosImageURL.isEmpty { tierImages["volos"] = volosImageURL }
         if !messinaImageURL.isEmpty { tierImages["messina"] = messinaImageURL }
         if !portobelloImageURL.isEmpty { tierImages["portobello"] = portobelloImageURL }
-        let linkedColours = isFixedInclusion ? [] : Array(linkedColourCategoryIds).sorted()
-        onSave(row, tierImages, linkedColours)
+        let payload = isFixedInclusion ? [] : swatches.filter { !$0.name.isEmpty }
+        onSave(row, tierImages, payload)
         dismiss()
     }
 }

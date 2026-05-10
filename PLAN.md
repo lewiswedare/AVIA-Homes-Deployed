@@ -1,52 +1,35 @@
-# Add 'Fixed inclusion' option for selection items
+# Simplify catalogue: one place for spec range items with colours built in
 
-## What this changes
+## What changes for admins
 
-Some items in a build (like structural inclusions) aren't choices — the customer doesn't need to pick a tier or a colour. Right now every item in Selections looks tappable and asks the user to "choose a finish", which is confusing for these fixed items.
+**Catalog Management hub becomes simpler.** The standalone "Selection Categories" and "Colour Selections" cards are removed. Admins now manage everything product-related from a single place: **Spec Range Items**.
 
-## Admin side
+Inside each spec range product, admins will now see a new **Colours** section where they can:
+- Add colour swatches directly to that product (name, hex/colour image, brand/finish notes)
+- Mark colours as included or as upgrades (with optional upgrade cost)
+- Reorder and remove swatches inline
+- Choose "No colour variants" for fixed-inclusion products that don't need a colour pick
 
-- A new **"Fixed inclusion (no variants)"** toggle on the Spec Item editor.
-- When turned on:
-  - The upgrade tier options and linked colour categories are hidden in the editor (since they don't apply).
-  - The item is saved as a non-variant item.
+Spec items remain grouped by category (Kitchen, Bathroom, External Finishes, etc.) for organisation — that grouping stays exactly as it is today, just managed implicitly through the product editor.
 
-## End-user side (Selections screen)
+The old Colour Categories editor and Selection Categories editor are hidden from the hub. The underlying data isn't deleted, so existing builds keep working, but new colour management happens per-product.
 
-- Fixed-inclusion items still appear in the room's list so the customer can see what's included.
-- They show with a clear **"Included"** badge.
-- They are **not tappable** — no chevron, no expand, nothing to choose.
-- A subtle visual treatment (slightly muted card, no arrow) signals "this is set, no action needed".
+## What changes for clients
 
-## Result
+When a client confirms a spec range product, the **colour picker for that exact product** appears in their Stage 2 selections — pulling from the swatches the admin attached to it.
 
-Customers only see action prompts on items they actually need to make a decision on. Fixed inclusions read clearly as part of their build with no false invitation to interact.
+- Products with "No colour variants" skip the colour step entirely
+- Products with multiple colours show the swatches the admin uploaded for that specific product
+- The overall colour selections screen now lists one colour pick per approved spec product, in the same room/category groupings as today
 
----
+## Pages affected
 
-# Final admin lock-in of the quote before construction
+- **Admin → Catalog Management**: Two cards removed, info card updated to reflect the new flow
+- **Admin → Spec Range Items → Edit Product**: New inline "Colours" section replaces the "Linked colour categories" chip grid
+- **Client → Build → Colour Selections**: Pulls colours from each spec product directly instead of from the shared colour categories
 
-## What this changes
+## Things to confirm before building
 
-Once every selection is resolved (all upgrades priced, accepted/declined, all colours approved), the admin needs an explicit final step that **locks in the final quote** and **moves the build out of the Selections phase into the construction stages**.
-
-## Where it lives
-
-A new capstone section at the bottom of `AdminBuildSpecReviewView` that only appears when:
-
-- No spec/colour/range upgrades are still pending on either side.
-- All selections are admin-approved (`overallStatus == .approved`).
-
-## What the capstone shows
-
-- Final quote total (sum of all locked-in upgrades) with a short breakdown.
-- A primary `Lock In Final Quote & Begin Build` button.
-- A confirm alert: "This will lock all selections and move the build into construction. Are you sure?"
-
-## What it does
-
-- Marks the Pre-Construction stage (or first non-completed stage) as **completed**.
-- Marks the next stage as **in progress** so the client's build dashboard advances.
-- Sends a notification to the client: "Your final quote is locked in and your build is now underway."
-
-Reopening for the client (existing button) remains available if changes are needed later.
+- Existing colour data stays in the database untouched so old builds keep displaying correctly
+- The new per-product colour list will be the source of truth going forward
+- Migration of existing linked-colour-categories into per-product swatches isn't part of this change — admins will re-add colours to products as they update each one (let me know if you want auto-migration instead)
