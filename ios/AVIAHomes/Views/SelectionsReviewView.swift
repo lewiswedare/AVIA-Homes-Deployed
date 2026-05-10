@@ -29,6 +29,7 @@ struct SelectionsReviewView: View {
             ScrollView {
                 VStack(spacing: 16) {
                     summaryCard
+                    breakdownCard
                     ForEach(groupedByRoom, id: \.room.id) { entry in
                         roomSection(room: entry.room, items: entry.items)
                     }
@@ -51,6 +52,103 @@ struct SelectionsReviewView: View {
                         .padding(.bottom, 14)
                 }
             }
+        }
+    }
+
+    private var breakdownCard: some View {
+        let breakdown = viewModel.upgradeBreakdown
+        return Group {
+            if breakdown.total > 0 {
+                BentoCard(cornerRadius: 14) {
+                    VStack(alignment: .leading, spacing: 14) {
+                        HStack {
+                            Text("UPGRADE BREAKDOWN")
+                                .font(.neueCorpMedium(9))
+                                .kerning(1.2)
+                                .foregroundStyle(AVIATheme.timelessBrown)
+                            Spacer()
+                            Text(AVIATheme.formatCost(breakdown.total))
+                                .font(.neueCorpMedium(13))
+                                .foregroundStyle(AVIATheme.textPrimary)
+                        }
+
+                        VStack(spacing: 8) {
+                            breakdownRow(label: "Spec range upgrades", icon: "arrow.up.circle.fill", colour: AVIATheme.heritageBlue, amount: breakdown.specRange)
+                            breakdownRow(label: "Product upgrades", icon: "shippingbox.fill", colour: AVIATheme.timelessBrown, amount: breakdown.product)
+                            breakdownRow(label: "Colour extras", icon: "paintpalette.fill", colour: AVIATheme.warning, amount: breakdown.colour)
+                        }
+
+                        if !breakdown.lineItems.isEmpty {
+                            Divider().background(AVIATheme.surfaceBorder)
+                            VStack(alignment: .leading, spacing: 8) {
+                                Text("LINE ITEMS")
+                                    .font(.neueCorpMedium(9))
+                                    .kerning(1.2)
+                                    .foregroundStyle(AVIATheme.textTertiary)
+                                ForEach(breakdown.lineItems) { line in
+                                    HStack(alignment: .top, spacing: 10) {
+                                        Circle()
+                                            .fill(kindColor(line.kind).opacity(0.15))
+                                            .frame(width: 22, height: 22)
+                                            .overlay {
+                                                Image(systemName: kindIcon(line.kind))
+                                                    .font(.system(size: 10, weight: .semibold))
+                                                    .foregroundStyle(kindColor(line.kind))
+                                            }
+                                        VStack(alignment: .leading, spacing: 1) {
+                                            Text(line.name)
+                                                .font(.neueCaption2Medium)
+                                                .foregroundStyle(AVIATheme.textPrimary)
+                                                .lineLimit(1)
+                                            Text(line.detail)
+                                                .font(.neueCaption2)
+                                                .foregroundStyle(AVIATheme.textTertiary)
+                                                .lineLimit(1)
+                                        }
+                                        Spacer(minLength: 0)
+                                        Text("+\(AVIATheme.formatCost(line.amount))")
+                                            .font(.neueCorpMedium(11))
+                                            .foregroundStyle(AVIATheme.textPrimary)
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    .padding(16)
+                }
+            }
+        }
+    }
+
+    private func breakdownRow(label: String, icon: String, colour: Color, amount: Double) -> some View {
+        HStack(spacing: 10) {
+            Image(systemName: icon)
+                .font(.system(size: 12, weight: .semibold))
+                .foregroundStyle(colour)
+                .frame(width: 22)
+            Text(label)
+                .font(.neueCaption)
+                .foregroundStyle(AVIATheme.textSecondary)
+            Spacer()
+            Text(amount > 0 ? AVIATheme.formatCost(amount) : "—")
+                .font(.neueCorpMedium(12))
+                .foregroundStyle(amount > 0 ? AVIATheme.textPrimary : AVIATheme.textTertiary)
+        }
+    }
+
+    private func kindIcon(_ kind: BuildSpecViewModel.UpgradeBreakdown.LineItem.Kind) -> String {
+        switch kind {
+        case .specRange: "arrow.up.circle.fill"
+        case .product: "shippingbox.fill"
+        case .colour: "paintpalette.fill"
+        }
+    }
+
+    private func kindColor(_ kind: BuildSpecViewModel.UpgradeBreakdown.LineItem.Kind) -> Color {
+        switch kind {
+        case .specRange: AVIATheme.heritageBlue
+        case .product: AVIATheme.timelessBrown
+        case .colour: AVIATheme.warning
         }
     }
 

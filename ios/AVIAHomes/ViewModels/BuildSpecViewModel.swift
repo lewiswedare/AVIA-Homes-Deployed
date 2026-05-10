@@ -79,18 +79,75 @@ class BuildSpecViewModel {
     }
 
     var totalUpgradeCost: Double {
-        let specUpgrades = selections
-            .filter { $0.upgradeCost != nil && ($0.selectionType == .upgradeCosted || $0.selectionType == .upgradeAccepted || $0.selectionType == .upgradeApproved) }
-            .compactMap(\.upgradeCost)
-            .reduce(0, +)
-        let colourUpgrades = colourSelections
-            .filter { $0.isUpgrade && $0.cost != nil }
-            .compactMap(\.cost)
-            .reduce(0, +)
-        let productUpgrades = selections.reduce(0.0) { acc, sel in
-            acc + productUpgradeCost(for: sel)
+        let b = upgradeBreakdown
+        return b.specRange + b.colour + b.product
+    }
+
+    /// Itemised view of what makes up the upgrade total, so clients can see
+    /// exactly where their money is going (range upgrades vs product upgrades
+    /// vs colour extras).
+    struct UpgradeBreakdown {
+        var specRange: Double = 0
+        var product: Double = 0
+        var colour: Double = 0
+        var lineItems: [LineItem] = []
+        var total: Double { specRange + product + colour }
+
+        struct LineItem: Identifiable {
+            let id: String
+            let name: String
+            let detail: String
+            let kind: Kind
+            let amount: Double
+            enum Kind { case specRange, product, colour }
         }
-        return specUpgrades + colourUpgrades + productUpgrades
+    }
+
+    var upgradeBreakdown: UpgradeBreakdown {
+        var b = UpgradeBreakdown()
+        for sel in selections where sel.selectionType != .removed {
+            if let cost = sel.upgradeCost, cost > 0,
+               (sel.selectionType == .upgradeCosted || sel.selectionType == .upgradeAccepted || sel.selectionType == .upgradeApproved) {
+                b.specRange += cost
+                b.lineItems.append(.init(
+                    id: "spec-\(sel.id)",
+                    name: sel.snapshotName,
+                    detail: "Spec range upgrade",
+                    kind: .specRange,
+                    amount: cost
+                ))
+            }
+            let pCost = productUpgradeCost(for: sel)
+            if pCost > 0 {
+                b.product += pCost
+                let productName = sel.productId.flatMap { pid in
+                    CatalogDataManager.shared.specProducts[pid]?.name
+                } ?? "Product upgrade"
+                b.lineItems.append(.init(
+                    id: "prod-\(sel.id)",
+                    name: sel.snapshotName,
+                    detail: productName,
+                    kind: .product,
+                    amount: pCost
+                ))
+            }
+        }
+        for cs in colourSelections where cs.isUpgrade && (cs.cost ?? 0) > 0 {
+            let amount = cs.cost ?? 0
+            b.colour += amount
+            let catName = CatalogDataManager.shared.allColourCategories.first(where: { $0.id == cs.colourCategoryId })?.name ?? "Colour"
+            let optName = CatalogDataManager.shared.allColourCategories
+                .first(where: { $0.id == cs.colourCategoryId })?.options
+                .first(where: { $0.id == cs.colourOptionId })?.name ?? "Selection"
+            b.lineItems.append(.init(
+                id: "col-\(cs.id)",
+                name: catName,
+                detail: optName,
+                kind: .colour,
+                amount: amount
+            ))
+        }
+        return b
     }
 
     /// Resolves the upgrade cost contribution from a chosen product + colour
