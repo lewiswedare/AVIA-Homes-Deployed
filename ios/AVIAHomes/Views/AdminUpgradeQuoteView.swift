@@ -17,11 +17,42 @@ struct AdminUpgradeQuoteView: View {
             $0.selectionType == .upgradeRequested ||
             $0.selectionType == .upgradeCosted ||
             $0.selectionType == .upgradeAccepted ||
-            $0.selectionType == .upgradeApproved
+            $0.selectionType == .upgradeApproved ||
+            productUpgradeCost(for: $0) > 0
         }
     }
 
+    /// Resolves the upgrade cost contribution for a chosen product + colour
+    /// (range membership upgrade price + colour extra cost).
+    private func productUpgradeCost(for selection: BuildSpecSelection) -> Double {
+        guard let pid = selection.productId else { return 0 }
+        let rangeId = selection.specTier.lowercased()
+        var total: Double = 0
+        if let m = catalog.rangeProductMemberships["\(rangeId)|\(pid)"] {
+            let inc = ProductRangeInclusion(rawValue: m.inclusion_override ?? "unavailable") ?? .unavailable
+            if inc == .upgrade { total += m.upgrade_price_override ?? 0 }
+        }
+        if let cid = selection.colourId,
+           let colour = catalog.coloursByProduct[pid]?.first(where: { $0.id == cid }) {
+            total += colour.extra_cost ?? 0
+        }
+        return total
+    }
+
+    /// Looks up the chosen Product + Colour names for display in line items.
+    private func chosenProductSummary(for selection: BuildSpecSelection) -> (productName: String, colourName: String?, hex: String?)? {
+        guard let pid = selection.productId, let product = catalog.specProducts[pid] else { return nil }
+        let colour = selection.colourId.flatMap { cid in
+            catalog.coloursByProduct[pid]?.first(where: { $0.id == cid })
+        }
+        return (productName: product.name, colourName: colour?.name, hex: colour?.hex)
+    }
+
     private func autoCost(for item: BuildSpecSelection) -> Double? {
+        // Prefer product-driven cost when a product is chosen.
+        let productCost = productUpgradeCost(for: item)
+        if productCost > 0 { return productCost }
+
         let specItems = catalog.allSpecCategories.flatMap(\.items)
         guard let specItem = specItems.first(where: { $0.id == item.specItemId }) else { return nil }
 
@@ -132,6 +163,20 @@ struct AdminUpgradeQuoteView: View {
                         Text("\(item.snapshotCategoryName) \u{2022} \(item.specTier.capitalized)")
                             .font(.neueCaption2)
                             .foregroundStyle(AVIATheme.textTertiary)
+                        if let summary = chosenProductSummary(for: item) {
+                            HStack(spacing: 6) {
+                                if let hex = summary.hex {
+                                    Circle()
+                                        .fill(Color(hex: hex))
+                                        .frame(width: 12, height: 12)
+                                        .overlay { Circle().stroke(AVIATheme.surfaceBorder, lineWidth: 0.5) }
+                                }
+                                Text(summary.colourName.map { "\(summary.productName) \u{2022} \($0)" } ?? summary.productName)
+                                    .font(.neueCaption2)
+                                    .foregroundStyle(AVIATheme.timelessBrown)
+                                    .lineLimit(2)
+                            }
+                        }
                     }
 
                     Spacer()

@@ -346,6 +346,29 @@ private struct SelectionItemCard: View {
         }
     }
 
+    private var comingSoonPlaceholder: some View {
+        VStack(spacing: 8) {
+            Image(systemName: "sparkles")
+                .font(.neueCorp(20))
+                .foregroundStyle(AVIATheme.timelessBrown)
+            Text("Options coming soon")
+                .font(.neueCaptionMedium)
+                .foregroundStyle(AVIATheme.textPrimary)
+            Text("AVIA is finalising product choices for this item. You'll be able to pick here once they're loaded.")
+                .font(.neueCaption2)
+                .foregroundStyle(AVIATheme.textSecondary)
+                .multilineTextAlignment(.center)
+        }
+        .frame(maxWidth: .infinity)
+        .padding(20)
+        .background(AVIATheme.background.opacity(0.5))
+        .clipShape(.rect(cornerRadius: 11))
+        .overlay {
+            RoundedRectangle(cornerRadius: 11)
+                .stroke(AVIATheme.surfaceBorder, lineWidth: 1)
+        }
+    }
+
     private var placeholderIcon: some View {
         Image(systemName: "photo")
             .font(.neueCorp(16))
@@ -369,12 +392,14 @@ private struct SelectionItemCard: View {
                     selection: selection,
                     products: rangeProducts
                 )
-            } else {
+            } else if hasColours || canRequestUpgrade {
                 tierSection
                 if hasColours {
                     Divider().background(AVIATheme.surfaceBorder)
                     coloursSection
                 }
+            } else {
+                comingSoonPlaceholder
             }
         }
         .padding(14)

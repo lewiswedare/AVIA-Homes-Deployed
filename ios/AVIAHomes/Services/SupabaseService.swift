@@ -1633,6 +1633,10 @@ class SupabaseService {
                 // Standard tier items are pre-confirmed by default.
                 // Only manually upgraded items will deviate from this state.
                 let now = Date.now
+                // Pre-seed the default Product + Colour for this range so the
+                // client lands on a sensible choice without manual taps.
+                let defaultProductId = catalog.defaultProductId(for: item.id, rangeId: tierKey)
+                let defaultColourId = defaultProductId.flatMap { catalog.defaultColourId(for: $0) }
                 let selection = BuildSpecSelection(
                     id: UUID().uuidString,
                     buildId: buildId,
@@ -1652,7 +1656,9 @@ class SupabaseService {
                     snapshotDescription: description,
                     snapshotImageURL: imageURL,
                     snapshotCategoryName: category.name,
-                    sortOrder: sortIndex
+                    sortOrder: sortIndex,
+                    productId: defaultProductId,
+                    colourId: defaultColourId
                 )
                 selections.append(selection)
                 sortIndex += 1
