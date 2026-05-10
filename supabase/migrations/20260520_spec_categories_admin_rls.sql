@@ -33,7 +33,7 @@ begin
             with check (
                 exists (
                     select 1 from public.profiles p
-                    where p.id = auth.uid() and p.role = 'Admin'
+                    where p.id = auth.uid()::text and p.role = 'Admin'
                 )
             );
     end if;
@@ -48,13 +48,13 @@ begin
             using (
                 exists (
                     select 1 from public.profiles p
-                    where p.id = auth.uid() and p.role = 'Admin'
+                    where p.id = auth.uid()::text and p.role = 'Admin'
                 )
             )
             with check (
                 exists (
                     select 1 from public.profiles p
-                    where p.id = auth.uid() and p.role = 'Admin'
+                    where p.id = auth.uid()::text and p.role = 'Admin'
                 )
             );
     end if;
@@ -69,7 +69,7 @@ begin
             using (
                 exists (
                     select 1 from public.profiles p
-                    where p.id = auth.uid() and p.role = 'Admin'
+                    where p.id = auth.uid()::text and p.role = 'Admin'
                 )
             );
     end if;
