@@ -56,6 +56,7 @@ nonisolated struct SpecCategoryRow: Codable, Sendable {
         let messina_description: String
         let portobello_description: String
         let is_upgradeable: Bool
+        let is_fixed_inclusion: Bool?
         let volos_cost: Double?
         let messina_cost: Double?
         let portobello_cost: Double?
@@ -77,6 +78,7 @@ nonisolated struct SpecCategoryRow: Codable, Sendable {
                     messinaDescription: $0.messina_description,
                     portobelloDescription: $0.portobello_description,
                     isUpgradeable: $0.is_upgradeable,
+                    isFixedInclusion: $0.is_fixed_inclusion ?? false,
                     volosCost: $0.volos_cost,
                     messinaCost: $0.messina_cost,
                     portobelloCost: $0.portobello_cost,
@@ -216,6 +218,7 @@ nonisolated struct SpecItemFlatRow: Codable, Sendable {
     let messina_description: String
     let portobello_description: String
     let is_upgradeable: Bool?
+    let is_fixed_inclusion: Bool?
     let image_url: String?
     let sort_order: Int?
     let volos_cost: Double?
@@ -225,7 +228,7 @@ nonisolated struct SpecItemFlatRow: Codable, Sendable {
     let volos_to_portobello_cost: Double?
     let messina_to_portobello_cost: Double?
 
-    init(id: String, category_id: String, name: String, volos_description: String, messina_description: String, portobello_description: String, is_upgradeable: Bool?, image_url: String?, sort_order: Int?, volos_cost: Double? = nil, messina_cost: Double? = nil, portobello_cost: Double? = nil, volos_to_messina_cost: Double? = nil, volos_to_portobello_cost: Double? = nil, messina_to_portobello_cost: Double? = nil) {
+    init(id: String, category_id: String, name: String, volos_description: String, messina_description: String, portobello_description: String, is_upgradeable: Bool?, is_fixed_inclusion: Bool? = false, image_url: String?, sort_order: Int?, volos_cost: Double? = nil, messina_cost: Double? = nil, portobello_cost: Double? = nil, volos_to_messina_cost: Double? = nil, volos_to_portobello_cost: Double? = nil, messina_to_portobello_cost: Double? = nil) {
         self.id = id
         self.category_id = category_id
         self.name = name
@@ -233,6 +236,7 @@ nonisolated struct SpecItemFlatRow: Codable, Sendable {
         self.messina_description = messina_description
         self.portobello_description = portobello_description
         self.is_upgradeable = is_upgradeable
+        self.is_fixed_inclusion = is_fixed_inclusion
         self.image_url = image_url
         self.sort_order = sort_order
         self.volos_cost = volos_cost
@@ -251,6 +255,7 @@ nonisolated struct SpecItemFlatRow: Codable, Sendable {
             messinaDescription: messina_description,
             portobelloDescription: portobello_description,
             isUpgradeable: is_upgradeable ?? false,
+            isFixedInclusion: is_fixed_inclusion ?? false,
             customImageURL: image_url,
             volosCost: volos_cost,
             messinaCost: messina_cost,

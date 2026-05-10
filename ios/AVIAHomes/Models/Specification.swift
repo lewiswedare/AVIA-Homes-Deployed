@@ -73,6 +73,7 @@ nonisolated struct SpecItem: Identifiable, Sendable {
     let messinaDescription: String
     let portobelloDescription: String
     let isUpgradeable: Bool
+    let isFixedInclusion: Bool
     let customImageURL: String?
     let volosCost: Double?
     let messinaCost: Double?
@@ -81,13 +82,14 @@ nonisolated struct SpecItem: Identifiable, Sendable {
     let volosToPortobelloCost: Double?
     let messinaToPortobelloCost: Double?
 
-    init(id: String, name: String, volosDescription: String, messinaDescription: String, portobelloDescription: String, isUpgradeable: Bool, customImageURL: String? = nil, volosCost: Double? = nil, messinaCost: Double? = nil, portobelloCost: Double? = nil, volosToMessinaCost: Double? = nil, volosToPortobelloCost: Double? = nil, messinaToPortobelloCost: Double? = nil) {
+    init(id: String, name: String, volosDescription: String, messinaDescription: String, portobelloDescription: String, isUpgradeable: Bool, isFixedInclusion: Bool = false, customImageURL: String? = nil, volosCost: Double? = nil, messinaCost: Double? = nil, portobelloCost: Double? = nil, volosToMessinaCost: Double? = nil, volosToPortobelloCost: Double? = nil, messinaToPortobelloCost: Double? = nil) {
         self.id = id
         self.name = name
         self.volosDescription = volosDescription
         self.messinaDescription = messinaDescription
         self.portobelloDescription = portobelloDescription
         self.isUpgradeable = isUpgradeable
+        self.isFixedInclusion = isFixedInclusion
         self.customImageURL = customImageURL
         self.volosCost = volosCost
         self.messinaCost = messinaCost

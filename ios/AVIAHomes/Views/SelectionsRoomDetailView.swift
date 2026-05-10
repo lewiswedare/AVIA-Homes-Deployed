@@ -198,7 +198,14 @@ private struct SelectionItemCard: View {
             }
     }
 
+    private var isFixedInclusion: Bool {
+        linkedSpecItem?.isFixedInclusion ?? false
+    }
+
     private var statusInfo: (label: String, color: Color, icon: String) {
+        if isFixedInclusion {
+            return ("INCLUDED", AVIATheme.heritageBlue, "checkmark.seal.fill")
+        }
         switch selection.selectionType {
         case .upgradeDraft: return ("UPGRADE DRAFT", AVIATheme.warning, "pencil.circle.fill")
         case .upgradeRequested: return ("AWAITING QUOTE", AVIATheme.warning, "clock.fill")
@@ -220,7 +227,7 @@ private struct SelectionItemCard: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
             header
-            if isExpanded {
+            if isExpanded && !isFixedInclusion {
                 expandedContent
                     .transition(.asymmetric(
                         insertion: .opacity.combined(with: .move(edge: .top)),
@@ -228,7 +235,7 @@ private struct SelectionItemCard: View {
                     ))
             }
         }
-        .background(AVIATheme.cardBackground)
+        .background(isFixedInclusion ? AVIATheme.cardBackground.opacity(0.6) : AVIATheme.cardBackground)
         .clipShape(.rect(cornerRadius: 14))
         .overlay {
             RoundedRectangle(cornerRadius: 14)
@@ -243,58 +250,70 @@ private struct SelectionItemCard: View {
     }
 
     private var header: some View {
-        Button(action: onToggle) {
-            HStack(alignment: .top, spacing: 12) {
-                if hasImage {
-                    itemThumbnail
-                        .frame(width: 56, height: 56)
-                        .clipShape(.rect(cornerRadius: 10))
+        Group {
+            if isFixedInclusion {
+                headerContent
+            } else {
+                Button(action: onToggle) {
+                    headerContent
                 }
+                .buttonStyle(.pressable(.subtle))
+            }
+        }
+    }
 
-                VStack(alignment: .leading, spacing: 4) {
-                    Text(selection.snapshotName)
-                        .font(.neueCorpMedium(15))
-                        .foregroundStyle(AVIATheme.textPrimary)
-                        .multilineTextAlignment(.leading)
-                        .lineLimit(2)
+    private var headerContent: some View {
+        HStack(alignment: .top, spacing: 12) {
+            if hasImage {
+                itemThumbnail
+                    .frame(width: 56, height: 56)
+                    .clipShape(.rect(cornerRadius: 10))
+            }
 
-                    Text(selection.snapshotDescription)
-                        .font(.neueCaption2)
-                        .foregroundStyle(AVIATheme.textSecondary)
-                        .lineLimit(2)
-                        .multilineTextAlignment(.leading)
+            VStack(alignment: .leading, spacing: 4) {
+                Text(selection.snapshotName)
+                    .font(.neueCorpMedium(15))
+                    .foregroundStyle(AVIATheme.textPrimary)
+                    .multilineTextAlignment(.leading)
+                    .lineLimit(2)
 
-                    HStack(spacing: 6) {
-                        Label(statusInfo.label, systemImage: statusInfo.icon)
-                            .font(.neueCorpMedium(8))
-                            .kerning(0.8)
-                            .foregroundStyle(statusInfo.color)
+                Text(selection.snapshotDescription)
+                    .font(.neueCaption2)
+                    .foregroundStyle(AVIATheme.textSecondary)
+                    .lineLimit(2)
+                    .multilineTextAlignment(.leading)
+
+                HStack(spacing: 6) {
+                    Label(statusInfo.label, systemImage: statusInfo.icon)
+                        .font(.neueCorpMedium(8))
+                        .kerning(0.8)
+                        .foregroundStyle(statusInfo.color)
+                        .padding(.horizontal, 8)
+                        .padding(.vertical, 3)
+                        .background(statusInfo.color.opacity(0.12), in: Capsule())
+
+                    if !isFixedInclusion, let cost = selection.upgradeCost, cost > 0 {
+                        Text("+\(AVIATheme.formatCost(cost))")
+                            .font(.neueCorpMedium(9))
+                            .foregroundStyle(AVIATheme.timelessBrown)
                             .padding(.horizontal, 8)
                             .padding(.vertical, 3)
-                            .background(statusInfo.color.opacity(0.12), in: Capsule())
-
-                        if let cost = selection.upgradeCost, cost > 0 {
-                            Text("+\(AVIATheme.formatCost(cost))")
-                                .font(.neueCorpMedium(9))
-                                .foregroundStyle(AVIATheme.timelessBrown)
-                                .padding(.horizontal, 8)
-                                .padding(.vertical, 3)
-                                .background(AVIATheme.timelessBrown.opacity(0.1), in: Capsule())
-                        }
+                            .background(AVIATheme.timelessBrown.opacity(0.1), in: Capsule())
                     }
                 }
+            }
 
-                Spacer(minLength: 0)
+            Spacer(minLength: 0)
 
+            if !isFixedInclusion {
                 Image(systemName: "chevron.down")
                     .font(.neueCorp(11))
                     .foregroundStyle(AVIATheme.textTertiary)
                     .rotationEffect(.degrees(isExpanded ? 180 : 0))
             }
-            .padding(14)
-            .contentShape(Rectangle())
         }
-        .buttonStyle(.pressable(.subtle))
+        .padding(14)
+        .contentShape(Rectangle())
     }
 
     private var itemThumbnail: some View {

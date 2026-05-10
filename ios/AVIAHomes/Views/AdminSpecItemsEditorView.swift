@@ -265,6 +265,7 @@ struct SpecItemEditSheet: View {
     @State private var messinaDesc: String = ""
     @State private var portobelloDesc: String = ""
     @State private var isUpgradeable: Bool = false
+    @State private var isFixedInclusion: Bool = false
     @State private var imageURL: String = ""
     @State private var sortOrder: Int = 0
     @State private var volosImageURL: String = ""
@@ -315,13 +316,34 @@ struct SpecItemEditSheet: View {
                                     .font(.neueCaption)
                                     .keyboardType(.numberPad)
                             }
-                            Toggle(isOn: $isUpgradeable) {
-                                Text("Upgradeable")
-                                    .font(.neueCaptionMedium)
-                                    .foregroundStyle(AVIATheme.textPrimary)
+                            Toggle(isOn: $isFixedInclusion) {
+                                VStack(alignment: .leading, spacing: 2) {
+                                    Text("Fixed inclusion (no variants)")
+                                        .font(.neueCaptionMedium)
+                                        .foregroundStyle(AVIATheme.textPrimary)
+                                    Text("End user can’t choose anything — shown as Included only")
+                                        .font(.neueCaption2)
+                                        .foregroundStyle(AVIATheme.textTertiary)
+                                }
                             }
-                            .tint(AVIATheme.warning)
+                            .tint(AVIATheme.heritageBlue)
                             .padding(.horizontal, 14)
+                            .onChange(of: isFixedInclusion) { _, newValue in
+                                if newValue {
+                                    isUpgradeable = false
+                                    linkedColourCategoryIds.removeAll()
+                                }
+                            }
+
+                            if !isFixedInclusion {
+                                Toggle(isOn: $isUpgradeable) {
+                                    Text("Upgradeable")
+                                        .font(.neueCaptionMedium)
+                                        .foregroundStyle(AVIATheme.textPrimary)
+                                }
+                                .tint(AVIATheme.warning)
+                                .padding(.horizontal, 14)
+                            }
                         }
                         .padding(.vertical, 14)
                     }
@@ -374,7 +396,7 @@ struct SpecItemEditSheet: View {
                         .padding(.vertical, 14)
                     }
 
-                    if isUpgradeable {
+                    if isUpgradeable && !isFixedInclusion {
                         BentoCard(cornerRadius: 11) {
                             VStack(alignment: .leading, spacing: 14) {
                                 sectionHeader("Upgrade Costs")
@@ -394,18 +416,20 @@ struct SpecItemEditSheet: View {
                         }
                     }
 
-                    BentoCard(cornerRadius: 11) {
-                        VStack(alignment: .leading, spacing: 14) {
-                            sectionHeader("Linked Colour Categories")
-                            Text("Select which colour categories this spec item unlocks. When the client confirms this item in Stage 1, the chosen colour categories appear in their Stage 2 colour selection.")
-                                .font(.neueCaption2)
-                                .foregroundStyle(AVIATheme.textTertiary)
-                                .padding(.horizontal, 14)
+                    if !isFixedInclusion {
+                        BentoCard(cornerRadius: 11) {
+                            VStack(alignment: .leading, spacing: 14) {
+                                sectionHeader("Linked Colour Categories")
+                                Text("Select which colour categories this spec item unlocks. When the client confirms this item in Stage 1, the chosen colour categories appear in their Stage 2 colour selection.")
+                                    .font(.neueCaption2)
+                                    .foregroundStyle(AVIATheme.textTertiary)
+                                    .padding(.horizontal, 14)
 
-                            colourChipGrid
-                                .padding(.horizontal, 14)
+                                colourChipGrid
+                                    .padding(.horizontal, 14)
+                            }
+                            .padding(.vertical, 14)
                         }
-                        .padding(.vertical, 14)
                     }
                 }
                 .padding(.horizontal, 16)
@@ -573,6 +597,7 @@ struct SpecItemEditSheet: View {
         messinaDesc = item.messina_description
         portobelloDesc = item.portobello_description
         isUpgradeable = item.is_upgradeable ?? false
+        isFixedInclusion = item.is_fixed_inclusion ?? false
         imageURL = item.image_url ?? ""
         sortOrder = item.sort_order ?? 0
         volosToMessinaCost = item.volos_to_messina_cost.map { formatCost($0) } ?? ""
@@ -608,18 +633,19 @@ struct SpecItemEditSheet: View {
             volos_description: volosDesc,
             messina_description: messinaDesc,
             portobello_description: portobelloDesc,
-            is_upgradeable: isUpgradeable,
+            is_upgradeable: isFixedInclusion ? false : isUpgradeable,
+            is_fixed_inclusion: isFixedInclusion,
             image_url: imageURL.isEmpty ? nil : imageURL,
             sort_order: sortOrder,
-            volos_to_messina_cost: Double(volosToMessinaCost),
-            volos_to_portobello_cost: Double(volosToPortobelloCost),
-            messina_to_portobello_cost: Double(messinaToPortobelloCost)
+            volos_to_messina_cost: isFixedInclusion ? nil : Double(volosToMessinaCost),
+            volos_to_portobello_cost: isFixedInclusion ? nil : Double(volosToPortobelloCost),
+            messina_to_portobello_cost: isFixedInclusion ? nil : Double(messinaToPortobelloCost)
         )
         var tierImages: [String: String] = [:]
         if !volosImageURL.isEmpty { tierImages["volos"] = volosImageURL }
         if !messinaImageURL.isEmpty { tierImages["messina"] = messinaImageURL }
         if !portobelloImageURL.isEmpty { tierImages["portobello"] = portobelloImageURL }
-        let linkedColours = Array(linkedColourCategoryIds).sorted()
+        let linkedColours = isFixedInclusion ? [] : Array(linkedColourCategoryIds).sorted()
         onSave(row, tierImages, linkedColours)
         dismiss()
     }
