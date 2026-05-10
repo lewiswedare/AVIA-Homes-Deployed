@@ -59,6 +59,11 @@ class SupabaseService {
 
     var realtimeChannels: [RealtimeChannelV2] = []
 
+    /// Last detailed error message from an upsert call. Admin editors surface
+    /// this in the failure toast so misconfigured DB columns / RLS rules are
+    /// visible instead of a generic "Failed to save".
+    var lastUpsertError: String?
+
     var isConfigured: Bool {
         configuredFlag
     }
@@ -1144,12 +1149,15 @@ class SupabaseService {
     }
 
     func upsertSpecRangeTier(_ row: SpecRangeTierRow) async -> Bool {
+        lastUpsertError = nil
         guard isConfigured else { return false }
         do {
             try await client.from("spec_range_tiers").upsert(row, onConflict: "tier").execute()
             return true
         } catch {
-            print("[SupabaseService] upsertSpecRangeTier FAILED: \(error)")
+            let message = String(describing: error)
+            print("[SupabaseService] upsertSpecRangeTier FAILED: \(message)")
+            lastUpsertError = message
             return false
         }
     }
@@ -1246,12 +1254,33 @@ class SupabaseService {
     }
 
     func upsertSpecItem(_ row: SpecItemFlatRow) async -> Bool {
+        lastUpsertError = nil
         guard isConfigured else { return false }
         do {
             try await client.from("spec_items").upsert(row).execute()
             return true
         } catch {
-            print("[SupabaseService] upsertSpecItem FAILED: \(error)")
+            let message = String(describing: error)
+            print("[SupabaseService] upsertSpecItem FAILED: \(message)")
+
+            // Retry without `is_fixed_inclusion` if the production DB hasn't had
+            // the 20260514 migration applied. PostgREST returns PGRST204 / a
+            // "column ... does not exist" message in that case.
+            if message.contains("is_fixed_inclusion") || message.contains("PGRST204") {
+                do {
+                    try await client.from("spec_items").upsert(row.withoutFixedInclusion()).execute()
+                    print("[SupabaseService] upsertSpecItem retry succeeded without is_fixed_inclusion")
+                    lastUpsertError = "Saved, but 'fixed inclusion' was ignored — run the latest Supabase migration to enable it."
+                    return true
+                } catch {
+                    let retryMessage = String(describing: error)
+                    print("[SupabaseService] upsertSpecItem retry FAILED: \(retryMessage)")
+                    lastUpsertError = retryMessage
+                    return false
+                }
+            }
+
+            lastUpsertError = message
             return false
         }
     }
@@ -1292,12 +1321,15 @@ class SupabaseService {
     }
 
     func upsertColourCategory(_ row: ColourCategoryUpsertRow) async -> Bool {
+        lastUpsertError = nil
         guard isConfigured else { return false }
         do {
             try await client.from("colour_categories").upsert(row).execute()
             return true
         } catch {
-            print("[SupabaseService] upsertColourCategory FAILED: \(error)")
+            let message = String(describing: error)
+            print("[SupabaseService] upsertColourCategory FAILED: \(message)")
+            lastUpsertError = message
             return false
         }
     }

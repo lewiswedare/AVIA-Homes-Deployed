@@ -192,8 +192,12 @@ class AdminCatalogViewModel {
         errorMessage = nil
         let success = await SupabaseService.shared.upsertSpecItem(row)
         guard success else {
-            errorMessage = "Failed to save spec item"
+            errorMessage = SupabaseService.shared.lastUpsertError.map { "Save failed: \($0)" } ?? "Failed to save spec item"
             return
+        }
+        if let warning = SupabaseService.shared.lastUpsertError {
+            // Soft warning surfaced as a toast (e.g. fallback succeeded but a column was missing).
+            errorMessage = warning
         }
 
         let hasAnyTierImage = !tierImages.isEmpty
@@ -253,7 +257,7 @@ class AdminCatalogViewModel {
             await loadColourCategories()
             await catalog.loadAll()
         } else {
-            errorMessage = "Failed to save colour category"
+            errorMessage = SupabaseService.shared.lastUpsertError.map { "Save failed: \($0)" } ?? "Failed to save colour category"
         }
     }
 

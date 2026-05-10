@@ -247,6 +247,32 @@ nonisolated struct SpecItemFlatRow: Codable, Sendable {
         self.messina_to_portobello_cost = messina_to_portobello_cost
     }
 
+    /// Returns a copy of this row WITHOUT the `is_fixed_inclusion` value set.
+    /// Used as a fallback when the production DB hasn't had the
+    /// `20260514_spec_items_fixed_inclusion` migration applied yet — sending an
+    /// unknown column to PostgREST causes the entire upsert to fail (PGRST204),
+    /// which previously surfaced as "Failed to save spec item".
+    func withoutFixedInclusion() -> SpecItemFlatRow {
+        SpecItemFlatRow(
+            id: id,
+            category_id: category_id,
+            name: name,
+            volos_description: volos_description,
+            messina_description: messina_description,
+            portobello_description: portobello_description,
+            is_upgradeable: is_upgradeable,
+            is_fixed_inclusion: nil,
+            image_url: image_url,
+            sort_order: sort_order,
+            volos_cost: volos_cost,
+            messina_cost: messina_cost,
+            portobello_cost: portobello_cost,
+            volos_to_messina_cost: volos_to_messina_cost,
+            volos_to_portobello_cost: volos_to_portobello_cost,
+            messina_to_portobello_cost: messina_to_portobello_cost
+        )
+    }
+
     func toSpecItem() -> SpecItem {
         SpecItem(
             id: id,

@@ -206,7 +206,8 @@ struct AdminSpecRangeEditorView: View {
             await loadTiers()
             await CatalogDataManager.shared.loadAll()
         } else {
-            withAnimation { errorMessage = "Failed to save spec range" }
+            let detail = SupabaseService.shared.lastUpsertError
+            withAnimation { errorMessage = detail.map { "Save failed: \($0)" } ?? "Failed to save spec range" }
         }
     }
 }
