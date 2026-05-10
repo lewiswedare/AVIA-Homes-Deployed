@@ -70,32 +70,21 @@ struct DocumentsView: View {
     private var documentsContent: some View {
         ScrollView {
             VStack(spacing: 16) {
-                filterChips
-
                 if filteredDocuments.isEmpty {
                     ContentUnavailableView(
                         "No Documents Found",
                         systemImage: "doc.text.magnifyingglass",
-                        description: Text("Try adjusting your search or filter.")
+                        description: Text("Try adjusting your search.")
                     )
                     .foregroundStyle(AVIATheme.textSecondary)
                     .padding(.top, 40)
                 } else {
-                    ForEach(groupedDocuments, id: \.0) { category, docs in
-                        VStack(alignment: .leading, spacing: 10) {
-                            Label(category.rawValue, systemImage: category.icon)
-                                .font(.neueSubheadlineMedium)
-                                .foregroundStyle(AVIATheme.textPrimary)
-                                .padding(.leading, 4)
-
-                            BentoCard(cornerRadius: 11) {
-                                VStack(spacing: 0) {
-                                    ForEach(Array(docs.enumerated()), id: \.element.id) { index, doc in
-                                        DocumentRow(document: doc)
-                                        if index < docs.count - 1 {
-                                            Rectangle().fill(AVIATheme.surfaceBorder).frame(height: 1).padding(.leading, 56)
-                                        }
-                                    }
+                    BentoCard(cornerRadius: 11) {
+                        VStack(spacing: 0) {
+                            ForEach(Array(filteredDocuments.enumerated()), id: \.element.id) { index, doc in
+                                DocumentRow(document: doc)
+                                if index < filteredDocuments.count - 1 {
+                                    Rectangle().fill(AVIATheme.surfaceBorder).frame(height: 1).padding(.leading, 56)
                                 }
                             }
                         }
@@ -103,26 +92,10 @@ struct DocumentsView: View {
                 }
             }
             .padding(.horizontal, 16)
+            .padding(.top, 8)
             .padding(.bottom, 40)
         }
         .searchable(text: $searchText, prompt: "Search documents")
-    }
-
-    private var filterChips: some View {
-        ScrollView(.horizontal) {
-            HStack(spacing: 8) {
-                FilterChip(title: "All", isSelected: selectedFilter == nil) {
-                    selectedFilter = nil
-                }
-                ForEach(DocumentCategory.allCases, id: \.self) { category in
-                    FilterChip(title: category.rawValue, isSelected: selectedFilter == category) {
-                        selectedFilter = selectedFilter == category ? nil : category
-                    }
-                }
-            }
-        }
-        .contentMargins(.horizontal, 0)
-        .scrollIndicators(.hidden)
     }
 }
 
