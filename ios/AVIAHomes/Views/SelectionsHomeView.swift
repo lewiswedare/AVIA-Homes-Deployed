@@ -242,9 +242,7 @@ struct SelectionsHomeView: View {
         return Color(.secondarySystemBackground)
             .frame(height: 168)
             .overlay {
-                Image(room.heroImageName)
-                    .resizable()
-                    .aspectRatio(contentMode: .fill)
+                roomBannerImage(room)
                     .allowsHitTesting(false)
             }
             .clipShape(.rect(cornerRadius: 14))
@@ -308,6 +306,23 @@ struct SelectionsHomeView: View {
                 .clipShape(.rect(cornerRadius: 14))
                 .allowsHitTesting(false)
             }
+    }
+
+    @ViewBuilder
+    private func roomBannerImage(_ room: SelectionRoom) -> some View {
+        if let urlString = room.heroImageURL, let url = URL(string: urlString) {
+            AsyncImage(url: url) { phase in
+                if let image = phase.image {
+                    image.resizable().aspectRatio(contentMode: .fill)
+                } else if phase.error != nil {
+                    Image(room.heroImageName).resizable().aspectRatio(contentMode: .fill)
+                } else {
+                    Color(.secondarySystemBackground)
+                }
+            }
+        } else {
+            Image(room.heroImageName).resizable().aspectRatio(contentMode: .fill)
+        }
     }
 
     private func progressRing(progress: Double) -> some View {

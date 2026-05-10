@@ -86,13 +86,28 @@ struct SelectionsRoomDetailView: View {
         }
     }
 
+    @ViewBuilder
+    private var heroBannerImage: some View {
+        if let urlString = room.heroImageURL, let url = URL(string: urlString) {
+            AsyncImage(url: url) { phase in
+                if let image = phase.image {
+                    image.resizable().aspectRatio(contentMode: .fill)
+                } else if phase.error != nil {
+                    Image(room.heroImageName).resizable().aspectRatio(contentMode: .fill)
+                } else {
+                    Color(.secondarySystemBackground)
+                }
+            }
+        } else {
+            Image(room.heroImageName).resizable().aspectRatio(contentMode: .fill)
+        }
+    }
+
     private var heroHeader: some View {
         Color(.secondarySystemBackground)
             .frame(height: 180)
             .overlay {
-                Image(room.heroImageName)
-                    .resizable()
-                    .aspectRatio(contentMode: .fill)
+                heroBannerImage
                     .allowsHitTesting(false)
             }
             .clipShape(.rect(cornerRadius: 16))
