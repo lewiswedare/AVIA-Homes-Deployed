@@ -46,15 +46,18 @@ struct ChatView: View {
             }
         }
         .task {
+            await viewModel.ensureUsersLoaded(ids: conversation.participantIds)
             await viewModel.messagingService.loadMessages(for: conversation.id)
             await viewModel.messagingService.markConversationRead(
                 conversationId: conversation.id,
                 userId: viewModel.currentUser.id
             )
             viewModel.messagingService.subscribeToMessages(conversationId: conversation.id)
+            await viewModel.ensureUsersLoaded(ids: messages.map(\.senderId))
         }
         .onChange(of: messages.count) { _, _ in
             scrollToBottom()
+            Task { await viewModel.ensureUsersLoaded(ids: messages.map(\.senderId)) }
         }
         .onChange(of: photoItem) { _, newItem in
             if let newItem {
@@ -228,18 +231,15 @@ struct ChatView: View {
 
     @ViewBuilder
     private func senderAvatar(for message: ChatMessage) -> some View {
-        if conversation.isGeneral && message.senderId != viewModel.currentUser.id {
-            // General conversation: sender may be any admin/staff
-            if let sender = viewModel.allRegisteredUsers.first(where: { $0.id == message.senderId }) {
-                UserAvatarView(user: sender, size: 28)
-            } else {
-                Text("A")
-                    .font(.neueCorpMedium(12))
-                    .foregroundStyle(AVIATheme.aviaWhite)
-                    .frame(width: 28, height: 28)
-                    .background(AVIATheme.primaryGradient)
-                    .clipShape(Circle())
-            }
+        if let sender = viewModel.allRegisteredUsers.first(where: { $0.id == message.senderId }) {
+            UserAvatarView(user: sender, size: 28)
+        } else if conversation.isGeneral {
+            Text("A")
+                .font(.neueCorpMedium(12))
+                .foregroundStyle(AVIATheme.aviaWhite)
+                .frame(width: 28, height: 28)
+                .background(AVIATheme.primaryGradient)
+                .clipShape(Circle())
         } else {
             UserAvatarView(
                 avatarUrl: otherUser?.avatarUrl,

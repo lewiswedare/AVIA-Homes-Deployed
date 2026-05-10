@@ -739,6 +739,26 @@ class AppViewModel {
         cachedUsers
     }
 
+    /// Lazily fetches any user IDs not already in the cache so avatars/names
+    /// can be rendered for conversations / messages whose participants aren't
+    /// part of the current user's normal visible set.
+    func ensureUsersLoaded(ids: [String]) async {
+        let missing = Array(Set(ids))
+            .filter { !$0.isEmpty }
+            .filter { id in !cachedUsers.contains(where: { $0.id == id || $0.id.lowercased() == id.lowercased() }) }
+        guard !missing.isEmpty else { return }
+        var fetched: [ClientUser] = []
+        for id in missing {
+            if let profile = await SupabaseService.shared.fetchProfile(userId: id) {
+                fetched.append(profile)
+            }
+        }
+        guard !fetched.isEmpty else { return }
+        for user in fetched where !cachedUsers.contains(where: { $0.id == user.id }) {
+            cachedUsers.append(user)
+        }
+    }
+
     func assignRole(_ role: UserRole, to userId: String) {
         if let cacheIdx = cachedUsers.firstIndex(where: { $0.id == userId }) {
             cachedUsers[cacheIdx].role = role

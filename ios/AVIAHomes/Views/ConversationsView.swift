@@ -46,7 +46,16 @@ struct ConversationsView: View {
         }
         .hapticRefresh {
             await viewModel.messagingService.loadConversations(for: viewModel.currentUser.id)
+            await resolveParticipants()
         }
+        .task(id: sortedConversations.map(\.id).joined()) {
+            await resolveParticipants()
+        }
+    }
+
+    private func resolveParticipants() async {
+        let ids = sortedConversations.flatMap(\.participantIds)
+        await viewModel.ensureUsersLoaded(ids: ids)
     }
 
     private func conversationRow(_ conversation: Conversation) -> some View {
