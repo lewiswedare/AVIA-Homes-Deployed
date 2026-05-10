@@ -33,33 +33,52 @@ struct SpecificationCategoryDetailView: View {
     }
 
     private var categoryHeader: some View {
-        HStack(spacing: 14) {
-            Image(systemName: category.icon)
-                .font(.neueCorpMedium(16))
-                .foregroundStyle(AVIATheme.aviaWhite)
-                .frame(width: 44, height: 44)
-                .background(AVIATheme.primaryGradient)
-                .clipShape(.rect(cornerRadius: 10))
-
-            VStack(alignment: .leading, spacing: 3) {
-                Text("\(category.items.count) inclusions in this category")
-                    .font(.neueSubheadline)
-                    .foregroundStyle(AVIATheme.textSecondary)
-
-                let upgradeCount = specVM.upgradeableItems(in: category).count
-                if upgradeCount > 0 {
-                    HStack(spacing: 4) {
-                        Image(systemName: "arrow.up.circle.fill")
-                            .font(.neueCorp(10))
-                        Text("\(upgradeCount) items can be upgraded")
-                            .font(.neueCaption2)
+        VStack(spacing: 0) {
+            if let urlString = category.imageURL, let url = URL(string: urlString) {
+                Color(.secondarySystemBackground)
+                    .frame(height: 180)
+                    .overlay {
+                        AsyncImage(url: url) { phase in
+                            switch phase {
+                            case .success(let image):
+                                image.resizable().aspectRatio(contentMode: .fill)
+                            default:
+                                Color(.secondarySystemBackground)
+                            }
+                        }
+                        .allowsHitTesting(false)
                     }
-                    .foregroundStyle(AVIATheme.timelessBrown)
-                }
+                    .clipped()
             }
-            Spacer()
+
+            HStack(spacing: 14) {
+                Image(systemName: category.icon)
+                    .font(.neueCorpMedium(16))
+                    .foregroundStyle(AVIATheme.aviaWhite)
+                    .frame(width: 44, height: 44)
+                    .background(AVIATheme.primaryGradient)
+                    .clipShape(.rect(cornerRadius: 10))
+
+                VStack(alignment: .leading, spacing: 3) {
+                    Text("\(category.items.count) inclusions in this category")
+                        .font(.neueSubheadline)
+                        .foregroundStyle(AVIATheme.textSecondary)
+
+                    let upgradeCount = specVM.upgradeableItems(in: category).count
+                    if upgradeCount > 0 {
+                        HStack(spacing: 4) {
+                            Image(systemName: "arrow.up.circle.fill")
+                                .font(.neueCorp(10))
+                            Text("\(upgradeCount) items can be upgraded")
+                                .font(.neueCaption2)
+                        }
+                        .foregroundStyle(AVIATheme.timelessBrown)
+                    }
+                }
+                Spacer()
+            }
+            .padding(16)
         }
-        .padding(16)
         .background(AVIATheme.cardBackground)
         .clipShape(.rect(cornerRadius: 13))
     }

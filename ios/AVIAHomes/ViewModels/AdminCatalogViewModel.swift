@@ -69,9 +69,9 @@ class AdminCatalogViewModel {
         isLoading = false
     }
 
-    func saveSpecCategory(id: String, name: String, icon: String, sortOrder: Int) async {
+    func saveSpecCategory(id: String, name: String, icon: String, sortOrder: Int, imageURL: String? = nil) async {
         errorMessage = nil
-        let row = SpecCategoryUpsertRow(id: id, name: name, icon: icon, sort_order: sortOrder)
+        let row = SpecCategoryUpsertRow(id: id, name: name, icon: icon, sort_order: sortOrder, image_url: imageURL)
         let success = await SupabaseService.shared.upsertSpecCategory(row)
         if success {
             successMessage = "Category saved"

@@ -47,7 +47,41 @@ nonisolated struct SpecCategoryRow: Codable, Sendable {
     let name: String
     let icon: String
     let sort_order: Int
+    let image_url: String?
     let items: [SpecItemRow]
+
+    enum CodingKeys: String, CodingKey {
+        case id, name, icon, sort_order, image_url, items
+    }
+
+    init(id: String, name: String, icon: String, sort_order: Int, image_url: String? = nil, items: [SpecItemRow] = []) {
+        self.id = id
+        self.name = name
+        self.icon = icon
+        self.sort_order = sort_order
+        self.image_url = image_url
+        self.items = items
+    }
+
+    init(from decoder: Decoder) throws {
+        let c = try decoder.container(keyedBy: CodingKeys.self)
+        id = try c.decode(String.self, forKey: .id)
+        name = try c.decode(String.self, forKey: .name)
+        icon = try c.decode(String.self, forKey: .icon)
+        sort_order = try c.decode(Int.self, forKey: .sort_order)
+        image_url = try c.decodeIfPresent(String.self, forKey: .image_url)
+        items = (try? c.decodeIfPresent([SpecItemRow].self, forKey: .items)) ?? []
+    }
+
+    func encode(to encoder: Encoder) throws {
+        var c = encoder.container(keyedBy: CodingKeys.self)
+        try c.encode(id, forKey: .id)
+        try c.encode(name, forKey: .name)
+        try c.encode(icon, forKey: .icon)
+        try c.encode(sort_order, forKey: .sort_order)
+        try c.encodeIfPresent(image_url, forKey: .image_url)
+        try c.encode(items, forKey: .items)
+    }
 
     struct SpecItemRow: Codable, Sendable {
         let id: String
@@ -70,6 +104,7 @@ nonisolated struct SpecCategoryRow: Codable, Sendable {
             id: id,
             name: name,
             icon: icon,
+            imageURL: image_url,
             items: items.map {
                 SpecItem(
                     id: $0.id,
@@ -298,6 +333,15 @@ nonisolated struct SpecCategoryUpsertRow: Codable, Sendable {
     let name: String
     let icon: String
     let sort_order: Int
+    let image_url: String?
+
+    init(id: String, name: String, icon: String, sort_order: Int, image_url: String? = nil) {
+        self.id = id
+        self.name = name
+        self.icon = icon
+        self.sort_order = sort_order
+        self.image_url = image_url
+    }
 }
 
 nonisolated struct SpecToColourMappingRow: Codable, Sendable {

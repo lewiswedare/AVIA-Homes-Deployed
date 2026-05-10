@@ -1089,26 +1089,27 @@ class SupabaseService {
             let name: String
             let icon: String
             let order: Int
+            let imageURL: String?
         }
 
         var metaById: [String: CategoryMeta] = [:]
         var nextFallbackOrder = 1000
 
         for row in categoryRows {
-            metaById[row.id] = CategoryMeta(id: row.id, name: row.name, icon: row.icon, order: row.sort_order)
+            metaById[row.id] = CategoryMeta(id: row.id, name: row.name, icon: row.icon, order: row.sort_order, imageURL: row.image_url)
         }
 
         // Ensure every category_id present in items has a meta entry, even if
         // no row exists in spec_categories (legacy data or out-of-sync schema).
         for catId in grouped.keys where metaById[catId] == nil {
             if let legacy = legacyMeta[catId] {
-                metaById[catId] = CategoryMeta(id: catId, name: legacy.name, icon: legacy.icon, order: legacy.order)
+                metaById[catId] = CategoryMeta(id: catId, name: legacy.name, icon: legacy.icon, order: legacy.order, imageURL: nil)
             } else {
                 let humanName = catId
                     .split(separator: "_")
                     .map { $0.prefix(1).uppercased() + $0.dropFirst() }
                     .joined(separator: " ")
-                metaById[catId] = CategoryMeta(id: catId, name: humanName, icon: "square.grid.2x2", order: nextFallbackOrder)
+                metaById[catId] = CategoryMeta(id: catId, name: humanName, icon: "square.grid.2x2", order: nextFallbackOrder, imageURL: nil)
                 nextFallbackOrder += 1
             }
         }
@@ -1124,6 +1125,7 @@ class SupabaseService {
                 id: meta.id,
                 name: meta.name,
                 icon: meta.icon,
+                imageURL: meta.imageURL,
                 items: catItems.map { $0.toSpecItem() }
             )
         }

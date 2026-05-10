@@ -80,16 +80,16 @@ struct AdminSpecCategoriesEditorView: View {
             SpecCategoryEditSheet(
                 category: nil,
                 defaultSortOrder: viewModel.specCategoriesDB.count
-            ) { id, name, icon, sort in
-                Task { await viewModel.saveSpecCategory(id: id, name: name, icon: icon, sortOrder: sort) }
+            ) { id, name, icon, sort, imageURL in
+                Task { await viewModel.saveSpecCategory(id: id, name: name, icon: icon, sortOrder: sort, imageURL: imageURL) }
             }
         }
         .sheet(item: $editingCategory) { cat in
             SpecCategoryEditSheet(
                 category: cat,
                 defaultSortOrder: cat.sort_order
-            ) { id, name, icon, sort in
-                Task { await viewModel.saveSpecCategory(id: id, name: name, icon: icon, sortOrder: sort) }
+            ) { id, name, icon, sort, imageURL in
+                Task { await viewModel.saveSpecCategory(id: id, name: name, icon: icon, sortOrder: sort, imageURL: imageURL) }
             }
         }
         .alert("Delete Category", isPresented: .init(
@@ -224,13 +224,14 @@ private struct SpecCategoryEditSheet: View {
     @Environment(\.dismiss) private var dismiss
     let category: SpecCategoryRow?
     let defaultSortOrder: Int
-    let onSave: (_ id: String, _ name: String, _ icon: String, _ sortOrder: Int) -> Void
+    let onSave: (_ id: String, _ name: String, _ icon: String, _ sortOrder: Int, _ imageURL: String?) -> Void
 
     @State private var idText: String = ""
     @State private var name: String = ""
     @State private var icon: String = "square.grid.2x2.fill"
     @State private var sortOrder: Int = 0
     @State private var iconSearch: String = ""
+    @State private var imageURL: String = ""
 
     private var isNew: Bool { category == nil }
 
@@ -290,6 +291,26 @@ private struct SpecCategoryEditSheet: View {
                                     .font(.neueCaption)
                                     .keyboardType(.numberPad)
                             }
+                        }
+                        .padding(.vertical, 14)
+                    }
+
+                    BentoCard(cornerRadius: 11) {
+                        VStack(alignment: .leading, spacing: 14) {
+                            sectionHeader("Cover Image")
+
+                            VStack(alignment: .leading, spacing: 6) {
+                                Text("Shown at the top of this category on the Selections screen.")
+                                    .font(.neueCaption2)
+                                    .foregroundStyle(AVIATheme.textTertiary)
+                                AdminImagePickerField(
+                                    label: "",
+                                    imageURL: $imageURL,
+                                    folder: "spec-categories",
+                                    itemId: idText.isEmpty ? "category" : idText
+                                )
+                            }
+                            .padding(.horizontal, 14)
                         }
                         .padding(.vertical, 14)
                     }
@@ -375,8 +396,9 @@ private struct SpecCategoryEditSheet: View {
                         let trimmedId = idText.trimmingCharacters(in: .whitespacesAndNewlines)
                         let trimmedName = name.trimmingCharacters(in: .whitespacesAndNewlines)
                         let trimmedIcon = icon.trimmingCharacters(in: .whitespacesAndNewlines)
+                        let trimmedImage = imageURL.trimmingCharacters(in: .whitespacesAndNewlines)
                         guard !trimmedId.isEmpty, !trimmedName.isEmpty, !trimmedIcon.isEmpty else { return }
-                        onSave(trimmedId, trimmedName, trimmedIcon, sortOrder)
+                        onSave(trimmedId, trimmedName, trimmedIcon, sortOrder, trimmedImage.isEmpty ? nil : trimmedImage)
                         dismiss()
                     }
                     .fontWeight(.semibold)
@@ -394,6 +416,7 @@ private struct SpecCategoryEditSheet: View {
             name = category.name
             icon = category.icon
             sortOrder = category.sort_order
+            imageURL = category.image_url ?? ""
         } else {
             sortOrder = defaultSortOrder
         }

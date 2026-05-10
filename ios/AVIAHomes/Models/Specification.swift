@@ -63,7 +63,16 @@ nonisolated struct SpecCategory: Identifiable, Sendable, Hashable {
     let id: String
     let name: String
     let icon: String
+    let imageURL: String?
     let items: [SpecItem]
+
+    init(id: String, name: String, icon: String, imageURL: String? = nil, items: [SpecItem]) {
+        self.id = id
+        self.name = name
+        self.icon = icon
+        self.imageURL = imageURL
+        self.items = items
+    }
 }
 
 nonisolated struct SpecItem: Identifiable, Sendable {
