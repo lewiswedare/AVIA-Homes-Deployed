@@ -30,14 +30,26 @@ struct SelectionsHomeView: View {
     }
 
     private var totalSelectionsCount: Int {
-        viewModel.selections.filter { $0.selectionType != .removed }.count
+        viewModel.selections.filter { sel in
+            sel.selectionType != .removed && isSelectionCountable(sel)
+        }.count
     }
 
     private var completedSelectionsCount: Int {
         viewModel.selections.filter { sel in
-            guard sel.selectionType != .removed else { return false }
+            guard sel.selectionType != .removed, isSelectionCountable(sel) else { return false }
             return isSelectionComplete(sel)
         }.count
+    }
+
+    /// Items that have neither products nor a colour mapping are admin
+    /// placeholders the client can't act on yet — exclude them from the
+    /// progress total so the count reflects only items that need a tap.
+    private func isSelectionCountable(_ sel: BuildSpecSelection) -> Bool {
+        let rangeId = sel.specTier.lowercased()
+        let products = catalog.products(for: sel.specItemId, rangeId: rangeId)
+        if !products.isEmpty { return true }
+        return colourCategoriesRequired(for: sel)
     }
 
     /// A selection is complete only when the client has explicitly chosen
@@ -47,7 +59,13 @@ struct SelectionsHomeView: View {
     private func isSelectionComplete(_ sel: BuildSpecSelection) -> Bool {
         let rangeId = sel.specTier.lowercased()
         let products = catalog.products(for: sel.specItemId, rangeId: rangeId)
-        let upgradeDecided = sel.selectionType == .included || sel.selectionType == .upgradeApproved || sel.selectionType == .upgradeAccepted || sel.selectionType == .upgradeDeclined
+
+        // Upgrades that are still mid-flow (draft / awaiting quote / quoted)
+        // are NOT complete — the client hasn't locked anything in.
+        let upgradeDecided = sel.selectionType == .included
+            || sel.selectionType == .upgradeApproved
+            || sel.selectionType == .upgradeAccepted
+            || sel.selectionType == .upgradeDeclined
         guard upgradeDecided else { return false }
 
         if !products.isEmpty {
@@ -59,9 +77,9 @@ struct SelectionsHomeView: View {
             return true
         }
 
-        // Legacy item without products — fall back to the colour-mapping flow.
-        let needsColour = colourCategoriesRequired(for: sel)
-        if !needsColour { return true }
+        // Legacy item without products — only complete once the client has
+        // saved at least one colour selection for it. (Items with neither
+        // products nor colours are filtered out by isSelectionCountable.)
         return viewModel.colourSelections.contains { $0.buildSpecSelectionId == sel.id }
     }
 
@@ -76,11 +94,12 @@ struct SelectionsHomeView: View {
     }
 
     private func progress(for items: [BuildSpecSelection]) -> Double {
-        guard !items.isEmpty else { return 0 }
-        let done = items.reduce(0) { acc, sel in
+        let countable = items.filter { isSelectionCountable($0) }
+        guard !countable.isEmpty else { return 0 }
+        let done = countable.reduce(0) { acc, sel in
             acc + (isSelectionComplete(sel) ? 1 : 0)
         }
-        return Double(done) / Double(items.count)
+        return Double(done) / Double(countable.count)
     }
 
     private func roomUpgradeCost(_ items: [BuildSpecSelection]) -> Double {
