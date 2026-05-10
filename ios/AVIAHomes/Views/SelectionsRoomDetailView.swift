@@ -40,37 +40,63 @@ struct SelectionsRoomDetailView: View {
         return specCost + colourCost
     }
 
+    /// Returns the id of the next item after `currentId` that the client still
+    /// needs to confirm (no productId saved yet). Wraps to find any earlier
+    /// incomplete item; returns nil only when the room is fully picked.
+    private func nextIncompleteItemId(after currentId: String) -> String? {
+        guard !items.isEmpty,
+              let currentIdx = items.firstIndex(where: { $0.id == currentId }) else { return nil }
+        let ordered = Array(items[(currentIdx + 1)...]) + Array(items[..<currentIdx])
+        return ordered.first(where: { $0.productId == nil && $0.id != currentId })?.id
+    }
+
     var body: some View {
         ScrollView {
-            VStack(spacing: 14) {
-                heroHeader
+            ScrollViewReader { proxy in
+                VStack(spacing: 14) {
+                    heroHeader
+                        .padding(.horizontal, 16)
+
+                    LazyVStack(spacing: 12) {
+                        ForEach(items) { item in
+                            SelectionItemCard(
+                                viewModel: viewModel,
+                                selection: item,
+                                isExpanded: expandedItemId == item.id,
+                                onToggle: {
+                                    AVIAHaptic.lightTap.trigger()
+                                    withAnimation(.spring(response: 0.4, dampingFraction: 0.85)) {
+                                        expandedItemId = expandedItemId == item.id ? nil : item.id
+                                    }
+                                },
+                                onRequestUpgrade: {
+                                    pendingUpgradeItem = item
+                                    upgradeNotes = item.clientNotes ?? ""
+                                },
+                                onPreviewImage: openPreview,
+                                onConfirmed: {
+                                    let nextId = nextIncompleteItemId(after: item.id)
+                                    withAnimation(.spring(response: 0.45, dampingFraction: 0.85)) {
+                                        expandedItemId = nextId
+                                    }
+                                    if let nextId {
+                                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.05) {
+                                            withAnimation(.spring(response: 0.45, dampingFraction: 0.85)) {
+                                                proxy.scrollTo(nextId, anchor: .top)
+                                            }
+                                        }
+                                    }
+                                }
+                            )
+                            .id(item.id)
+                        }
+                    }
                     .padding(.horizontal, 16)
 
-                LazyVStack(spacing: 12) {
-                    ForEach(items) { item in
-                        SelectionItemCard(
-                            viewModel: viewModel,
-                            selection: item,
-                            isExpanded: expandedItemId == item.id,
-                            onToggle: {
-                                AVIAHaptic.lightTap.trigger()
-                                withAnimation(.spring(response: 0.4, dampingFraction: 0.85)) {
-                                    expandedItemId = expandedItemId == item.id ? nil : item.id
-                                }
-                            },
-                            onRequestUpgrade: {
-                                pendingUpgradeItem = item
-                                upgradeNotes = item.clientNotes ?? ""
-                            },
-                            onPreviewImage: openPreview
-                        )
-                    }
+                    Color.clear.frame(height: 24)
                 }
-                .padding(.horizontal, 16)
-
-                Color.clear.frame(height: 24)
+                .padding(.top, 6)
             }
-            .padding(.top, 6)
         }
         .background(AVIATheme.background)
         .navigationTitle(room.displayName)
@@ -163,6 +189,7 @@ private struct SelectionItemCard: View {
     let onToggle: () -> Void
     let onRequestUpgrade: () -> Void
     let onPreviewImage: (String) -> Void
+    var onConfirmed: () -> Void = {}
 
     private var catalog: CatalogDataManager { CatalogDataManager.shared }
 
@@ -423,7 +450,8 @@ private struct SelectionItemCard: View {
                 SelectionProductPickerView(
                     viewModel: viewModel,
                     selection: selection,
-                    products: rangeProducts
+                    products: rangeProducts,
+                    onConfirmed: onConfirmed
                 )
             } else if hasColours || canRequestUpgrade {
                 tierSection
