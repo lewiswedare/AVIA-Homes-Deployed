@@ -12,7 +12,7 @@ Inside each spec range product, admins will now see a new **Colours** section wh
 
 Spec items remain grouped by category (Kitchen, Bathroom, External Finishes, etc.) for organisation — that grouping stays exactly as it is today, just managed implicitly through the product editor.
 
-The old Colour Categories editor and Selection Categories editor are hidden from the hub. The underlying data isn't deleted, so existing builds keep working, but new colour management happens per-product.
+The old Colour Categories editor and Selection Categories editor are hidden from the hub. Existing shared colour palettes are auto-migrated into per-product swatches and the legacy shared categories are deleted — the per-product list is the only source of truth.
 
 ## What changes for clients
 
@@ -28,8 +28,11 @@ When a client confirms a spec range product, the **colour picker for that exact 
 - **Admin → Spec Range Items → Edit Product**: New inline "Colours" section replaces the "Linked colour categories" chip grid
 - **Client → Build → Colour Selections**: Pulls colours from each spec product directly instead of from the shared colour categories
 
-## Things to confirm before building
+## Migration (confirmed: clean slate)
 
-- Existing colour data stays in the database untouched so old builds keep displaying correctly
-- The new per-product colour list will be the source of truth going forward
-- Migration of existing linked-colour-categories into per-product swatches isn't part of this change — admins will re-add colours to products as they update each one (let me know if you want auto-migration instead)
+Implemented in `supabase/migrations/20260516_migrate_to_per_product_colours.sql`:
+
+- For each existing `spec_to_colour_mapping` link, copy the shared category's options into a per-product palette `spec_<spec_item_id>_colours` (merging when an item was linked to multiple shared categories, dedup by option id).
+- Repoint mappings so each spec item points only at its own per-product palette.
+- Delete every legacy shared `colour_categories` row.
+- Wipe `build_colour_selections` — old in-flight builds are intentionally not carried over (confirmed acceptable: "old builds aren't important").
