@@ -128,6 +128,9 @@ struct SelectionsHomeView: View {
         ScrollView {
             VStack(spacing: 16) {
                 summaryHero
+                if viewModel.upgradeBreakdown.total > 0 {
+                    upgradeBreakdownCard
+                }
                 roomsGrid
                 Color.clear.frame(height: 80)
             }
@@ -211,6 +214,68 @@ struct SelectionsHomeView: View {
                 .minimumScaleFactor(0.7)
         }
         .frame(maxWidth: .infinity)
+    }
+
+    private var upgradeBreakdownCard: some View {
+        let breakdown = viewModel.upgradeBreakdown
+        return BentoCard(cornerRadius: 16) {
+            VStack(alignment: .leading, spacing: 14) {
+                HStack(spacing: 8) {
+                    Image(systemName: "chart.pie.fill")
+                        .font(.neueCorp(12))
+                        .foregroundStyle(AVIATheme.timelessBrown)
+                    Text("UPGRADE SUMMARY")
+                        .font(.neueCorpMedium(9))
+                        .kerning(1.4)
+                        .foregroundStyle(AVIATheme.timelessBrown)
+                    Spacer()
+                    Text(AVIATheme.formatCost(breakdown.total))
+                        .font(.neueCorpMedium(16))
+                        .foregroundStyle(AVIATheme.textPrimary)
+                }
+
+                VStack(spacing: 8) {
+                    breakdownRow(label: "Spec range upgrades", icon: "arrow.up.circle.fill", colour: AVIATheme.heritageBlue, amount: breakdown.specRange)
+                    breakdownRow(label: "Product upgrades", icon: "shippingbox.fill", colour: AVIATheme.timelessBrown, amount: breakdown.product)
+                    breakdownRow(label: "Colour extras", icon: "paintpalette.fill", colour: AVIATheme.warning, amount: breakdown.colour)
+                }
+
+                Button {
+                    AVIAHaptic.lightTap.trigger()
+                    showReview = true
+                } label: {
+                    HStack(spacing: 6) {
+                        Text("View full breakdown")
+                            .font(.neueCaptionMedium)
+                        Image(systemName: "arrow.right")
+                            .font(.neueCorp(10))
+                    }
+                    .foregroundStyle(AVIATheme.timelessBrown)
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, 10)
+                    .background(AVIATheme.timelessBrown.opacity(0.08))
+                    .clipShape(.rect(cornerRadius: 10))
+                }
+                .buttonStyle(.pressable(.subtle))
+            }
+            .padding(16)
+        }
+    }
+
+    private func breakdownRow(label: String, icon: String, colour: Color, amount: Double) -> some View {
+        HStack(spacing: 10) {
+            Image(systemName: icon)
+                .font(.system(size: 12, weight: .semibold))
+                .foregroundStyle(colour)
+                .frame(width: 22)
+            Text(label)
+                .font(.neueCaption)
+                .foregroundStyle(AVIATheme.textSecondary)
+            Spacer()
+            Text(amount > 0 ? AVIATheme.formatCost(amount) : "—")
+                .font(.neueCorpMedium(12))
+                .foregroundStyle(amount > 0 ? AVIATheme.textPrimary : AVIATheme.textTertiary)
+        }
     }
 
     private var roomsGrid: some View {
