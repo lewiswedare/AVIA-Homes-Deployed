@@ -3019,69 +3019,6 @@ class SupabaseService {
         }
     }
 
-    // MARK: - Foundation Calls (Cal.com)
-
-    func fetchFoundationCalls(clientId: String) async -> [FoundationCall] {
-        guard isConfigured else { return [] }
-        do {
-            let rows: [FoundationCallRow] = try await client
-                .from("client_foundation_calls")
-                .select()
-                .eq("client_id", value: clientId)
-                .order("scheduled_at", ascending: false)
-                .execute()
-                .value
-            return rows.map { $0.toCall() }
-        } catch {
-            print("[SupabaseService] fetchFoundationCalls FAILED: \(error)")
-            return []
-        }
-    }
-
-    func fetchLatestFoundationCall(clientId: String) async -> FoundationCall? {
-        await fetchFoundationCalls(clientId: clientId).first
-    }
-
-    @discardableResult
-    func upsertFoundationCall(_ call: FoundationCall) async -> Bool {
-        guard isConfigured else { return false }
-        var updated = call
-        updated.updatedAt = .now
-        let row = FoundationCallRow(call: updated)
-        do {
-            try await client.from("client_foundation_calls")
-                .upsert(row, onConflict: "id")
-                .execute()
-            return true
-        } catch {
-            print("[SupabaseService] upsertFoundationCall FAILED: \(error)")
-            return false
-        }
-    }
-
-    @discardableResult
-    func deleteFoundationCall(id: String) async -> Bool {
-        guard isConfigured else { return false }
-        do {
-            try await client.from("client_foundation_calls").delete().eq("id", value: id).execute()
-            return true
-        } catch {
-            print("[SupabaseService] deleteFoundationCall FAILED: \(error)")
-            return false
-        }
-    }
-
-    /// Subscribe to live changes on `client_foundation_calls` (e.g. Cal.com
-    /// webhook updates). The closure fires on the MainActor any time a row
-    /// changes — call sites should refetch the latest call.
-    func subscribeToFoundationCalls(onUpdate: @escaping @Sendable () -> Void) {
-        installChannel(
-            name: "client_foundation_calls_sync",
-            table: "client_foundation_calls",
-            onUpdate: onUpdate
-        )
-    }
-
     // MARK: - Spec Products (catalogue v2)
 
     /// All products inside a given spec slot, ordered by sort_order.
