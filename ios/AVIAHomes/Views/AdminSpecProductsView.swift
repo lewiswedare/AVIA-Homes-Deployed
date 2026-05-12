@@ -525,18 +525,38 @@ struct AdminSpecProductEditorView: View {
     }
 
     private func colourRow(colour: Binding<EditableProductColour>) -> some View {
-        VStack(alignment: .leading, spacing: 8) {
+        let hasImage = !colour.wrappedValue.imageURL.isEmpty
+        return VStack(alignment: .leading, spacing: 8) {
             HStack(spacing: 10) {
-                Circle()
-                    .fill(Color(hex: colour.wrappedValue.hex))
-                    .frame(width: 28, height: 28)
-                    .overlay { Circle().stroke(AVIATheme.surfaceBorder, lineWidth: 1) }
+                Group {
+                    if hasImage, let url = URL(string: colour.wrappedValue.imageURL) {
+                        Color(.secondarySystemBackground)
+                            .frame(width: 28, height: 28)
+                            .overlay {
+                                AsyncImage(url: url) { phase in
+                                    if let img = phase.image {
+                                        img.resizable().aspectRatio(contentMode: .fill)
+                                    } else {
+                                        Image(systemName: "photo").font(.neueCaption2).foregroundStyle(AVIATheme.textTertiary)
+                                    }
+                                }
+                                .allowsHitTesting(false)
+                            }
+                            .clipShape(Circle())
+                            .overlay { Circle().stroke(AVIATheme.surfaceBorder, lineWidth: 1) }
+                    } else {
+                        Circle()
+                            .fill(Color(hex: colour.wrappedValue.hex))
+                            .frame(width: 28, height: 28)
+                            .overlay { Circle().stroke(AVIATheme.surfaceBorder, lineWidth: 1) }
+                    }
+                }
 
                 VStack(spacing: 6) {
                     TextField("Colour name", text: colour.name)
                         .font(.neueCaption)
                     HStack(spacing: 6) {
-                        TextField("#Hex", text: colour.hex)
+                        TextField(hasImage ? "#Hex (optional)" : "#Hex", text: colour.hex)
                             .font(.neueCaption2)
                             .textInputAutocapitalization(.never)
                             .frame(maxWidth: 80)
@@ -546,6 +566,14 @@ struct AdminSpecProductEditorView: View {
                             .keyboardType(.decimalPad)
                             .frame(maxWidth: 80)
                         Text("AUD").font(.neueCaption2).foregroundStyle(AVIATheme.textTertiary)
+                        Spacer(minLength: 0)
+                    }
+                    HStack(spacing: 6) {
+                        Text("SKU").font(.neueCaption2).foregroundStyle(AVIATheme.textTertiary)
+                        TextField("Variant SKU (optional)", text: colour.sku)
+                            .font(.neueCaption2)
+                            .textInputAutocapitalization(.characters)
+                            .autocorrectionDisabled()
                         Spacer(minLength: 0)
                     }
                     HStack(spacing: 6) {
@@ -569,11 +597,16 @@ struct AdminSpecProductEditorView: View {
                 }
             }
 
-            AdminCompactImagePicker(
-                imageURL: colour.imageURL,
-                folder: "spec-products/colours",
-                itemId: colour.wrappedValue.id
-            )
+            VStack(alignment: .leading, spacing: 4) {
+                Text("Swatch image (optional — replaces hex circle when set)")
+                    .font(.neueCaption2)
+                    .foregroundStyle(AVIATheme.textTertiary)
+                AdminCompactImagePicker(
+                    imageURL: colour.imageURL,
+                    folder: "spec-products/colours",
+                    itemId: colour.wrappedValue.id
+                )
+            }
         }
         .padding(10)
         .background(AVIATheme.surfaceElevated)
@@ -616,7 +649,8 @@ struct AdminSpecProductEditorView: View {
             imageURL: "",
             isDefault: colours.isEmpty,
             extraCost: "",
-            sortOrder: colours.count
+            sortOrder: colours.count,
+            sku: ""
         ))
     }
 
@@ -661,7 +695,8 @@ struct AdminSpecProductEditorView: View {
                     imageURL: $0.image_url ?? "",
                     isDefault: $0.is_default ?? false,
                     extraCost: $0.extra_cost.map { String(format: "%.2f", $0) } ?? "",
-                    sortOrder: $0.sort_order ?? 0
+                    sortOrder: $0.sort_order ?? 0,
+                    sku: $0.sku ?? ""
                 )
             }
             initialColourIds = Set(existing.map(\.id))
@@ -735,7 +770,8 @@ struct AdminSpecProductEditorView: View {
                     is_default: c.isDefault,
                     is_active: true,
                     sort_order: idx,
-                    extra_cost: Double(c.extraCost)
+                    extra_cost: Double(c.extraCost),
+                    sku: c.sku.isEmpty ? nil : c.sku
                 )
             }.filter { !$0.name.isEmpty }
             if !colourRows.isEmpty, !(await svc.upsertSpecProductColours(colourRows)) {

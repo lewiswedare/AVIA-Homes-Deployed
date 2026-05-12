@@ -341,6 +341,7 @@ struct SelectionProductPickerView: View {
     private func colourSwatch(productId: String, colour: SpecProductColourRow) -> some View {
         let isStagedColour = stagedColourId == colour.id
         let extra = colour.extra_cost ?? 0
+        let hasImage = !(colour.image_url ?? "").isEmpty
         return Button {
             AVIAHaptic.lightTap.trigger()
             withAnimation(.spring(response: 0.25, dampingFraction: 0.85)) {
@@ -349,12 +350,35 @@ struct SelectionProductPickerView: View {
         } label: {
             VStack(spacing: 6) {
                 ZStack(alignment: .topTrailing) {
-                    Circle()
-                        .fill(Color(hex: colour.hex ?? "CCCCCC"))
-                        .frame(width: 44, height: 44)
-                        .overlay {
-                            Circle().stroke(isStagedColour ? AVIATheme.timelessBrown : AVIATheme.surfaceBorder, lineWidth: isStagedColour ? 2.5 : 1)
+                    Group {
+                        if hasImage, let urlStr = colour.image_url, let url = URL(string: urlStr) {
+                            Color(.secondarySystemBackground)
+                                .frame(width: 44, height: 44)
+                                .overlay {
+                                    AsyncImage(url: url) { phase in
+                                        if let img = phase.image {
+                                            img.resizable().aspectRatio(contentMode: .fill)
+                                        } else {
+                                            Image(systemName: "photo")
+                                                .font(.neueCorp(12))
+                                                .foregroundStyle(AVIATheme.textTertiary)
+                                        }
+                                    }
+                                    .allowsHitTesting(false)
+                                }
+                                .clipShape(Circle())
+                                .overlay {
+                                    Circle().stroke(isStagedColour ? AVIATheme.timelessBrown : AVIATheme.surfaceBorder, lineWidth: isStagedColour ? 2.5 : 1)
+                                }
+                        } else {
+                            Circle()
+                                .fill(Color(hex: colour.hex ?? "CCCCCC"))
+                                .frame(width: 44, height: 44)
+                                .overlay {
+                                    Circle().stroke(isStagedColour ? AVIATheme.timelessBrown : AVIATheme.surfaceBorder, lineWidth: isStagedColour ? 2.5 : 1)
+                                }
                         }
+                    }
                     if isStagedColour {
                         Image(systemName: "checkmark.circle.fill")
                             .font(.neueCorp(13))
@@ -368,6 +392,14 @@ struct SelectionProductPickerView: View {
                     .foregroundStyle(AVIATheme.textSecondary)
                     .lineLimit(1)
                     .minimumScaleFactor(0.7)
+                if let sku = colour.sku, !sku.isEmpty {
+                    Text(sku)
+                        .font(.neueCorpMedium(8))
+                        .kerning(0.5)
+                        .foregroundStyle(AVIATheme.textTertiary)
+                        .lineLimit(1)
+                        .minimumScaleFactor(0.7)
+                }
                 if extra > 0 {
                     Text("+\(AVIATheme.formatCost(extra))")
                         .font(.neueCorpMedium(8))

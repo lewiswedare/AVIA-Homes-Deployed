@@ -26,6 +26,7 @@ nonisolated struct SpecProductColourRow: Codable, Sendable, Identifiable, Hashab
     var is_active: Bool?
     var sort_order: Int?
     var extra_cost: Double?
+    var sku: String?
 }
 
 // Database row for `spec_range_item_products` — per-(range, slot, product) overrides.
@@ -74,4 +75,5 @@ struct EditableProductColour: Identifiable, Hashable {
     var isDefault: Bool
     var extraCost: String        // empty = no extra cost
     var sortOrder: Int
+    var sku: String              // empty = no variant SKU
 }
