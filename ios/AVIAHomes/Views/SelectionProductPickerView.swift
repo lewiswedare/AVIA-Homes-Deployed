@@ -198,6 +198,7 @@ struct SelectionProductPickerView: View {
             if isExpanded {
                 Divider().background(AVIATheme.surfaceBorder)
                 VStack(alignment: .leading, spacing: 14) {
+                    largePreview(urlString: heroImageURL)
                     if needsColour {
                         colourGrid(productId: product.id, colours: colours)
                     } else {
@@ -277,6 +278,58 @@ struct SelectionProductPickerView: View {
                 onConfirmed()
             }
         }
+    }
+
+    @ViewBuilder
+    private func largePreview(urlString: String?) -> some View {
+        Color(.secondarySystemBackground)
+            .frame(height: 260)
+            .frame(maxWidth: .infinity)
+            .overlay {
+                if let urlStr = urlString, let url = URL(string: urlStr) {
+                    AsyncImage(url: url) { phase in
+                        if let img = phase.image {
+                            img.resizable().aspectRatio(contentMode: .fill)
+                                .transition(.opacity.combined(with: .scale(scale: 1.02)))
+                        } else if phase.error != nil {
+                            Image(systemName: "photo")
+                                .font(.system(size: 32))
+                                .foregroundStyle(AVIATheme.textTertiary)
+                        } else {
+                            ProgressView()
+                        }
+                    }
+                    .id(urlStr)
+                    .allowsHitTesting(false)
+                } else {
+                    Image(systemName: "shippingbox")
+                        .font(.system(size: 32))
+                        .foregroundStyle(AVIATheme.textTertiary)
+                }
+            }
+            .clipShape(.rect(cornerRadius: 10))
+            .overlay {
+                RoundedRectangle(cornerRadius: 10)
+                    .stroke(AVIATheme.surfaceBorder, lineWidth: 1)
+            }
+            .overlay(alignment: .topTrailing) {
+                if let urlStr = urlString, !urlStr.isEmpty {
+                    Image(systemName: "arrow.up.left.and.arrow.down.right")
+                        .font(.neueCorpMedium(11))
+                        .foregroundStyle(AVIATheme.aviaWhite)
+                        .padding(8)
+                        .background(Color.black.opacity(0.45), in: Circle())
+                        .padding(10)
+                }
+            }
+            .animation(.easeInOut(duration: 0.28), value: urlString)
+            .contentShape(Rectangle())
+            .onTapGesture {
+                if let urlStr = urlString, !urlStr.isEmpty {
+                    AVIAHaptic.lightTap.trigger()
+                    previewImageURL = IdentifiedURL(urlString: urlStr)
+                }
+            }
     }
 
     private func heroThumb(urlString: String?) -> some View {
