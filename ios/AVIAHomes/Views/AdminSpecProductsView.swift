@@ -309,6 +309,7 @@ struct AdminSpecProductEditorView: View {
     @State private var rangeRows: [EditableProductRangeMembership] = []
     @State private var colours: [EditableProductColour] = []
     @State private var initialColourIds: Set<String> = []
+    @State private var hasLoadedColours = false
 
     @State private var isSaving = false
     @State private var saveError: String?
@@ -641,7 +642,16 @@ struct AdminSpecProductEditorView: View {
     private func addColour() {
         let baseId = isNew ? productId : (product?.id ?? "")
         let safeBase = baseId.isEmpty ? "swatch" : "\(baseId)_c"
-        let newId = "\(safeBase)_\(colours.count + 1)"
+        // Use a unique-by-time suffix to avoid colliding with an existing id
+        // when colours have been added & removed in this session.
+        let existing = Set(colours.map(\.id))
+        var candidate = "\(safeBase)_\(colours.count + 1)"
+        var n = colours.count + 1
+        while existing.contains(candidate) {
+            n += 1
+            candidate = "\(safeBase)_\(n)"
+        }
+        let newId = candidate
         colours.append(EditableProductColour(
             id: newId,
             name: "",
@@ -655,6 +665,11 @@ struct AdminSpecProductEditorView: View {
     }
 
     private func populate() {
+        // Guard against re-running populate on every .onAppear (sheet relayout,
+        // keyboard transitions) which would otherwise overwrite in-progress
+        // edits with the freshly fetched values — silently wiping new costs.
+        guard !hasLoadedColours else { return }
+        hasLoadedColours = true
         if rangeRows.isEmpty {
             rangeRows = kRangeIds.map { rangeId in
                 if let m = memberships.first(where: { $0.range_id == rangeId }) {
@@ -761,7 +776,11 @@ struct AdminSpecProductEditorView: View {
         }
         if !colours.isEmpty {
             let colourRows: [SpecProductColourRow] = colours.enumerated().map { idx, c in
-                SpecProductColourRow(
+                let trimmedCost = c.extraCost.trimmingCharacters(in: .whitespaces)
+                    .replacingOccurrences(of: "$", with: "")
+                    .replacingOccurrences(of: ",", with: "")
+                let parsedCost: Double? = trimmedCost.isEmpty ? nil : Double(trimmedCost)
+                return SpecProductColourRow(
                     id: c.id,
                     product_id: finalId,
                     name: c.name,
@@ -770,10 +789,11 @@ struct AdminSpecProductEditorView: View {
                     is_default: c.isDefault,
                     is_active: true,
                     sort_order: idx,
-                    extra_cost: Double(c.extraCost),
+                    extra_cost: parsedCost,
                     sku: c.sku.isEmpty ? nil : c.sku
                 )
             }.filter { !$0.name.isEmpty }
+            print("[AdminSpecProductEditor] Saving \(colourRows.count) colours for product \(finalId): \(colourRows.map { "\($0.id):cost=\(String(describing: $0.extra_cost))" })")
             if !colourRows.isEmpty, !(await svc.upsertSpecProductColours(colourRows)) {
                 saveError = svc.lastUpsertError ?? "Couldn't save colours"
                 return
