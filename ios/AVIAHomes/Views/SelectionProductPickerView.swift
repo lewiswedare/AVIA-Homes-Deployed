@@ -101,6 +101,17 @@ struct SelectionProductPickerView: View {
         let isSaved = selection.productId == product.id
         let isStaged = stagedProductId == product.id
         let colours = catalog.productColours(for: product.id)
+        // When a colour variant with its own image is staged (or saved) for
+        // this product, prefer that image as the hero thumbnail so clients
+        // can preview the actual variant they've chosen.
+        let activeColourId: String? = isStaged ? stagedColourId : (isSaved ? selection.colourId : nil)
+        let activeColourImageURL: String? = {
+            guard let cid = activeColourId,
+                  let colour = colours.first(where: { $0.id == cid }),
+                  let urlStr = colour.image_url, !urlStr.isEmpty else { return nil }
+            return urlStr
+        }()
+        let heroImageURL: String? = activeColourImageURL ?? product.image_url
         let isExpanded = isStaged
         let upgradeCost = membership.upgrade_price_override ?? 0
         let needsColour = !colours.isEmpty
@@ -125,15 +136,16 @@ struct SelectionProductPickerView: View {
                 }
             } label: {
                 HStack(spacing: 12) {
-                    productThumb(product)
+                    heroThumb(urlString: heroImageURL)
                         .frame(width: 52, height: 52)
                         .clipShape(.rect(cornerRadius: 8))
                         .onTapGesture {
-                            if let urlStr = product.image_url, !urlStr.isEmpty {
+                            if let urlStr = heroImageURL, !urlStr.isEmpty {
                                 AVIAHaptic.lightTap.trigger()
                                 previewImageURL = IdentifiedURL(urlString: urlStr)
                             }
                         }
+                        .animation(.easeInOut(duration: 0.22), value: heroImageURL)
 
                     VStack(alignment: .leading, spacing: 4) {
                         HStack(spacing: 6) {
@@ -267,18 +279,20 @@ struct SelectionProductPickerView: View {
         }
     }
 
-    private func productThumb(_ product: SpecProductRow) -> some View {
+    private func heroThumb(urlString: String?) -> some View {
         Color(.secondarySystemBackground)
             .overlay {
-                if let urlStr = product.image_url, let url = URL(string: urlStr) {
+                if let urlStr = urlString, let url = URL(string: urlStr) {
                     AsyncImage(url: url) { phase in
                         if let img = phase.image {
                             img.resizable().aspectRatio(contentMode: .fill)
+                                .transition(.opacity)
                         } else {
                             Image(systemName: "shippingbox")
                                 .foregroundStyle(AVIATheme.textTertiary)
                         }
                     }
+                    .id(urlStr)
                     .allowsHitTesting(false)
                 } else {
                     Image(systemName: "shippingbox")
