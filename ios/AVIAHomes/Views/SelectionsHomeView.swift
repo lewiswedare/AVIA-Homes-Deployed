@@ -329,6 +329,14 @@ struct SelectionsHomeView: View {
                 roomBannerImage(room)
                     .allowsHitTesting(false)
             }
+            .overlay {
+                LinearGradient(
+                    colors: [Color.black.opacity(0.0), Color.black.opacity(0.65)],
+                    startPoint: .top,
+                    endPoint: .bottom
+                )
+                .allowsHitTesting(false)
+            }
             .clipShape(.rect(cornerRadius: 14))
             .overlay(alignment: .topTrailing) {
                 progressRing(progress: prog)
@@ -381,15 +389,6 @@ struct SelectionsHomeView: View {
                 }
                 .padding(14)
             }
-            .overlay {
-                LinearGradient(
-                    colors: [Color.black.opacity(0.0), Color.black.opacity(0.55)],
-                    startPoint: .top,
-                    endPoint: .bottom
-                )
-                .clipShape(.rect(cornerRadius: 14))
-                .allowsHitTesting(false)
-            }
     }
 
     @ViewBuilder
@@ -412,14 +411,14 @@ struct SelectionsHomeView: View {
     private func progressRing(progress: Double) -> some View {
         ZStack {
             Circle()
-                .stroke(Color.white.opacity(0.3), lineWidth: 3)
+                .stroke(AVIATheme.aviaWhite.opacity(0.3), lineWidth: 3)
             Circle()
                 .trim(from: 0, to: max(0.001, min(1, progress)))
-                .stroke(Color.white, style: StrokeStyle(lineWidth: 3, lineCap: .round))
+                .stroke(AVIATheme.aviaWhite, style: StrokeStyle(lineWidth: 3, lineCap: .round))
                 .rotationEffect(.degrees(-90))
             Text("\(Int(progress * 100))")
                 .font(.neueCorpMedium(10))
-                .foregroundStyle(.white)
+                .foregroundStyle(AVIATheme.aviaWhite)
         }
     }
 
