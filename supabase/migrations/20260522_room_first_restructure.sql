@@ -87,7 +87,10 @@ CREATE POLICY vra_write_auth ON variant_room_assignments FOR ALL
 -- =====================================================================
 -- 4. Backfill: every existing variant gets an assignment for its item's
 --    current spec_category (= room) across all three ranges. Cost and
---    inclusion are derived from spec_range_item_products + colour extra_cost.
+--    inclusion are derived from spec_range_item_products + spec_range_items.
+--    (Earlier schemas stored a per-colour extra_cost; we no longer rely on
+--    it here so the migration is portable across databases where that
+--    column was never added or has since been dropped.)
 -- =====================================================================
 
 INSERT INTO variant_room_assignments (variant_id, room_id, range_id, image_url, cost, inclusion, sort_order)
@@ -99,12 +102,10 @@ SELECT
     COALESCE(
         srip.upgrade_price_override,
         sri.upgrade_price_override,
-        pc.extra_cost,
         0
     )                                          AS cost,
     CASE
         WHEN COALESCE(srip.inclusion_override, sri.inclusion, 'included') = 'upgrade' THEN 'upgrade'
-        WHEN COALESCE(pc.extra_cost, 0) > 0 THEN 'upgrade'
         ELSE 'included'
     END                                        AS inclusion,
     COALESCE(pc.sort_order, 0)                 AS sort_order
