@@ -380,6 +380,35 @@ class CatalogDataManager {
         }
     }
 
+    /// Cheapest upgrade-variant cost for a given spec item in a specific room
+    /// + range. Returns `nil` when the item has no upgrade variant assigned to
+    /// that room in that range. Used by client-facing tier-upgrade flows to
+    /// price items off `variant_room_assignments` instead of the legacy
+    /// per-tier cost columns on `spec_items`.
+    func cheapestUpgradeCost(forSpecItem specItemId: String, roomId: String, rangeId: String) -> Double? {
+        let costs: [Double] = variantIds(forRoom: roomId, rangeId: rangeId)
+            .compactMap { vid -> Double? in
+                guard self.specItemId(forVariantId: vid) == specItemId else { return nil }
+                guard let a = assignment(variantId: vid, roomId: roomId, rangeId: rangeId),
+                      a.inclusionValue == .upgrade else { return nil }
+                return a.cost
+            }
+        return costs.min()
+    }
+
+    /// Room-agnostic fallback for tier-upgrade flows that don't yet know which
+    /// room an item belongs to (e.g. whole-range bulk upgrade). Scans every
+    /// room assignment for the item in `rangeId` and returns the cheapest
+    /// upgrade cost, or `nil` when none exists.
+    func cheapestUpgradeCost(forSpecItem specItemId: String, rangeId: String) -> Double? {
+        var best: Double?
+        for (_, a) in variantRoomAssignments where a.range_id == rangeId && a.inclusionValue == .upgrade {
+            guard self.specItemId(forVariantId: a.variant_id) == specItemId else { continue }
+            if best == nil || a.cost < best! { best = a.cost }
+        }
+        return best
+    }
+
     /// Returns the parent spec item id for a variant (via spec_products).
     func specItemId(forVariantId variantId: String) -> String? {
         guard let colour = coloursByProduct.values.flatMap({ $0 }).first(where: { $0.id == variantId }) else {

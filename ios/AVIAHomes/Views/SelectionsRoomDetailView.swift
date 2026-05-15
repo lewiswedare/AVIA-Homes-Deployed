@@ -310,17 +310,31 @@ private struct SelectionItemCard: View {
         }
     }
 
+    /// Cheapest upgrade cost for the linked spec item at a given tier — sourced
+    /// from `variant_room_assignments` for this room when available, falling
+    /// back to the room-agnostic lookup so legacy items without per-room
+    /// assignments still surface a tier upgrade.
+    private func tierUpgradeCost(at tier: SpecTier) -> Double? {
+        guard let item = linkedSpecItem else { return nil }
+        let rangeId = tier.rawValue
+        if let roomId,
+           let cost = catalog.cheapestUpgradeCost(forSpecItem: item.id, roomId: roomId, rangeId: rangeId) {
+            return cost
+        }
+        return catalog.cheapestUpgradeCost(forSpecItem: item.id, rangeId: rangeId)
+    }
+
     private var canRequestUpgrade: Bool {
         guard let item = linkedSpecItem, item.isUpgradeable else { return false }
-        return SpecTier.allCases.contains { $0.tierIndex > buildSpecTier.tierIndex && item.upgradeCost(from: buildSpecTier, to: $0) != nil }
+        return SpecTier.allCases.contains { $0.tierIndex > buildSpecTier.tierIndex && tierUpgradeCost(at: $0) != nil }
     }
 
     private var upgradeOptions: [(tier: SpecTier, cost: Double)] {
-        guard let item = linkedSpecItem else { return [] }
+        guard linkedSpecItem != nil else { return [] }
         return SpecTier.allCases
             .filter { $0.tierIndex > buildSpecTier.tierIndex }
             .compactMap { tier in
-                guard let cost = item.upgradeCost(from: buildSpecTier, to: tier) else { return nil }
+                guard let cost = tierUpgradeCost(at: tier) else { return nil }
                 return (tier: tier, cost: cost)
             }
     }

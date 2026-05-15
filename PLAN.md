@@ -76,7 +76,13 @@ Existing concept | New concept | Why
         (`SpecificationsOverviewView` → `SpecificationCategoryDetailView`
         → `SpecificationItemDetailView`) was dead code after the Phase 4
         deep-link redirect and has been deleted.
-  - [ ] Whole-range tier-upgrade flow — next pass.
+  - [x] Whole-range tier-upgrade flow migrated. `SelectionsRoomDetailView`
+        (per-item upgrade tiles) and `SpecificationViewModel.requestUpgrade`
+        (whole-range bulk upgrade) now estimate tier upgrade cost from
+        `variant_room_assignments` via
+        `CatalogDataManager.cheapestUpgradeCost(forSpecItem:roomId:rangeId:)`
+        (with a room-agnostic fallback for legacy items). Tier-cost columns
+        on `spec_items` are no longer read by client tier-upgrade flows.
   - [ ] Once all consumers are migrated, drop `volos_to_messina_cost`,
         `volos_to_portobello_cost`, `messina_to_portobello_cost` columns
         and remove `SpecItem.upgradeCost(from:to:)`.
