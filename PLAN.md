@@ -1,37 +1,63 @@
-# Wire Spec Products + Colours into the client experience
+# Room-first spec range restructure
 
-## What's already in place
-The admin tools already match the hierarchy you described — Spec Range → Spec Category → Spec Item → Spec Product (assigned to one or more ranges as Included or Upgrade with a cost) → Spec Product Colour (with optional extra cost). The Spec Item editor will be left as-is.
+Restructures the spec catalogue around the model described by the founder:
 
-The gap is on the **client side**: when a customer opens a Spec Item in their range, they currently see the old generic colour swatches instead of the new Products. This plan focuses on connecting Products end-to-end.
+```
+Product Category (e.g. Internal Tile, External Stone, Tapware)
+  └── Item (SKU, Name, Supplier, Dimensions, Description)
+        └── Variant (Colour Name, Variant SKU)
+              └── Room Assignment (per Range)
+                    ├── Image
+                    ├── Cost
+                    └── Inclusion: Included | Upgrade
+```
 
-## What clients will see
-- **Inside a Spec Item** (e.g. Tapware in Kitchen):
-  - A list of every Product available in their selected range
-  - Each product card shows its image, name, brand, and a clear tag: "Included" (green) or "+$X Upgrade" (amber)
-  - Products marked Unavailable in their range are hidden
-  - **Nothing is pre-selected** — the client must explicitly tap a product so they make a deliberate choice for every item from the start
-- **Tapping a product** opens a colour picker:
-  - Swatches with name, hex chip, and any extra cost (e.g. "+$120")
-  - **No colour pre-selected** — the client must tap a swatch; nothing is auto-chosen so upgrades/extras can never be silently accepted
-  - Confirm button locks in product + colour for that Spec Item
-- **Spec Items flagged "Fixed inclusion"** keep working as today — shown as Included, no product picker
-- The cost summary updates live: range upgrade cost (if upgraded) + colour extra cost rolls into the build total
-- Admin's final-confirmation quote flow continues to lock in selections
+Client flow becomes **Room first**: pick a room (Kitchen / Bath / Ensuite / Laundry / …), then see every item in that room split into Included vs Upgrades, each card showing the room-specific variant image and (if upgrade) the cost.
 
-## What admins keep
-- Catalogue → Spec Items list still works exactly as today
-- Tapping into a Spec Item opens the existing Products screen (already built)
-- Each Product editor: image, brand/model/SKU, range matrix (Included / Upgrade $ / Unavailable + Default toggle), and colours with extra cost
-- The legacy "Selections" mapping screen is kept hidden from the client flow but remains for any old data that hasn't been migrated to products yet — it stops driving the client UI
+Admins manage Categories → Items → Variants once, then assign variants to rooms with per-room image & cost. Export is grouped by Supplier.
 
-## Behind the scenes
-- Build selections store the chosen `productId` + `productColourId` (in addition to the existing spec item id)
-- Selection summaries on the admin review and final quote screens display the chosen product + colour name, cost line items, and totals
-- Existing builds without product data fall back to the old colour-only display so nothing breaks
+## Naming + mapping to existing tables
 
-## Edge cases handled
-- Spec Item has no products yet → shows "Coming soon" placeholder, no crash
-- Product has no colours → product is selectable, no colour step
-- New builds start with **every spec item incomplete** — no product or colour is auto-picked, ensuring clients deliberately choose each option from the start
-- Switching range refreshes which products are Included vs Upgrade vs hidden
+Existing concept | New concept | Why
+--- | --- | ---
+`spec_categories` (Kitchen, Bath, Laundry, External, Frame, …) | **Rooms** | UI rename only; same table, same IDs. Client already navigates by these.
+*(new)* `product_categories` | **Product Categories** | New layer — Tile, Stone, Tapware, etc. Items reparent here.
+`spec_items` (+ new supplier/dimensions/description) | **Items** | Adds `product_category_id`, `supplier`, `dimensions`, `description`. Original `category_id` (room) is retained for backfill compatibility but is no longer the canonical grouping.
+`spec_product_colours` (+ existing `sku` column) | **Variants** | Each colour/finish row is a Variant. The intermediate `spec_products` row stays as the "product family" (one variant per spec_product is fine too).
+*(new)* `variant_room_assignments` | **Room Assignments** | Join: `(variant_id, room_id, range_id)` → image, cost, inclusion. This is the heart of the rebuild.
+`spec_ranges` (Volos / Messina / Portobello) | **Ranges** | Unchanged. Inclusion + cost are per range, as today.
+
+## Phases
+
+### Phase 1 — Foundation (schema, models, data migration) ✅
+- [x] Migration `20260522_room_first_restructure.sql`:
+  - [x] `product_categories` table
+  - [x] `spec_items`: add `product_category_id`, `supplier`, `dimensions`, `description`
+  - [x] `variant_room_assignments` table (variant × room × range → image, cost, inclusion)
+  - [x] Backfill: every existing variant gets a row in `variant_room_assignments` for the item's current spec_category (= room) across all 3 ranges, deriving inclusion + cost from `spec_range_item_products` + `spec_product_colours.extra_cost`.
+  - [x] Seed a default "Uncategorized" Product Category; backfill `spec_items.product_category_id`.
+- [x] Swift models for `ProductCategory`, `VariantRoomAssignment`.
+- [x] `CatalogDataManager` loads + indexes new tables (additive — old paths still work).
+
+### Phase 2 — Admin
+- [ ] Rename "Spec Categories" → "Rooms" in admin nav + screen titles.
+- [ ] New "Product Categories" editor (CRUD).
+- [ ] Item editor: add Supplier / Dimensions / Description fields; pick Product Category.
+- [ ] Variant editor: room assignment matrix — per room toggle, per (room × range) image + cost + inclusion.
+- [ ] Supplier-grouped export (PDF/CSV) listing every variant, SKU, supplier, room assignments, cost.
+
+### Phase 3 — Client
+- [ ] Selections home: pure room grid (already mostly there; data source changes from category-items to variants-assigned-to-room).
+- [ ] Room detail: list every Item that has at least one variant assigned to this room, split into Included / Upgrades sections using the per-(variant, room, range) inclusion.
+- [ ] Card image + cost pull from the room-specific assignment, not the product/colour defaults.
+- [ ] Variant picker shows variants assigned to this room only.
+
+### Phase 4 — Cleanup
+- [ ] Hide legacy "selections" mapping screen.
+- [ ] Drop `spec_items.category_id` dependency from client code paths (still kept in DB for safety).
+- [ ] Remove tier-cost columns on `spec_items` once new assignments fully drive pricing.
+
+## Migration safety
+- Every new column / table uses `IF NOT EXISTS`.
+- Existing read paths keep working until Phase 3 cutover.
+- Builds that already chose `product_id` + `colour_id` keep resolving — the new `variant_room_assignments` only changes *display + pricing for new selections*, not stored selections.

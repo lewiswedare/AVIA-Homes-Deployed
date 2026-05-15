@@ -3193,6 +3193,106 @@ class SupabaseService {
         }
     }
 
+    // MARK: - Room-first restructure (Phase 1)
+
+    /// Fetches all admin-defined product categories (Tile, Stone, Tapware, …).
+    func fetchProductCategories() async -> [ProductCategoryRow] {
+        guard isConfigured else { return [] }
+        do {
+            let rows: [ProductCategoryRow] = try await client
+                .from("product_categories")
+                .select()
+                .order("sort_order", ascending: true)
+                .execute()
+                .value
+            return rows
+        } catch {
+            print("[SupabaseService] fetchProductCategories FAILED: \(error)")
+            return []
+        }
+    }
+
+    /// Fetches every (variant × room × range) assignment. Used by the room-first
+    /// client experience and the supplier-grouped admin export.
+    func fetchVariantRoomAssignments() async -> [VariantRoomAssignmentRow] {
+        guard isConfigured else { return [] }
+        do {
+            let rows: [VariantRoomAssignmentRow] = try await client
+                .from("variant_room_assignments")
+                .select()
+                .execute()
+                .value
+            return rows
+        } catch {
+            print("[SupabaseService] fetchVariantRoomAssignments FAILED: \(error)")
+            return []
+        }
+    }
+
+    func upsertProductCategory(_ row: ProductCategoryRow) async -> Bool {
+        guard isConfigured else { return false }
+        do {
+            try await client
+                .from("product_categories")
+                .upsert(row, onConflict: "id")
+                .execute()
+            return true
+        } catch {
+            let message = String(describing: error)
+            print("[SupabaseService] upsertProductCategory FAILED: \(message)")
+            lastUpsertError = message
+            return false
+        }
+    }
+
+    func deleteProductCategory(id: String) async -> Bool {
+        guard isConfigured else { return false }
+        do {
+            try await client
+                .from("product_categories")
+                .delete()
+                .eq("id", value: id)
+                .execute()
+            return true
+        } catch {
+            print("[SupabaseService] deleteProductCategory FAILED: \(error)")
+            return false
+        }
+    }
+
+    func upsertVariantRoomAssignment(_ row: VariantRoomAssignmentRow) async -> Bool {
+        guard isConfigured else { return false }
+        do {
+            try await client
+                .from("variant_room_assignments")
+                .upsert(row, onConflict: "variant_id,room_id,range_id")
+                .execute()
+            return true
+        } catch {
+            let message = String(describing: error)
+            print("[SupabaseService] upsertVariantRoomAssignment FAILED: \(message)")
+            lastUpsertError = message
+            return false
+        }
+    }
+
+    func deleteVariantRoomAssignment(variantId: String, roomId: String, rangeId: String) async -> Bool {
+        guard isConfigured else { return false }
+        do {
+            try await client
+                .from("variant_room_assignments")
+                .delete()
+                .eq("variant_id", value: variantId)
+                .eq("room_id", value: roomId)
+                .eq("range_id", value: rangeId)
+                .execute()
+            return true
+        } catch {
+            print("[SupabaseService] deleteVariantRoomAssignment FAILED: \(error)")
+            return false
+        }
+    }
+
     func deleteRangeItemProduct(rangeId: String, specItemId: String, productId: String) async -> Bool {
         guard isConfigured else { return false }
         do {

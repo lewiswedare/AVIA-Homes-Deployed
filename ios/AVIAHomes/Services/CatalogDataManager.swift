@@ -19,6 +19,13 @@ class CatalogDataManager {
     var rangeProductMemberships: [String: SpecRangeItemProductRow] = [:]
     /// Colour rows keyed by product id (sorted by sort_order).
     var coloursByProduct: [String: [SpecProductColourRow]] = [:]
+    /// Admin-defined product categories (Tile, Stone, Tapware…) keyed by id.
+    var productCategories: [String: ProductCategoryRow] = [:]
+    /// Variant × Room × Range assignments keyed by composite key
+    /// ("variantId|roomId|rangeId"). Drives the room-first client experience.
+    var variantRoomAssignments: [String: VariantRoomAssignmentRow] = [:]
+    /// Variant ids grouped by (roomId|rangeId) for fast room lookups.
+    var variantsByRoomRange: [String: [String]] = [:]
     var isLoaded: Bool = false
 
     private init() {}
@@ -194,11 +201,14 @@ class CatalogDataManager {
         async let productsTask = SupabaseService.shared.fetchAllSpecProducts()
         async let productColoursTask = SupabaseService.shared.fetchAllSpecProductColours()
         async let rangeMembershipsTask = SupabaseService.shared.fetchAllRangeItemProducts()
+        async let productCategoriesTask = SupabaseService.shared.fetchProductCategories()
+        async let variantAssignmentsTask = SupabaseService.shared.fetchVariantRoomAssignments()
 
         let (colours, specs, flatItems, ranges, schemes, mapping, images, products, productColours, memberships) = await (
             coloursTask, specsTask, flatItemsTask, rangesTask, schemesTask, mappingTask, imagesTask,
             productsTask, productColoursTask, rangeMembershipsTask
         )
+        let (prodCategories, variantAssignments) = await (productCategoriesTask, variantAssignmentsTask)
 
         colourCategories = colours
         specCategories = specs
@@ -242,8 +252,21 @@ class CatalogDataManager {
         }
         rangeProductMemberships = memMap
 
+        var pcMap: [String: ProductCategoryRow] = [:]
+        for c in prodCategories { pcMap[c.id] = c }
+        productCategories = pcMap
+
+        var vraMap: [String: VariantRoomAssignmentRow] = [:]
+        var byRoomRange: [String: [String]] = [:]
+        for a in variantAssignments {
+            vraMap[a.compositeKey] = a
+            byRoomRange["\(a.room_id)|\(a.range_id)", default: []].append(a.variant_id)
+        }
+        variantRoomAssignments = vraMap
+        variantsByRoomRange = byRoomRange
+
         isLoaded = true
-        print("[CatalogDataManager] Loaded — colours: \(colours.count), specs: \(specs.count), flatItems: \(flatItems.count), ranges: \(ranges.count), schemes: \(schemes.count), mapping: \(mapping.count), products: \(products.count), productColours: \(productColours.count), memberships: \(memberships.count)")
+        print("[CatalogDataManager] Loaded — colours: \(colours.count), specs: \(specs.count), flatItems: \(flatItems.count), ranges: \(ranges.count), schemes: \(schemes.count), mapping: \(mapping.count), products: \(products.count), productColours: \(productColours.count), memberships: \(memberships.count), productCategories: \(prodCategories.count), variantAssignments: \(variantAssignments.count)")
     }
 
     // MARK: - Product helpers
@@ -332,5 +355,36 @@ class CatalogDataManager {
     func defaultColourId(for productId: String) -> String? {
         let cols = productColours(for: productId)
         return cols.first(where: { $0.is_default == true })?.id ?? cols.first?.id
+    }
+
+    // MARK: - Room-first helpers
+
+    /// All product categories ordered by sort_order.
+    var allProductCategories: [ProductCategoryRow] {
+        productCategories.values.sorted { $0.sort_order < $1.sort_order }
+    }
+
+    /// Returns the room assignment for a specific (variant, room, range).
+    func assignment(variantId: String, roomId: String, rangeId: String) -> VariantRoomAssignmentRow? {
+        variantRoomAssignments["\(variantId)|\(roomId)|\(rangeId)"]
+    }
+
+    /// Every variant assigned to a given room+range, in sort_order. Used by the
+    /// room-first client experience.
+    func variantIds(forRoom roomId: String, rangeId: String) -> [String] {
+        let ids = variantsByRoomRange["\(roomId)|\(rangeId)"] ?? []
+        return ids.sorted { lhs, rhs in
+            let a = assignment(variantId: lhs, roomId: roomId, rangeId: rangeId)?.sort_order ?? 0
+            let b = assignment(variantId: rhs, roomId: roomId, rangeId: rangeId)?.sort_order ?? 0
+            return a < b
+        }
+    }
+
+    /// Returns the parent spec item id for a variant (via spec_products).
+    func specItemId(forVariantId variantId: String) -> String? {
+        guard let colour = coloursByProduct.values.flatMap({ $0 }).first(where: { $0.id == variantId }) else {
+            return nil
+        }
+        return specProducts[colour.product_id]?.spec_item_id
     }
 }
