@@ -63,10 +63,23 @@ Existing concept | New concept | Why
       `variant_room_assignments` only; `category_id` remains in DB + admin
       editors for compatibility.
 - [ ] Remove tier-cost columns on `spec_items` once new assignments fully
-      drive pricing. **Deferred** — still consumed by
-      `SpecificationItemDetailView`, `AdminSpecItemsEditorView`,
-      `AdminUpgradeQuoteView`, and the whole-range tier-upgrade flow. Pull
-      these once those screens migrate to variant-room-assignment pricing.
+      drive pricing. **In progress** — migration started:
+  - [x] `AdminSpecItemsEditorView`: drop the per-tier upgrade-cost editor
+        section; admins now set cost & inclusion per (variant, room, range)
+        in the Variant editor. Legacy columns on the row are preserved on
+        save for backwards compatibility.
+  - [x] `AdminUpgradeQuoteView`: auto-cost now sources from
+        `variant_room_assignments` (chosen variant in the selection's room +
+        range, or cheapest upgrade variant for the item in that room +
+        range). Legacy product/colour cost remains as a fallback.
+  - [ ] `SpecificationItemDetailView` and the whole-range tier-upgrade flow
+        — next pass. View is part of the hidden legacy
+        `SpecificationsOverviewView` flow, so deferred until either the
+        view is removed or rewritten to read from
+        `variant_room_assignments`.
+  - [ ] Once all consumers are migrated, drop `volos_to_messina_cost`,
+        `volos_to_portobello_cost`, `messina_to_portobello_cost` columns
+        and remove `SpecItem.upgradeCost(from:to:)`.
 
 ## Migration safety
 - Every new column / table uses `IF NOT EXISTS`.

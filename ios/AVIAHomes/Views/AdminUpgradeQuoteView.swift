@@ -22,11 +22,20 @@ struct AdminUpgradeQuoteView: View {
         }
     }
 
-    /// Resolves the upgrade cost contribution for a chosen product + colour
-    /// (range membership upgrade price + colour extra cost).
+    /// Resolves the upgrade cost contribution for a chosen variant in this
+    /// room + range. Prefers the new `variant_room_assignments` row; falls
+    /// back to the legacy product range membership + colour extra cost so
+    /// older selections without an assignment still produce a number.
     private func productUpgradeCost(for selection: BuildSpecSelection) -> Double {
-        guard let pid = selection.productId else { return 0 }
         let rangeId = selection.specTier.lowercased()
+
+        if let cid = selection.colourId,
+           let a = catalog.assignment(variantId: cid, roomId: selection.categoryId, rangeId: rangeId),
+           a.inclusionValue == .upgrade {
+            return a.cost
+        }
+
+        guard let pid = selection.productId else { return 0 }
         var total: Double = 0
         if let m = catalog.rangeProductMemberships["\(rangeId)|\(pid)"] {
             let inc = ProductRangeInclusion(rawValue: m.inclusion_override ?? "unavailable") ?? .unavailable
@@ -49,21 +58,21 @@ struct AdminUpgradeQuoteView: View {
     }
 
     private func autoCost(for item: BuildSpecSelection) -> Double? {
-        // Prefer product-driven cost when a product is chosen.
+        // Variant-room-assignment / product-driven cost first.
         let productCost = productUpgradeCost(for: item)
         if productCost > 0 { return productCost }
 
-        let specItems = catalog.allSpecCategories.flatMap(\.items)
-        guard let specItem = specItems.first(where: { $0.id == item.specItemId }) else { return nil }
-
-        guard let fromTier = SpecTier(rawValue: item.specTier) else { return nil }
-
-        for toTier in SpecTier.allCases where toTier.tierIndex > fromTier.tierIndex {
-            if let cost = specItem.upgradeCost(from: fromTier, to: toTier) {
-                return cost
+        // Cheapest upgrade variant assigned to this room+range for the item.
+        let rangeId = item.specTier.lowercased()
+        let roomId = item.categoryId
+        let costs: [Double] = catalog.variantIds(forRoom: roomId, rangeId: rangeId)
+            .compactMap { vid -> Double? in
+                guard catalog.specItemId(forVariantId: vid) == item.specItemId else { return nil }
+                guard let a = catalog.assignment(variantId: vid, roomId: roomId, rangeId: rangeId),
+                      a.inclusionValue == .upgrade else { return nil }
+                return a.cost
             }
-        }
-        return nil
+        return costs.min()
     }
 
     private func effectiveCost(for item: BuildSpecSelection) -> Double? {

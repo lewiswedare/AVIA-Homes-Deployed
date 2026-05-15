@@ -291,11 +291,6 @@ struct SpecItemEditSheet: View {
     @State private var portobelloImageURL: String = ""
     @State private var isLoadingTierImages: Bool = false
 
-    // Pricing fields (upgrade costs only)
-    @State private var volosToMessinaCost: String = ""
-    @State private var volosToPortobelloCost: String = ""
-    @State private var messinaToPortobelloCost: String = ""
-
     // Per-product colour swatches — stored as a dedicated ColourCategory per spec item.
     @State private var swatches: [EditableColourOption] = []
 
@@ -449,19 +444,12 @@ struct SpecItemEditSheet: View {
 
                     if isUpgradeable && !isFixedInclusion {
                         BentoCard(cornerRadius: 11) {
-                            VStack(alignment: .leading, spacing: 14) {
-                                sectionHeader("Upgrade Costs")
-                                Text("Set upgrade costs between tiers. All prices in AUD.")
+                            VStack(alignment: .leading, spacing: 10) {
+                                sectionHeader("Upgrade Pricing")
+                                Text("Upgrade prices are now set per variant + room from the Variant editor (Room Assignments). Open the variant for this item to set cost & inclusion per (room, range).")
                                     .font(.neueCaption2)
                                     .foregroundStyle(AVIATheme.textTertiary)
                                     .padding(.horizontal, 14)
-
-                                VStack(spacing: 6) {
-                                    upgradeCostField("Volos \u{2192} Messina", text: $volosToMessinaCost)
-                                    upgradeCostField("Volos \u{2192} Portobello", text: $volosToPortobelloCost)
-                                    upgradeCostField("Messina \u{2192} Portobello", text: $messinaToPortobelloCost)
-                                }
-                                .padding(.horizontal, 14)
                             }
                             .padding(.vertical, 14)
                         }
@@ -667,29 +655,6 @@ struct SpecItemEditSheet: View {
         }
     }
 
-    private func upgradeCostField(_ label: String, text: Binding<String>) -> some View {
-        HStack(spacing: 8) {
-            Text(label)
-                .font(.neueCaption2)
-                .foregroundStyle(AVIATheme.textSecondary)
-                .frame(maxWidth: .infinity, alignment: .leading)
-
-            HStack(spacing: 2) {
-                Text("$")
-                    .font(.neueCaption2)
-                    .foregroundStyle(AVIATheme.textTertiary)
-                TextField("0.00", text: text)
-                    .font(.neueCaption)
-                    .keyboardType(.decimalPad)
-                    .frame(width: 80)
-            }
-            .padding(.horizontal, 8)
-            .padding(.vertical, 6)
-            .background(AVIATheme.surfaceElevated)
-            .clipShape(.rect(cornerRadius: 5))
-        }
-    }
-
     private func formatCost(_ value: Double) -> String {
         String(format: "%.2f", value)
     }
@@ -711,9 +676,6 @@ struct SpecItemEditSheet: View {
         isFixedInclusion = item.is_fixed_inclusion ?? false
         imageURL = item.image_url ?? ""
         sortOrder = item.sort_order ?? 0
-        volosToMessinaCost = item.volos_to_messina_cost.map { formatCost($0) } ?? ""
-        volosToPortobelloCost = item.volos_to_portobello_cost.map { formatCost($0) } ?? ""
-        messinaToPortobelloCost = item.messina_to_portobello_cost.map { formatCost($0) } ?? ""
         // Load per-product swatches from the dedicated colour category (id: spec_<itemId>_colours).
         let perProductId = SpecItemEditSheet.productColourCategoryId(for: item.id)
         if let cat = CatalogDataManager.shared.allColourCategories.first(where: { $0.id == perProductId }) {
@@ -766,9 +728,9 @@ struct SpecItemEditSheet: View {
             is_fixed_inclusion: isFixedInclusion,
             image_url: imageURL.isEmpty ? nil : imageURL,
             sort_order: sortOrder,
-            volos_to_messina_cost: isFixedInclusion ? nil : Double(volosToMessinaCost),
-            volos_to_portobello_cost: isFixedInclusion ? nil : Double(volosToPortobelloCost),
-            messina_to_portobello_cost: isFixedInclusion ? nil : Double(messinaToPortobelloCost),
+            volos_to_messina_cost: item?.volos_to_messina_cost,
+            volos_to_portobello_cost: item?.volos_to_portobello_cost,
+            messina_to_portobello_cost: item?.messina_to_portobello_cost,
             product_category_id: productCategoryId.isEmpty ? nil : productCategoryId,
             supplier: trimmedSupplier.isEmpty ? nil : trimmedSupplier,
             dimensions: trimmedDimensions.isEmpty ? nil : trimmedDimensions,
