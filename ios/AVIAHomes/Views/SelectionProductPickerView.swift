@@ -14,6 +14,10 @@ struct SelectionProductPickerView: View {
     /// Products available in the build's current range (already filtered to
     /// exclude Unavailable). Sorted by sort_order.
     let products: [(product: SpecProductRow, membership: SpecRangeItemProductRow)]
+    /// Room context. When set, the picker filters variants to those assigned to
+    /// this room and prefers the room-specific image + cost from
+    /// `variant_room_assignments` over the product/colour defaults.
+    var roomId: String? = nil
     /// Called after the client taps Confirm and the selection is saved. The
     /// parent can use this to scroll to / expand the next incomplete item.
     var onConfirmed: () -> Void = {}
@@ -24,6 +28,25 @@ struct SelectionProductPickerView: View {
     @State private var previewImageURL: IdentifiedURL?
 
     private var catalog: CatalogDataManager { CatalogDataManager.shared }
+
+    private var rangeId: String { selection.specTier.lowercased() }
+
+    /// Returns the room-specific assignment for a variant when we have a room
+    /// context, otherwise nil. Drives image + cost overrides.
+    private func assignment(for variantId: String) -> VariantRoomAssignmentRow? {
+        guard let roomId else { return nil }
+        return catalog.assignment(variantId: variantId, roomId: roomId, rangeId: rangeId)
+    }
+
+    /// Variants for a product, filtered to those assigned to the active room
+    /// (when one is set). Falls back to all product colours when room context
+    /// is missing or when no assignments exist yet.
+    private func roomScopedColours(for productId: String) -> [SpecProductColourRow] {
+        let all = catalog.productColours(for: productId)
+        guard roomId != nil else { return all }
+        let filtered = all.filter { assignment(for: $0.id) != nil }
+        return filtered.isEmpty ? all : filtered
+    }
 
     private var savedIsUpgrade: Bool {
         guard let pid = selection.productId,
@@ -100,14 +123,18 @@ struct SelectionProductPickerView: View {
         let inclusion = ProductRangeInclusion(rawValue: membership.inclusion_override ?? "included") ?? .included
         let isSaved = selection.productId == product.id
         let isStaged = stagedProductId == product.id
-        let colours = catalog.productColours(for: product.id)
+        let colours = roomScopedColours(for: product.id)
         // When a colour variant with its own image is staged (or saved) for
         // this product, prefer that image as the hero thumbnail so clients
         // can preview the actual variant they've chosen.
         let activeColourId: String? = isStaged ? stagedColourId : (isSaved ? selection.colourId : nil)
         let activeColourImageURL: String? = {
-            guard let cid = activeColourId,
-                  let colour = colours.first(where: { $0.id == cid }),
+            guard let cid = activeColourId else { return nil }
+            // Prefer the room-specific assignment image when we have one.
+            if let urlStr = assignment(for: cid)?.image_url, !urlStr.isEmpty {
+                return urlStr
+            }
+            guard let colour = colours.first(where: { $0.id == cid }),
                   let urlStr = colour.image_url, !urlStr.isEmpty else { return nil }
             return urlStr
         }()
@@ -407,8 +434,20 @@ struct SelectionProductPickerView: View {
 
     private func colourSwatch(productId: String, colour: SpecProductColourRow) -> some View {
         let isStagedColour = stagedColourId == colour.id
-        let extra = colour.extra_cost ?? 0
-        let hasImage = !(colour.image_url ?? "").isEmpty
+        let roomAssignment = assignment(for: colour.id)
+        // Prefer room-specific cost when assigned as an upgrade; fall back to
+        // the colour's base extra_cost otherwise.
+        let extra: Double = {
+            if let a = roomAssignment {
+                return a.inclusionValue == .upgrade ? a.cost : 0
+            }
+            return colour.extra_cost ?? 0
+        }()
+        let imageURL: String? = {
+            if let a = roomAssignment, let u = a.image_url, !u.isEmpty { return u }
+            return colour.image_url
+        }()
+        let hasImage = !(imageURL ?? "").isEmpty
         return Button {
             AVIAHaptic.lightTap.trigger()
             withAnimation(.spring(response: 0.25, dampingFraction: 0.85)) {
@@ -418,7 +457,7 @@ struct SelectionProductPickerView: View {
             VStack(spacing: 6) {
                 ZStack(alignment: .topTrailing) {
                     Group {
-                        if hasImage, let urlStr = colour.image_url, let url = URL(string: urlStr) {
+                        if hasImage, let urlStr = imageURL, let url = URL(string: urlStr) {
                             Color(.secondarySystemBackground)
                                 .frame(width: 44, height: 44)
                                 .overlay {

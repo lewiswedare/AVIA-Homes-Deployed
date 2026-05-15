@@ -46,11 +46,11 @@ Existing concept | New concept | Why
 - [x] Variant editor: room assignment matrix — per room toggle, per (room × range) image + cost + inclusion.
 - [x] Supplier-grouped export (PDF/CSV) listing every variant, SKU, supplier, room assignments, cost.
 
-### Phase 3 — Client
-- [ ] Selections home: pure room grid (already mostly there; data source changes from category-items to variants-assigned-to-room).
-- [ ] Room detail: list every Item that has at least one variant assigned to this room, split into Included / Upgrades sections using the per-(variant, room, range) inclusion.
-- [ ] Card image + cost pull from the room-specific assignment, not the product/colour defaults.
-- [ ] Variant picker shows variants assigned to this room only.
+### Phase 3 — Client ✅
+- [x] Selections home: pure room grid (already mostly there; data source changes from category-items to variants-assigned-to-room).
+- [x] Room detail: list every Item that has at least one variant assigned to this room, split into Included / Upgrades sections using the per-(variant, room, range) inclusion.
+- [x] Card image + cost pull from the room-specific assignment, not the product/colour defaults.
+- [x] Variant picker shows variants assigned to this room only.
 
 ### Phase 4 — Cleanup
 - [ ] Hide legacy "selections" mapping screen.
