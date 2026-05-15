@@ -72,11 +72,11 @@ Existing concept | New concept | Why
         `variant_room_assignments` (chosen variant in the selection's room +
         range, or cheapest upgrade variant for the item in that room +
         range). Legacy product/colour cost remains as a fallback.
-  - [ ] `SpecificationItemDetailView` and the whole-range tier-upgrade flow
-        — next pass. View is part of the hidden legacy
-        `SpecificationsOverviewView` flow, so deferred until either the
-        view is removed or rewritten to read from
-        `variant_room_assignments`.
+  - [x] `SpecificationItemDetailView` removed. The whole legacy chain
+        (`SpecificationsOverviewView` → `SpecificationCategoryDetailView`
+        → `SpecificationItemDetailView`) was dead code after the Phase 4
+        deep-link redirect and has been deleted.
+  - [ ] Whole-range tier-upgrade flow — next pass.
   - [ ] Once all consumers are migrated, drop `volos_to_messina_cost`,
         `volos_to_portobello_cost`, `messina_to_portobello_cost` columns
         and remove `SpecItem.upgradeCost(from:to:)`.
