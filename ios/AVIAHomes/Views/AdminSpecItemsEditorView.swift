@@ -273,6 +273,12 @@ struct SpecItemEditSheet: View {
     @State private var itemId: String = ""
     @State private var name: String = ""
     @State private var categoryId: String = "structure"
+    @State private var productCategoryId: String = "uncategorized"
+    @State private var supplier: String = ""
+    @State private var dimensions: String = ""
+    @State private var itemDescription: String = ""
+    @State private var skuText: String = ""
+    @State private var productCategories: [ProductCategoryRow] = []
     @State private var volosDesc: String = ""
     @State private var messinaDesc: String = ""
     @State private var portobelloDesc: String = ""
@@ -318,7 +324,7 @@ struct SpecItemEditSheet: View {
                                 TextField("Item name", text: $name)
                                     .font(.neueCaption)
                             }
-                            fieldRow("Category") {
+                            fieldRow("Room") {
                                 Picker("", selection: $categoryId) {
                                     ForEach(categories, id: \.id) { cat in
                                         Text(cat.name).tag(cat.id)
@@ -326,6 +332,35 @@ struct SpecItemEditSheet: View {
                                 }
                                 .pickerStyle(.menu)
                                 .tint(AVIATheme.timelessBrown)
+                            }
+                            fieldRow("Product Category") {
+                                Picker("", selection: $productCategoryId) {
+                                    if productCategories.isEmpty {
+                                        Text("Uncategorized").tag("uncategorized")
+                                    }
+                                    ForEach(productCategories, id: \.id) { pc in
+                                        Text(pc.name).tag(pc.id)
+                                    }
+                                }
+                                .pickerStyle(.menu)
+                                .tint(AVIATheme.warning)
+                            }
+                            fieldRow("Supplier") {
+                                TextField("e.g. Beaumont Tiles", text: $supplier).font(.neueCaption)
+                            }
+                            fieldRow("Dimensions") {
+                                TextField("e.g. 600 × 600 mm", text: $dimensions).font(.neueCaption)
+                            }
+                            fieldRow("Item SKU") {
+                                TextField("Optional master SKU", text: $skuText)
+                                    .font(.neueCaption)
+                                    .textInputAutocapitalization(.characters)
+                                    .autocorrectionDisabled()
+                            }
+                            fieldRow("Description") {
+                                TextField("Short description", text: $itemDescription, axis: .vertical)
+                                    .font(.neueCaption)
+                                    .lineLimit(2...5)
                             }
                             fieldRow("Sort Order") {
                                 TextField("0", value: $sortOrder, format: .number)
@@ -483,6 +518,12 @@ struct SpecItemEditSheet: View {
             }
         }
         .onAppear { populateFields() }
+        .task {
+            productCategories = await SupabaseService.shared.fetchProductCategories()
+            if !productCategories.contains(where: { $0.id == productCategoryId }) {
+                productCategoryId = productCategories.first?.id ?? "uncategorized"
+            }
+        }
         .presentationDetents([.large])
     }
 
@@ -658,6 +699,11 @@ struct SpecItemEditSheet: View {
         itemId = item.id
         name = item.name
         categoryId = item.category_id
+        productCategoryId = item.product_category_id ?? "uncategorized"
+        supplier = item.supplier ?? ""
+        dimensions = item.dimensions ?? ""
+        itemDescription = item.description ?? ""
+        skuText = item.sku ?? ""
         volosDesc = item.volos_description
         messinaDesc = item.messina_description
         portobelloDesc = item.portobello_description
@@ -705,6 +751,10 @@ struct SpecItemEditSheet: View {
     }
 
     private func save() {
+        let trimmedSupplier = supplier.trimmingCharacters(in: .whitespacesAndNewlines)
+        let trimmedDimensions = dimensions.trimmingCharacters(in: .whitespacesAndNewlines)
+        let trimmedDescription = itemDescription.trimmingCharacters(in: .whitespacesAndNewlines)
+        let trimmedSku = skuText.trimmingCharacters(in: .whitespacesAndNewlines)
         let row = SpecItemFlatRow(
             id: isNew ? itemId : (item?.id ?? itemId),
             category_id: categoryId,
@@ -718,7 +768,12 @@ struct SpecItemEditSheet: View {
             sort_order: sortOrder,
             volos_to_messina_cost: isFixedInclusion ? nil : Double(volosToMessinaCost),
             volos_to_portobello_cost: isFixedInclusion ? nil : Double(volosToPortobelloCost),
-            messina_to_portobello_cost: isFixedInclusion ? nil : Double(messinaToPortobelloCost)
+            messina_to_portobello_cost: isFixedInclusion ? nil : Double(messinaToPortobelloCost),
+            product_category_id: productCategoryId.isEmpty ? nil : productCategoryId,
+            supplier: trimmedSupplier.isEmpty ? nil : trimmedSupplier,
+            dimensions: trimmedDimensions.isEmpty ? nil : trimmedDimensions,
+            description: trimmedDescription.isEmpty ? nil : trimmedDescription,
+            sku: trimmedSku.isEmpty ? nil : trimmedSku
         )
         var tierImages: [String: String] = [:]
         if !volosImageURL.isEmpty { tierImages["volos"] = volosImageURL }

@@ -39,12 +39,12 @@ Existing concept | New concept | Why
 - [x] Swift models for `ProductCategory`, `VariantRoomAssignment`.
 - [x] `CatalogDataManager` loads + indexes new tables (additive — old paths still work).
 
-### Phase 2 — Admin
-- [ ] Rename "Spec Categories" → "Rooms" in admin nav + screen titles.
-- [ ] New "Product Categories" editor (CRUD).
-- [ ] Item editor: add Supplier / Dimensions / Description fields; pick Product Category.
-- [ ] Variant editor: room assignment matrix — per room toggle, per (room × range) image + cost + inclusion.
-- [ ] Supplier-grouped export (PDF/CSV) listing every variant, SKU, supplier, room assignments, cost.
+### Phase 2 — Admin ✅
+- [x] Rename "Spec Categories" → "Rooms" in admin nav + screen titles.
+- [x] New "Product Categories" editor (CRUD).
+- [x] Item editor: add Supplier / Dimensions / Description fields; pick Product Category.
+- [x] Variant editor: room assignment matrix — per room toggle, per (room × range) image + cost + inclusion.
+- [x] Supplier-grouped export (PDF/CSV) listing every variant, SKU, supplier, room assignments, cost.
 
 ### Phase 3 — Client
 - [ ] Selections home: pure room grid (already mostly there; data source changes from category-items to variants-assigned-to-room).

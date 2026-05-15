@@ -4,6 +4,7 @@ struct AdminCatalogHubView: View {
     @Environment(AppViewModel.self) private var appViewModel
     @State private var specCount: Int = 0
     @State private var categoryCount: Int = 0
+    @State private var productCategoryCount: Int = 0
     @State private var designCount: Int = 0
     @State private var facadeCount: Int = 0
     @State private var newsCount: Int = 0
@@ -19,11 +20,24 @@ struct AdminCatalogHubView: View {
                     } label: {
                         catalogCard(
                             icon: "square.grid.2x2.fill",
-                            title: "Spec Categories",
-                            subtitle: "Manage selection categories & their banner images (Kitchen, Bathroom, etc.)",
+                            title: "Rooms",
+                            subtitle: "Manage rooms & their banner images (Kitchen, Bathroom, etc.)",
                             count: categoryCount,
-                            countLabel: "categories",
+                            countLabel: "rooms",
                             color: AVIATheme.heritageBlue
+                        )
+                    }
+
+                    NavigationLink {
+                        AdminProductCategoriesEditorView()
+                    } label: {
+                        catalogCard(
+                            icon: "square.stack.3d.down.right.fill",
+                            title: "Product Categories",
+                            subtitle: "Group items by Tile, Stone, Tapware, Cabinetry, etc.",
+                            count: productCategoryCount,
+                            countLabel: "groups",
+                            color: AVIATheme.warning
                         )
                     }
 
@@ -106,6 +120,37 @@ struct AdminCatalogHubView: View {
 
                             Spacer()
 
+                            Image(systemName: "chevron.right")
+                                .font(.neueCaption2)
+                                .foregroundStyle(AVIATheme.textTertiary)
+                        }
+                        .padding(14)
+                    }
+                }
+
+                NavigationLink {
+                    AdminSupplierExportView()
+                } label: {
+                    BentoCard(cornerRadius: 11) {
+                        HStack(spacing: 14) {
+                            Image(systemName: "square.and.arrow.up.on.square.fill")
+                                .font(.neueCorpMedium(16))
+                                .foregroundStyle(AVIATheme.success)
+                                .frame(width: 44, height: 44)
+                                .background(AVIATheme.success.opacity(0.12))
+                                .clipShape(.rect(cornerRadius: 10))
+
+                            VStack(alignment: .leading, spacing: 3) {
+                                Text("Supplier Export")
+                                    .font(.neueCaptionMedium)
+                                    .foregroundStyle(AVIATheme.textPrimary)
+                                Text("Export every variant grouped by supplier with SKUs, room assignments & costs")
+                                    .font(.neueCaption2)
+                                    .foregroundStyle(AVIATheme.textTertiary)
+                                    .lineLimit(2)
+                                    .multilineTextAlignment(.leading)
+                            }
+                            Spacer()
                             Image(systemName: "chevron.right")
                                 .font(.neueCaption2)
                                 .foregroundStyle(AVIATheme.textTertiary)
@@ -249,6 +294,7 @@ struct AdminCatalogHubView: View {
 
         specCount = catalog.allSpecCategories.flatMap(\.items).count
         categoryCount = catalog.allSpecCategories.count
+        productCategoryCount = catalog.allProductCategories.count
         let designs = await SupabaseService.shared.fetchHomeDesigns()
         designCount = designs.count
         let facades = await SupabaseService.shared.fetchFacades()

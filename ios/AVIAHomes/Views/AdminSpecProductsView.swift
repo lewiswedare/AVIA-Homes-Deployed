@@ -313,6 +313,7 @@ struct AdminSpecProductEditorView: View {
 
     @State private var isSaving = false
     @State private var saveError: String?
+    @State private var assigningVariant: EditableProductColour?
 
     private var isNew: Bool { product == nil }
     private var canSave: Bool { !name.isEmpty && (!isNew || !productId.isEmpty) }
@@ -355,6 +356,12 @@ struct AdminSpecProductEditorView: View {
         }
         .presentationDetents([.large])
         .onAppear { populate() }
+        .sheet(item: $assigningVariant) { variant in
+            AdminVariantRoomAssignmentsView(
+                variantId: variant.id,
+                variantName: variant.name.isEmpty ? "Variant" : variant.name
+            )
+        }
     }
 
     // MARK: - Cards
@@ -527,6 +534,7 @@ struct AdminSpecProductEditorView: View {
 
     private func colourRow(colour: Binding<EditableProductColour>) -> some View {
         let hasImage = !colour.wrappedValue.imageURL.isEmpty
+        let isPersisted = initialColourIds.contains(colour.wrappedValue.id)
         return VStack(alignment: .leading, spacing: 8) {
             HStack(spacing: 10) {
                 Group {
@@ -608,6 +616,29 @@ struct AdminSpecProductEditorView: View {
                     itemId: colour.wrappedValue.id
                 )
             }
+
+            Button {
+                assigningVariant = colour.wrappedValue
+            } label: {
+                HStack(spacing: 8) {
+                    Image(systemName: "house.lodge.fill")
+                        .font(.neueCaption2)
+                    Text(isPersisted ? "Room Assignments" : "Save variant first to set room assignments")
+                        .font(.neueCaption2Medium)
+                    Spacer()
+                    if isPersisted {
+                        Image(systemName: "chevron.right")
+                            .font(.neueCaption2)
+                    }
+                }
+                .foregroundStyle(isPersisted ? AVIATheme.heritageBlue : AVIATheme.textTertiary)
+                .padding(.horizontal, 10)
+                .padding(.vertical, 8)
+                .frame(maxWidth: .infinity)
+                .background(isPersisted ? AVIATheme.heritageBlue.opacity(0.1) : AVIATheme.surfaceElevated.opacity(0.6))
+                .clipShape(.rect(cornerRadius: 6))
+            }
+            .disabled(!isPersisted)
         }
         .padding(10)
         .background(AVIATheme.surfaceElevated)
