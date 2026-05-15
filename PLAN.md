@@ -53,9 +53,20 @@ Existing concept | New concept | Why
 - [x] Variant picker shows variants assigned to this room only.
 
 ### Phase 4 — Cleanup
-- [ ] Hide legacy "selections" mapping screen.
-- [ ] Drop `spec_items.category_id` dependency from client code paths (still kept in DB for safety).
-- [ ] Remove tier-cost columns on `spec_items` once new assignments fully drive pricing.
+- [x] Hide legacy "selections" mapping screen. Client notification deep-links
+      route to `SelectionsHomeView` instead of `SpecificationsOverviewView`;
+      the legacy spec-item ↔ colour-category picker on the colour editor was
+      already replaced by the per-item editor.
+- [x] Drop `spec_items.category_id` dependency from client code paths. Client
+      surfaces (`SelectionsHomeView`, `SelectionsRoomDetailView`,
+      `BuildColourSelectionView`) navigate by `snapshotCategoryName` /
+      `variant_room_assignments` only; `category_id` remains in DB + admin
+      editors for compatibility.
+- [ ] Remove tier-cost columns on `spec_items` once new assignments fully
+      drive pricing. **Deferred** — still consumed by
+      `SpecificationItemDetailView`, `AdminSpecItemsEditorView`,
+      `AdminUpgradeQuoteView`, and the whole-range tier-upgrade flow. Pull
+      these once those screens migrate to variant-room-assignment pricing.
 
 ## Migration safety
 - Every new column / table uses `IF NOT EXISTS`.
