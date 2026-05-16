@@ -7,8 +7,10 @@
 -- This lets the External room surface different colour / finish options
 -- depending on which Facade the client has chosen for their build.
 
+-- facades.id is text in this project, so facade_id must also be text to
+-- satisfy the foreign key constraint.
 ALTER TABLE variant_room_assignments
-    ADD COLUMN IF NOT EXISTS facade_id uuid
+    ADD COLUMN IF NOT EXISTS facade_id text
         REFERENCES facades(id) ON DELETE CASCADE;
 
 -- Replace the legacy 3-tuple unique constraint with a 4-tuple that includes
