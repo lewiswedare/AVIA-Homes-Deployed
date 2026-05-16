@@ -319,15 +319,6 @@ struct SpecItemEditSheet: View {
                                 TextField("Item name", text: $name)
                                     .font(.neueCaption)
                             }
-                            fieldRow("Room") {
-                                Picker("", selection: $categoryId) {
-                                    ForEach(categories, id: \.id) { cat in
-                                        Text(cat.name).tag(cat.id)
-                                    }
-                                }
-                                .pickerStyle(.menu)
-                                .tint(AVIATheme.timelessBrown)
-                            }
                             fieldRow("Product Category") {
                                 Picker("", selection: $productCategoryId) {
                                     if productCategories.isEmpty {
