@@ -440,7 +440,7 @@ private struct SelectionItemCard: View {
             }
 
             VStack(alignment: .leading, spacing: 4) {
-                Text(selection.snapshotName)
+                Text(linkedSpecItem?.name ?? selection.snapshotName)
                     .font(.neueCorpMedium(15))
                     .foregroundStyle(AVIATheme.textPrimary)
                     .multilineTextAlignment(.leading)

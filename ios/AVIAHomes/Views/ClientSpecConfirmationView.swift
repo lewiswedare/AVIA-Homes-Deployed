@@ -322,7 +322,7 @@ struct ClientSpecConfirmationView: View {
     private func draftUpgradeRow(_ item: BuildSpecSelection) -> some View {
         HStack(alignment: .top, spacing: 10) {
             VStack(alignment: .leading, spacing: 2) {
-                Text(item.snapshotName)
+                Text(CatalogDataManager.shared.specItem(for: item.specItemId)?.name ?? item.snapshotName)
                     .font(.neueCaptionMedium)
                     .foregroundStyle(AVIATheme.textPrimary)
                 Text(item.snapshotCategoryName)
@@ -402,7 +402,7 @@ struct ClientSpecConfirmationView: View {
         VStack(alignment: .leading, spacing: 10) {
             HStack(alignment: .top, spacing: 10) {
                 VStack(alignment: .leading, spacing: 2) {
-                    Text(item.snapshotName)
+                    Text(CatalogDataManager.shared.specItem(for: item.specItemId)?.name ?? item.snapshotName)
                         .font(.neueCaptionMedium)
                         .foregroundStyle(AVIATheme.textPrimary)
                     Text(item.snapshotCategoryName)

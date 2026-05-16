@@ -222,7 +222,7 @@ struct SelectionsReviewView: View {
 
         return HStack(alignment: .top, spacing: 10) {
             VStack(alignment: .leading, spacing: 2) {
-                Text(item.snapshotName)
+                Text(catalog.specItem(for: item.specItemId)?.name ?? item.snapshotName)
                     .font(.neueCaptionMedium)
                     .foregroundStyle(AVIATheme.textPrimary)
                 Text(tierLabel(for: item))
