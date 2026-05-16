@@ -3438,6 +3438,29 @@ class SupabaseService {
         }
     }
 
+    /// Bulk-update the `display_title` of every assignment row whose
+    /// `selection_slot_id` is in the supplied set. Used by the room-first
+    /// admin editor when an admin renames a selection category (which
+    /// groups N slots in a room by their shared display title).
+    func updateVariantRoomAssignmentsTitleBySlots(slotIds: [String], newTitle: String?) async -> (ok: Bool, error: String?) {
+        guard isConfigured else { return (false, "Supabase not configured") }
+        guard !slotIds.isEmpty else { return (true, nil) }
+        struct TitlePatch: Encodable, Sendable { let display_title: String? }
+        do {
+            try await client
+                .from("variant_room_assignments")
+                .update(TitlePatch(display_title: newTitle))
+                .in("selection_slot_id", values: slotIds)
+                .execute()
+            return (true, nil)
+        } catch {
+            let message = String(describing: error)
+            print("[SupabaseService] updateVariantRoomAssignmentsTitleBySlots FAILED: \(message)")
+            lastUpsertError = message
+            return (false, message)
+        }
+    }
+
     /// Delete every assignment row tied to a given slot id. Used by the
     /// room-first admin editor when an admin removes a slot or replaces all
     /// of its 3 range rows on save.

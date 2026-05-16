@@ -1,14 +1,22 @@
 import SwiftUI
 
-// MARK: - Room Products (slot-based)
+// MARK: - Room Products (selection-category + slot based)
 //
-// Room-first editor: from a room, search products + variants and add them to
-// the room. Each assignment is one **slot** — a uuid grouping the 3 range
-// rows of one logical client-facing line-item. The same variant can be added
-// to a room multiple times as separate slots (e.g. tile SKU A used as both
-// "Floor Tiles" AND "Wall Tiles"), each with its own selection title, image
-// and per-range cost / inclusion. Only facade-agnostic slots are managed
-// here; facade-scoped assignments live in the dedicated facade editor.
+// Room-first editor. Slots in a room are now grouped by **Selection
+// Category** — a free-text name the admin sets on the slot's
+// `display_title`. Multiple categories can exist per room (e.g. "Floor
+// Tiles" + "Wall Tiles"), and the same variant can appear under more
+// than one category, each carrying its own per-range image + cost.
+//
+// Conceptually:
+//
+// Room (e.g. Bathroom)
+//   └── Selection Category ("Floor Tiles")
+//         └── Slot — one variant + 3 range rows (image/cost/inclusion)
+//
+// Each slot still represents one client-facing line item. Admins create a
+// category by naming it, then bulk-pick variants to drop into it; each
+// pick spawns one slot pre-tagged with the category name.
 
 struct AdminRoomProductsView: View {
     let room: SpecCategoryRow
@@ -18,7 +26,10 @@ struct AdminRoomProductsView: View {
     @State private var errorMessage: String?
     @State private var successMessage: String?
     @State private var searchText: String = ""
-    @State private var addingPickerOpen = false
+
+    @State private var newCategorySheetOpen = false
+    @State private var addVariantToCategory: AddVariantContext?
+    @State private var renameCategory: RenameContext?
     @State private var editingSlot: IdentifiedSlot?
 
     private var catalog: CatalogDataManager { CatalogDataManager.shared }
@@ -31,11 +42,8 @@ struct AdminRoomProductsView: View {
         "portobello": AVIATheme.heritageBlue
     ]
 
-    // MARK: Slot grouping
+    // MARK: Slot + category grouping
 
-    /// One row per slot currently assigned (facade-agnostic) to this room.
-    /// Grouped by the parent spec item so visually related slots stay
-    /// together.
     private struct SlotEntry: Identifiable {
         let id: String          // slot id
         let variant: SpecProductColourRow
@@ -45,11 +53,19 @@ struct AdminRoomProductsView: View {
         let sortOrder: Int
     }
 
-    private var groupedSlots: [(itemId: String, itemName: String, slots: [SlotEntry])] {
+    private struct CategoryGroup: Identifiable {
+        let id: String          // normalized title (lowercased + trimmed), "" for Untitled
+        let displayName: String // canonical title as typed
+        let slots: [SlotEntry]
+    }
+
+    /// All facade-agnostic slots in this room, grouped by selection
+    /// category (display_title). Untitled slots collapse into one
+    /// "Untitled" group so the admin can rename them in one shot.
+    private var groupedCategories: [CategoryGroup] {
         let itemMap: [String: SpecItemFlatRow] = Dictionary(uniqueKeysWithValues: allItems.map { ($0.id, $0) })
         let variants: [String: SpecProductColourRow] = Dictionary(uniqueKeysWithValues: catalog.coloursByProduct.values.flatMap { $0 }.map { ($0.id, $0) })
 
-        // Build one entry per slot.
         var bySlot: [String: [VariantRoomAssignmentRow]] = [:]
         for a in catalog.allVariantAssignments where a.room_id == room.id && a.facade_id == nil {
             guard let slot = a.selection_slot_id else { continue }
@@ -73,7 +89,7 @@ struct AdminRoomProductsView: View {
             ))
         }
 
-        // Filter by search.
+        // Search filter.
         let q = searchText.trimmingCharacters(in: .whitespaces)
         let filtered: [SlotEntry] = q.isEmpty ? entries : entries.filter { e in
             e.itemName.localizedStandardContains(q)
@@ -82,23 +98,42 @@ struct AdminRoomProductsView: View {
                 || e.displayTitle.localizedStandardContains(q)
         }
 
-        // Group by item id.
-        var byItem: [String: [SlotEntry]] = [:]
-        for e in filtered { byItem[e.itemId, default: []].append(e) }
-        var groups: [(itemId: String, itemName: String, slots: [SlotEntry])] = []
-        for (itemId, slots) in byItem {
+        // Group by normalized title.
+        var byKey: [String: [SlotEntry]] = [:]
+        var displayNameForKey: [String: String] = [:]
+        for e in filtered {
+            let key = e.displayTitle.lowercased()
+            byKey[key, default: []].append(e)
+            if displayNameForKey[key] == nil {
+                displayNameForKey[key] = e.displayTitle
+            }
+        }
+
+        var groups: [CategoryGroup] = []
+        for (key, slots) in byKey {
             let sorted = slots.sorted { lhs, rhs in
                 if lhs.sortOrder != rhs.sortOrder { return lhs.sortOrder < rhs.sortOrder }
-                return lhs.displayTitle.localizedStandardCompare(rhs.displayTitle) == .orderedAscending
+                if lhs.itemName != rhs.itemName {
+                    return lhs.itemName.localizedStandardCompare(rhs.itemName) == .orderedAscending
+                }
+                return lhs.variant.name.localizedStandardCompare(rhs.variant.name) == .orderedAscending
             }
-            let name = sorted.first?.itemName ?? "Unnamed item"
-            groups.append((itemId: itemId, itemName: name, slots: sorted))
+            groups.append(CategoryGroup(id: key, displayName: displayNameForKey[key] ?? "", slots: sorted))
         }
-        return groups.sorted { $0.itemName.localizedStandardCompare($1.itemName) == .orderedAscending }
+        // Untitled (empty key) sinks to the bottom; named groups sorted A→Z.
+        return groups.sorted { lhs, rhs in
+            if lhs.id.isEmpty != rhs.id.isEmpty { return !lhs.id.isEmpty }
+            return lhs.displayName.localizedStandardCompare(rhs.displayName) == .orderedAscending
+        }
     }
 
     private var totalSlots: Int {
-        groupedSlots.reduce(0) { $0 + $1.slots.count }
+        groupedCategories.reduce(0) { $0 + $1.slots.count }
+    }
+
+    private var existingCategoryNames: [String] {
+        groupedCategories
+            .compactMap { $0.displayName.isEmpty ? nil : $0.displayName }
     }
 
     // MARK: Body
@@ -109,21 +144,21 @@ struct AdminRoomProductsView: View {
                 heroHeader
                 statsBar
 
-                if isLoading && groupedSlots.isEmpty {
+                if isLoading && groupedCategories.isEmpty {
                     ProgressView().tint(AVIATheme.timelessBrown).padding(.vertical, 60)
-                } else if groupedSlots.isEmpty {
+                } else if groupedCategories.isEmpty {
                     AdminEmptyState(
-                        icon: "shippingbox",
-                        title: "No products in this room yet",
-                        subtitle: "Tap Add Product to search the catalogue and assign variants to \(room.name)."
+                        icon: "square.grid.2x2",
+                        title: "No selection categories yet",
+                        subtitle: "Create a category like \"Floor Tiles\" then drop variants into it. The same variant can live in multiple categories with its own image and price."
                     )
-                    addButton
+                    newCategoryButton
                         .padding(.top, 8)
                 } else {
-                    ForEach(groupedSlots, id: \.itemId) { group in
-                        itemSection(group)
+                    ForEach(groupedCategories) { group in
+                        categorySection(group)
                     }
-                    addButton
+                    newCategoryButton
                         .padding(.top, 4)
                 }
             }
@@ -134,28 +169,44 @@ struct AdminRoomProductsView: View {
         .background(AVIATheme.background)
         .navigationTitle(room.name)
         .navigationBarTitleDisplayMode(.large)
-        .searchable(text: $searchText, prompt: "Search products in this room…")
+        .searchable(text: $searchText, prompt: "Search categories, products or variants…")
         .toolbar {
             ToolbarItem(placement: .primaryAction) {
-                Button { addingPickerOpen = true } label: {
+                Button { newCategorySheetOpen = true } label: {
                     Image(systemName: "plus.circle.fill")
                         .foregroundStyle(AVIATheme.timelessBrown)
                 }
             }
         }
-        .sheet(isPresented: $addingPickerOpen) {
-            RoomProductPickerSheet(
+        .sheet(isPresented: $newCategorySheetOpen) {
+            NewCategorySheet(
+                room: room,
+                allItems: allItems,
+                catalog: catalog,
+                existingCategoryNames: existingCategoryNames
+            ) { categoryName, variantIds in
+                newCategorySheetOpen = false
+                Task { await createCategory(name: categoryName, variantIds: variantIds) }
+            }
+        }
+        .sheet(item: $addVariantToCategory) { ctx in
+            VariantMultiPickerSheet(
                 roomName: room.name,
+                categoryName: ctx.categoryName,
                 allItems: allItems,
                 catalog: catalog
-            ) { variantId in
-                addingPickerOpen = false
-                // New slot id for each "add" — that's what lets the same
-                // variant be added to the same room multiple times.
-                let newSlot = UUID().uuidString
-                DispatchQueue.main.asyncAfter(deadline: .now() + 0.25) {
-                    editingSlot = IdentifiedSlot(id: newSlot, variantId: variantId, isNew: true)
-                }
+            ) { variantIds in
+                addVariantToCategory = nil
+                Task { await addVariants(variantIds: variantIds, toCategory: ctx.categoryName) }
+            }
+        }
+        .sheet(item: $renameCategory) { ctx in
+            RenameCategorySheet(
+                roomName: room.name,
+                currentName: ctx.currentName
+            ) { newName in
+                renameCategory = nil
+                Task { await renameCategory(slotIds: ctx.slotIds, currentName: ctx.currentName, newName: newName) }
             }
         }
         .sheet(item: $editingSlot) { wrapped in
@@ -165,7 +216,7 @@ struct AdminRoomProductsView: View {
                 slotId: wrapped.id,
                 variantId: wrapped.variantId,
                 variantName: variant?.name ?? "Variant",
-                isNew: wrapped.isNew,
+                isNew: false,
                 onSaved: {
                     Task { await reload() }
                 }
@@ -188,7 +239,7 @@ struct AdminRoomProductsView: View {
                     Text(room.name)
                         .font(.neueSubheadlineMedium)
                         .foregroundStyle(AVIATheme.textPrimary)
-                    Text("Add products as titled slots — e.g. the same tile SKU as both \"Floor Tiles\" and \"Wall Tiles\". Each slot has its own image + price per range.")
+                    Text("Group variants under selection categories — e.g. \"Floor Tiles\" and \"Wall Tiles\" can share the same internal-tile catalogue, each with its own per-range image + price.")
                         .font(.neueCaption2)
                         .foregroundStyle(AVIATheme.textTertiary)
                         .lineLimit(3)
@@ -201,17 +252,17 @@ struct AdminRoomProductsView: View {
 
     private var statsBar: some View {
         HStack(spacing: 12) {
-            AdminMiniStat(value: "\(groupedSlots.count)", label: "Products", color: AVIATheme.timelessBrown)
+            AdminMiniStat(value: "\(groupedCategories.count)", label: "Categories", color: AVIATheme.timelessBrown)
             AdminMiniStat(value: "\(totalSlots)", label: "Slots", color: AVIATheme.warning)
             AdminMiniStat(value: "\(allItems.count)", label: "In Catalogue", color: AVIATheme.heritageBlue)
         }
     }
 
-    private var addButton: some View {
-        Button { addingPickerOpen = true } label: {
+    private var newCategoryButton: some View {
+        Button { newCategorySheetOpen = true } label: {
             HStack(spacing: 8) {
                 Image(systemName: "plus.circle.fill")
-                Text("Add Product to \(room.name)")
+                Text("New Selection Category")
                     .font(.neueSubheadlineMedium)
             }
             .foregroundStyle(AVIATheme.aviaWhite)
@@ -222,25 +273,13 @@ struct AdminRoomProductsView: View {
         }
     }
 
-    // MARK: Item section
+    // MARK: Category section
 
     @ViewBuilder
-    private func itemSection(_ group: (itemId: String, itemName: String, slots: [SlotEntry])) -> some View {
+    private func categorySection(_ group: CategoryGroup) -> some View {
         BentoCard(cornerRadius: 12) {
             VStack(alignment: .leading, spacing: 10) {
-                HStack(alignment: .top, spacing: 10) {
-                    VStack(alignment: .leading, spacing: 3) {
-                        Text(group.itemName)
-                            .font(.neueCaptionMedium)
-                            .foregroundStyle(AVIATheme.textPrimary)
-                        Text("\(group.slots.count) \(group.slots.count == 1 ? "slot" : "slots") in this room")
-                            .font(.neueCaption2)
-                            .foregroundStyle(AVIATheme.textTertiary)
-                    }
-                    Spacer()
-                }
-                .padding(.horizontal, 14)
-                .padding(.top, 12)
+                categoryHeader(group)
 
                 Divider().background(AVIATheme.surfaceBorder)
 
@@ -250,28 +289,95 @@ struct AdminRoomProductsView: View {
                     }
                 }
                 .padding(.horizontal, 10)
+                .padding(.bottom, 4)
+
+                Button {
+                    addVariantToCategory = AddVariantContext(
+                        categoryName: group.displayName,
+                        normalizedKey: group.id
+                    )
+                } label: {
+                    HStack(spacing: 8) {
+                        Image(systemName: "plus.circle")
+                        Text(group.displayName.isEmpty ? "Add variant" : "Add variant to \(group.displayName)")
+                            .font(.neueCaption2Medium)
+                            .lineLimit(1)
+                    }
+                    .foregroundStyle(AVIATheme.timelessBrown)
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, 9)
+                    .background(AVIATheme.timelessBrown.opacity(0.08))
+                    .clipShape(.rect(cornerRadius: 8))
+                }
+                .padding(.horizontal, 10)
                 .padding(.bottom, 10)
             }
         }
     }
 
+    @ViewBuilder
+    private func categoryHeader(_ group: CategoryGroup) -> some View {
+        HStack(alignment: .top, spacing: 10) {
+            VStack(alignment: .leading, spacing: 3) {
+                HStack(spacing: 6) {
+                    Image(systemName: group.id.isEmpty ? "square.dashed" : "square.grid.2x2")
+                        .font(.neueCaption2)
+                        .foregroundStyle(AVIATheme.timelessBrown)
+                    Text(group.displayName.isEmpty ? "Untitled" : group.displayName)
+                        .font(.neueCaptionMedium)
+                        .foregroundStyle(AVIATheme.textPrimary)
+                }
+                Text("\(group.slots.count) \(group.slots.count == 1 ? "variant" : "variants") in this category")
+                    .font(.neueCaption2)
+                    .foregroundStyle(AVIATheme.textTertiary)
+            }
+            Spacer()
+            Menu {
+                Button {
+                    renameCategory = RenameContext(
+                        currentName: group.displayName,
+                        slotIds: group.slots.map { $0.id }
+                    )
+                } label: {
+                    Label(group.id.isEmpty ? "Name category" : "Rename category", systemImage: "pencil")
+                }
+                Button {
+                    addVariantToCategory = AddVariantContext(
+                        categoryName: group.displayName,
+                        normalizedKey: group.id
+                    )
+                } label: {
+                    Label("Add variant", systemImage: "plus")
+                }
+                Button(role: .destructive) {
+                    Task { await deleteCategory(slotIds: group.slots.map { $0.id }, name: group.displayName) }
+                } label: {
+                    Label("Delete category", systemImage: "trash")
+                }
+            } label: {
+                Image(systemName: "ellipsis.circle")
+                    .font(.neueCaption)
+                    .foregroundStyle(AVIATheme.textSecondary)
+                    .padding(6)
+            }
+        }
+        .padding(.horizontal, 14)
+        .padding(.top, 12)
+    }
+
     private func slotRow(_ entry: SlotEntry) -> some View {
         let assignments = catalog.rows(forSlot: entry.id).filter { $0.facade_id == nil }
-        let titleText = entry.displayTitle.isEmpty ? entry.variant.name : entry.displayTitle
-        let subtitle: String = entry.displayTitle.isEmpty
-            ? (entry.variant.sku.map { "SKU \($0)" } ?? "No selection title")
-            : entry.variant.name
         return Button {
             editingSlot = IdentifiedSlot(id: entry.id, variantId: entry.variant.id, isNew: false)
         } label: {
             HStack(spacing: 10) {
                 variantSwatch(entry.variant)
                 VStack(alignment: .leading, spacing: 2) {
-                    Text(titleText)
+                    Text(entry.variant.name.isEmpty ? "Unnamed variant" : entry.variant.name)
                         .font(.neueCaption2Medium)
                         .foregroundStyle(AVIATheme.textPrimary)
                         .lineLimit(1)
-                    Text(subtitle)
+                    Text(entry.itemName)
                         .font(.neueCaption2)
                         .foregroundStyle(AVIATheme.textTertiary)
                         .lineLimit(1)
@@ -296,12 +402,12 @@ struct AdminRoomProductsView: View {
             Button {
                 editingSlot = IdentifiedSlot(id: entry.id, variantId: entry.variant.id, isNew: false)
             } label: {
-                Label("Rename / Edit slot", systemImage: "pencil")
+                Label("Edit slot", systemImage: "pencil")
             }
             Button(role: .destructive) {
                 Task { await removeSlot(entry.id) }
             } label: {
-                Label("Remove slot from \(room.name)", systemImage: "trash")
+                Label("Remove from category", systemImage: "trash")
             }
         }
     }
@@ -405,6 +511,105 @@ struct AdminRoomProductsView: View {
             errorMessage = "Couldn't remove slot"
         }
     }
+
+    private func createCategory(name: String, variantIds: [String]) async {
+        let trimmed = name.trimmingCharacters(in: .whitespaces)
+        guard !trimmed.isEmpty else {
+            errorMessage = "Category name can't be empty"
+            return
+        }
+        guard !variantIds.isEmpty else {
+            successMessage = "Created \"\(trimmed)\" — add variants from its menu"
+            return
+        }
+        await insertSlots(variantIds: variantIds, title: trimmed)
+        successMessage = "Added \(variantIds.count) variant\(variantIds.count == 1 ? "" : "s") to \(trimmed)"
+        await reload()
+    }
+
+    private func addVariants(variantIds: [String], toCategory categoryName: String) async {
+        guard !variantIds.isEmpty else { return }
+        let trimmed = categoryName.trimmingCharacters(in: .whitespaces)
+        let title: String? = trimmed.isEmpty ? nil : trimmed
+        await insertSlots(variantIds: variantIds, title: title)
+        let categoryLabel = trimmed.isEmpty ? "Untitled" : trimmed
+        successMessage = "Added \(variantIds.count) variant\(variantIds.count == 1 ? "" : "s") to \(categoryLabel)"
+        await reload()
+    }
+
+    /// Inserts one slot per variant id with the supplied display title.
+    /// Each slot writes 3 rows (one per range) so the slot is visible
+    /// across the spec ranges. Default values: included + cost 0 + no
+    /// image; admin drills into a slot afterwards to set per-range
+    /// detail.
+    private func insertSlots(variantIds: [String], title: String?) async {
+        var inserts: [VariantRoomAssignmentInsert] = []
+        for variantId in variantIds {
+            let slotId = UUID().uuidString
+            for rangeId in rangeIds {
+                inserts.append(
+                    VariantRoomAssignmentInsert(
+                        variant_id: variantId,
+                        room_id: room.id,
+                        range_id: rangeId,
+                        facade_id: nil,
+                        image_url: nil,
+                        cost: 0,
+                        inclusion: VariantInclusion.included.rawValue,
+                        sort_order: 0,
+                        display_title: title,
+                        selection_slot_id: slotId
+                    )
+                )
+            }
+        }
+        let result = await SupabaseService.shared.bulkInsertVariantRoomAssignments(inserts)
+        if !result.ok {
+            errorMessage = "Save failed: \(result.error ?? "unknown")"
+        }
+    }
+
+    private func renameCategory(slotIds: [String], currentName: String, newName: String) async {
+        let trimmed = newName.trimmingCharacters(in: .whitespaces)
+        guard !trimmed.isEmpty else {
+            errorMessage = "Category name can't be empty"
+            return
+        }
+        let trimmedCurrent = currentName.trimmingCharacters(in: .whitespaces)
+        if trimmed.lowercased() == trimmedCurrent.lowercased() {
+            return
+        }
+        // Reject if another category already owns this name.
+        let exists = groupedCategories.contains { $0.id == trimmed.lowercased() && !$0.slots.contains(where: { slotIds.contains($0.id) }) }
+        if exists {
+            errorMessage = "A category named \"\(trimmed)\" already exists in \(room.name)"
+            return
+        }
+        let result = await SupabaseService.shared.updateVariantRoomAssignmentsTitleBySlots(slotIds: slotIds, newTitle: trimmed)
+        if result.ok {
+            successMessage = "Renamed to \(trimmed)"
+            await reload()
+        } else {
+            errorMessage = "Couldn't rename: \(result.error ?? "unknown")"
+        }
+    }
+
+    private func deleteCategory(slotIds: [String], name: String) async {
+        guard !slotIds.isEmpty else { return }
+        let svc = SupabaseService.shared
+        var anyFail = false
+        for slotId in slotIds {
+            let r = await svc.deleteVariantRoomAssignmentsBySlot(slotId: slotId)
+            if !r.ok { anyFail = true }
+        }
+        if anyFail {
+            errorMessage = "Some slots couldn't be removed"
+        } else {
+            let label = name.isEmpty ? "Untitled" : name
+            successMessage = "Removed \(label) from \(room.name)"
+        }
+        await reload()
+    }
 }
 
 // MARK: - Identified types
@@ -415,17 +620,153 @@ private struct IdentifiedSlot: Identifiable, Hashable {
     let isNew: Bool
 }
 
-// MARK: - Add Picker Sheet
+private struct AddVariantContext: Identifiable {
+    var id: String { normalizedKey + "_addvariant" }
+    let categoryName: String
+    let normalizedKey: String
+}
 
-private struct RoomProductPickerSheet: View {
+private struct RenameContext: Identifiable {
+    var id: String { currentName.lowercased() + "_rename" }
+    let currentName: String
+    let slotIds: [String]
+}
+
+// MARK: - New Category sheet (name + multi-select variants)
+
+private struct NewCategorySheet: View {
     @Environment(\.dismiss) private var dismiss
-    let roomName: String
+    let room: SpecCategoryRow
     let allItems: [SpecItemFlatRow]
     let catalog: CatalogDataManager
-    let onPicked: (_ variantId: String) -> Void
+    let existingCategoryNames: [String]
+    let onSave: (_ categoryName: String, _ variantIds: [String]) -> Void
 
+    @State private var categoryName: String = ""
     @State private var query: String = ""
     @State private var expandedItemId: String?
+    @State private var selectedVariantIds: Set<String> = []
+    @State private var errorMessage: String?
+
+    var body: some View {
+        NavigationStack {
+            ScrollView {
+                VStack(spacing: 14) {
+                    nameCard
+                    suggestionsCard
+                    pickerCard
+                    if let msg = errorMessage {
+                        Text(msg)
+                            .font(.neueCaption2)
+                            .foregroundStyle(AVIATheme.destructive)
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                    }
+                }
+                .padding(.horizontal, 16)
+                .padding(.vertical, 14)
+                .padding(.bottom, 40)
+            }
+            .background(AVIATheme.background)
+            .navigationTitle("New Category")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .cancellationAction) {
+                    Button("Cancel") { dismiss() }
+                }
+                ToolbarItem(placement: .confirmationAction) {
+                    Button("Add") { attemptSave() }
+                        .fontWeight(.semibold)
+                        .disabled(categoryName.trimmingCharacters(in: .whitespaces).isEmpty)
+                }
+            }
+        }
+    }
+
+    private var nameCard: some View {
+        BentoCard(cornerRadius: 11) {
+            VStack(alignment: .leading, spacing: 8) {
+                Text("Category name in \(room.name)")
+                    .font(.neueCaption2)
+                    .foregroundStyle(AVIATheme.textTertiary)
+                TextField("e.g. Floor Tiles", text: $categoryName)
+                    .font(.neueCaption)
+                    .padding(10)
+                    .background(AVIATheme.surfaceElevated)
+                    .clipShape(.rect(cornerRadius: 6))
+                Text("Clients see this as the line-item title. Re-using a variant under a second category lets you set different images and prices for the same SKU.")
+                    .font(.neueCaption2)
+                    .foregroundStyle(AVIATheme.textTertiary)
+            }
+            .padding(14)
+        }
+    }
+
+    @ViewBuilder
+    private var suggestionsCard: some View {
+        if !existingCategoryNames.isEmpty {
+            BentoCard(cornerRadius: 11) {
+                VStack(alignment: .leading, spacing: 8) {
+                    Text("Existing in this room")
+                        .font(.neueCaption2)
+                        .foregroundStyle(AVIATheme.textTertiary)
+                    LazyVGrid(columns: [GridItem(.adaptive(minimum: 100), spacing: 6)], spacing: 6) {
+                        ForEach(existingCategoryNames, id: \.self) { name in
+                            Text(name)
+                                .font(.neueCaption2)
+                                .foregroundStyle(AVIATheme.textSecondary)
+                                .padding(.horizontal, 10)
+                                .padding(.vertical, 6)
+                                .background(AVIATheme.surfaceElevated.opacity(0.6), in: Capsule())
+                        }
+                    }
+                }
+                .padding(14)
+            }
+        }
+    }
+
+    private var pickerCard: some View {
+        BentoCard(cornerRadius: 11) {
+            VStack(alignment: .leading, spacing: 10) {
+                HStack {
+                    Text("Pick variants")
+                        .font(.neueCaptionMedium)
+                        .foregroundStyle(AVIATheme.textPrimary)
+                    Spacer()
+                    Text("\(selectedVariantIds.count) selected")
+                        .font(.neueCaption2)
+                        .foregroundStyle(AVIATheme.timelessBrown)
+                }
+                .padding(.horizontal, 14)
+                .padding(.top, 12)
+
+                TextField("Search products & variants…", text: $query)
+                    .font(.neueCaption2)
+                    .padding(10)
+                    .background(AVIATheme.surfaceElevated)
+                    .clipShape(.rect(cornerRadius: 6))
+                    .padding(.horizontal, 14)
+
+                VStack(spacing: 6) {
+                    ForEach(filteredItems, id: \.id) { item in
+                        VariantPickerRow(
+                            item: item,
+                            catalog: catalog,
+                            isExpanded: expandedItemId == item.id,
+                            selectedVariantIds: $selectedVariantIds,
+                            onToggleExpand: {
+                                withAnimation(.spring(response: 0.3, dampingFraction: 0.85)) {
+                                    expandedItemId = expandedItemId == item.id ? nil : item.id
+                                }
+                            }
+                        )
+                    }
+                }
+                .padding(.horizontal, 10)
+                .padding(.bottom, 10)
+            }
+        }
+    }
 
     private var filteredItems: [SpecItemFlatRow] {
         let q = query.trimmingCharacters(in: .whitespaces)
@@ -448,21 +789,52 @@ private struct RoomProductPickerSheet: View {
         .sorted { $0.name.localizedStandardCompare($1.name) == .orderedAscending }
     }
 
+    private func attemptSave() {
+        let trimmed = categoryName.trimmingCharacters(in: .whitespaces)
+        guard !trimmed.isEmpty else {
+            errorMessage = "Give the category a name"
+            return
+        }
+        let normalized = trimmed.lowercased()
+        if existingCategoryNames.contains(where: { $0.lowercased() == normalized }) {
+            errorMessage = "A category named \"\(trimmed)\" already exists in \(room.name)"
+            return
+        }
+        onSave(trimmed, Array(selectedVariantIds))
+    }
+}
+
+// MARK: - Variant multi-picker (used when adding variants to an existing category)
+
+private struct VariantMultiPickerSheet: View {
+    @Environment(\.dismiss) private var dismiss
+    let roomName: String
+    let categoryName: String
+    let allItems: [SpecItemFlatRow]
+    let catalog: CatalogDataManager
+    let onSave: (_ variantIds: [String]) -> Void
+
+    @State private var query: String = ""
+    @State private var expandedItemId: String?
+    @State private var selectedVariantIds: Set<String> = []
+
     var body: some View {
         NavigationStack {
             ScrollView {
                 VStack(spacing: 10) {
-                    if filteredItems.isEmpty {
-                        AdminEmptyState(
-                            icon: "magnifyingglass",
-                            title: "No matches",
-                            subtitle: "Try a different name, SKU or supplier."
+                    headerCard
+                    ForEach(filteredItems, id: \.id) { item in
+                        VariantPickerRow(
+                            item: item,
+                            catalog: catalog,
+                            isExpanded: expandedItemId == item.id,
+                            selectedVariantIds: $selectedVariantIds,
+                            onToggleExpand: {
+                                withAnimation(.spring(response: 0.3, dampingFraction: 0.85)) {
+                                    expandedItemId = expandedItemId == item.id ? nil : item.id
+                                }
+                            }
                         )
-                        .padding(.top, 40)
-                    } else {
-                        ForEach(filteredItems, id: \.id) { item in
-                            itemRow(item)
-                        }
                     }
                 }
                 .padding(.horizontal, 16)
@@ -470,27 +842,85 @@ private struct RoomProductPickerSheet: View {
                 .padding(.bottom, 40)
             }
             .background(AVIATheme.background)
-            .navigationTitle("Add to \(roomName)")
+            .navigationTitle("Add to \(categoryName.isEmpty ? "Untitled" : categoryName)")
             .navigationBarTitleDisplayMode(.inline)
             .searchable(text: $query, prompt: "Search products & variants…")
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
                     Button("Cancel") { dismiss() }
                 }
+                ToolbarItem(placement: .confirmationAction) {
+                    Button("Add") {
+                        onSave(Array(selectedVariantIds))
+                    }
+                    .fontWeight(.semibold)
+                    .disabled(selectedVariantIds.isEmpty)
+                }
             }
         }
     }
 
-    private func itemRow(_ item: SpecItemFlatRow) -> some View {
-        let isOpen = expandedItemId == item.id
+    private var headerCard: some View {
+        BentoCard(cornerRadius: 11) {
+            HStack(spacing: 12) {
+                Image(systemName: "square.grid.2x2")
+                    .font(.neueCorpMedium(14))
+                    .foregroundStyle(AVIATheme.timelessBrown)
+                    .frame(width: 36, height: 36)
+                    .background(AVIATheme.timelessBrown.opacity(0.12))
+                    .clipShape(.rect(cornerRadius: 8))
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(categoryName.isEmpty ? "Untitled" : categoryName)
+                        .font(.neueCaptionMedium)
+                        .foregroundStyle(AVIATheme.textPrimary)
+                    Text("Adding to \(roomName) — \(selectedVariantIds.count) selected.")
+                        .font(.neueCaption2)
+                        .foregroundStyle(AVIATheme.textTertiary)
+                }
+                Spacer()
+            }
+            .padding(14)
+        }
+    }
+
+    private var filteredItems: [SpecItemFlatRow] {
+        let q = query.trimmingCharacters(in: .whitespaces)
+        guard !q.isEmpty else {
+            return allItems.sorted { $0.name.localizedStandardCompare($1.name) == .orderedAscending }
+        }
+        return allItems.filter { item in
+            if item.name.localizedStandardContains(q) { return true }
+            if (item.sku ?? "").localizedStandardContains(q) { return true }
+            if (item.supplier ?? "").localizedStandardContains(q) { return true }
+            let pids = catalog.productsBySpecItem[item.id] ?? []
+            for pid in pids {
+                for v in catalog.coloursByProduct[pid] ?? [] {
+                    if v.name.localizedStandardContains(q) { return true }
+                    if (v.sku ?? "").localizedStandardContains(q) { return true }
+                }
+            }
+            return false
+        }
+        .sorted { $0.name.localizedStandardCompare($1.name) == .orderedAscending }
+    }
+}
+
+// MARK: - Shared variant picker row (one product card + expandable variants)
+
+private struct VariantPickerRow: View {
+    let item: SpecItemFlatRow
+    let catalog: CatalogDataManager
+    let isExpanded: Bool
+    @Binding var selectedVariantIds: Set<String>
+    let onToggleExpand: () -> Void
+
+    var body: some View {
         let productIds = catalog.productsBySpecItem[item.id] ?? []
         let variants: [SpecProductColourRow] = productIds.flatMap { catalog.coloursByProduct[$0] ?? [] }
-        return BentoCard(cornerRadius: 10) {
+        BentoCard(cornerRadius: 10) {
             VStack(spacing: 0) {
                 Button {
-                    withAnimation(.spring(response: 0.3, dampingFraction: 0.85)) {
-                        expandedItemId = isOpen ? nil : item.id
-                    }
+                    onToggleExpand()
                 } label: {
                     HStack(spacing: 10) {
                         thumbnail(urlString: item.image_url)
@@ -508,20 +938,26 @@ private struct RoomProductPickerSheet: View {
                                 Text("\(variants.count) \(variants.count == 1 ? "variant" : "variants")")
                                     .font(.neueCaption2)
                                     .foregroundStyle(AVIATheme.textTertiary)
+                                let pickedHere = variants.filter { selectedVariantIds.contains($0.id) }.count
+                                if pickedHere > 0 {
+                                    Text("• \(pickedHere) picked")
+                                        .font(.neueCaption2)
+                                        .foregroundStyle(AVIATheme.timelessBrown)
+                                }
                             }
                         }
                         Spacer()
                         Image(systemName: "chevron.down")
                             .font(.neueCaption2)
                             .foregroundStyle(AVIATheme.textTertiary)
-                            .rotationEffect(.degrees(isOpen ? 180 : 0))
+                            .rotationEffect(.degrees(isExpanded ? 180 : 0))
                     }
                     .padding(12)
                     .contentShape(Rectangle())
                 }
                 .buttonStyle(.plain)
 
-                if isOpen {
+                if isExpanded {
                     Rectangle().fill(AVIATheme.surfaceBorder).frame(height: 1)
                     if variants.isEmpty {
                         Text("This product has no variants yet — add one under All Products first.")
@@ -531,7 +967,7 @@ private struct RoomProductPickerSheet: View {
                     } else {
                         VStack(spacing: 6) {
                             ForEach(variants, id: \.id) { v in
-                                pickRow(v)
+                                variantPickRow(v)
                             }
                         }
                         .padding(8)
@@ -541,10 +977,15 @@ private struct RoomProductPickerSheet: View {
         }
     }
 
-    private func pickRow(_ v: SpecProductColourRow) -> some View {
-        Button {
+    private func variantPickRow(_ v: SpecProductColourRow) -> some View {
+        let isSelected = selectedVariantIds.contains(v.id)
+        return Button {
             AVIAHaptic.lightTap.trigger()
-            onPicked(v.id)
+            if isSelected {
+                selectedVariantIds.remove(v.id)
+            } else {
+                selectedVariantIds.insert(v.id)
+            }
         } label: {
             HStack(spacing: 10) {
                 if let urlString = v.image_url, !urlString.isEmpty, let url = URL(string: urlString) {
@@ -579,12 +1020,12 @@ private struct RoomProductPickerSheet: View {
                     }
                 }
                 Spacer()
-                Image(systemName: "plus.circle.fill")
+                Image(systemName: isSelected ? "checkmark.circle.fill" : "circle")
                     .font(.neueCaption)
-                    .foregroundStyle(AVIATheme.timelessBrown)
+                    .foregroundStyle(isSelected ? AVIATheme.timelessBrown : AVIATheme.textTertiary)
             }
             .padding(8)
-            .background(AVIATheme.surfaceElevated.opacity(0.6))
+            .background((isSelected ? AVIATheme.timelessBrown.opacity(0.08) : AVIATheme.surfaceElevated.opacity(0.6)))
             .clipShape(.rect(cornerRadius: 8))
             .contentShape(Rectangle())
         }
@@ -614,6 +1055,63 @@ private struct RoomProductPickerSheet: View {
                 }
             }
             .clipShape(.rect(cornerRadius: 7))
+    }
+}
+
+// MARK: - Rename Category sheet
+
+private struct RenameCategorySheet: View {
+    @Environment(\.dismiss) private var dismiss
+    let roomName: String
+    let currentName: String
+    let onSave: (_ newName: String) -> Void
+
+    @State private var name: String = ""
+    @State private var hasInitialised = false
+
+    var body: some View {
+        NavigationStack {
+            ScrollView {
+                VStack(spacing: 14) {
+                    BentoCard(cornerRadius: 11) {
+                        VStack(alignment: .leading, spacing: 8) {
+                            Text("Category name in \(roomName)")
+                                .font(.neueCaption2)
+                                .foregroundStyle(AVIATheme.textTertiary)
+                            TextField("e.g. Floor Tiles", text: $name)
+                                .font(.neueCaption)
+                                .padding(10)
+                                .background(AVIATheme.surfaceElevated)
+                                .clipShape(.rect(cornerRadius: 6))
+                            Text("Renaming applies to every variant currently in this category.")
+                                .font(.neueCaption2)
+                                .foregroundStyle(AVIATheme.textTertiary)
+                        }
+                        .padding(14)
+                    }
+                }
+                .padding(.horizontal, 16)
+                .padding(.vertical, 14)
+            }
+            .background(AVIATheme.background)
+            .navigationTitle(currentName.isEmpty ? "Name Category" : "Rename Category")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .cancellationAction) {
+                    Button("Cancel") { dismiss() }
+                }
+                ToolbarItem(placement: .confirmationAction) {
+                    Button("Save") { onSave(name) }
+                        .fontWeight(.semibold)
+                        .disabled(name.trimmingCharacters(in: .whitespaces).isEmpty)
+                }
+            }
+            .task {
+                guard !hasInitialised else { return }
+                hasInitialised = true
+                name = currentName
+            }
+        }
     }
 }
 
@@ -710,7 +1208,7 @@ private struct RoomSlotAssignmentSheet: View {
     private var titleCard: some View {
         BentoCard(cornerRadius: 11) {
             VStack(alignment: .leading, spacing: 8) {
-                Text("Selection title in \(room.name)")
+                Text("Selection category in \(room.name)")
                     .font(.neueCaption2)
                     .foregroundStyle(AVIATheme.textTertiary)
                 TextField("e.g. Floor Tiles", text: $displayTitle)
@@ -718,7 +1216,7 @@ private struct RoomSlotAssignmentSheet: View {
                     .padding(10)
                     .background(AVIATheme.surfaceElevated)
                     .clipShape(.rect(cornerRadius: 6))
-                Text("Shown to clients in place of the product name. Use distinct titles to add the same variant multiple times (e.g. \"Floor Tiles\" + \"Wall Tiles\").")
+                Text("Renaming here moves this slot into a different selection category. Other slots in the original category keep their title.")
                     .font(.neueCaption2)
                     .foregroundStyle(AVIATheme.textTertiary)
             }
@@ -822,10 +1320,9 @@ private struct RoomSlotAssignmentSheet: View {
 
         // Guard: prevent two slots in the same room from sharing the same
         // (variant, title) pair. A variant can be added to a room many
-        // times — but only once per logical "product slot" (e.g. one
-        // "Floor Tiles" slot using SKU X). Title comparison is case-
-        // insensitive on the trimmed value; empty titles are treated as a
-        // single "untitled" bucket per variant.
+        // times — but only once per logical category (e.g. one "Floor
+        // Tiles" slot using SKU X). Title comparison is case-insensitive
+        // on the trimmed value; empty titles share the "untitled" bucket.
         let normalized = title.lowercased()
         let conflict = CatalogDataManager.shared.allVariantAssignments.contains { row in
             guard row.room_id == room.id, row.facade_id == nil else { return false }
@@ -836,13 +1333,10 @@ private struct RoomSlotAssignmentSheet: View {
         }
         if conflict {
             let label = title.isEmpty ? "(no title)" : "\"\(title)\""
-            errorMessage = "This variant is already in \(room.name) as a slot titled \(label). Use a different selection title to add it again."
+            errorMessage = "This variant is already in \(room.name) under category \(label). Use a different selection category to add it again."
             return
         }
 
-        // Delete this slot's existing rows so we can re-insert with the
-        // current values. Scoped tightly by slot id so other slots of the
-        // same variant in the same room are untouched.
         _ = await svc.deleteVariantRoomAssignmentsBySlot(slotId: slotId)
 
         var inserts: [VariantRoomAssignmentInsert] = []
