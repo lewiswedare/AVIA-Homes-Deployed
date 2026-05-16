@@ -35,6 +35,15 @@ struct SelectionProductPickerView: View {
 
     private var rangeId: String { selection.specTier.lowercased() }
 
+    /// True when the spec item has at least one variant_room_assignment row
+    /// somewhere. When true we trust the assignment table to decide which
+    /// variants/products belong in which room; when false we fall back to the
+    /// legacy behaviour of showing every product/colour for the item so
+    /// un-migrated items don't silently disappear.
+    private var hasAnyAssignments: Bool {
+        catalog.hasAnyRoomAssignment(forSpecItem: selection.specItemId)
+    }
+
     /// Returns the room-specific assignment for a variant when we have a room
     /// context, otherwise nil. Drives image + cost overrides.
     private func assignment(for variantId: String) -> VariantRoomAssignmentRow? {
@@ -42,14 +51,30 @@ struct SelectionProductPickerView: View {
         return catalog.assignment(variantId: variantId, roomId: roomId, rangeId: rangeId, facadeId: facadeId)
     }
 
-    /// Variants for a product, filtered to those assigned to the active room
-    /// (when one is set). Falls back to all product colours when room context
-    /// is missing or when no assignments exist yet.
+    /// Variants for a product, filtered to those assigned to the active room.
+    /// When the spec item has any assignments at all, the room scope is
+    /// authoritative — only variants assigned to this room are shown. Only
+    /// fully un-migrated items (no assignments anywhere) fall back to all
+    /// colours so they don't silently disappear during rollout.
     private func roomScopedColours(for productId: String) -> [SpecProductColourRow] {
         let all = catalog.productColours(for: productId)
         guard roomId != nil else { return all }
         let filtered = all.filter { assignment(for: $0.id) != nil }
-        return filtered.isEmpty ? all : filtered
+        if !filtered.isEmpty { return filtered }
+        return hasAnyAssignments ? [] : all
+    }
+
+    /// Products filtered to those that have at least one variant assigned to
+    /// the active room. Mirrors `roomScopedColours` — when the item has any
+    /// assignments we strictly scope, otherwise we fall back to every product
+    /// for the item so legacy items keep working.
+    private var roomScopedProducts: [(product: SpecProductRow, membership: SpecRangeItemProductRow)] {
+        guard roomId != nil else { return products }
+        let filtered = products.filter { entry in
+            !roomScopedColours(for: entry.product.id).isEmpty
+        }
+        if !filtered.isEmpty { return filtered }
+        return hasAnyAssignments ? [] : products
     }
 
     private var savedIsUpgrade: Bool {
@@ -88,9 +113,18 @@ struct SelectionProductPickerView: View {
                 }
             }
 
-            VStack(spacing: 10) {
-                ForEach(products, id: \.product.id) { entry in
-                    productCard(product: entry.product, membership: entry.membership)
+            let visibleProducts = roomScopedProducts
+            if visibleProducts.isEmpty {
+                Text("No products assigned to this room yet.")
+                    .font(.neueCaption2)
+                    .foregroundStyle(AVIATheme.textTertiary)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .padding(.vertical, 8)
+            } else {
+                VStack(spacing: 10) {
+                    ForEach(visibleProducts, id: \.product.id) { entry in
+                        productCard(product: entry.product, membership: entry.membership)
+                    }
                 }
             }
         }
