@@ -30,6 +30,8 @@ struct AdminRoomProductsView: View {
     @State private var newCategorySheetOpen = false
     @State private var addVariantToCategory: AddVariantContext?
     @State private var renameCategory: RenameContext?
+    @State private var duplicateCategory: DuplicateContext?
+    @State private var reorderSheetOpen = false
     @State private var editingSlot: IdentifiedSlot?
 
     private var catalog: CatalogDataManager { CatalogDataManager.shared }
@@ -57,6 +59,7 @@ struct AdminRoomProductsView: View {
         let id: String          // normalized title (lowercased + trimmed), "" for Untitled
         let displayName: String // canonical title as typed
         let slots: [SlotEntry]
+        let minSortOrder: Int   // for category ordering
     }
 
     /// All facade-agnostic slots in this room, grouped by selection
@@ -118,11 +121,14 @@ struct AdminRoomProductsView: View {
                 }
                 return lhs.variant.name.localizedStandardCompare(rhs.variant.name) == .orderedAscending
             }
-            groups.append(CategoryGroup(id: key, displayName: displayNameForKey[key] ?? "", slots: sorted))
+            let minSort = sorted.map { $0.sortOrder }.min() ?? 0
+            groups.append(CategoryGroup(id: key, displayName: displayNameForKey[key] ?? "", slots: sorted, minSortOrder: minSort))
         }
-        // Untitled (empty key) sinks to the bottom; named groups sorted A→Z.
+        // Untitled (empty key) sinks to the bottom; named groups ordered by
+        // their persisted sort_order (admin drag-to-reorder), name as tiebreak.
         return groups.sorted { lhs, rhs in
             if lhs.id.isEmpty != rhs.id.isEmpty { return !lhs.id.isEmpty }
+            if lhs.minSortOrder != rhs.minSortOrder { return lhs.minSortOrder < rhs.minSortOrder }
             return lhs.displayName.localizedStandardCompare(rhs.displayName) == .orderedAscending
         }
     }
@@ -172,7 +178,19 @@ struct AdminRoomProductsView: View {
         .searchable(text: $searchText, prompt: "Search categories, products or variants…")
         .toolbar {
             ToolbarItem(placement: .primaryAction) {
-                Button { newCategorySheetOpen = true } label: {
+                Menu {
+                    Button {
+                        newCategorySheetOpen = true
+                    } label: {
+                        Label("New Selection Category", systemImage: "plus.circle")
+                    }
+                    Button {
+                        reorderSheetOpen = true
+                    } label: {
+                        Label("Reorder Categories", systemImage: "arrow.up.arrow.down")
+                    }
+                    .disabled(groupedCategories.filter { !$0.id.isEmpty }.count < 2)
+                } label: {
                     Image(systemName: "plus.circle.fill")
                         .foregroundStyle(AVIATheme.timelessBrown)
                 }
@@ -207,6 +225,27 @@ struct AdminRoomProductsView: View {
             ) { newName in
                 renameCategory = nil
                 Task { await renameCategory(slotIds: ctx.slotIds, currentName: ctx.currentName, newName: newName) }
+            }
+        }
+        .sheet(item: $duplicateCategory) { ctx in
+            DuplicateCategorySheet(
+                roomName: room.name,
+                sourceName: ctx.sourceName,
+                existingNames: existingCategoryNames
+            ) { newName in
+                duplicateCategory = nil
+                Task { await cloneCategory(sourceSlotIds: ctx.slotIds, newName: newName) }
+            }
+        }
+        .sheet(isPresented: $reorderSheetOpen) {
+            ReorderCategoriesSheet(
+                roomName: room.name,
+                categories: groupedCategories.filter { !$0.id.isEmpty }.map {
+                    ReorderCategoriesSheet.Item(id: $0.id, displayName: $0.displayName, slotIds: $0.slots.map { $0.id }, variantCount: $0.slots.count)
+                }
+            ) { reorderedSlotsByCategory in
+                reorderSheetOpen = false
+                Task { await applyCategoryOrder(reorderedSlotsByCategory) }
             }
         }
         .sheet(item: $editingSlot) { wrapped in
@@ -349,6 +388,15 @@ struct AdminRoomProductsView: View {
                 } label: {
                     Label("Add variant", systemImage: "plus")
                 }
+                Button {
+                    duplicateCategory = DuplicateContext(
+                        sourceName: group.displayName,
+                        slotIds: group.slots.map { $0.id }
+                    )
+                } label: {
+                    Label("Duplicate category", systemImage: "square.on.square")
+                }
+                .disabled(group.slots.isEmpty)
                 Button(role: .destructive) {
                     Task { await deleteCategory(slotIds: group.slots.map { $0.id }, name: group.displayName) }
                 } label: {
@@ -594,6 +642,101 @@ struct AdminRoomProductsView: View {
         }
     }
 
+    /// Persist a new category ordering. `reorderedSlotsByCategory` is the
+    /// final top→bottom array of categories (each as its full slot id list).
+    /// We assign incrementing sort_order blocks so the room view sorts to
+    /// match without touching slot identity.
+    private func applyCategoryOrder(_ reorderedSlotsByCategory: [[String]]) async {
+        let svc = SupabaseService.shared
+        var anyFail = false
+        for (index, slotIds) in reorderedSlotsByCategory.enumerated() {
+            guard !slotIds.isEmpty else { continue }
+            // sort_order is shared by every slot in a category — multiply by
+            // 10 so future single-slot insertions can settle between groups.
+            let order = index * 10
+            let r = await svc.updateVariantRoomAssignmentsSortBySlots(slotIds: slotIds, sortOrder: order)
+            if !r.ok { anyFail = true }
+        }
+        if anyFail {
+            errorMessage = "Couldn't save the new order — try again"
+        } else {
+            successMessage = "Category order updated"
+        }
+        await reload()
+    }
+
+    /// Clone every slot in `sourceSlotIds` into a new category named
+    /// `newName`. Each clone gets a fresh slot uuid + copies all 3 per-range
+    /// rows (image, cost, inclusion) verbatim so the admin can tweak them
+    /// independently afterwards.
+    private func cloneCategory(sourceSlotIds: [String], newName: String) async {
+        let trimmed = newName.trimmingCharacters(in: .whitespaces)
+        guard !trimmed.isEmpty else {
+            errorMessage = "Give the new category a name"
+            return
+        }
+        let normalized = trimmed.lowercased()
+        if existingCategoryNames.contains(where: { $0.lowercased() == normalized }) {
+            errorMessage = "\"\(trimmed)\" already exists in \(room.name)"
+            return
+        }
+        var inserts: [VariantRoomAssignmentInsert] = []
+        let all = catalog.allVariantAssignments
+        for sourceSlot in sourceSlotIds {
+            let sourceRows = all.filter { $0.selection_slot_id == sourceSlot && $0.facade_id == nil }
+            guard let first = sourceRows.first else { continue }
+            let newSlot = UUID().uuidString
+            // Copy one row per (range) found on the source.
+            for r in sourceRows {
+                inserts.append(
+                    VariantRoomAssignmentInsert(
+                        variant_id: r.variant_id,
+                        room_id: r.room_id,
+                        range_id: r.range_id,
+                        facade_id: nil,
+                        image_url: r.image_url,
+                        cost: r.cost,
+                        inclusion: r.inclusion,
+                        sort_order: r.sort_order ?? 0,
+                        display_title: trimmed,
+                        selection_slot_id: newSlot
+                    )
+                )
+            }
+            // If the source somehow had fewer than 3 range rows, top up
+            // with included/0/no-image so the new slot is visible in every
+            // range — keeps the admin grid consistent.
+            let existingRanges = Set(sourceRows.map { $0.range_id })
+            for rangeId in rangeIds where !existingRanges.contains(rangeId) {
+                inserts.append(
+                    VariantRoomAssignmentInsert(
+                        variant_id: first.variant_id,
+                        room_id: first.room_id,
+                        range_id: rangeId,
+                        facade_id: nil,
+                        image_url: nil,
+                        cost: 0,
+                        inclusion: VariantInclusion.included.rawValue,
+                        sort_order: 0,
+                        display_title: trimmed,
+                        selection_slot_id: newSlot
+                    )
+                )
+            }
+        }
+        guard !inserts.isEmpty else {
+            errorMessage = "Nothing to duplicate in \(room.name)"
+            return
+        }
+        let result = await SupabaseService.shared.bulkInsertVariantRoomAssignments(inserts)
+        if result.ok {
+            successMessage = "Duplicated to \(trimmed)"
+            await reload()
+        } else {
+            errorMessage = "Couldn't duplicate: \(result.error ?? "unknown")"
+        }
+    }
+
     private func deleteCategory(slotIds: [String], name: String) async {
         guard !slotIds.isEmpty else { return }
         let svc = SupabaseService.shared
@@ -629,6 +772,12 @@ private struct AddVariantContext: Identifiable {
 private struct RenameContext: Identifiable {
     var id: String { currentName.lowercased() + "_rename" }
     let currentName: String
+    let slotIds: [String]
+}
+
+private struct DuplicateContext: Identifiable {
+    var id: String { sourceName.lowercased() + "_duplicate" }
+    let sourceName: String
     let slotIds: [String]
 }
 
@@ -1055,6 +1204,162 @@ private struct VariantPickerRow: View {
                 }
             }
             .clipShape(.rect(cornerRadius: 7))
+    }
+}
+
+// MARK: - Duplicate Category sheet
+
+private struct DuplicateCategorySheet: View {
+    @Environment(\.dismiss) private var dismiss
+    let roomName: String
+    let sourceName: String
+    let existingNames: [String]
+    let onSave: (_ newName: String) -> Void
+
+    @State private var name: String = ""
+    @State private var hasInitialised = false
+    @State private var errorMessage: String?
+
+    var body: some View {
+        NavigationStack {
+            ScrollView {
+                VStack(spacing: 14) {
+                    BentoCard(cornerRadius: 11) {
+                        VStack(alignment: .leading, spacing: 8) {
+                            Text("Duplicating \"\(sourceName.isEmpty ? "Untitled" : sourceName)\" in \(roomName)")
+                                .font(.neueCaption2)
+                                .foregroundStyle(AVIATheme.textTertiary)
+                            TextField("e.g. Wall Tiles", text: $name)
+                                .font(.neueCaption)
+                                .padding(10)
+                                .background(AVIATheme.surfaceElevated)
+                                .clipShape(.rect(cornerRadius: 6))
+                            Text("Creates a new category with the same variants. Each new slot gets its own image + price you can tweak independently of the original.")
+                                .font(.neueCaption2)
+                                .foregroundStyle(AVIATheme.textTertiary)
+                            if let msg = errorMessage {
+                                Text(msg)
+                                    .font(.neueCaption2)
+                                    .foregroundStyle(AVIATheme.destructive)
+                            }
+                        }
+                        .padding(14)
+                    }
+                }
+                .padding(.horizontal, 16)
+                .padding(.vertical, 14)
+            }
+            .background(AVIATheme.background)
+            .navigationTitle("Duplicate Category")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .cancellationAction) {
+                    Button("Cancel") { dismiss() }
+                }
+                ToolbarItem(placement: .confirmationAction) {
+                    Button("Duplicate") { attemptSave() }
+                        .fontWeight(.semibold)
+                        .disabled(name.trimmingCharacters(in: .whitespaces).isEmpty)
+                }
+            }
+            .task {
+                guard !hasInitialised else { return }
+                hasInitialised = true
+                let base = sourceName.isEmpty ? "New Category" : sourceName
+                name = suggestUnique(base: base)
+            }
+        }
+    }
+
+    private func suggestUnique(base: String) -> String {
+        let lower = Set(existingNames.map { $0.lowercased() })
+        var attempt = "\(base) Copy"
+        if !lower.contains(attempt.lowercased()) { return attempt }
+        var i = 2
+        while lower.contains("\(base) Copy \(i)".lowercased()) { i += 1 }
+        attempt = "\(base) Copy \(i)"
+        return attempt
+    }
+
+    private func attemptSave() {
+        let trimmed = name.trimmingCharacters(in: .whitespaces)
+        guard !trimmed.isEmpty else {
+            errorMessage = "Give the new category a name"
+            return
+        }
+        let normalized = trimmed.lowercased()
+        if existingNames.contains(where: { $0.lowercased() == normalized }) {
+            errorMessage = "\"\(trimmed)\" already exists in \(roomName)"
+            return
+        }
+        onSave(trimmed)
+    }
+}
+
+// MARK: - Reorder Categories sheet
+
+private struct ReorderCategoriesSheet: View {
+    @Environment(\.dismiss) private var dismiss
+
+    struct Item: Identifiable, Hashable {
+        let id: String          // normalized key
+        let displayName: String
+        let slotIds: [String]
+        let variantCount: Int
+    }
+
+    let roomName: String
+    let categories: [Item]
+    /// Reports the new order as an array of slot id arrays — one entry per
+    /// category, top to bottom. Caller persists `sort_order` accordingly.
+    let onSave: (_ slotsByCategory: [[String]]) -> Void
+
+    @State private var items: [Item] = []
+
+    var body: some View {
+        NavigationStack {
+            List {
+                Section {
+                    ForEach(items) { item in
+                        HStack(spacing: 10) {
+                            Image(systemName: "line.3.horizontal")
+                                .foregroundStyle(AVIATheme.textTertiary)
+                            VStack(alignment: .leading, spacing: 2) {
+                                Text(item.displayName)
+                                    .font(.neueCaptionMedium)
+                                    .foregroundStyle(AVIATheme.textPrimary)
+                                Text("\(item.variantCount) \(item.variantCount == 1 ? "variant" : "variants")")
+                                    .font(.neueCaption2)
+                                    .foregroundStyle(AVIATheme.textTertiary)
+                            }
+                        }
+                    }
+                    .onMove { source, destination in
+                        items.move(fromOffsets: source, toOffset: destination)
+                    }
+                } header: {
+                    Text("Drag to reorder categories in \(roomName)")
+                        .font(.neueCaption2)
+                }
+            }
+            .environment(\.editMode, .constant(.active))
+            .navigationTitle("Reorder Categories")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .cancellationAction) {
+                    Button("Cancel") { dismiss() }
+                }
+                ToolbarItem(placement: .confirmationAction) {
+                    Button("Save") {
+                        onSave(items.map { $0.slotIds })
+                    }
+                    .fontWeight(.semibold)
+                }
+            }
+            .task {
+                if items.isEmpty { items = categories }
+            }
+        }
     }
 }
 

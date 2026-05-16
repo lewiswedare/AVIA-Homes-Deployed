@@ -3461,6 +3461,30 @@ class SupabaseService {
         }
     }
 
+    /// Bulk-update the `sort_order` of every assignment row whose
+    /// `selection_slot_id` is in the supplied set. Used by the room-first
+    /// admin editor when an admin drags to reorder selection categories
+    /// (each slot in the category gets the same base sort order so the
+    /// whole group moves together).
+    func updateVariantRoomAssignmentsSortBySlots(slotIds: [String], sortOrder: Int) async -> (ok: Bool, error: String?) {
+        guard isConfigured else { return (false, "Supabase not configured") }
+        guard !slotIds.isEmpty else { return (true, nil) }
+        struct SortPatch: Encodable, Sendable { let sort_order: Int }
+        do {
+            try await client
+                .from("variant_room_assignments")
+                .update(SortPatch(sort_order: sortOrder))
+                .in("selection_slot_id", values: slotIds)
+                .execute()
+            return (true, nil)
+        } catch {
+            let message = String(describing: error)
+            print("[SupabaseService] updateVariantRoomAssignmentsSortBySlots FAILED: \(message)")
+            lastUpsertError = message
+            return (false, message)
+        }
+    }
+
     /// Delete every assignment row tied to a given slot id. Used by the
     /// room-first admin editor when an admin removes a slot or replaces all
     /// of its 3 range rows on save.
