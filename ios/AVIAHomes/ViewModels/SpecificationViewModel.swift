@@ -131,7 +131,19 @@ class SpecificationViewModel {
     }
 
     func requestUpgrade(item: SpecItem, categoryName: String, toTier: SpecTier) {
-        let estimatedCost = item.upgradeCost(from: currentTier, to: toTier)
+        // Source the estimated cost from `variant_room_assignments` for the
+        // target range. Prefer the matching room (by name) so multi-room
+        // items get a room-specific estimate; fall back to the cheapest
+        // upgrade variant anywhere in that range.
+        let catalog = CatalogDataManager.shared
+        let roomId = catalog.allSpecCategories.first { $0.name == categoryName }?.id
+        let estimatedCost: Double? = {
+            if let roomId,
+               let cost = catalog.cheapestUpgradeCost(forSpecItem: item.id, roomId: roomId, rangeId: toTier.rawValue) {
+                return cost
+            }
+            return catalog.cheapestUpgradeCost(forSpecItem: item.id, rangeId: toTier.rawValue)
+        }()
 
         let request = UpgradeRequest(
             id: UUID().uuidString,

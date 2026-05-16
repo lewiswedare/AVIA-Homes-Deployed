@@ -10,6 +10,12 @@ struct AVIAHomesApp: App {
     @State private var specViewModel = SpecificationViewModel()
     @State private var journeyViewModel = CustomerJourneyViewModel()
 
+    init() {
+        // Bump URLCache far above the iOS defaults so every AsyncImage call
+        // site stops re-downloading photos when scrolled off-screen.
+        ImageCache.configure()
+    }
+
     var body: some Scene {
         WindowGroup {
             ContentView()

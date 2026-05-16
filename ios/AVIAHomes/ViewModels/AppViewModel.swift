@@ -326,6 +326,20 @@ class AppViewModel {
         allFacades = facades
         allDisplayHomes = displayHomes
 
+        // Warm the image cache so the first scroll through Dashboard / Discover
+        // / Packages / Estates never shows a blank tile. Runs in the background
+        // and is safe to call repeatedly.
+        var urls: [String?] = []
+        urls.append(contentsOf: designs.map { $0.imageURL })
+        urls.append(contentsOf: designs.map { $0.floorplanImageURL })
+        urls.append(contentsOf: packages.map { $0.imageURL })
+        urls.append(contentsOf: posts.map { $0.imageURL })
+        urls.append(contentsOf: estates.map { $0.imageURL })
+        urls.append(contentsOf: facades.map { $0.heroImageURL })
+        for f in facades { urls.append(contentsOf: f.galleryImageURLs.map { Optional($0) }) }
+        for h in displayHomes { urls.append(contentsOf: h.imageURLs.map { Optional($0) }) }
+        ImagePrefetcher.prefetch(urlStrings: urls)
+
         contentLoaded = true
     }
 
@@ -366,6 +380,9 @@ class AppViewModel {
     func reloadDisplayHomes() async {
         let homes = await SupabaseService.shared.fetchDisplayHomes(includeInactive: currentRole.isAnyStaffRole)
         allDisplayHomes = homes
+        var dhUrls: [String?] = []
+        for h in homes { dhUrls.append(contentsOf: h.imageURLs.map { Optional($0) }) }
+        ImagePrefetcher.prefetch(urlStrings: dhUrls)
         await loadDisplayHomeVisitsFromSupabase()
     }
 

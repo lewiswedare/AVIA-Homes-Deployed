@@ -15,14 +15,46 @@ struct SelectionsHomeView: View {
         SpecTier(rawValue: viewModel.specTier.lowercased()) ?? .messina
     }
 
+    /// Room membership is driven by `variant_room_assignments`: an item shows
+    /// up in every room any of its variants are assigned to for the current
+    /// range + facade. Legacy items with no assignments at all fall back to
+    /// their snapshot category so nothing silently disappears.
     private var roomsWithItems: [(room: SelectionRoom, items: [BuildSpecSelection])] {
-        let grouped = Dictionary(grouping: viewModel.selections.filter { $0.selectionType != .removed }) {
-            SelectionRoom.from(snapshotCategoryName: $0.snapshotCategoryName)
+        let active = viewModel.selections.filter { $0.selectionType != .removed }
+        let rangeId = viewModel.specTier.lowercased()
+        let facadeId = viewModel.selectedFacadeId
+        var bucket: [String: [BuildSpecSelection]] = [:]
+        var legacyBucket: [String: [BuildSpecSelection]] = [:]
+
+        for sel in active {
+            let roomIds = catalog.roomIds(forSpecItem: sel.specItemId, rangeId: rangeId, facadeId: facadeId)
+            if roomIds.isEmpty {
+                // No room assignments yet — fall back to snapshot category.
+                legacyBucket[sel.snapshotCategoryName, default: []].append(sel)
+            } else {
+                for rid in roomIds {
+                    bucket[rid, default: []].append(sel)
+                }
+            }
         }
-        return SelectionRoom.displayOrder.compactMap { room in
-            guard let items = grouped[room], !items.isEmpty else { return nil }
-            return (room: room, items: items.sorted { $0.sortOrder < $1.sortOrder })
+
+        var result: [(room: SelectionRoom, items: [BuildSpecSelection])] = []
+        for room in SelectionRoom.displayOrder {
+            var items: [BuildSpecSelection] = []
+            if let rid = room.categoryId, let assigned = bucket[rid] {
+                items.append(contentsOf: assigned)
+            }
+            if let legacy = legacyBucket[room.snapshotCategoryName] {
+                items.append(contentsOf: legacy)
+            }
+            guard !items.isEmpty else { continue }
+            // De-dupe (an item could legitimately match by both paths) and sort.
+            var seen = Set<String>()
+            let deduped = items.filter { seen.insert($0.id).inserted }
+                .sorted { $0.sortOrder < $1.sortOrder }
+            result.append((room: room, items: deduped))
         }
+        return result
     }
 
     private var totalUpgradeCost: Double {
@@ -30,18 +62,57 @@ struct SelectionsHomeView: View {
     }
 
     private var totalSelectionsCount: Int {
-        viewModel.selections.filter { $0.selectionType != .removed }.count
+        viewModel.selections.filter { sel in
+            sel.selectionType != .removed && isSelectionCountable(sel)
+        }.count
     }
 
     private var completedSelectionsCount: Int {
         viewModel.selections.filter { sel in
-            guard sel.selectionType != .removed else { return false }
-            let hasColour = viewModel.colourSelections.contains { $0.buildSpecSelectionId == sel.id }
-            let upgradeDecided = sel.selectionType == .included || sel.selectionType == .upgradeApproved || sel.selectionType == .upgradeAccepted || sel.selectionType == .upgradeDeclined
-            // Item considered "complete" once tier is decided AND colour either picked or not required
-            let needsColour = colourCategoriesRequired(for: sel)
-            return upgradeDecided && (!needsColour || hasColour)
+            guard sel.selectionType != .removed, isSelectionCountable(sel) else { return false }
+            return isSelectionComplete(sel)
         }.count
+    }
+
+    /// Items that have neither products nor a colour mapping are admin
+    /// placeholders the client can't act on yet — exclude them from the
+    /// progress total so the count reflects only items that need a tap.
+    private func isSelectionCountable(_ sel: BuildSpecSelection) -> Bool {
+        let rangeId = sel.specTier.lowercased()
+        let products = catalog.products(for: sel.specItemId, rangeId: rangeId)
+        if !products.isEmpty { return true }
+        return colourCategoriesRequired(for: sel)
+    }
+
+    /// A selection is complete only when the client has explicitly chosen
+    /// a product (and a colour, if the product offers any). Nothing is
+    /// considered complete by default — every option requires a deliberate
+    /// client tap.
+    private func isSelectionComplete(_ sel: BuildSpecSelection) -> Bool {
+        let rangeId = sel.specTier.lowercased()
+        let products = catalog.products(for: sel.specItemId, rangeId: rangeId)
+
+        // Upgrades that are still mid-flow (draft / awaiting quote / quoted)
+        // are NOT complete — the client hasn't locked anything in.
+        let upgradeDecided = sel.selectionType == .included
+            || sel.selectionType == .upgradeApproved
+            || sel.selectionType == .upgradeAccepted
+            || sel.selectionType == .upgradeDeclined
+        guard upgradeDecided else { return false }
+
+        if !products.isEmpty {
+            // Product-driven item: needs an explicit product choice and, if
+            // that product has colours, an explicit colour choice too.
+            guard let pid = sel.productId else { return false }
+            let colours = catalog.productColours(for: pid)
+            if !colours.isEmpty && sel.colourId == nil { return false }
+            return true
+        }
+
+        // Legacy item without products — only complete once the client has
+        // saved at least one colour selection for it. (Items with neither
+        // products nor colours are filtered out by isSelectionCountable.)
+        return viewModel.colourSelections.contains { $0.buildSpecSelectionId == sel.id }
     }
 
     private func colourCategoriesRequired(for selection: BuildSpecSelection) -> Bool {
@@ -55,14 +126,12 @@ struct SelectionsHomeView: View {
     }
 
     private func progress(for items: [BuildSpecSelection]) -> Double {
-        guard !items.isEmpty else { return 0 }
-        let done = items.reduce(0) { acc, sel in
-            let hasColour = viewModel.colourSelections.contains { $0.buildSpecSelectionId == sel.id }
-            let upgradeDecided = sel.selectionType == .included || sel.selectionType == .upgradeApproved || sel.selectionType == .upgradeAccepted || sel.selectionType == .upgradeDeclined
-            let needsColour = colourCategoriesRequired(for: sel)
-            return acc + ((upgradeDecided && (!needsColour || hasColour)) ? 1 : 0)
+        let countable = items.filter { isSelectionCountable($0) }
+        guard !countable.isEmpty else { return 0 }
+        let done = countable.reduce(0) { acc, sel in
+            acc + (isSelectionComplete(sel) ? 1 : 0)
         }
-        return Double(done) / Double(items.count)
+        return Double(done) / Double(countable.count)
     }
 
     private func roomUpgradeCost(_ items: [BuildSpecSelection]) -> Double {
@@ -98,6 +167,7 @@ struct SelectionsHomeView: View {
                 let estate = build.estate
                 let combined = [lot, estate].filter { !$0.isEmpty }.joined(separator: ", ")
                 viewModel.buildAddress = combined.isEmpty ? build.homeDesign : combined
+                viewModel.selectedFacadeId = build.selectedFacadeId
             }
             await viewModel.load(buildId: buildId)
         }
@@ -110,6 +180,9 @@ struct SelectionsHomeView: View {
         ScrollView {
             VStack(spacing: 16) {
                 summaryHero
+                if viewModel.upgradeBreakdown.total > 0 {
+                    upgradeBreakdownCard
+                }
                 roomsGrid
                 Color.clear.frame(height: 80)
             }
@@ -195,6 +268,68 @@ struct SelectionsHomeView: View {
         .frame(maxWidth: .infinity)
     }
 
+    private var upgradeBreakdownCard: some View {
+        let breakdown = viewModel.upgradeBreakdown
+        return BentoCard(cornerRadius: 16) {
+            VStack(alignment: .leading, spacing: 14) {
+                HStack(spacing: 8) {
+                    Image(systemName: "chart.pie.fill")
+                        .font(.neueCorp(12))
+                        .foregroundStyle(AVIATheme.timelessBrown)
+                    Text("UPGRADE SUMMARY")
+                        .font(.neueCorpMedium(9))
+                        .kerning(1.4)
+                        .foregroundStyle(AVIATheme.timelessBrown)
+                    Spacer()
+                    Text(AVIATheme.formatCost(breakdown.total))
+                        .font(.neueCorpMedium(16))
+                        .foregroundStyle(AVIATheme.textPrimary)
+                }
+
+                VStack(spacing: 8) {
+                    breakdownRow(label: "Spec range upgrades", icon: "arrow.up.circle.fill", colour: AVIATheme.heritageBlue, amount: breakdown.specRange)
+                    breakdownRow(label: "Product upgrades", icon: "shippingbox.fill", colour: AVIATheme.timelessBrown, amount: breakdown.product)
+                    breakdownRow(label: "Colour extras", icon: "paintpalette.fill", colour: AVIATheme.warning, amount: breakdown.colour)
+                }
+
+                Button {
+                    AVIAHaptic.lightTap.trigger()
+                    showReview = true
+                } label: {
+                    HStack(spacing: 6) {
+                        Text("View full breakdown")
+                            .font(.neueCaptionMedium)
+                        Image(systemName: "arrow.right")
+                            .font(.neueCorp(10))
+                    }
+                    .foregroundStyle(AVIATheme.timelessBrown)
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, 10)
+                    .background(AVIATheme.timelessBrown.opacity(0.08))
+                    .clipShape(.rect(cornerRadius: 10))
+                }
+                .buttonStyle(.pressable(.subtle))
+            }
+            .padding(16)
+        }
+    }
+
+    private func breakdownRow(label: String, icon: String, colour: Color, amount: Double) -> some View {
+        HStack(spacing: 10) {
+            Image(systemName: icon)
+                .font(.system(size: 12, weight: .semibold))
+                .foregroundStyle(colour)
+                .frame(width: 22)
+            Text(label)
+                .font(.neueCaption)
+                .foregroundStyle(AVIATheme.textSecondary)
+            Spacer()
+            Text(amount > 0 ? AVIATheme.formatCost(amount) : "—")
+                .font(.neueCorpMedium(12))
+                .foregroundStyle(amount > 0 ? AVIATheme.textPrimary : AVIATheme.textTertiary)
+        }
+    }
+
     private var roomsGrid: some View {
         LazyVStack(spacing: 12) {
             ForEach(roomsWithItems, id: \.room.id) { entry in
@@ -224,10 +359,16 @@ struct SelectionsHomeView: View {
         return Color(.secondarySystemBackground)
             .frame(height: 168)
             .overlay {
-                Image(room.heroImageName)
-                    .resizable()
-                    .aspectRatio(contentMode: .fill)
+                roomBannerImage(room)
                     .allowsHitTesting(false)
+            }
+            .overlay {
+                LinearGradient(
+                    colors: [Color.black.opacity(0.0), Color.black.opacity(0.65)],
+                    startPoint: .top,
+                    endPoint: .bottom
+                )
+                .allowsHitTesting(false)
             }
             .clipShape(.rect(cornerRadius: 14))
             .overlay(alignment: .topTrailing) {
@@ -281,28 +422,36 @@ struct SelectionsHomeView: View {
                 }
                 .padding(14)
             }
-            .overlay {
-                LinearGradient(
-                    colors: [Color.black.opacity(0.0), Color.black.opacity(0.55)],
-                    startPoint: .top,
-                    endPoint: .bottom
-                )
-                .clipShape(.rect(cornerRadius: 14))
-                .allowsHitTesting(false)
+    }
+
+    @ViewBuilder
+    private func roomBannerImage(_ room: SelectionRoom) -> some View {
+        if let urlString = room.heroImageURL, let url = URL(string: urlString) {
+            AsyncImage(url: url) { phase in
+                if let image = phase.image {
+                    image.resizable().aspectRatio(contentMode: .fill)
+                } else if phase.error != nil {
+                    Image(room.heroImageName).resizable().aspectRatio(contentMode: .fill)
+                } else {
+                    Color(.secondarySystemBackground)
+                }
             }
+        } else {
+            Image(room.heroImageName).resizable().aspectRatio(contentMode: .fill)
+        }
     }
 
     private func progressRing(progress: Double) -> some View {
         ZStack {
             Circle()
-                .stroke(Color.white.opacity(0.3), lineWidth: 3)
+                .stroke(AVIATheme.aviaWhite.opacity(0.3), lineWidth: 3)
             Circle()
                 .trim(from: 0, to: max(0.001, min(1, progress)))
-                .stroke(Color.white, style: StrokeStyle(lineWidth: 3, lineCap: .round))
+                .stroke(AVIATheme.aviaWhite, style: StrokeStyle(lineWidth: 3, lineCap: .round))
                 .rotationEffect(.degrees(-90))
             Text("\(Int(progress * 100))")
                 .font(.neueCorpMedium(10))
-                .foregroundStyle(.white)
+                .foregroundStyle(AVIATheme.aviaWhite)
         }
     }
 

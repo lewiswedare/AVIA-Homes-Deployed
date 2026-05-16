@@ -87,13 +87,13 @@ struct AdminSpecItemsEditorView: View {
             }
         }
         .sheet(isPresented: $showingAddSheet) {
-            SpecItemEditSheet(item: nil, categories: viewModel.specCategoryOrder) { row, tierImages, swatches in
-                Task { await viewModel.saveSpecItem(row, tierImages: tierImages, productSwatches: swatches) }
+            SpecItemEditSheet(item: nil, categories: viewModel.specCategoryOrder) { row, swatches in
+                Task { await viewModel.saveSpecItem(row, productSwatches: swatches) }
             }
         }
         .sheet(item: $editingItem) { item in
-            SpecItemEditSheet(item: item, categories: viewModel.specCategoryOrder) { row, tierImages, swatches in
-                Task { await viewModel.saveSpecItem(row, tierImages: tierImages, productSwatches: swatches) }
+            SpecItemEditSheet(item: item, categories: viewModel.specCategoryOrder) { row, swatches in
+                Task { await viewModel.saveSpecItem(row, productSwatches: swatches) }
             }
         }
         .alert("Delete Item", isPresented: .init(
@@ -179,26 +179,37 @@ struct AdminSpecItemsEditorView: View {
     }
 
     private func specItemRow(_ item: SpecItemFlatRow) -> some View {
-        Button { editingItem = item } label: {
+        NavigationLink {
+            AdminSpecProductsView(specItemId: item.id, specItemName: item.name)
+        } label: {
             HStack(spacing: 12) {
-                Image(systemName: (item.is_upgradeable ?? false) ? "arrow.up.circle.fill" : "circle.fill")
+                Image(systemName: "shippingbox.fill")
                     .font(.neueCorp(12))
-                    .foregroundStyle((item.is_upgradeable ?? false) ? AVIATheme.warning : AVIATheme.timelessBrown)
+                    .foregroundStyle(AVIATheme.timelessBrown)
                     .frame(width: 32, height: 32)
-                    .background(((item.is_upgradeable ?? false) ? AVIATheme.warning : AVIATheme.timelessBrown).opacity(0.12))
+                    .background(AVIATheme.timelessBrown.opacity(0.12))
                     .clipShape(Circle())
 
                 VStack(alignment: .leading, spacing: 3) {
                     Text(item.name)
                         .font(.neueCaptionMedium)
                         .foregroundStyle(AVIATheme.textPrimary)
-                    Text(item.volos_description)
+                    Text("Manage products & colours")
                         .font(.neueCaption2)
                         .foregroundStyle(AVIATheme.textTertiary)
                         .lineLimit(1)
                 }
 
                 Spacer()
+
+                Button {
+                    editingItem = item
+                } label: {
+                    Image(systemName: "pencil.circle")
+                        .font(.neueCorp(16))
+                        .foregroundStyle(AVIATheme.textTertiary)
+                }
+                .buttonStyle(.plain)
 
                 Image(systemName: "chevron.right")
                     .font(.neueCaption2)
@@ -207,9 +218,10 @@ struct AdminSpecItemsEditorView: View {
             .padding(.horizontal, 14)
             .padding(.vertical, 12)
         }
+        .buttonStyle(.plain)
         .contextMenu {
             Button { editingItem = item } label: {
-                Label("Edit", systemImage: "pencil")
+                Label("Edit slot details", systemImage: "pencil")
             }
             Button(role: .destructive) { itemToDelete = item } label: {
                 Label("Delete", systemImage: "trash")
@@ -256,11 +268,17 @@ struct SpecItemEditSheet: View {
     @Environment(\.dismiss) private var dismiss
     let item: SpecItemFlatRow?
     let categories: [(id: String, name: String, icon: String)]
-    let onSave: (SpecItemFlatRow, [String: String], [EditableColourOption]) -> Void
+    let onSave: (SpecItemFlatRow, [EditableColourOption]) -> Void
 
     @State private var itemId: String = ""
     @State private var name: String = ""
     @State private var categoryId: String = "structure"
+    @State private var productCategoryId: String = "uncategorized"
+    @State private var supplier: String = ""
+    @State private var dimensions: String = ""
+    @State private var itemDescription: String = ""
+    @State private var skuText: String = ""
+    @State private var productCategories: [ProductCategoryRow] = []
     @State private var volosDesc: String = ""
     @State private var messinaDesc: String = ""
     @State private var portobelloDesc: String = ""
@@ -268,15 +286,6 @@ struct SpecItemEditSheet: View {
     @State private var isFixedInclusion: Bool = false
     @State private var imageURL: String = ""
     @State private var sortOrder: Int = 0
-    @State private var volosImageURL: String = ""
-    @State private var messinaImageURL: String = ""
-    @State private var portobelloImageURL: String = ""
-    @State private var isLoadingTierImages: Bool = false
-
-    // Pricing fields (upgrade costs only)
-    @State private var volosToMessinaCost: String = ""
-    @State private var volosToPortobelloCost: String = ""
-    @State private var messinaToPortobelloCost: String = ""
 
     // Per-product colour swatches — stored as a dedicated ColourCategory per spec item.
     @State private var swatches: [EditableColourOption] = []
@@ -306,14 +315,17 @@ struct SpecItemEditSheet: View {
                                 TextField("Item name", text: $name)
                                     .font(.neueCaption)
                             }
-                            fieldRow("Category") {
-                                Picker("", selection: $categoryId) {
-                                    ForEach(categories, id: \.id) { cat in
-                                        Text(cat.name).tag(cat.id)
+                            fieldRow("Product Category") {
+                                Picker("", selection: $productCategoryId) {
+                                    if productCategories.isEmpty {
+                                        Text("Uncategorized").tag("uncategorized")
+                                    }
+                                    ForEach(productCategories, id: \.id) { pc in
+                                        Text(pc.name).tag(pc.id)
                                     }
                                 }
                                 .pickerStyle(.menu)
-                                .tint(AVIATheme.timelessBrown)
+                                .tint(AVIATheme.warning)
                             }
                             fieldRow("Sort Order") {
                                 TextField("0", value: $sortOrder, format: .number)
@@ -338,16 +350,6 @@ struct SpecItemEditSheet: View {
                                     swatches.removeAll()
                                 }
                             }
-
-                            if !isFixedInclusion {
-                                Toggle(isOn: $isUpgradeable) {
-                                    Text("Upgradeable")
-                                        .font(.neueCaptionMedium)
-                                        .foregroundStyle(AVIATheme.textPrimary)
-                                }
-                                .tint(AVIATheme.warning)
-                                .padding(.horizontal, 14)
-                            }
                         }
                         .padding(.vertical, 14)
                     }
@@ -362,96 +364,6 @@ struct SpecItemEditSheet: View {
                         .padding(.vertical, 14)
                     }
 
-                    BentoCard(cornerRadius: 11) {
-                        VStack(alignment: .leading, spacing: 14) {
-                            sectionHeader("Base Image (Optional)")
-                            AdminImagePickerField(
-                                label: "Default / Base Image",
-                                imageURL: $imageURL,
-                                folder: "spec-items",
-                                itemId: isNew ? itemId : (item?.id ?? itemId)
-                            )
-                        }
-                        .padding(.vertical, 14)
-                    }
-
-                    BentoCard(cornerRadius: 11) {
-                        VStack(alignment: .leading, spacing: 14) {
-                            sectionHeader("Tier-Specific Images")
-                            Text("Upload a different image for each spec range. These override the base image when viewing a specific tier.")
-                                .font(.neueCaption2)
-                                .foregroundStyle(AVIATheme.textTertiary)
-                                .padding(.horizontal, 14)
-
-                            if isLoadingTierImages {
-                                HStack {
-                                    Spacer()
-                                    ProgressView()
-                                        .tint(AVIATheme.timelessBrown)
-                                    Spacer()
-                                }
-                                .padding(.vertical, 8)
-                            } else {
-                                tierImageField("Volos", imageURL: $volosImageURL, color: AVIATheme.timelessBrown, tierKey: "volos")
-                                tierImageField("Messina", imageURL: $messinaImageURL, color: AVIATheme.warning, tierKey: "messina")
-                                tierImageField("Portobello", imageURL: $portobelloImageURL, color: AVIATheme.heritageBlue, tierKey: "portobello")
-                            }
-                        }
-                        .padding(.vertical, 14)
-                    }
-
-                    if isUpgradeable && !isFixedInclusion {
-                        BentoCard(cornerRadius: 11) {
-                            VStack(alignment: .leading, spacing: 14) {
-                                sectionHeader("Upgrade Costs")
-                                Text("Set upgrade costs between tiers. All prices in AUD.")
-                                    .font(.neueCaption2)
-                                    .foregroundStyle(AVIATheme.textTertiary)
-                                    .padding(.horizontal, 14)
-
-                                VStack(spacing: 6) {
-                                    upgradeCostField("Volos \u{2192} Messina", text: $volosToMessinaCost)
-                                    upgradeCostField("Volos \u{2192} Portobello", text: $volosToPortobelloCost)
-                                    upgradeCostField("Messina \u{2192} Portobello", text: $messinaToPortobelloCost)
-                                }
-                                .padding(.horizontal, 14)
-                            }
-                            .padding(.vertical, 14)
-                        }
-                    }
-
-                    if !isFixedInclusion {
-                        BentoCard(cornerRadius: 11) {
-                            VStack(alignment: .leading, spacing: 12) {
-                                HStack {
-                                    sectionHeader("Colours")
-                                    Spacer()
-                                    Button { addSwatch() } label: {
-                                        Image(systemName: "plus.circle.fill")
-                                            .foregroundStyle(AVIATheme.timelessBrown)
-                                    }
-                                    .padding(.trailing, 14)
-                                }
-                                Text("Add colour swatches the client can choose from for this product. Toggle Upgrade for swatches that cost extra. Leave empty if this product has no colour variants.")
-                                    .font(.neueCaption2)
-                                    .foregroundStyle(AVIATheme.textTertiary)
-                                    .padding(.horizontal, 14)
-
-                                if swatches.isEmpty {
-                                    Text("No colour swatches yet. Tap + to add one.")
-                                        .font(.neueCaption)
-                                        .foregroundStyle(AVIATheme.textTertiary)
-                                        .padding(.horizontal, 14)
-                                        .padding(.vertical, 10)
-                                } else {
-                                    ForEach($swatches) { $swatch in
-                                        swatchEditor(swatch: $swatch)
-                                    }
-                                }
-                            }
-                            .padding(.vertical, 14)
-                        }
-                    }
                 }
                 .padding(.horizontal, 16)
                 .padding(.vertical, 12)
@@ -471,6 +383,12 @@ struct SpecItemEditSheet: View {
             }
         }
         .onAppear { populateFields() }
+        .task {
+            productCategories = await SupabaseService.shared.fetchProductCategories()
+            if !productCategories.contains(where: { $0.id == productCategoryId }) {
+                productCategoryId = productCategories.first?.id ?? "uncategorized"
+            }
+        }
         .presentationDetents([.large])
     }
 
@@ -595,48 +513,6 @@ struct SpecItemEditSheet: View {
         .padding(.horizontal, 14)
     }
 
-    private func tierImageField(_ tier: String, imageURL: Binding<String>, color: Color, tierKey: String) -> some View {
-        VStack(alignment: .leading, spacing: 6) {
-            HStack(spacing: 6) {
-                Circle().fill(color).frame(width: 8, height: 8)
-                Text(tier)
-                    .font(.neueCaption2Medium)
-                    .foregroundStyle(AVIATheme.textSecondary)
-            }
-            .padding(.horizontal, 14)
-
-            AdminImagePickerField(
-                label: "\(tier) Image",
-                imageURL: imageURL,
-                folder: "spec-items/\(tierKey)",
-                itemId: isNew ? itemId : (item?.id ?? itemId)
-            )
-        }
-    }
-
-    private func upgradeCostField(_ label: String, text: Binding<String>) -> some View {
-        HStack(spacing: 8) {
-            Text(label)
-                .font(.neueCaption2)
-                .foregroundStyle(AVIATheme.textSecondary)
-                .frame(maxWidth: .infinity, alignment: .leading)
-
-            HStack(spacing: 2) {
-                Text("$")
-                    .font(.neueCaption2)
-                    .foregroundStyle(AVIATheme.textTertiary)
-                TextField("0.00", text: text)
-                    .font(.neueCaption)
-                    .keyboardType(.decimalPad)
-                    .frame(width: 80)
-            }
-            .padding(.horizontal, 8)
-            .padding(.vertical, 6)
-            .background(AVIATheme.surfaceElevated)
-            .clipShape(.rect(cornerRadius: 5))
-        }
-    }
-
     private func formatCost(_ value: Double) -> String {
         String(format: "%.2f", value)
     }
@@ -646,6 +522,11 @@ struct SpecItemEditSheet: View {
         itemId = item.id
         name = item.name
         categoryId = item.category_id
+        productCategoryId = item.product_category_id ?? "uncategorized"
+        supplier = item.supplier ?? ""
+        dimensions = item.dimensions ?? ""
+        itemDescription = item.description ?? ""
+        skuText = item.sku ?? ""
         volosDesc = item.volos_description
         messinaDesc = item.messina_description
         portobelloDesc = item.portobello_description
@@ -653,9 +534,6 @@ struct SpecItemEditSheet: View {
         isFixedInclusion = item.is_fixed_inclusion ?? false
         imageURL = item.image_url ?? ""
         sortOrder = item.sort_order ?? 0
-        volosToMessinaCost = item.volos_to_messina_cost.map { formatCost($0) } ?? ""
-        volosToPortobelloCost = item.volos_to_portobello_cost.map { formatCost($0) } ?? ""
-        messinaToPortobelloCost = item.messina_to_portobello_cost.map { formatCost($0) } ?? ""
         // Load per-product swatches from the dedicated colour category (id: spec_<itemId>_colours).
         let perProductId = SpecItemEditSheet.productColourCategoryId(for: item.id)
         if let cat = CatalogDataManager.shared.allColourCategories.first(where: { $0.id == perProductId }) {
@@ -675,24 +553,13 @@ struct SpecItemEditSheet: View {
         } else {
             swatches = []
         }
-        loadTierImages()
-    }
-
-    private func loadTierImages() {
-        isLoadingTierImages = true
-        Task {
-            if let row = await SupabaseService.shared.fetchSpecItemImageRow(specItemId: item?.id ?? "") {
-                if let tiers = row.tier_images {
-                    volosImageURL = tiers["volos"] ?? ""
-                    messinaImageURL = tiers["messina"] ?? ""
-                    portobelloImageURL = tiers["portobello"] ?? ""
-                }
-            }
-            isLoadingTierImages = false
-        }
     }
 
     private func save() {
+        let trimmedSupplier = supplier.trimmingCharacters(in: .whitespacesAndNewlines)
+        let trimmedDimensions = dimensions.trimmingCharacters(in: .whitespacesAndNewlines)
+        let trimmedDescription = itemDescription.trimmingCharacters(in: .whitespacesAndNewlines)
+        let trimmedSku = skuText.trimmingCharacters(in: .whitespacesAndNewlines)
         let row = SpecItemFlatRow(
             id: isNew ? itemId : (item?.id ?? itemId),
             category_id: categoryId,
@@ -704,16 +571,17 @@ struct SpecItemEditSheet: View {
             is_fixed_inclusion: isFixedInclusion,
             image_url: imageURL.isEmpty ? nil : imageURL,
             sort_order: sortOrder,
-            volos_to_messina_cost: isFixedInclusion ? nil : Double(volosToMessinaCost),
-            volos_to_portobello_cost: isFixedInclusion ? nil : Double(volosToPortobelloCost),
-            messina_to_portobello_cost: isFixedInclusion ? nil : Double(messinaToPortobelloCost)
+            volos_to_messina_cost: item?.volos_to_messina_cost,
+            volos_to_portobello_cost: item?.volos_to_portobello_cost,
+            messina_to_portobello_cost: item?.messina_to_portobello_cost,
+            product_category_id: productCategoryId.isEmpty ? nil : productCategoryId,
+            supplier: trimmedSupplier.isEmpty ? nil : trimmedSupplier,
+            dimensions: trimmedDimensions.isEmpty ? nil : trimmedDimensions,
+            description: trimmedDescription.isEmpty ? nil : trimmedDescription,
+            sku: trimmedSku.isEmpty ? nil : trimmedSku
         )
-        var tierImages: [String: String] = [:]
-        if !volosImageURL.isEmpty { tierImages["volos"] = volosImageURL }
-        if !messinaImageURL.isEmpty { tierImages["messina"] = messinaImageURL }
-        if !portobelloImageURL.isEmpty { tierImages["portobello"] = portobelloImageURL }
         let payload = isFixedInclusion ? [] : swatches.filter { !$0.name.isEmpty }
-        onSave(row, tierImages, payload)
+        onSave(row, payload)
         dismiss()
     }
 }

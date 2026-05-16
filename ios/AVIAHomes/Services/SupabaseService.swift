@@ -1586,7 +1586,7 @@ class SupabaseService {
             // index there to prevent duplicate selections per item per build.
             try await client
                 .from("build_spec_selections")
-                .upsert(selection.toRow(), onConflict: "build_id,spec_item_id")
+                .upsert(selection.toRow(), onConflict: "id")
                 .execute()
             return true
         } catch {
@@ -1601,7 +1601,7 @@ class SupabaseService {
         do {
             try await client
                 .from("build_spec_selections")
-                .upsert(rows, onConflict: "build_id,spec_item_id")
+                .upsert(rows, onConflict: "id")
                 .execute()
             return true
         } catch {
@@ -1622,17 +1622,78 @@ class SupabaseService {
             return false
         }
         let tierKey = specTier.imageKeySuffix
+        let rangeId = specTier.rawValue
+
+        // Look up the build's facade so facade-scoped slots are materialised
+        // only when relevant. Failure here just means no facade filtering.
+        let facadeId = await fetchBuildFacadeId(buildId: buildId)
 
         var selections: [BuildSpecSelection] = []
         var sortIndex = 0
+        // Track which (spec_item_id, slot_id) pairs we've already covered so
+        // legacy fall-through doesn't double-create selections.
+        var coveredSlotItems: Set<String> = []
 
         for category in categories {
+            // 1. Per-slot selections sourced from variant_room_assignments.
+            //    One row per slot in the room — same SKU added twice with
+            //    different titles surfaces as two cards.
+            let slotsInRoom = catalog.slotIds(forRoom: category.id)
+            for slot in slotsInRoom {
+                let rows = catalog.rows(forSlot: slot)
+                guard let representative = rows.first else { continue }
+                // Respect facade scoping: skip facade-scoped slots that don't
+                // match the build's facade.
+                if let rowFacade = representative.facade_id, rowFacade != facadeId {
+                    continue
+                }
+                guard let itemId = catalog.specItemId(forVariantId: representative.variant_id),
+                      let item = catalog.specItem(for: itemId) else { continue }
+                let title = representative.display_title?.isEmpty == false
+                    ? representative.display_title!
+                    : item.name
+                let description = item.description(for: specTier)
+                let rangeRow = rows.first(where: { $0.range_id == rangeId }) ?? representative
+                let imageURL = rangeRow.image_url ?? item.customImageURL ?? catalog.specItemBaseImages[itemId]
+                let selection = BuildSpecSelection(
+                    id: UUID().uuidString,
+                    buildId: buildId,
+                    categoryId: category.id,
+                    specItemId: itemId,
+                    specTier: tierKey,
+                    selectionType: .included,
+                    clientNotes: nil,
+                    adminNotes: nil,
+                    clientConfirmed: false,
+                    adminConfirmed: false,
+                    clientConfirmedAt: nil,
+                    adminConfirmedAt: nil,
+                    lockedForClient: false,
+                    status: .draft,
+                    snapshotName: title,
+                    snapshotDescription: description,
+                    snapshotImageURL: imageURL,
+                    snapshotCategoryName: category.name,
+                    sortOrder: sortIndex,
+                    productId: nil,
+                    colourId: nil,
+                    selectionSlotId: slot
+                )
+                selections.append(selection)
+                sortIndex += 1
+                coveredSlotItems.insert("\(itemId)|\(category.id)")
+            }
+
+            // 2. Legacy fallback: items still pinned to this room via
+            //    `spec_items.category_id` that don't have any variant_room
+            //    _assignments yet. These get the historical single-selection
+            //    row with `selection_slot_id == NULL`.
             for item in category.items {
+                let key = "\(item.id)|\(category.id)"
+                if coveredSlotItems.contains(key) { continue }
+                if catalog.hasAnyRoomAssignment(forSpecItem: item.id) { continue }
                 let description = item.description(for: specTier)
                 let imageURL = item.customImageURL ?? catalog.specItemBaseImages[item.id]
-                // Standard tier items are pre-confirmed by default.
-                // Only manually upgraded items will deviate from this state.
-                let now = Date.now
                 let selection = BuildSpecSelection(
                     id: UUID().uuidString,
                     buildId: buildId,
@@ -1642,27 +1703,75 @@ class SupabaseService {
                     selectionType: .included,
                     clientNotes: nil,
                     adminNotes: nil,
-                    clientConfirmed: true,
-                    adminConfirmed: true,
-                    clientConfirmedAt: now,
-                    adminConfirmedAt: now,
+                    clientConfirmed: false,
+                    adminConfirmed: false,
+                    clientConfirmedAt: nil,
+                    adminConfirmedAt: nil,
                     lockedForClient: false,
-                    status: .approved,
+                    status: .draft,
                     snapshotName: item.name,
                     snapshotDescription: description,
                     snapshotImageURL: imageURL,
                     snapshotCategoryName: category.name,
-                    sortOrder: sortIndex
+                    sortOrder: sortIndex,
+                    productId: nil,
+                    colourId: nil,
+                    selectionSlotId: nil
                 )
                 selections.append(selection)
                 sortIndex += 1
             }
         }
 
-        // Idempotent rebuild: upsert by (build_id, spec_item_id) so re-running
-        // never produces duplicate rows. The unique constraint enforced in the
-        // Phase-1 migration backs this contract at the DB level.
+        // Slot-aware idempotency: delete any rows for this build that aren't
+        // in the freshly built set, then upsert the new payload.
+        await deleteStaleBuildSpecSelections(buildId: buildId, keepIds: selections.map(\.id))
         return await upsertBuildSpecSelections(selections)
+    }
+
+    /// Fetches the facade id stored on the build row, when present. Used by
+    /// snapshot materialisation to scope facade-specific slots.
+    private func fetchBuildFacadeId(buildId: String) async -> String? {
+        guard isConfigured else { return nil }
+        struct FacadeRow: Decodable { let facade_id: String? }
+        do {
+            let rows: [FacadeRow] = try await client
+                .from("client_builds")
+                .select("facade_id")
+                .eq("id", value: buildId)
+                .limit(1)
+                .execute()
+                .value
+            return rows.first?.facade_id
+        } catch {
+            return nil
+        }
+    }
+
+    /// Removes any `build_spec_selections` rows for a build whose `id` isn't
+    /// in `keepIds`. Called from `createBuildSpecSnapshot` so re-snapshotting
+    /// after slot changes never leaves orphaned rows.
+    private func deleteStaleBuildSpecSelections(buildId: String, keepIds: [String]) async {
+        guard isConfigured else { return }
+        do {
+            struct IdOnly: Decodable { let id: String }
+            let existing: [IdOnly] = try await client
+                .from("build_spec_selections")
+                .select("id")
+                .eq("build_id", value: buildId)
+                .execute()
+                .value
+            let keep = Set(keepIds)
+            let stale = existing.map(\.id).filter { !keep.contains($0) }
+            guard !stale.isEmpty else { return }
+            try await client
+                .from("build_spec_selections")
+                .delete()
+                .in("id", values: stale)
+                .execute()
+        } catch {
+            print("[SupabaseService] deleteStaleBuildSpecSelections FAILED: \(error)")
+        }
     }
 
     func submitClientSpecConfirmation(buildId: String) async -> Bool {
@@ -3013,66 +3122,467 @@ class SupabaseService {
         }
     }
 
-    // MARK: - Foundation Calls (Cal.com)
+    // MARK: - Spec Products (catalogue v2)
 
-    func fetchFoundationCalls(clientId: String) async -> [FoundationCall] {
+    /// All products inside a given spec slot, ordered by sort_order.
+    func fetchSpecProducts(forSpecItem specItemId: String) async -> [SpecProductRow] {
         guard isConfigured else { return [] }
         do {
-            let rows: [FoundationCallRow] = try await client
-                .from("client_foundation_calls")
+            let rows: [SpecProductRow] = try await client
+                .from("spec_products")
                 .select()
-                .eq("client_id", value: clientId)
-                .order("scheduled_at", ascending: false)
+                .eq("spec_item_id", value: specItemId)
+                .order("sort_order", ascending: true)
                 .execute()
                 .value
-            return rows.map { $0.toCall() }
+            return rows
         } catch {
-            print("[SupabaseService] fetchFoundationCalls FAILED: \(error)")
+            print("[SupabaseService] fetchSpecProducts FAILED: \(error)")
             return []
         }
     }
 
-    func fetchLatestFoundationCall(clientId: String) async -> FoundationCall? {
-        await fetchFoundationCalls(clientId: clientId).first
+    func upsertSpecProduct(_ row: SpecProductRow) async -> Bool {
+        lastUpsertError = nil
+        guard isConfigured else { return false }
+        do {
+            try await client.from("spec_products").upsert(row, onConflict: "id").execute()
+            return true
+        } catch {
+            let message = String(describing: error)
+            print("[SupabaseService] upsertSpecProduct FAILED: \(message)")
+            lastUpsertError = message
+            return false
+        }
     }
 
-    @discardableResult
-    func upsertFoundationCall(_ call: FoundationCall) async -> Bool {
+    func deleteSpecProduct(id: String) async -> Bool {
         guard isConfigured else { return false }
-        var updated = call
-        updated.updatedAt = .now
-        let row = FoundationCallRow(call: updated)
         do {
-            try await client.from("client_foundation_calls")
+            try await client.from("spec_products").delete().eq("id", value: id).execute()
+            return true
+        } catch {
+            print("[SupabaseService] deleteSpecProduct FAILED: \(error)")
+            return false
+        }
+    }
+
+    // MARK: - Spec Product Colours
+
+    func fetchSpecProductColours(forProduct productId: String) async -> [SpecProductColourRow] {
+        guard isConfigured else { return [] }
+        do {
+            let rows: [SpecProductColourRow] = try await client
+                .from("spec_product_colours")
+                .select()
+                .eq("product_id", value: productId)
+                .order("sort_order", ascending: true)
+                .execute()
+                .value
+            return rows
+        } catch {
+            print("[SupabaseService] fetchSpecProductColours FAILED: \(error)")
+            return []
+        }
+    }
+
+    func upsertSpecProductColours(_ rows: [SpecProductColourRow]) async -> Bool {
+        lastUpsertError = nil
+        guard isConfigured, !rows.isEmpty else { return rows.isEmpty }
+        do {
+            try await client.from("spec_product_colours").upsert(rows, onConflict: "id").execute()
+            return true
+        } catch {
+            let message = String(describing: error)
+            print("[SupabaseService] upsertSpecProductColours FAILED: \(message)")
+            lastUpsertError = message
+            return false
+        }
+    }
+
+    func deleteSpecProductColours(ids: [String]) async -> Bool {
+        guard isConfigured, !ids.isEmpty else { return true }
+        do {
+            try await client.from("spec_product_colours").delete().in("id", values: ids).execute()
+            return true
+        } catch {
+            print("[SupabaseService] deleteSpecProductColours FAILED: \(error)")
+            return false
+        }
+    }
+
+    // MARK: - Spec Range / Item / Product membership
+
+    func fetchRangeItemProducts(forSpecItem specItemId: String) async -> [SpecRangeItemProductRow] {
+        guard isConfigured else { return [] }
+        do {
+            let rows: [SpecRangeItemProductRow] = try await client
+                .from("spec_range_item_products")
+                .select()
+                .eq("spec_item_id", value: specItemId)
+                .execute()
+                .value
+            return rows
+        } catch {
+            print("[SupabaseService] fetchRangeItemProducts FAILED: \(error)")
+            return []
+        }
+    }
+
+    func upsertRangeItemProduct(_ row: SpecRangeItemProductRow) async -> Bool {
+        lastUpsertError = nil
+        guard isConfigured else { return false }
+        // Use the natural unique key (range_id, spec_item_id, product_id)
+        do {
+            try await client
+                .from("spec_range_item_products")
+                .upsert(row, onConflict: "range_id,spec_item_id,product_id")
+                .execute()
+            return true
+        } catch {
+            let message = String(describing: error)
+            print("[SupabaseService] upsertRangeItemProduct FAILED: \(message)")
+            lastUpsertError = message
+            return false
+        }
+    }
+
+    /// Fetches every spec product across all spec items. Used by CatalogDataManager
+    /// to build an in-memory catalogue at startup.
+    func fetchAllSpecProducts() async -> [SpecProductRow] {
+        guard isConfigured else { return [] }
+        do {
+            let rows: [SpecProductRow] = try await client
+                .from("spec_products")
+                .select()
+                .order("sort_order", ascending: true)
+                .execute()
+                .value
+            return rows
+        } catch {
+            print("[SupabaseService] fetchAllSpecProducts FAILED: \(error)")
+            return []
+        }
+    }
+
+    func fetchAllSpecProductColours() async -> [SpecProductColourRow] {
+        guard isConfigured else { return [] }
+        do {
+            let rows: [SpecProductColourRow] = try await client
+                .from("spec_product_colours")
+                .select()
+                .order("sort_order", ascending: true)
+                .execute()
+                .value
+            return rows
+        } catch {
+            print("[SupabaseService] fetchAllSpecProductColours FAILED: \(error)")
+            return []
+        }
+    }
+
+    func fetchAllRangeItemProducts() async -> [SpecRangeItemProductRow] {
+        guard isConfigured else { return [] }
+        do {
+            let rows: [SpecRangeItemProductRow] = try await client
+                .from("spec_range_item_products")
+                .select()
+                .execute()
+                .value
+            return rows
+        } catch {
+            print("[SupabaseService] fetchAllRangeItemProducts FAILED: \(error)")
+            return []
+        }
+    }
+
+    // MARK: - Room-first restructure (Phase 1)
+
+    /// Fetches all admin-defined product categories (Tile, Stone, Tapware, …).
+    func fetchProductCategories() async -> [ProductCategoryRow] {
+        guard isConfigured else { return [] }
+        do {
+            let rows: [ProductCategoryRow] = try await client
+                .from("product_categories")
+                .select()
+                .order("sort_order", ascending: true)
+                .execute()
+                .value
+            return rows
+        } catch {
+            print("[SupabaseService] fetchProductCategories FAILED: \(error)")
+            return []
+        }
+    }
+
+    /// Fetches every (variant × room × range) assignment. Used by the room-first
+    /// client experience and the supplier-grouped admin export.
+    func fetchVariantRoomAssignments() async -> [VariantRoomAssignmentRow] {
+        guard isConfigured else { return [] }
+        do {
+            let rows: [VariantRoomAssignmentRow] = try await client
+                .from("variant_room_assignments")
+                .select()
+                .execute()
+                .value
+            return rows
+        } catch {
+            print("[SupabaseService] fetchVariantRoomAssignments FAILED: \(error)")
+            return []
+        }
+    }
+
+    func upsertProductCategory(_ row: ProductCategoryRow) async -> Bool {
+        guard isConfigured else { return false }
+        do {
+            try await client
+                .from("product_categories")
                 .upsert(row, onConflict: "id")
                 .execute()
             return true
         } catch {
-            print("[SupabaseService] upsertFoundationCall FAILED: \(error)")
+            let message = String(describing: error)
+            print("[SupabaseService] upsertProductCategory FAILED: \(message)")
+            lastUpsertError = message
             return false
         }
     }
 
-    @discardableResult
-    func deleteFoundationCall(id: String) async -> Bool {
+    func deleteProductCategory(id: String) async -> Bool {
         guard isConfigured else { return false }
         do {
-            try await client.from("client_foundation_calls").delete().eq("id", value: id).execute()
+            try await client
+                .from("product_categories")
+                .delete()
+                .eq("id", value: id)
+                .execute()
             return true
         } catch {
-            print("[SupabaseService] deleteFoundationCall FAILED: \(error)")
+            print("[SupabaseService] deleteProductCategory FAILED: \(error)")
             return false
         }
     }
 
-    /// Subscribe to live changes on `client_foundation_calls` (e.g. Cal.com
-    /// webhook updates). The closure fires on the MainActor any time a row
-    /// changes — call sites should refetch the latest call.
-    func subscribeToFoundationCalls(onUpdate: @escaping @Sendable () -> Void) {
-        installChannel(
-            name: "client_foundation_calls_sync",
-            table: "client_foundation_calls",
-            onUpdate: onUpdate
-        )
+    /// Upsert a variant room assignment. Because Postgres treats NULLs as
+    /// distinct in unique constraints — and the table uses partial unique
+    /// indexes split between facade-agnostic (`facade_id IS NULL`) and
+    /// facade-scoped rows — we cannot rely on a single onConflict target.
+    /// Instead, look up the existing row by composite key and update or
+    /// insert as appropriate.
+    func upsertVariantRoomAssignment(_ row: VariantRoomAssignmentRow) async -> Bool {
+        guard isConfigured else { return false }
+        do {
+            // Find existing match on (variant, room, range, facade) — the
+            // partial unique indexes guarantee at most one match.
+            var query = client
+                .from("variant_room_assignments")
+                .select("id")
+                .eq("variant_id", value: row.variant_id)
+                .eq("room_id", value: row.room_id)
+                .eq("range_id", value: row.range_id)
+            if let fid = row.facade_id {
+                query = query.eq("facade_id", value: fid)
+            } else {
+                query = query.is("facade_id", value: nil)
+            }
+            struct IdOnly: Decodable { let id: String }
+            let existing: [IdOnly] = try await query.execute().value
+
+            if let existingId = existing.first?.id {
+                var rowWithId = row
+                rowWithId = VariantRoomAssignmentRow(
+                    id: existingId,
+                    variant_id: row.variant_id,
+                    room_id: row.room_id,
+                    range_id: row.range_id,
+                    facade_id: row.facade_id,
+                    image_url: row.image_url,
+                    cost: row.cost,
+                    inclusion: row.inclusion,
+                    sort_order: row.sort_order,
+                    display_title: row.display_title
+                )
+                try await client
+                    .from("variant_room_assignments")
+                    .update(rowWithId)
+                    .eq("id", value: existingId)
+                    .execute()
+            } else {
+                // Encode the insert payload WITHOUT an `id` field so Postgres'
+                // `DEFAULT gen_random_uuid()` fires. Sending `{"id": null, …}`
+                // (which is what the default Codable does for an Optional nil)
+                // would force a NULL into the PRIMARY KEY and fail — that
+                // bug was silently dropping every brand-new room assignment.
+                let insertPayload = VariantRoomAssignmentInsert(
+                    variant_id: row.variant_id,
+                    room_id: row.room_id,
+                    range_id: row.range_id,
+                    facade_id: row.facade_id,
+                    image_url: row.image_url,
+                    cost: row.cost,
+                    inclusion: row.inclusion,
+                    sort_order: row.sort_order,
+                    display_title: row.display_title
+                )
+                try await client
+                    .from("variant_room_assignments")
+                    .insert(insertPayload)
+                    .execute()
+            }
+            return true
+        } catch {
+            let message = String(describing: error)
+            print("[SupabaseService] upsertVariantRoomAssignment FAILED: \(message)")
+            lastUpsertError = message
+            return false
+        }
+    }
+
+    /// Bulk-update the `display_title` of every assignment row whose
+    /// `selection_slot_id` is in the supplied set. Used by the room-first
+    /// admin editor when an admin renames a selection category (which
+    /// groups N slots in a room by their shared display title).
+    func updateVariantRoomAssignmentsTitleBySlots(slotIds: [String], newTitle: String?) async -> (ok: Bool, error: String?) {
+        guard isConfigured else { return (false, "Supabase not configured") }
+        guard !slotIds.isEmpty else { return (true, nil) }
+        struct TitlePatch: Encodable, Sendable { let display_title: String? }
+        do {
+            try await client
+                .from("variant_room_assignments")
+                .update(TitlePatch(display_title: newTitle))
+                .in("selection_slot_id", values: slotIds)
+                .execute()
+            return (true, nil)
+        } catch {
+            let message = String(describing: error)
+            print("[SupabaseService] updateVariantRoomAssignmentsTitleBySlots FAILED: \(message)")
+            lastUpsertError = message
+            return (false, message)
+        }
+    }
+
+    /// Bulk-update the `sort_order` of every assignment row whose
+    /// `selection_slot_id` is in the supplied set. Used by the room-first
+    /// admin editor when an admin drags to reorder selection categories
+    /// (each slot in the category gets the same base sort order so the
+    /// whole group moves together).
+    func updateVariantRoomAssignmentsSortBySlots(slotIds: [String], sortOrder: Int) async -> (ok: Bool, error: String?) {
+        guard isConfigured else { return (false, "Supabase not configured") }
+        guard !slotIds.isEmpty else { return (true, nil) }
+        struct SortPatch: Encodable, Sendable { let sort_order: Int }
+        do {
+            try await client
+                .from("variant_room_assignments")
+                .update(SortPatch(sort_order: sortOrder))
+                .in("selection_slot_id", values: slotIds)
+                .execute()
+            return (true, nil)
+        } catch {
+            let message = String(describing: error)
+            print("[SupabaseService] updateVariantRoomAssignmentsSortBySlots FAILED: \(message)")
+            lastUpsertError = message
+            return (false, message)
+        }
+    }
+
+    /// Delete every assignment row tied to a given slot id. Used by the
+    /// room-first admin editor when an admin removes a slot or replaces all
+    /// of its 3 range rows on save.
+    func deleteVariantRoomAssignmentsBySlot(slotId: String) async -> (ok: Bool, error: String?) {
+        guard isConfigured else { return (false, "Supabase not configured") }
+        do {
+            try await client
+                .from("variant_room_assignments")
+                .delete()
+                .eq("selection_slot_id", value: slotId)
+                .execute()
+            return (true, nil)
+        } catch {
+            let message = String(describing: error)
+            print("[SupabaseService] deleteVariantRoomAssignmentsBySlot FAILED: \(message)")
+            lastUpsertError = message
+            return (false, message)
+        }
+    }
+
+    func deleteVariantRoomAssignment(variantId: String, roomId: String, rangeId: String, facadeId: String? = nil) async -> Bool {
+        guard isConfigured else { return false }
+        do {
+            var query = client
+                .from("variant_room_assignments")
+                .delete()
+                .eq("variant_id", value: variantId)
+                .eq("room_id", value: roomId)
+                .eq("range_id", value: rangeId)
+            if let fid = facadeId {
+                query = query.eq("facade_id", value: fid)
+            } else {
+                query = query.is("facade_id", value: nil)
+            }
+            try await query.execute()
+            return true
+        } catch {
+            print("[SupabaseService] deleteVariantRoomAssignment FAILED: \(error)")
+            return false
+        }
+    }
+
+    /// Delete every facade-agnostic (`facade_id IS NULL`) assignment for a
+    /// variant. Used by the variant Room Assignments editor to do a clean
+    /// replace on save — far simpler and more reliable than per-row upserts
+    /// against the partial unique indexes. Facade-scoped rows are preserved.
+    func deleteFacadeAgnosticAssignments(variantId: String) async -> (ok: Bool, error: String?) {
+        guard isConfigured else { return (false, "Supabase not configured") }
+        do {
+            try await client
+                .from("variant_room_assignments")
+                .delete()
+                .eq("variant_id", value: variantId)
+                .is("facade_id", value: nil)
+                .execute()
+            return (true, nil)
+        } catch {
+            let message = String(describing: error)
+            print("[SupabaseService] deleteFacadeAgnosticAssignments FAILED: \(message)")
+            lastUpsertError = message
+            return (false, message)
+        }
+    }
+
+    /// Bulk-insert a batch of facade-agnostic variant room assignments. Uses
+    /// the id-less `VariantRoomAssignmentInsert` payload so Postgres'
+    /// `DEFAULT gen_random_uuid()` generates new primary keys.
+    func bulkInsertVariantRoomAssignments(_ rows: [VariantRoomAssignmentInsert]) async -> (ok: Bool, error: String?) {
+        guard isConfigured else { return (false, "Supabase not configured") }
+        guard !rows.isEmpty else { return (true, nil) }
+        do {
+            try await client
+                .from("variant_room_assignments")
+                .insert(rows)
+                .execute()
+            return (true, nil)
+        } catch {
+            let message = String(describing: error)
+            print("[SupabaseService] bulkInsertVariantRoomAssignments FAILED: \(message)")
+            lastUpsertError = message
+            return (false, message)
+        }
+    }
+
+    func deleteRangeItemProduct(rangeId: String, specItemId: String, productId: String) async -> Bool {
+        guard isConfigured else { return false }
+        do {
+            try await client
+                .from("spec_range_item_products")
+                .delete()
+                .eq("range_id", value: rangeId)
+                .eq("spec_item_id", value: specItemId)
+                .eq("product_id", value: productId)
+                .execute()
+            return true
+        } catch {
+            print("[SupabaseService] deleteRangeItemProduct FAILED: \(error)")
+            return false
+        }
     }
 }

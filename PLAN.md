@@ -1,38 +1,172 @@
-# Simplify catalogue: one place for spec range items with colours built in
+# Room-first spec range restructure
 
-## What changes for admins
+Restructures the spec catalogue around the model described by the founder:
 
-**Catalog Management hub becomes simpler.** The standalone "Selection Categories" and "Colour Selections" cards are removed. Admins now manage everything product-related from a single place: **Spec Range Items**.
+```
+Product Category (e.g. Internal Tile, External Stone, Tapware)
+  └── Item (SKU, Name, Supplier, Dimensions, Description)
+        └── Variant (Colour Name, Variant SKU)
+              └── Room Assignment (per Range)
+                    ├── Image
+                    ├── Cost
+                    └── Inclusion: Included | Upgrade
+```
 
-Inside each spec range product, admins will now see a new **Colours** section where they can:
-- Add colour swatches directly to that product (name, hex/colour image, brand/finish notes)
-- Mark colours as included or as upgrades (with optional upgrade cost)
-- Reorder and remove swatches inline
-- Choose "No colour variants" for fixed-inclusion products that don't need a colour pick
+Client flow becomes **Room first**: pick a room (Kitchen / Bath / Ensuite / Laundry / …), then see every item in that room split into Included vs Upgrades, each card showing the room-specific variant image and (if upgrade) the cost.
 
-Spec items remain grouped by category (Kitchen, Bathroom, External Finishes, etc.) for organisation — that grouping stays exactly as it is today, just managed implicitly through the product editor.
+Admins manage Categories → Items → Variants once, then assign variants to rooms with per-room image & cost. Export is grouped by Supplier.
 
-The old Colour Categories editor and Selection Categories editor are hidden from the hub. Existing shared colour palettes are auto-migrated into per-product swatches and the legacy shared categories are deleted — the per-product list is the only source of truth.
+## Naming + mapping to existing tables
 
-## What changes for clients
+Existing concept | New concept | Why
+--- | --- | ---
+`spec_categories` (Kitchen, Bath, Laundry, External, Frame, …) | **Rooms** | UI rename only; same table, same IDs. Client already navigates by these.
+*(new)* `product_categories` | **Product Categories** | New layer — Tile, Stone, Tapware, etc. Items reparent here.
+`spec_items` (+ new supplier/dimensions/description) | **Items** | Adds `product_category_id`, `supplier`, `dimensions`, `description`. Original `category_id` (room) is retained for backfill compatibility but is no longer the canonical grouping.
+`spec_product_colours` (+ existing `sku` column) | **Variants** | Each colour/finish row is a Variant. The intermediate `spec_products` row stays as the "product family" (one variant per spec_product is fine too).
+*(new)* `variant_room_assignments` | **Room Assignments** | Join: `(variant_id, room_id, range_id)` → image, cost, inclusion. This is the heart of the rebuild.
+`spec_ranges` (Volos / Messina / Portobello) | **Ranges** | Unchanged. Inclusion + cost are per range, as today.
 
-When a client confirms a spec range product, the **colour picker for that exact product** appears in their Stage 2 selections — pulling from the swatches the admin attached to it.
+## Phases
 
-- Products with "No colour variants" skip the colour step entirely
-- Products with multiple colours show the swatches the admin uploaded for that specific product
-- The overall colour selections screen now lists one colour pick per approved spec product, in the same room/category groupings as today
+### Phase 1 — Foundation (schema, models, data migration) ✅
+- [x] Migration `20260522_room_first_restructure.sql`:
+  - [x] `product_categories` table
+  - [x] `spec_items`: add `product_category_id`, `supplier`, `dimensions`, `description`
+  - [x] `variant_room_assignments` table (variant × room × range → image, cost, inclusion)
+  - [x] Backfill: every existing variant gets a row in `variant_room_assignments` for the item's current spec_category (= room) across all 3 ranges, deriving inclusion + cost from `spec_range_item_products` + `spec_product_colours.extra_cost`.
+  - [x] Seed a default "Uncategorized" Product Category; backfill `spec_items.product_category_id`.
+- [x] Swift models for `ProductCategory`, `VariantRoomAssignment`.
+- [x] `CatalogDataManager` loads + indexes new tables (additive — old paths still work).
 
-## Pages affected
+### Phase 2 — Admin ✅
+- [x] Rename "Spec Categories" → "Rooms" in admin nav + screen titles.
+- [x] New "Product Categories" editor (CRUD).
+- [x] Item editor: add Supplier / Dimensions / Description fields; pick Product Category.
+- [x] Variant editor: room assignment matrix — per room toggle, per (room × range) image + cost + inclusion.
+- [x] Supplier-grouped export (PDF/CSV) listing every variant, SKU, supplier, room assignments, cost.
 
-- **Admin → Catalog Management**: Two cards removed, info card updated to reflect the new flow
-- **Admin → Spec Range Items → Edit Product**: New inline "Colours" section replaces the "Linked colour categories" chip grid
-- **Client → Build → Colour Selections**: Pulls colours from each spec product directly instead of from the shared colour categories
+### Phase 3 — Client ✅
+- [x] Selections home: pure room grid (already mostly there; data source changes from category-items to variants-assigned-to-room).
+- [x] Room detail: list every Item that has at least one variant assigned to this room, split into Included / Upgrades sections using the per-(variant, room, range) inclusion.
+- [x] Card image + cost pull from the room-specific assignment, not the product/colour defaults.
+- [x] Variant picker shows variants assigned to this room only.
 
-## Migration (confirmed: clean slate)
+### Phase 4 — Cleanup
+- [x] Hide legacy "selections" mapping screen. Client notification deep-links
+      route to `SelectionsHomeView` instead of `SpecificationsOverviewView`;
+      the legacy spec-item ↔ colour-category picker on the colour editor was
+      already replaced by the per-item editor.
+- [x] Drop `spec_items.category_id` dependency from client code paths. Client
+      surfaces (`SelectionsHomeView`, `SelectionsRoomDetailView`,
+      `BuildColourSelectionView`) navigate by `snapshotCategoryName` /
+      `variant_room_assignments` only; `category_id` remains in DB + admin
+      editors for compatibility.
+- [ ] Remove tier-cost columns on `spec_items` once new assignments fully
+      drive pricing. **In progress** — migration started:
+  - [x] `AdminSpecItemsEditorView`: drop the per-tier upgrade-cost editor
+        section; admins now set cost & inclusion per (variant, room, range)
+        in the Variant editor. Legacy columns on the row are preserved on
+        save for backwards compatibility.
+  - [x] `AdminUpgradeQuoteView`: auto-cost now sources from
+        `variant_room_assignments` (chosen variant in the selection's room +
+        range, or cheapest upgrade variant for the item in that room +
+        range). Legacy product/colour cost remains as a fallback.
+  - [x] `SpecificationItemDetailView` removed. The whole legacy chain
+        (`SpecificationsOverviewView` → `SpecificationCategoryDetailView`
+        → `SpecificationItemDetailView`) was dead code after the Phase 4
+        deep-link redirect and has been deleted.
+  - [x] Whole-range tier-upgrade flow migrated. `SelectionsRoomDetailView`
+        (per-item upgrade tiles) and `SpecificationViewModel.requestUpgrade`
+        (whole-range bulk upgrade) now estimate tier upgrade cost from
+        `variant_room_assignments` via
+        `CatalogDataManager.cheapestUpgradeCost(forSpecItem:roomId:rangeId:)`
+        (with a room-agnostic fallback for legacy items). Tier-cost columns
+        on `spec_items` are no longer read by client tier-upgrade flows.
+  - [ ] Once all consumers are migrated, drop `volos_to_messina_cost`,
+        `volos_to_portobello_cost`, `messina_to_portobello_cost` columns
+        and remove `SpecItem.upgradeCost(from:to:)`.
 
-Implemented in `supabase/migrations/20260516_migrate_to_per_product_colours.sql`:
+### Phase 5 — Facade-scoped exterior selections
 
-- For each existing `spec_to_colour_mapping` link, copy the shared category's options into a per-product palette `spec_<spec_item_id>_colours` (merging when an item was linked to multiple shared categories, dedup by option id).
-- Repoint mappings so each spec item points only at its own per-product palette.
-- Delete every legacy shared `colour_categories` row.
-- Wipe `build_colour_selections` — old in-flight builds are intentionally not carried over (confirmed acceptable: "old builds aren't important").
+Some exterior items (e.g. Render colour, Front door, Garage door trim) are
+facade-specific: the options a client sees in the External room should
+change depending on which Facade has been allocated to their build.
+
+- [x] Migration `20260523_variant_room_assignment_facade.sql`: add nullable
+      `facade_id` column to `variant_room_assignments` (`NULL` = applies to
+      all facades; non-null = only that facade). Replaces the 3-tuple
+      uniqueness with partial unique indexes that allow at most one
+      facade-agnostic row plus N facade-scoped rows per (variant, room,
+      range).
+- [x] Swift model: `VariantRoomAssignmentRow.facade_id` + composite key
+      includes the facade scope.
+- [x] `CatalogDataManager` learns about facade context: `assignment(…)`,
+      `variantIds(forRoom:rangeId:facadeId:)`, and `cheapestUpgradeCost(…)`
+      all accept an optional `facadeId` and prefer facade-specific rows over
+      the facade-agnostic default.
+- [x] Client selections pipe the build's `selectedFacadeId` into the room
+      detail view, the item card included/upgrade classification, and the
+      product picker.
+- [x] Admin Variant → Room Assignments matrix gains a per-room Facade
+      picker (“All facades” or one of the configured facades).
+      **Rolled back from All Products:** the picker + facade-scoped badges
+      proved too confusing inside the unified "All Products" admin view.
+      `AdminAllProductsView` and the variant Room Assignments editor it
+      launches now only surface facade-agnostic rows. Existing facade-
+      scoped assignments are preserved untouched in the database.
+- [x] `SupabaseService.upsertVariantRoomAssignment` reworked to handle the
+      partial unique indexes (NULLs are distinct in Postgres unique
+      constraints).
+- [ ] Dedicated "Facade-specific Products" admin editor for the handful of
+      items whose variants change per facade (render colour, front door,
+      garage door trim, etc.).
+
+### Phase 6 — Room-first admin (add products from the room)
+
+Flip the admin workflow so products + variants are added to a room *from the
+room* (not by drilling into a variant first). Same variant can appear in
+different rooms with a different per-room display title ("Floor Tiles",
+"Wall Tiles", "Splashback").
+
+- [x] Migration `20260524_variant_room_assignment_display_title.sql`: add
+      nullable `display_title` column to `variant_room_assignments`.
+- [x] Swift model: `VariantRoomAssignmentRow.display_title` (+ Insert payload).
+- [x] `CatalogDataManager.displayTitle(forSpecItem:roomId:rangeId:facadeId:preferredVariantId:)`
+      helper: prefers the saved variant's row, falls back to any other
+      variant of the item in that (room, range, facade) scope.
+- [x] New `AdminRoomProductsView`: reached by tapping a room in the Rooms
+      editor. Lists every product (grouped by spec_item) currently assigned
+      to the room, with per-variant range badges. Top-right `+` (or empty-
+      state CTA) opens a product picker that searches the catalogue by
+      product name, supplier, SKU and variant name. Picking a variant opens
+      a per-room editor sheet with: selection title override, per-range
+      inclusion + cost + image. Save replaces facade-agnostic rows for that
+      (variant, room) pair.
+- [x] `AdminVariantRoomAssignmentsView` (variant-first editor) gains a
+      per-room "Selection title in this room" field, written to all 3
+      ranges of that (variant, room) pair on save.
+- [x] Client `SelectionItemCard` (room detail) uses
+      `CatalogDataManager.displayTitle(…)` to override the item name when
+      the admin has set a room-specific title.
+- [x] **Follow-up: per-slot variants.** Migration
+      `20260525_variant_room_assignment_slot.sql` adds `selection_slot_id`
+      (uuid) to `variant_room_assignments` (slot-aware partial unique
+      indexes) and to `build_spec_selections` (relaxed partial unique
+      indexes so the same spec_item can have multiple selections, one per
+      slot). Each slot groups the 3 range rows of one client-facing
+      line-item; the same SKU can now be added to a room multiple times
+      with different titles ("Floor Tiles" + "Wall Tiles").
+      `AdminRoomProductsView` is rewritten around slots — every "Add
+      Product" press creates a new slot uuid, tapping an existing slot
+      edits just that slot's 3 rows. `createBuildSpecSnapshot` materialises
+      one `build_spec_selections` row per slot (slot-less legacy items
+      fall back to the single-row materialisation, scoped to the build's
+      facade). `SelectionsRoomDetailView` and `SelectionItemCard` consult
+      `selection_slot_id` so two slots of the same SKU surface as two cards
+      with their own slot title + image.
+
+## Migration safety
+- Every new column / table uses `IF NOT EXISTS`.
+- Existing read paths keep working until Phase 3 cutover.
+- Builds that already chose `product_id` + `colour_id` keep resolving — the new `variant_room_assignments` only changes *display + pricing for new selections*, not stored selections.

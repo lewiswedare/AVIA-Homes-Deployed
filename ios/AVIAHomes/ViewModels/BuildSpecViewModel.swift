@@ -14,6 +14,9 @@ class BuildSpecViewModel {
 
     var buildId: String = ""
     var specTier: String = "messina"
+    /// Facade selected for this build, when one has been chosen. Drives
+    /// facade-scoped exterior selections (`variant_room_assignments.facade_id`).
+    var selectedFacadeId: String?
 
     var notificationService: NotificationService?
     var adminRecipientIds: [String] = []
@@ -79,15 +82,126 @@ class BuildSpecViewModel {
     }
 
     var totalUpgradeCost: Double {
-        let specUpgrades = selections
-            .filter { $0.upgradeCost != nil && ($0.selectionType == .upgradeCosted || $0.selectionType == .upgradeAccepted || $0.selectionType == .upgradeApproved) }
-            .compactMap(\.upgradeCost)
-            .reduce(0, +)
-        let colourUpgrades = colourSelections
-            .filter { $0.isUpgrade && $0.cost != nil }
-            .compactMap(\.cost)
-            .reduce(0, +)
-        return specUpgrades + colourUpgrades
+        let b = upgradeBreakdown
+        return b.specRange + b.colour + b.product
+    }
+
+    /// Itemised view of what makes up the upgrade total, so clients can see
+    /// exactly where their money is going (range upgrades vs product upgrades
+    /// vs colour extras).
+    struct UpgradeBreakdown {
+        var specRange: Double = 0
+        var product: Double = 0
+        var colour: Double = 0
+        var lineItems: [LineItem] = []
+        var total: Double { specRange + product + colour }
+
+        struct LineItem: Identifiable {
+            let id: String
+            let name: String
+            let detail: String
+            let kind: Kind
+            let amount: Double
+            enum Kind { case specRange, product, colour }
+        }
+    }
+
+    var upgradeBreakdown: UpgradeBreakdown {
+        var b = UpgradeBreakdown()
+        for sel in selections where sel.selectionType != .removed {
+            if let cost = sel.upgradeCost, cost > 0,
+               (sel.selectionType == .upgradeCosted || sel.selectionType == .upgradeAccepted || sel.selectionType == .upgradeApproved) {
+                b.specRange += cost
+                b.lineItems.append(.init(
+                    id: "spec-\(sel.id)",
+                    name: sel.snapshotName,
+                    detail: "Spec range upgrade",
+                    kind: .specRange,
+                    amount: cost
+                ))
+            }
+            let pCost = productUpgradeCost(for: sel)
+            if pCost > 0 {
+                b.product += pCost
+                let productName = sel.productId.flatMap { pid in
+                    CatalogDataManager.shared.specProducts[pid]?.name
+                } ?? "Product upgrade"
+                b.lineItems.append(.init(
+                    id: "prod-\(sel.id)",
+                    name: sel.snapshotName,
+                    detail: productName,
+                    kind: .product,
+                    amount: pCost
+                ))
+            }
+        }
+        for cs in colourSelections where cs.isUpgrade && (cs.cost ?? 0) > 0 {
+            let amount = cs.cost ?? 0
+            b.colour += amount
+            let catName = CatalogDataManager.shared.allColourCategories.first(where: { $0.id == cs.colourCategoryId })?.name ?? "Colour"
+            let optName = CatalogDataManager.shared.allColourCategories
+                .first(where: { $0.id == cs.colourCategoryId })?.options
+                .first(where: { $0.id == cs.colourOptionId })?.name ?? "Selection"
+            b.lineItems.append(.init(
+                id: "col-\(cs.id)",
+                name: catName,
+                detail: optName,
+                kind: .colour,
+                amount: amount
+            ))
+        }
+        return b
+    }
+
+    /// Resolves the upgrade cost contribution from a chosen product + colour
+    /// (range membership upgrade price + colour extra cost). Returns 0 when the
+    /// selection has no product or the product is included for free.
+    func productUpgradeCost(for selection: BuildSpecSelection) -> Double {
+        guard let pid = selection.productId else { return 0 }
+        let rangeId = selection.specTier.lowercased()
+        let catalog = CatalogDataManager.shared
+        var total: Double = 0
+        if let m = catalog.rangeProductMemberships["\(rangeId)|\(pid)"] {
+            let inc = ProductRangeInclusion(rawValue: m.inclusion_override ?? "unavailable") ?? .unavailable
+            if inc == .upgrade {
+                total += m.upgrade_price_override ?? 0
+            }
+        }
+        if let cid = selection.colourId,
+           let colour = catalog.coloursByProduct[pid]?.first(where: { $0.id == cid }) {
+            total += colour.extra_cost ?? 0
+        }
+        return total
+    }
+
+    /// Saves a product (and optional colour) choice for a spec item selection.
+    /// Persists the productId + colourId on `build_spec_selections` and refreshes
+    /// the in-memory cache so the UI reflects the change immediately.
+    func saveProductSelection(selectionId: String, productId: String, colourId: String?) async {
+        guard let idx = selections.firstIndex(where: { $0.id == selectionId }) else { return }
+        selections[idx].productId = productId
+        selections[idx].colourId = colourId
+        let item = selections[idx]
+        let ok = await SupabaseService.shared.upsertBuildSpecSelection(item)
+        if !ok {
+            errorMessage = "Couldn't save product selection"
+            await load(buildId: buildId)
+        }
+    }
+
+    /// Clears the client's product + colour choice for a spec item so the
+    /// item is treated as "not yet selected". Used by the "Remove upgrade"
+    /// affordance and any future reset paths.
+    func clearProductSelection(selectionId: String) async {
+        guard let idx = selections.firstIndex(where: { $0.id == selectionId }) else { return }
+        selections[idx].productId = nil
+        selections[idx].colourId = nil
+        let item = selections[idx]
+        let ok = await SupabaseService.shared.upsertBuildSpecSelection(item)
+        if !ok {
+            errorMessage = "Couldn't clear product selection"
+            await load(buildId: buildId)
+        }
     }
 
     func load(buildId: String) async {

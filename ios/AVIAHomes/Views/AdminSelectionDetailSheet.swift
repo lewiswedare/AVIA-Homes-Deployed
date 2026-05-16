@@ -23,6 +23,17 @@ struct AdminSelectionDetailSheet: View {
         return (category: cat, option: opt)
     }
 
+    /// Chosen Spec Product + Colour for this selection (new product-driven flow).
+    private var resolvedProduct: (product: SpecProductRow, colour: SpecProductColourRow?, membership: SpecRangeItemProductRow?)? {
+        guard let pid = selection.productId, let product = catalog.specProducts[pid] else { return nil }
+        let colour = selection.colourId.flatMap { cid in
+            catalog.coloursByProduct[pid]?.first(where: { $0.id == cid })
+        }
+        let rangeId = selection.specTier.lowercased()
+        let membership = catalog.rangeProductMemberships["\(rangeId)|\(pid)"]
+        return (product: product, colour: colour, membership: membership)
+    }
+
     var body: some View {
         NavigationStack {
             ScrollView {
@@ -30,6 +41,10 @@ struct AdminSelectionDetailSheet: View {
                     itemHeader
                     statusSection
                     detailsSection
+
+                    if let chosen = resolvedProduct {
+                        chosenProductSection(chosen)
+                    }
 
                     if let resolved = resolvedColourOption {
                         colourSection(resolved)
@@ -230,6 +245,108 @@ struct AdminSelectionDetailSheet: View {
                         Text(selection.status.displayLabel)
                             .font(.neueCaptionMedium)
                             .foregroundStyle(AVIATheme.textPrimary)
+                    }
+                }
+            }
+            .padding(16)
+        }
+    }
+
+    private func chosenProductSection(_ chosen: (product: SpecProductRow, colour: SpecProductColourRow?, membership: SpecRangeItemProductRow?)) -> some View {
+        let inclusion = ProductRangeInclusion(rawValue: chosen.membership?.inclusion_override ?? "included") ?? .included
+        let upgradeCost = chosen.membership?.upgrade_price_override ?? 0
+        let colourExtra = chosen.colour?.extra_cost ?? 0
+        return BentoCard(cornerRadius: 11) {
+            VStack(alignment: .leading, spacing: 12) {
+                HStack {
+                    Text("CHOSEN PRODUCT")
+                        .font(.neueCaption2Medium)
+                        .kerning(1.0)
+                        .foregroundStyle(AVIATheme.textTertiary)
+                    Spacer()
+                    switch inclusion {
+                    case .included:
+                        Text("INCLUDED")
+                            .font(.neueCorpMedium(8))
+                            .foregroundStyle(AVIATheme.heritageBlue)
+                            .padding(.horizontal, 8).padding(.vertical, 3)
+                            .background(AVIATheme.heritageBlue.opacity(0.12), in: Capsule())
+                    case .upgrade:
+                        Text(upgradeCost > 0 ? "+$\(String(format: "%.0f", upgradeCost)) UPGRADE" : "UPGRADE")
+                            .font(.neueCorpMedium(8))
+                            .foregroundStyle(AVIATheme.timelessBrown)
+                            .padding(.horizontal, 8).padding(.vertical, 3)
+                            .background(AVIATheme.timelessBrown.opacity(0.12), in: Capsule())
+                    case .unavailable:
+                        EmptyView()
+                    }
+                }
+
+                HStack(spacing: 12) {
+                    if let urlStr = chosen.product.image_url, let url = URL(string: urlStr) {
+                        Color(.secondarySystemBackground)
+                            .frame(width: 56, height: 56)
+                            .overlay {
+                                AsyncImage(url: url) { phase in
+                                    if let img = phase.image {
+                                        img.resizable().aspectRatio(contentMode: .fill)
+                                    } else {
+                                        Image(systemName: "shippingbox")
+                                            .foregroundStyle(AVIATheme.textTertiary)
+                                    }
+                                }
+                                .allowsHitTesting(false)
+                            }
+                            .clipShape(.rect(cornerRadius: 8))
+                    } else {
+                        RoundedRectangle(cornerRadius: 8)
+                            .fill(AVIATheme.surfaceElevated)
+                            .frame(width: 56, height: 56)
+                            .overlay {
+                                Image(systemName: "shippingbox")
+                                    .foregroundStyle(AVIATheme.textTertiary)
+                            }
+                    }
+
+                    VStack(alignment: .leading, spacing: 3) {
+                        Text(chosen.product.name)
+                            .font(.neueCaptionMedium)
+                            .foregroundStyle(AVIATheme.textPrimary)
+                        if let brand = chosen.product.brand, !brand.isEmpty {
+                            Text(brand)
+                                .font(.neueCaption2)
+                                .foregroundStyle(AVIATheme.textSecondary)
+                        }
+                        if let sku = chosen.product.sku, !sku.isEmpty {
+                            Text("SKU \(sku)")
+                                .font(.neueCaption2)
+                                .foregroundStyle(AVIATheme.textTertiary)
+                        }
+                    }
+                    Spacer(minLength: 0)
+                }
+
+                if let colour = chosen.colour {
+                    Divider().background(AVIATheme.surfaceBorder)
+                    HStack(spacing: 10) {
+                        Circle()
+                            .fill(Color(hex: colour.hex ?? "CCCCCC"))
+                            .frame(width: 28, height: 28)
+                            .overlay { Circle().stroke(AVIATheme.surfaceBorder, lineWidth: 1) }
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text("Colour")
+                                .font(.neueCaption2)
+                                .foregroundStyle(AVIATheme.textTertiary)
+                            Text(colour.name)
+                                .font(.neueCaptionMedium)
+                                .foregroundStyle(AVIATheme.textPrimary)
+                        }
+                        Spacer()
+                        if colourExtra > 0 {
+                            Text("+$\(String(format: "%.0f", colourExtra))")
+                                .font(.neueCorpMedium(11))
+                                .foregroundStyle(AVIATheme.timelessBrown)
+                        }
                     }
                 }
             }

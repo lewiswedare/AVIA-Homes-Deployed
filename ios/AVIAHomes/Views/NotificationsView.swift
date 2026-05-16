@@ -149,8 +149,10 @@ struct NotificationsView: View {
         case .specTierChanged, .upgradeQuoted:
             if isAdminOrStaff {
                 AdminBuildManagementView()
-            } else {
-                SpecificationsOverviewView()
+            } else if let buildId = resolveBuildId(for: notification) {
+                // Phase 4 cleanup: route clients to the room-first Selections
+                // hub instead of the legacy category-based overview.
+                SelectionsHomeView(buildId: buildId)
             }
         case .colourSelectionSubmitted:
             if let buildId = resolveBuildId(for: notification) {

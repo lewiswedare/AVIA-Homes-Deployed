@@ -21,6 +21,9 @@ nonisolated struct SelectionRoom: Identifiable, Sendable, Hashable {
     let subtitle: String
     let icon: String
     let heroImageName: String
+    /// Admin-uploaded banner image URL for this category (Supabase storage). When
+    /// present, clients see this instead of the bundled `heroImageName` asset.
+    let heroImageURL: String?
 
     var id: String { snapshotCategoryName }
 
@@ -38,13 +41,15 @@ extension SelectionRoom {
     /// Build a room from a catalog spec category.
     static func from(specCategory category: SpecCategory) -> SelectionRoom {
         let meta = roomMeta(forCategoryId: category.id, name: category.name)
+        let adminImage = category.imageURL?.trimmingCharacters(in: .whitespacesAndNewlines)
         return SelectionRoom(
             snapshotCategoryName: category.name,
             categoryId: category.id,
             displayName: meta.displayName,
             subtitle: meta.subtitle,
             icon: category.icon.isEmpty ? meta.icon : category.icon,
-            heroImageName: meta.heroImageName
+            heroImageName: meta.heroImageName,
+            heroImageURL: (adminImage?.isEmpty == false) ? adminImage : nil
         )
     }
 
@@ -62,7 +67,8 @@ extension SelectionRoom {
             displayName: meta.displayName,
             subtitle: meta.subtitle,
             icon: meta.icon,
-            heroImageName: meta.heroImageName
+            heroImageName: meta.heroImageName,
+            heroImageURL: nil
         )
     }
 

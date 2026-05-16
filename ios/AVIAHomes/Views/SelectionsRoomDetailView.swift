@@ -11,6 +11,11 @@ struct SelectionsRoomDetailView: View {
     @State private var expandedItemId: String?
     @State private var pendingUpgradeItem: BuildSpecSelection?
     @State private var upgradeNotes: String = ""
+    @State private var previewImageURL: IdentifiedURL?
+
+    private func openPreview(_ urlString: String) {
+        previewImageURL = IdentifiedURL(urlString: urlString)
+    }
 
     private var catalog: CatalogDataManager { CatalogDataManager.shared }
 
@@ -18,10 +23,70 @@ struct SelectionsRoomDetailView: View {
         SpecTier(rawValue: viewModel.specTier.lowercased()) ?? .messina
     }
 
+    /// Items shown in this room are driven by `variant_room_assignments`:
+    /// any selection whose slot lives in this room (or, for legacy slot-less
+    /// selections, whose spec item has a variant assigned to this room)
+    /// appears here. Legacy items with no assignments at all fall back to
+    /// matching by snapshot category so they don't silently disappear.
     private var items: [BuildSpecSelection] {
-        viewModel.selections
-            .filter { $0.snapshotCategoryName == room.snapshotCategoryName && $0.selectionType != .removed }
-            .sorted { $0.sortOrder < $1.sortOrder }
+        let active = viewModel.selections.filter { $0.selectionType != .removed }
+        let facadeId = viewModel.selectedFacadeId
+        return active.filter { sel in
+            // 1. Slot-backed selections: trust the slot's room directly. Two
+            //    slots of the same spec item show up as two separate cards.
+            if let slotId = sel.selectionSlotId,
+               let assignment = catalog.assignment(slotId: slotId, rangeId: rangeId) {
+                guard assignment.room_id == room.categoryId else { return false }
+                if let aFid = assignment.facade_id, aFid != facadeId { return false }
+                return true
+            }
+            // 2. Legacy slot-less rows fall back to spec_item ↔ room mapping.
+            if let rid = room.categoryId {
+                let assignedRooms = catalog.roomIds(forSpecItem: sel.specItemId, rangeId: rangeId, facadeId: facadeId)
+                if assignedRooms.contains(rid) { return true }
+                if assignedRooms.isEmpty {
+                    return sel.snapshotCategoryName == room.snapshotCategoryName
+                }
+                return false
+            }
+            return sel.snapshotCategoryName == room.snapshotCategoryName
+        }
+        .sorted { $0.sortOrder < $1.sortOrder }
+    }
+
+    private var rangeId: String { viewModel.specTier.lowercased() }
+
+    /// Classify an item by whether — for this room — its variants are
+    /// included or only available as an upgrade. Slot-backed selections
+    /// consult their specific slot first; otherwise we look at what the
+    /// item offers in this room overall.
+    private func isItemIncluded(_ sel: BuildSpecSelection) -> Bool {
+        guard let roomId = room.categoryId else { return true }
+        let cat = CatalogDataManager.shared
+        let facadeId = viewModel.selectedFacadeId
+        if let slot = sel.selectionSlotId,
+           let a = cat.assignment(slotId: slot, rangeId: rangeId) {
+            return a.inclusionValue == .included
+        }
+        if let cid = sel.colourId,
+           let a = cat.assignment(variantId: cid, roomId: roomId, rangeId: rangeId, facadeId: facadeId) {
+            return a.inclusionValue == .included
+        }
+        let variantIds = cat.variantIds(forRoom: roomId, rangeId: rangeId, facadeId: facadeId)
+        let matching = variantIds.compactMap { vid -> VariantRoomAssignmentRow? in
+            guard cat.specItemId(forVariantId: vid) == sel.specItemId else { return nil }
+            return cat.assignment(variantId: vid, roomId: roomId, rangeId: rangeId, facadeId: facadeId)
+        }
+        if matching.isEmpty { return true }
+        return matching.contains { $0.inclusionValue == .included }
+    }
+
+    private var includedItems: [BuildSpecSelection] {
+        items.filter { isItemIncluded($0) }
+    }
+
+    private var upgradeItems: [BuildSpecSelection] {
+        items.filter { !isItemIncluded($0) }
     }
 
     private var upgradeTotal: Double {
@@ -35,36 +100,50 @@ struct SelectionsRoomDetailView: View {
         return specCost + colourCost
     }
 
+    /// Returns the id of the next item after `currentId` that the client still
+    /// needs to confirm (no productId saved yet). Wraps to find any earlier
+    /// incomplete item; returns nil only when the room is fully picked.
+    private func nextIncompleteItemId(after currentId: String) -> String? {
+        guard !items.isEmpty,
+              let currentIdx = items.firstIndex(where: { $0.id == currentId }) else { return nil }
+        let ordered = Array(items[(currentIdx + 1)...]) + Array(items[..<currentIdx])
+        return ordered.first(where: { $0.productId == nil && $0.id != currentId })?.id
+    }
+
     var body: some View {
         ScrollView {
-            VStack(spacing: 14) {
-                heroHeader
-                    .padding(.horizontal, 16)
+            ScrollViewReader { proxy in
+                VStack(spacing: 14) {
+                    heroHeader
+                        .padding(.horizontal, 16)
 
-                LazyVStack(spacing: 12) {
-                    ForEach(items) { item in
-                        SelectionItemCard(
-                            viewModel: viewModel,
-                            selection: item,
-                            isExpanded: expandedItemId == item.id,
-                            onToggle: {
-                                AVIAHaptic.lightTap.trigger()
-                                withAnimation(.spring(response: 0.4, dampingFraction: 0.85)) {
-                                    expandedItemId = expandedItemId == item.id ? nil : item.id
-                                }
-                            },
-                            onRequestUpgrade: {
-                                pendingUpgradeItem = item
-                                upgradeNotes = item.clientNotes ?? ""
+                    if !includedItems.isEmpty {
+                        sectionHeader("INCLUDED", count: includedItems.count, tint: AVIATheme.heritageBlue, icon: "checkmark.seal.fill")
+                            .padding(.horizontal, 16)
+                        LazyVStack(spacing: 12) {
+                            ForEach(includedItems) { item in
+                                card(for: item, proxy: proxy)
                             }
-                        )
+                        }
+                        .padding(.horizontal, 16)
                     }
-                }
-                .padding(.horizontal, 16)
 
-                Color.clear.frame(height: 24)
+                    if !upgradeItems.isEmpty {
+                        sectionHeader("UPGRADES", count: upgradeItems.count, tint: AVIATheme.timelessBrown, icon: "arrow.up.circle.fill")
+                            .padding(.horizontal, 16)
+                            .padding(.top, 6)
+                        LazyVStack(spacing: 12) {
+                            ForEach(upgradeItems) { item in
+                                card(for: item, proxy: proxy)
+                            }
+                        }
+                        .padding(.horizontal, 16)
+                    }
+
+                    Color.clear.frame(height: 24)
+                }
+                .padding(.top, 6)
             }
-            .padding(.top, 6)
         }
         .background(AVIATheme.background)
         .navigationTitle(room.displayName)
@@ -75,15 +154,84 @@ struct SelectionsRoomDetailView: View {
                 AVIAHaptic.success.trigger()
             }
         }
+        .fullScreenCover(item: $previewImageURL) { item in
+            ZoomableImageViewer(urlString: item.urlString)
+        }
+    }
+
+    @ViewBuilder
+    private func card(for item: BuildSpecSelection, proxy: ScrollViewProxy) -> some View {
+        SelectionItemCard(
+            viewModel: viewModel,
+            selection: item,
+            roomId: room.categoryId,
+            isExpanded: expandedItemId == item.id,
+            onToggle: {
+                AVIAHaptic.lightTap.trigger()
+                withAnimation(.spring(response: 0.4, dampingFraction: 0.85)) {
+                    expandedItemId = expandedItemId == item.id ? nil : item.id
+                }
+            },
+            onRequestUpgrade: {
+                pendingUpgradeItem = item
+                upgradeNotes = item.clientNotes ?? ""
+            },
+            onPreviewImage: openPreview,
+            onConfirmed: {
+                let nextId = nextIncompleteItemId(after: item.id)
+                withAnimation(.spring(response: 0.45, dampingFraction: 0.85)) {
+                    expandedItemId = nextId
+                }
+                if let nextId {
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.05) {
+                        withAnimation(.spring(response: 0.45, dampingFraction: 0.85)) {
+                            proxy.scrollTo(nextId, anchor: .top)
+                        }
+                    }
+                }
+            }
+        )
+        .id(item.id)
+    }
+
+    private func sectionHeader(_ title: String, count: Int, tint: Color, icon: String) -> some View {
+        HStack(spacing: 8) {
+            Image(systemName: icon)
+                .font(.neueCorp(11))
+                .foregroundStyle(tint)
+            Text(title)
+                .font(.neueCorpMedium(11))
+                .kerning(1.4)
+                .foregroundStyle(tint)
+            Text("\(count)")
+                .font(.neueCorpMedium(10))
+                .foregroundStyle(tint)
+                .padding(.horizontal, 7)
+                .padding(.vertical, 2)
+                .background(tint.opacity(0.12), in: Capsule())
+            Spacer()
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+    }
+
+    @ViewBuilder
+    private var heroBannerImage: some View {
+        if let urlString = room.heroImageURL, let url = URL(string: urlString) {
+            CachedAsyncImage(url: url) { image in
+                image.resizable().aspectRatio(contentMode: .fill)
+            } placeholder: {
+                Image(room.heroImageName).resizable().aspectRatio(contentMode: .fill)
+            }
+        } else {
+            Image(room.heroImageName).resizable().aspectRatio(contentMode: .fill)
+        }
     }
 
     private var heroHeader: some View {
         Color(.secondarySystemBackground)
             .frame(height: 180)
             .overlay {
-                Image(room.heroImageName)
-                    .resizable()
-                    .aspectRatio(contentMode: .fill)
+                heroBannerImage
                     .allowsHitTesting(false)
             }
             .clipShape(.rect(cornerRadius: 16))
@@ -135,9 +283,14 @@ struct SelectionsRoomDetailView: View {
 private struct SelectionItemCard: View {
     @Bindable var viewModel: BuildSpecViewModel
     let selection: BuildSpecSelection
+    /// Room context — when set, image + cost are sourced from
+    /// `variant_room_assignments` for the active variant.
+    var roomId: String? = nil
     let isExpanded: Bool
     let onToggle: () -> Void
     let onRequestUpgrade: () -> Void
+    let onPreviewImage: (String) -> Void
+    var onConfirmed: () -> Void = {}
 
     private var catalog: CatalogDataManager { CatalogDataManager.shared }
 
@@ -183,17 +336,32 @@ private struct SelectionItemCard: View {
         }
     }
 
+    /// Cheapest upgrade cost for the linked spec item at a given tier — sourced
+    /// from `variant_room_assignments` for this room when available, falling
+    /// back to the room-agnostic lookup so legacy items without per-room
+    /// assignments still surface a tier upgrade.
+    private func tierUpgradeCost(at tier: SpecTier) -> Double? {
+        guard let item = linkedSpecItem else { return nil }
+        let rangeId = tier.rawValue
+        let facadeId = viewModel.selectedFacadeId
+        if let roomId,
+           let cost = catalog.cheapestUpgradeCost(forSpecItem: item.id, roomId: roomId, rangeId: rangeId, facadeId: facadeId) {
+            return cost
+        }
+        return catalog.cheapestUpgradeCost(forSpecItem: item.id, rangeId: rangeId)
+    }
+
     private var canRequestUpgrade: Bool {
         guard let item = linkedSpecItem, item.isUpgradeable else { return false }
-        return SpecTier.allCases.contains { $0.tierIndex > buildSpecTier.tierIndex && item.upgradeCost(from: buildSpecTier, to: $0) != nil }
+        return SpecTier.allCases.contains { $0.tierIndex > buildSpecTier.tierIndex && tierUpgradeCost(at: $0) != nil }
     }
 
     private var upgradeOptions: [(tier: SpecTier, cost: Double)] {
-        guard let item = linkedSpecItem else { return [] }
+        guard linkedSpecItem != nil else { return [] }
         return SpecTier.allCases
             .filter { $0.tierIndex > buildSpecTier.tierIndex }
             .compactMap { tier in
-                guard let cost = item.upgradeCost(from: buildSpecTier, to: tier) else { return nil }
+                guard let cost = tierUpgradeCost(at: tier) else { return nil }
                 return (tier: tier, cost: cost)
             }
     }
@@ -243,10 +411,40 @@ private struct SelectionItemCard: View {
         }
     }
 
-    private var hasImage: Bool {
-        if let s = selection.snapshotImageURL, !s.isEmpty, URL(string: s) != nil { return true }
-        if linkedSpecItem?.imageURL != nil { return true }
-        return false
+    private var hasImage: Bool { currentImageURL != nil }
+
+    /// Per-room display title override for the linked spec item. Returns nil
+    /// when the admin hasn't set one for this (room, range, facade), so the
+    /// card falls back to the underlying item name. When the selection is
+    /// slot-backed, the slot's own title wins over any item-level fallback.
+    private var roomTitleOverride: String? {
+        guard let roomId else { return nil }
+        return catalog.displayTitle(
+            forSpecItem: selection.specItemId,
+            roomId: roomId,
+            rangeId: selection.specTier.lowercased(),
+            facadeId: viewModel.selectedFacadeId,
+            preferredVariantId: selection.colourId,
+            slotId: selection.selectionSlotId
+        )
+    }
+
+    private var currentImageURL: String? {
+        // Prefer the slot's image when this selection is slot-backed.
+        if let slot = selection.selectionSlotId,
+           let a = catalog.assignment(slotId: slot, rangeId: selection.specTier.lowercased()),
+           let u = a.image_url, !u.isEmpty {
+            return u
+        }
+        // Then a room-specific image for the chosen variant.
+        if let roomId, let cid = selection.colourId,
+           let a = catalog.assignment(variantId: cid, roomId: roomId, rangeId: selection.specTier.lowercased(), facadeId: viewModel.selectedFacadeId),
+           let u = a.image_url, !u.isEmpty {
+            return u
+        }
+        if let s = selection.snapshotImageURL, !s.isEmpty, URL(string: s) != nil { return s }
+        if let url = linkedSpecItem?.imageURL { return url.absoluteString }
+        return nil
     }
 
     private var header: some View {
@@ -268,10 +466,16 @@ private struct SelectionItemCard: View {
                 itemThumbnail
                     .frame(width: 56, height: 56)
                     .clipShape(.rect(cornerRadius: 10))
+                    .onTapGesture {
+                        if let urlStr = currentImageURL {
+                            AVIAHaptic.lightTap.trigger()
+                            onPreviewImage(urlStr)
+                        }
+                    }
             }
 
             VStack(alignment: .leading, spacing: 4) {
-                Text(selection.snapshotName)
+                Text(roomTitleOverride ?? linkedSpecItem?.name ?? selection.snapshotName)
                     .font(.neueCorpMedium(15))
                     .foregroundStyle(AVIATheme.textPrimary)
                     .multilineTextAlignment(.leading)
@@ -318,31 +522,60 @@ private struct SelectionItemCard: View {
 
     private var itemThumbnail: some View {
         Group {
-            if let url = selection.snapshotImageURL.flatMap(URL.init(string:)) {
+            if let urlStr = currentImageURL, let url = URL(string: urlStr) {
                 Color(.secondarySystemBackground)
                     .overlay {
-                        AsyncImage(url: url) { phase in
-                            if let image = phase.image {
-                                image.resizable().aspectRatio(contentMode: .fill)
-                            } else {
-                                placeholderIcon
-                            }
+                        CachedAsyncImage(url: url) { image in
+                            image.resizable().aspectRatio(contentMode: .fill)
+                        } placeholder: {
+                            placeholderIcon
+                        }
+                        .allowsHitTesting(false)
+                    }
+            } else if let url = selection.snapshotImageURL.flatMap(URL.init(string:)) {
+                Color(.secondarySystemBackground)
+                    .overlay {
+                        CachedAsyncImage(url: url) { image in
+                            image.resizable().aspectRatio(contentMode: .fill)
+                        } placeholder: {
+                            placeholderIcon
                         }
                         .allowsHitTesting(false)
                     }
             } else if let url = linkedSpecItem?.imageURL {
                 Color(.secondarySystemBackground)
                     .overlay {
-                        AsyncImage(url: url) { phase in
-                            if let image = phase.image {
-                                image.resizable().aspectRatio(contentMode: .fill)
-                            } else {
-                                placeholderIcon
-                            }
+                        CachedAsyncImage(url: url) { image in
+                            image.resizable().aspectRatio(contentMode: .fill)
+                        } placeholder: {
+                            placeholderIcon
                         }
                         .allowsHitTesting(false)
                     }
             }
+        }
+    }
+
+    private var comingSoonPlaceholder: some View {
+        VStack(spacing: 8) {
+            Image(systemName: "sparkles")
+                .font(.neueCorp(20))
+                .foregroundStyle(AVIATheme.timelessBrown)
+            Text("Options coming soon")
+                .font(.neueCaptionMedium)
+                .foregroundStyle(AVIATheme.textPrimary)
+            Text("AVIA is finalising product choices for this item. You'll be able to pick here once they're loaded.")
+                .font(.neueCaption2)
+                .foregroundStyle(AVIATheme.textSecondary)
+                .multilineTextAlignment(.center)
+        }
+        .frame(maxWidth: .infinity)
+        .padding(20)
+        .background(AVIATheme.background.opacity(0.5))
+        .clipShape(.rect(cornerRadius: 11))
+        .overlay {
+            RoundedRectangle(cornerRadius: 11)
+                .stroke(AVIATheme.surfaceBorder, lineWidth: 1)
         }
     }
 
@@ -352,15 +585,34 @@ private struct SelectionItemCard: View {
             .foregroundStyle(AVIATheme.textTertiary)
     }
 
+    private var rangeProducts: [(product: SpecProductRow, membership: SpecRangeItemProductRow)] {
+        catalog.products(for: selection.specItemId, rangeId: buildSpecTier.rawValue)
+    }
+
+    private var hasProducts: Bool { !rangeProducts.isEmpty }
+
     @ViewBuilder
     private var expandedContent: some View {
         VStack(alignment: .leading, spacing: 16) {
             Divider().background(AVIATheme.surfaceBorder)
 
-            tierSection
-            if hasColours {
-                Divider().background(AVIATheme.surfaceBorder)
-                coloursSection
+            if hasProducts {
+                SelectionProductPickerView(
+                    viewModel: viewModel,
+                    selection: selection,
+                    products: rangeProducts,
+                    roomId: roomId,
+                    facadeId: viewModel.selectedFacadeId,
+                    onConfirmed: onConfirmed
+                )
+            } else if hasColours || canRequestUpgrade {
+                tierSection
+                if hasColours {
+                    Divider().background(AVIATheme.surfaceBorder)
+                    coloursSection
+                }
+            } else {
+                comingSoonPlaceholder
             }
         }
         .padding(14)

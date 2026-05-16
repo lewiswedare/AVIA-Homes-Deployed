@@ -41,6 +41,9 @@ struct AVIAHomesWidgetView: View {
                 AVIAWidgetLarge(snapshot: entry.snapshot)
             }
         }
+        .padding(14)
+        .glassSurface(cornerRadius: 24)
+        .padding(2)
         .containerBackground(for: .widget) {
             AVIAWarmBackdrop()
         }
@@ -420,7 +423,78 @@ private struct AVIAWidgetLarge: View {
                         .lineLimit(2)
                 }
             }
+            Spacer(minLength: 0)
         }
+        .padding(12)
+        .glassSurface(cornerRadius: 24)
+        .padding(2)
+    }
+
+    private var large: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            HStack {
+                EyebrowLabel(icon: nil, text: "YOUR PACKAGE")
+                Spacer()
+                if let status = snapshot.package?.responseStatus, !status.isEmpty {
+                    Text(status.uppercased())
+                        .font(.system(size: 9, weight: .semibold))
+                        .tracking(1.0)
+                        .foregroundStyle(.white)
+                        .padding(.horizontal, 8)
+                        .padding(.vertical, 3)
+                        .background(.ultraThinMaterial, in: .capsule)
+                        .overlay(Capsule().strokeBorder(.white.opacity(0.3), lineWidth: 0.6))
+                }
+            }
+            if let urlString = snapshot.package?.imageURL, let url = URL(string: urlString) {
+                Color.black.opacity(0.2)
+                    .frame(height: 120)
+                    .overlay {
+                        AsyncImage(url: url) { phase in
+                            if let image = phase.image {
+                                image.resizable().aspectRatio(contentMode: .fill).allowsHitTesting(false)
+                            }
+                        }
+                    }
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 16, style: .continuous)
+                            .strokeBorder(.white.opacity(0.25), lineWidth: 0.6)
+                    )
+                    .clipShape(.rect(cornerRadius: 16))
+            }
+            Text(snapshot.package?.title ?? "House & Land Package")
+                .font(.headline)
+                .foregroundStyle(.white)
+                .lineLimit(1)
+            Text(snapshot.package?.location ?? "")
+                .font(.caption)
+                .foregroundStyle(.white.opacity(0.8))
+                .lineLimit(1)
+            if let pkg = snapshot.package {
+                HStack(spacing: 8) {
+                    PackageStat(icon: "bed.double.fill", value: "\(pkg.bedrooms)")
+                    PackageStat(icon: "shower.fill", value: "\(pkg.bathrooms)")
+                    PackageStat(icon: "car.fill", value: "\(pkg.garages)")
+                    Spacer()
+                    if !pkg.price.isEmpty {
+                        Text(pkg.price)
+                            .font(.subheadline.weight(.bold))
+                            .foregroundStyle(.white)
+                    }
+                }
+            }
+            Spacer(minLength: 0)
+            HStack(spacing: 4) {
+                Text("Tap to view package")
+                    .font(.caption.weight(.semibold))
+                Image(systemName: "arrow.up.right")
+                    .font(.caption.weight(.bold))
+            }
+            .foregroundStyle(.white)
+        }
+        .padding(14)
+        .glassSurface(cornerRadius: 26)
+        .padding(2)
     }
 }
 

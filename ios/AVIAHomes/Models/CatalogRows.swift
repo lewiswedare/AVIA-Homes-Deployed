@@ -262,8 +262,73 @@ nonisolated struct SpecItemFlatRow: Codable, Sendable {
     let volos_to_messina_cost: Double?
     let volos_to_portobello_cost: Double?
     let messina_to_portobello_cost: Double?
+    // Phase 2 room-first additions (all nullable in DB).
+    let product_category_id: String?
+    let supplier: String?
+    let dimensions: String?
+    let description: String?
+    let sku: String?
 
-    init(id: String, category_id: String, name: String, volos_description: String, messina_description: String, portobello_description: String, is_upgradeable: Bool?, is_fixed_inclusion: Bool? = false, image_url: String?, sort_order: Int?, volos_cost: Double? = nil, messina_cost: Double? = nil, portobello_cost: Double? = nil, volos_to_messina_cost: Double? = nil, volos_to_portobello_cost: Double? = nil, messina_to_portobello_cost: Double? = nil) {
+    nonisolated enum CodingKeys: String, CodingKey {
+        case id, category_id, name
+        case volos_description, messina_description, portobello_description
+        case is_upgradeable, is_fixed_inclusion, image_url, sort_order
+        case volos_cost, messina_cost, portobello_cost
+        case volos_to_messina_cost, volos_to_portobello_cost, messina_to_portobello_cost
+        case product_category_id, supplier, dimensions, description, sku
+    }
+
+    init(from decoder: Decoder) throws {
+        let c = try decoder.container(keyedBy: CodingKeys.self)
+        id = try c.decode(String.self, forKey: .id)
+        category_id = try c.decode(String.self, forKey: .category_id)
+        name = try c.decode(String.self, forKey: .name)
+        volos_description = (try? c.decode(String.self, forKey: .volos_description)) ?? ""
+        messina_description = (try? c.decode(String.self, forKey: .messina_description)) ?? ""
+        portobello_description = (try? c.decode(String.self, forKey: .portobello_description)) ?? ""
+        is_upgradeable = try? c.decode(Bool.self, forKey: .is_upgradeable)
+        is_fixed_inclusion = try? c.decode(Bool.self, forKey: .is_fixed_inclusion)
+        image_url = try? c.decode(String.self, forKey: .image_url)
+        sort_order = try? c.decode(Int.self, forKey: .sort_order)
+        volos_cost = try? c.decode(Double.self, forKey: .volos_cost)
+        messina_cost = try? c.decode(Double.self, forKey: .messina_cost)
+        portobello_cost = try? c.decode(Double.self, forKey: .portobello_cost)
+        volos_to_messina_cost = try? c.decode(Double.self, forKey: .volos_to_messina_cost)
+        volos_to_portobello_cost = try? c.decode(Double.self, forKey: .volos_to_portobello_cost)
+        messina_to_portobello_cost = try? c.decode(Double.self, forKey: .messina_to_portobello_cost)
+        product_category_id = try? c.decode(String.self, forKey: .product_category_id)
+        supplier = try? c.decode(String.self, forKey: .supplier)
+        dimensions = try? c.decode(String.self, forKey: .dimensions)
+        description = try? c.decode(String.self, forKey: .description)
+        sku = try? c.decode(String.self, forKey: .sku)
+    }
+
+    func encode(to encoder: Encoder) throws {
+        var c = encoder.container(keyedBy: CodingKeys.self)
+        try c.encode(id, forKey: .id)
+        try c.encode(category_id, forKey: .category_id)
+        try c.encode(name, forKey: .name)
+        try c.encode(volos_description, forKey: .volos_description)
+        try c.encode(messina_description, forKey: .messina_description)
+        try c.encode(portobello_description, forKey: .portobello_description)
+        try c.encodeIfPresent(is_upgradeable, forKey: .is_upgradeable)
+        try c.encodeIfPresent(is_fixed_inclusion, forKey: .is_fixed_inclusion)
+        try c.encodeIfPresent(image_url, forKey: .image_url)
+        try c.encodeIfPresent(sort_order, forKey: .sort_order)
+        try c.encodeIfPresent(volos_cost, forKey: .volos_cost)
+        try c.encodeIfPresent(messina_cost, forKey: .messina_cost)
+        try c.encodeIfPresent(portobello_cost, forKey: .portobello_cost)
+        try c.encodeIfPresent(volos_to_messina_cost, forKey: .volos_to_messina_cost)
+        try c.encodeIfPresent(volos_to_portobello_cost, forKey: .volos_to_portobello_cost)
+        try c.encodeIfPresent(messina_to_portobello_cost, forKey: .messina_to_portobello_cost)
+        try c.encodeIfPresent(product_category_id, forKey: .product_category_id)
+        try c.encodeIfPresent(supplier, forKey: .supplier)
+        try c.encodeIfPresent(dimensions, forKey: .dimensions)
+        try c.encodeIfPresent(description, forKey: .description)
+        try c.encodeIfPresent(sku, forKey: .sku)
+    }
+
+    init(id: String, category_id: String, name: String, volos_description: String, messina_description: String, portobello_description: String, is_upgradeable: Bool?, is_fixed_inclusion: Bool? = false, image_url: String?, sort_order: Int?, volos_cost: Double? = nil, messina_cost: Double? = nil, portobello_cost: Double? = nil, volos_to_messina_cost: Double? = nil, volos_to_portobello_cost: Double? = nil, messina_to_portobello_cost: Double? = nil, product_category_id: String? = nil, supplier: String? = nil, dimensions: String? = nil, description: String? = nil, sku: String? = nil) {
         self.id = id
         self.category_id = category_id
         self.name = name
@@ -280,6 +345,11 @@ nonisolated struct SpecItemFlatRow: Codable, Sendable {
         self.volos_to_messina_cost = volos_to_messina_cost
         self.volos_to_portobello_cost = volos_to_portobello_cost
         self.messina_to_portobello_cost = messina_to_portobello_cost
+        self.product_category_id = product_category_id
+        self.supplier = supplier
+        self.dimensions = dimensions
+        self.description = description
+        self.sku = sku
     }
 
     /// Returns a copy of this row WITHOUT the `is_fixed_inclusion` value set.
@@ -304,7 +374,12 @@ nonisolated struct SpecItemFlatRow: Codable, Sendable {
             portobello_cost: portobello_cost,
             volos_to_messina_cost: volos_to_messina_cost,
             volos_to_portobello_cost: volos_to_portobello_cost,
-            messina_to_portobello_cost: messina_to_portobello_cost
+            messina_to_portobello_cost: messina_to_portobello_cost,
+            product_category_id: product_category_id,
+            supplier: supplier,
+            dimensions: dimensions,
+            description: description,
+            sku: sku
         )
     }
 
