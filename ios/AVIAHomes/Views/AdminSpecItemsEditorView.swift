@@ -331,23 +331,6 @@ struct SpecItemEditSheet: View {
                                 .pickerStyle(.menu)
                                 .tint(AVIATheme.warning)
                             }
-                            fieldRow("Supplier") {
-                                TextField("e.g. Beaumont Tiles", text: $supplier).font(.neueCaption)
-                            }
-                            fieldRow("Dimensions") {
-                                TextField("e.g. 600 × 600 mm", text: $dimensions).font(.neueCaption)
-                            }
-                            fieldRow("Item SKU") {
-                                TextField("Optional master SKU", text: $skuText)
-                                    .font(.neueCaption)
-                                    .textInputAutocapitalization(.characters)
-                                    .autocorrectionDisabled()
-                            }
-                            fieldRow("Description") {
-                                TextField("Short description", text: $itemDescription, axis: .vertical)
-                                    .font(.neueCaption)
-                                    .lineLimit(2...5)
-                            }
                             fieldRow("Sort Order") {
                                 TextField("0", value: $sortOrder, format: .number)
                                     .font(.neueCaption)
@@ -371,16 +354,6 @@ struct SpecItemEditSheet: View {
                                     swatches.removeAll()
                                 }
                             }
-
-                            if !isFixedInclusion {
-                                Toggle(isOn: $isUpgradeable) {
-                                    Text("Upgradeable")
-                                        .font(.neueCaptionMedium)
-                                        .foregroundStyle(AVIATheme.textPrimary)
-                                }
-                                .tint(AVIATheme.warning)
-                                .padding(.horizontal, 14)
-                            }
                         }
                         .padding(.vertical, 14)
                     }
@@ -391,19 +364,6 @@ struct SpecItemEditSheet: View {
                             tierField("Volos", text: $volosDesc, color: AVIATheme.timelessBrown)
                             tierField("Messina", text: $messinaDesc, color: AVIATheme.warning)
                             tierField("Portobello", text: $portobelloDesc, color: AVIATheme.heritageBlue)
-                        }
-                        .padding(.vertical, 14)
-                    }
-
-                    BentoCard(cornerRadius: 11) {
-                        VStack(alignment: .leading, spacing: 14) {
-                            sectionHeader("Base Image (Optional)")
-                            AdminImagePickerField(
-                                label: "Default / Base Image",
-                                imageURL: $imageURL,
-                                folder: "spec-items",
-                                itemId: isNew ? itemId : (item?.id ?? itemId)
-                            )
                         }
                         .padding(.vertical, 14)
                     }
@@ -433,51 +393,6 @@ struct SpecItemEditSheet: View {
                         .padding(.vertical, 14)
                     }
 
-                    if isUpgradeable && !isFixedInclusion {
-                        BentoCard(cornerRadius: 11) {
-                            VStack(alignment: .leading, spacing: 10) {
-                                sectionHeader("Upgrade Pricing")
-                                Text("Upgrade prices are now set per variant + room from the Variant editor (Room Assignments). Open the variant for this item to set cost & inclusion per (room, range).")
-                                    .font(.neueCaption2)
-                                    .foregroundStyle(AVIATheme.textTertiary)
-                                    .padding(.horizontal, 14)
-                            }
-                            .padding(.vertical, 14)
-                        }
-                    }
-
-                    if !isFixedInclusion {
-                        BentoCard(cornerRadius: 11) {
-                            VStack(alignment: .leading, spacing: 12) {
-                                HStack {
-                                    sectionHeader("Colours")
-                                    Spacer()
-                                    Button { addSwatch() } label: {
-                                        Image(systemName: "plus.circle.fill")
-                                            .foregroundStyle(AVIATheme.timelessBrown)
-                                    }
-                                    .padding(.trailing, 14)
-                                }
-                                Text("Add colour swatches the client can choose from for this product. Toggle Upgrade for swatches that cost extra. Leave empty if this product has no colour variants.")
-                                    .font(.neueCaption2)
-                                    .foregroundStyle(AVIATheme.textTertiary)
-                                    .padding(.horizontal, 14)
-
-                                if swatches.isEmpty {
-                                    Text("No colour swatches yet. Tap + to add one.")
-                                        .font(.neueCaption)
-                                        .foregroundStyle(AVIATheme.textTertiary)
-                                        .padding(.horizontal, 14)
-                                        .padding(.vertical, 10)
-                                } else {
-                                    ForEach($swatches) { $swatch in
-                                        swatchEditor(swatch: $swatch)
-                                    }
-                                }
-                            }
-                            .padding(.vertical, 14)
-                        }
-                    }
                 }
                 .padding(.horizontal, 16)
                 .padding(.vertical, 12)
