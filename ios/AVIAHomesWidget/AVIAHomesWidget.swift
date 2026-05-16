@@ -22,34 +22,160 @@ nonisolated struct BuildProvider: TimelineProvider {
     }
 }
 
-// Brand palette — mirrors AVIATheme in the main app
-// aviaBlack #1A1A1A, timelessBrown #37332B, aviaWhite #E1DDDC, heritageBlue #8E9B92
+// MARK: - Brand palette
+
 private let aviaBlack = Color(red: 26/255, green: 26/255, blue: 26/255)
 private let timelessBrown = Color(red: 55/255, green: 51/255, blue: 43/255)
 private let aviaWhite = Color(red: 225/255, green: 221/255, blue: 220/255)
 private let heritageBlue = Color(red: 142/255, green: 155/255, blue: 146/255)
-private let cardBackground = Color(red: 235/255, green: 232/255, blue: 231/255)
-private let cardBackgroundAlt = Color(red: 242/255, green: 240/255, blue: 239/255)
-private let surfaceBorder = Color(red: 205/255, green: 201/255, blue: 199/255)
+private let warmSand = Color(red: 196/255, green: 178/255, blue: 156/255)
 
-// Accent used on dark backgrounds — warm off-white from the app palette
-private let onDarkAccent = aviaWhite
-// Background gradient for dark widget cards (app primaryGradient)
-private let darkGradient = LinearGradient(
-    colors: [aviaBlack, timelessBrown],
-    startPoint: .topLeading,
-    endPoint: .bottomTrailing
-)
-private let darkGradientVertical = LinearGradient(
-    colors: [aviaBlack, timelessBrown],
-    startPoint: .top,
-    endPoint: .bottom
-)
-private let lightGradient = LinearGradient(
-    colors: [cardBackgroundAlt, cardBackground],
-    startPoint: .top,
-    endPoint: .bottom
-)
+// MARK: - Frosted background
+
+/// Beautiful aurora background that sits behind the glass.
+/// Uses warm, brand-aligned colour blobs to give the frosted glass
+/// something interesting to refract.
+private struct AuroraBackground: View {
+    var tint: Tint = .dark
+
+    enum Tint { case dark, warm, sky }
+
+    var body: some View {
+        ZStack {
+            base
+            // Soft colour blobs — give the frosted glass something to read.
+            Circle()
+                .fill(blobA)
+                .frame(width: 260, height: 260)
+                .blur(radius: 60)
+                .offset(x: -90, y: -110)
+            Circle()
+                .fill(blobB)
+                .frame(width: 220, height: 220)
+                .blur(radius: 70)
+                .offset(x: 120, y: 80)
+            Circle()
+                .fill(blobC)
+                .frame(width: 180, height: 180)
+                .blur(radius: 80)
+                .offset(x: 40, y: 160)
+        }
+    }
+
+    private var base: some View {
+        LinearGradient(
+            colors: baseColors,
+            startPoint: .topLeading,
+            endPoint: .bottomTrailing
+        )
+    }
+
+    private var baseColors: [Color] {
+        switch tint {
+        case .dark: return [aviaBlack, timelessBrown, aviaBlack]
+        case .warm: return [timelessBrown, warmSand.opacity(0.6), aviaBlack]
+        case .sky:  return [heritageBlue.opacity(0.8), timelessBrown, aviaBlack]
+        }
+    }
+
+    private var blobA: Color {
+        switch tint {
+        case .dark: return heritageBlue.opacity(0.55)
+        case .warm: return warmSand.opacity(0.75)
+        case .sky:  return aviaWhite.opacity(0.35)
+        }
+    }
+    private var blobB: Color {
+        switch tint {
+        case .dark: return warmSand.opacity(0.45)
+        case .warm: return heritageBlue.opacity(0.55)
+        case .sky:  return heritageBlue.opacity(0.7)
+        }
+    }
+    private var blobC: Color {
+        switch tint {
+        case .dark: return timelessBrown.opacity(0.7)
+        case .warm: return aviaBlack.opacity(0.5)
+        case .sky:  return warmSand.opacity(0.4)
+        }
+    }
+}
+
+/// Frosted glass card — translucent material with a subtle highlight stroke,
+/// echoing iOS 26 liquid glass. Apply as a background of inner content.
+private struct GlassPanel: View {
+    var cornerRadius: CGFloat = 22
+
+    var body: some View {
+        ZStack {
+            // Frosted base
+            RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
+                .fill(.ultraThinMaterial)
+            // Warm tint so glass picks up the AVIA palette
+            RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
+                .fill(Color.white.opacity(0.06))
+            // Specular top highlight
+            RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
+                .fill(
+                    LinearGradient(
+                        colors: [Color.white.opacity(0.28), Color.white.opacity(0.0)],
+                        startPoint: .top,
+                        endPoint: .center
+                    )
+                )
+                .blendMode(.plusLighter)
+            // Edge stroke
+            RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
+                .strokeBorder(
+                    LinearGradient(
+                        colors: [Color.white.opacity(0.45), Color.white.opacity(0.08)],
+                        startPoint: .topLeading,
+                        endPoint: .bottomTrailing
+                    ),
+                    lineWidth: 0.7
+                )
+        }
+    }
+}
+
+private extension View {
+    /// Apply a frosted glass surface as background.
+    func glassSurface(cornerRadius: CGFloat = 18) -> some View {
+        background(GlassPanel(cornerRadius: cornerRadius))
+    }
+}
+
+/// Container background helper — image (if any) + aurora + faint vignette.
+private struct FrostedWidgetBackground: View {
+    let imageURL: String?
+    var tint: AuroraBackground.Tint = .dark
+
+    var body: some View {
+        ZStack {
+            AuroraBackground(tint: tint)
+            if let urlString = imageURL, let url = URL(string: urlString) {
+                AsyncImage(url: url) { phase in
+                    if let image = phase.image {
+                        image
+                            .resizable()
+                            .aspectRatio(contentMode: .fill)
+                            .allowsHitTesting(false)
+                            .opacity(0.55)
+                            .blur(radius: 14)
+                    }
+                }
+            }
+            // Bottom vignette so foreground text always reads
+            LinearGradient(
+                colors: [Color.black.opacity(0.0), Color.black.opacity(0.35)],
+                startPoint: .top,
+                endPoint: .bottom
+            )
+        }
+    }
+}
+
+// MARK: - Root view
 
 struct AVIAHomesWidgetView: View {
     @Environment(\.widgetFamily) var family
@@ -82,170 +208,218 @@ private struct BuildProgressWidgetView: View {
     }
 
     var body: some View {
-        switch family {
-        case .systemSmall:
-            VStack(alignment: .leading, spacing: 6) {
-                HStack(spacing: 6) {
-                    Image(systemName: "house")
-                        .font(.caption)
-                        .foregroundStyle(onDarkAccent)
-                    Text("AVIA HOMES")
-                        .font(.system(size: 9, weight: .medium))
-                        .tracking(1.6)
-                        .foregroundStyle(aviaWhite.opacity(0.65))
-                }
-                Spacer(minLength: 0)
-                Text(percentText)
-                    .font(.system(size: 34, weight: .light))
-                    .foregroundStyle(aviaWhite)
-                ProgressView(value: snapshot.overallProgress)
-                    .progressViewStyle(.linear)
-                    .tint(aviaWhite)
-                Text(snapshot.currentStageName)
-                    .font(.caption2)
-                    .fontWeight(.medium)
-                    .foregroundStyle(aviaWhite.opacity(0.75))
-                    .lineLimit(2)
-            }
-            .containerBackground(for: .widget) {
-                darkGradientVertical
-            }
-        case .systemMedium:
-            VStack(alignment: .leading, spacing: 10) {
-                HStack {
-                    VStack(alignment: .leading, spacing: 2) {
-                        Text("YOUR BUILD")
-                            .font(.system(size: 10, weight: .medium))
-                            .tracking(1.6)
-                            .foregroundStyle(aviaWhite.opacity(0.65))
-                        Text(snapshot.homeDesign.isEmpty ? "AVIA Home" : snapshot.homeDesign)
-                            .font(.system(size: 17, weight: .medium))
-                            .foregroundStyle(aviaWhite)
-                            .lineLimit(1)
-                    }
-                    Spacer()
-                    Text(percentText)
-                        .font(.system(size: 28, weight: .light))
-                        .foregroundStyle(aviaWhite)
-                }
-
-                ProgressView(value: snapshot.overallProgress)
-                    .progressViewStyle(.linear)
-                    .tint(aviaWhite)
-
-                HStack(spacing: 8) {
-                    Image(systemName: "hammer")
-                        .font(.caption)
-                        .foregroundStyle(aviaWhite.opacity(0.85))
-                    Text(snapshot.currentStageName)
-                        .font(.subheadline.weight(.medium))
-                        .foregroundStyle(aviaWhite)
-                        .lineLimit(1)
-                }
-
-                if !snapshot.nextStepTitle.isEmpty {
-                    HStack(spacing: 6) {
-                        Image(systemName: "arrow.forward")
-                            .font(.caption2)
-                            .foregroundStyle(aviaWhite.opacity(0.6))
-                        Text(snapshot.nextStepTitle)
-                            .font(.caption.weight(.medium))
-                            .foregroundStyle(aviaWhite.opacity(0.8))
-                            .lineLimit(1)
-                    }
-                } else {
-                    Text("\(snapshot.completedStages) of \(snapshot.totalStages) stages complete")
-                        .font(.caption)
-                        .foregroundStyle(aviaWhite.opacity(0.6))
-                }
-            }
-            .containerBackground(for: .widget) {
-                darkGradient
-            }
-        default:
-            VStack(alignment: .leading, spacing: 10) {
-                HStack {
-                    VStack(alignment: .leading, spacing: 2) {
-                        Text("YOUR BUILD")
-                            .font(.system(size: 10, weight: .medium))
-                            .tracking(1.6)
-                            .foregroundStyle(aviaWhite.opacity(0.65))
-                        Text(snapshot.homeDesign.isEmpty ? "AVIA Home" : snapshot.homeDesign)
-                            .font(.system(size: 17, weight: .medium))
-                            .foregroundStyle(aviaWhite)
-                            .lineLimit(1)
-                    }
-                    Spacer()
-                    Text(percentText)
-                        .font(.system(size: 28, weight: .light))
-                        .foregroundStyle(aviaWhite)
-                }
-
-                ProgressView(value: snapshot.overallProgress)
-                    .progressViewStyle(.linear)
-                    .tint(aviaWhite)
-
-                HStack(spacing: 8) {
-                    Image(systemName: "hammer")
-                        .font(.caption)
-                        .foregroundStyle(aviaWhite.opacity(0.85))
-                    Text(snapshot.currentStageName)
-                        .font(.subheadline.weight(.medium))
-                        .foregroundStyle(aviaWhite)
-                        .lineLimit(1)
-                    Spacer()
-                    Text("\(snapshot.completedStages)/\(snapshot.totalStages)")
-                        .font(.caption.weight(.medium))
-                        .foregroundStyle(aviaWhite.opacity(0.6))
-                }
-
-                if !snapshot.nextStepTitle.isEmpty {
-                    Divider().background(aviaWhite.opacity(0.12))
-                    VStack(alignment: .leading, spacing: 3) {
-                        HStack(spacing: 6) {
-                            Image(systemName: "arrow.forward")
-                                .font(.caption)
-                                .foregroundStyle(aviaWhite.opacity(0.85))
-                            Text("NEXT STEP")
-                                .font(.system(size: 9, weight: .medium))
-                                .tracking(1.6)
-                                .foregroundStyle(aviaWhite.opacity(0.6))
-                        }
-                        Text(snapshot.nextStepTitle)
-                            .font(.subheadline.weight(.medium))
-                            .foregroundStyle(aviaWhite)
-                            .lineLimit(1)
-                        if !snapshot.nextStepDetail.isEmpty {
-                            Text(snapshot.nextStepDetail)
-                                .font(.caption2)
-                                .foregroundStyle(aviaWhite.opacity(0.7))
-                                .lineLimit(2)
-                        }
-                    }
-                }
-
-                if let staff = snapshot.staff, !staff.name.isEmpty {
-                    Divider().background(aviaWhite.opacity(0.12))
-                    StaffContactRow(staff: staff)
-                }
-
-                Spacer(minLength: 0)
-
-                if !snapshot.estate.isEmpty {
-                    HStack(spacing: 4) {
-                        Image(systemName: "mappin.and.ellipse")
-                            .font(.caption2)
-                        Text("Lot \(snapshot.lotNumber) · \(snapshot.estate)")
-                            .font(.caption2.weight(.medium))
-                            .lineLimit(1)
-                    }
-                    .foregroundStyle(aviaWhite.opacity(0.6))
-                }
-            }
-            .containerBackground(for: .widget) {
-                darkGradient
+        Group {
+            switch family {
+            case .systemSmall: small
+            case .systemMedium: medium
+            default: large
             }
         }
+        .containerBackground(for: .widget) {
+            FrostedWidgetBackground(imageURL: nil, tint: .sky)
+        }
+    }
+
+    private var small: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            EyebrowLabel(icon: "house.fill", text: "AVIA HOMES")
+            Spacer(minLength: 0)
+            Text(percentText)
+                .font(.system(size: 38, weight: .light, design: .rounded))
+                .foregroundStyle(.white)
+            GlassProgressBar(value: snapshot.overallProgress)
+            Text(snapshot.currentStageName)
+                .font(.caption2.weight(.medium))
+                .foregroundStyle(.white.opacity(0.78))
+                .lineLimit(2)
+        }
+        .padding(14)
+        .glassSurface(cornerRadius: 22)
+        .padding(2)
+    }
+
+    private var medium: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            HStack(alignment: .top) {
+                VStack(alignment: .leading, spacing: 3) {
+                    EyebrowLabel(icon: nil, text: "YOUR BUILD")
+                    Text(snapshot.homeDesign.isEmpty ? "AVIA Home" : snapshot.homeDesign)
+                        .font(.system(size: 18, weight: .semibold))
+                        .foregroundStyle(.white)
+                        .lineLimit(1)
+                }
+                Spacer()
+                Text(percentText)
+                    .font(.system(size: 30, weight: .light, design: .rounded))
+                    .foregroundStyle(.white)
+            }
+
+            GlassProgressBar(value: snapshot.overallProgress)
+
+            HStack(spacing: 8) {
+                GlassChip(icon: "hammer.fill", text: snapshot.currentStageName)
+                Spacer(minLength: 0)
+            }
+
+            if !snapshot.nextStepTitle.isEmpty {
+                HStack(spacing: 6) {
+                    Image(systemName: "arrow.forward.circle.fill")
+                        .font(.caption)
+                        .foregroundStyle(.white.opacity(0.65))
+                    Text(snapshot.nextStepTitle)
+                        .font(.caption.weight(.medium))
+                        .foregroundStyle(.white.opacity(0.85))
+                        .lineLimit(1)
+                }
+            } else {
+                Text("\(snapshot.completedStages) of \(snapshot.totalStages) stages complete")
+                    .font(.caption)
+                    .foregroundStyle(.white.opacity(0.7))
+            }
+        }
+        .padding(14)
+        .glassSurface(cornerRadius: 24)
+        .padding(2)
+    }
+
+    private var large: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            HStack(alignment: .top) {
+                VStack(alignment: .leading, spacing: 3) {
+                    EyebrowLabel(icon: nil, text: "YOUR BUILD")
+                    Text(snapshot.homeDesign.isEmpty ? "AVIA Home" : snapshot.homeDesign)
+                        .font(.system(size: 20, weight: .semibold))
+                        .foregroundStyle(.white)
+                        .lineLimit(1)
+                }
+                Spacer()
+                Text(percentText)
+                    .font(.system(size: 34, weight: .light, design: .rounded))
+                    .foregroundStyle(.white)
+            }
+
+            GlassProgressBar(value: snapshot.overallProgress)
+
+            HStack(spacing: 8) {
+                GlassChip(icon: "hammer.fill", text: snapshot.currentStageName)
+                Spacer()
+                Text("\(snapshot.completedStages)/\(snapshot.totalStages)")
+                    .font(.caption.weight(.semibold))
+                    .foregroundStyle(.white.opacity(0.7))
+            }
+
+            if !snapshot.nextStepTitle.isEmpty {
+                VStack(alignment: .leading, spacing: 4) {
+                    EyebrowLabel(icon: "arrow.forward", text: "NEXT STEP")
+                    Text(snapshot.nextStepTitle)
+                        .font(.subheadline.weight(.semibold))
+                        .foregroundStyle(.white)
+                        .lineLimit(1)
+                    if !snapshot.nextStepDetail.isEmpty {
+                        Text(snapshot.nextStepDetail)
+                            .font(.caption2)
+                            .foregroundStyle(.white.opacity(0.75))
+                            .lineLimit(2)
+                    }
+                }
+                .padding(10)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .glassSurface(cornerRadius: 14)
+            }
+
+            if let staff = snapshot.staff, !staff.name.isEmpty {
+                StaffContactRow(staff: staff)
+                    .padding(10)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .glassSurface(cornerRadius: 14)
+            }
+
+            Spacer(minLength: 0)
+
+            if !snapshot.estate.isEmpty {
+                HStack(spacing: 4) {
+                    Image(systemName: "mappin.and.ellipse")
+                        .font(.caption2)
+                    Text("Lot \(snapshot.lotNumber) · \(snapshot.estate)")
+                        .font(.caption2.weight(.medium))
+                        .lineLimit(1)
+                }
+                .foregroundStyle(.white.opacity(0.7))
+            }
+        }
+        .padding(16)
+        .glassSurface(cornerRadius: 26)
+        .padding(2)
+    }
+}
+
+// MARK: - Shared glass components
+
+private struct EyebrowLabel: View {
+    let icon: String?
+    let text: String
+
+    var body: some View {
+        HStack(spacing: 5) {
+            if let icon {
+                Image(systemName: icon)
+                    .font(.system(size: 9, weight: .semibold))
+                    .foregroundStyle(.white.opacity(0.75))
+            }
+            Text(text)
+                .font(.system(size: 9, weight: .semibold))
+                .tracking(1.6)
+                .foregroundStyle(.white.opacity(0.7))
+        }
+    }
+}
+
+private struct GlassProgressBar: View {
+    let value: Double
+
+    var body: some View {
+        GeometryReader { geo in
+            ZStack(alignment: .leading) {
+                Capsule()
+                    .fill(.white.opacity(0.15))
+                Capsule()
+                    .fill(
+                        LinearGradient(
+                            colors: [Color.white, aviaWhite.opacity(0.8)],
+                            startPoint: .leading,
+                            endPoint: .trailing
+                        )
+                    )
+                    .frame(width: max(6, geo.size.width * max(0, min(1, value))))
+                    .shadow(color: Color.white.opacity(0.4), radius: 4, y: 0)
+            }
+        }
+        .frame(height: 6)
+    }
+}
+
+private struct GlassChip: View {
+    let icon: String
+    let text: String
+
+    var body: some View {
+        HStack(spacing: 6) {
+            Image(systemName: icon)
+                .font(.caption2.weight(.semibold))
+                .foregroundStyle(.white)
+            Text(text)
+                .font(.caption.weight(.semibold))
+                .foregroundStyle(.white)
+                .lineLimit(1)
+        }
+        .padding(.horizontal, 10)
+        .padding(.vertical, 6)
+        .background(
+            Capsule().fill(.ultraThinMaterial)
+        )
+        .overlay(
+            Capsule().strokeBorder(.white.opacity(0.25), lineWidth: 0.6)
+        )
     }
 }
 
@@ -256,32 +430,37 @@ private struct StaffContactRow: View {
         HStack(spacing: 10) {
             ZStack {
                 Circle()
-                    .fill(aviaWhite.opacity(0.15))
-                    .frame(width: 32, height: 32)
+                    .fill(.white.opacity(0.18))
+                Circle()
+                    .strokeBorder(.white.opacity(0.3), lineWidth: 0.6)
                 Image(systemName: "person.fill")
                     .font(.caption)
-                    .foregroundStyle(aviaWhite)
+                    .foregroundStyle(.white)
             }
+            .frame(width: 32, height: 32)
+
             VStack(alignment: .leading, spacing: 1) {
                 Text(staff.name.isEmpty ? "Your AVIA team" : staff.name)
-                    .font(.caption.weight(.medium))
-                    .foregroundStyle(aviaWhite)
+                    .font(.caption.weight(.semibold))
+                    .foregroundStyle(.white)
                     .lineLimit(1)
                 Text(staff.roleLabel)
                     .font(.caption2)
-                    .foregroundStyle(aviaWhite.opacity(0.6))
+                    .foregroundStyle(.white.opacity(0.7))
                     .lineLimit(1)
             }
             Spacer()
-            if !staff.phone.isEmpty {
-                Image(systemName: "phone.fill")
-                    .font(.caption2)
-                    .foregroundStyle(aviaWhite.opacity(0.85))
-            }
-            if !staff.email.isEmpty {
-                Image(systemName: "envelope.fill")
-                    .font(.caption2)
-                    .foregroundStyle(aviaWhite.opacity(0.85))
+            HStack(spacing: 6) {
+                if !staff.phone.isEmpty {
+                    Image(systemName: "phone.fill")
+                        .font(.caption2)
+                        .foregroundStyle(.white.opacity(0.85))
+                }
+                if !staff.email.isEmpty {
+                    Image(systemName: "envelope.fill")
+                        .font(.caption2)
+                        .foregroundStyle(.white.opacity(0.85))
+                }
             }
         }
     }
@@ -337,36 +516,36 @@ private struct PromptCard: View {
     let staff: WidgetStaffContact?
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 8) {
+        VStack(alignment: .leading, spacing: 10) {
             HStack(spacing: 6) {
                 Image(systemName: icon)
-                    .font(.caption)
-                    .foregroundStyle(timelessBrown)
+                    .font(.caption.weight(.semibold))
+                    .foregroundStyle(.white)
                 Text(title.uppercased())
-                    .font(.system(size: 10, weight: .semibold))
-                    .tracking(1.4)
-                    .foregroundStyle(timelessBrown.opacity(0.7))
+                    .font(.system(size: 9, weight: .semibold))
+                    .tracking(1.6)
+                    .foregroundStyle(.white.opacity(0.75))
             }
 
             Text(heading)
                 .font(family == .systemSmall ? .subheadline.weight(.bold) : .title3.weight(.bold))
-                .foregroundStyle(aviaBlack)
+                .foregroundStyle(.white)
                 .lineLimit(family == .systemSmall ? 3 : 2)
 
             if family != .systemSmall {
                 Text(detail)
                     .font(.footnote)
-                    .foregroundStyle(aviaBlack.opacity(0.75))
+                    .foregroundStyle(.white.opacity(0.78))
                     .lineLimit(3)
             }
 
-            ProgressView(value: max(0, min(1, progress)))
-                .progressViewStyle(.linear)
-                .tint(timelessBrown)
+            GlassProgressBar(value: max(0, min(1, progress)))
 
             if family == .systemLarge, let staff, !staff.name.isEmpty {
-                Divider()
-                LightStaffContactRow(staff: staff)
+                StaffContactRow(staff: staff)
+                    .padding(10)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .glassSurface(cornerRadius: 14)
             }
 
             Spacer(minLength: 0)
@@ -374,44 +553,19 @@ private struct PromptCard: View {
             HStack {
                 Text(family == .systemSmall ? detail : "Tap to open")
                     .font(.caption2.weight(.semibold))
-                    .foregroundStyle(timelessBrown)
+                    .foregroundStyle(.white)
                     .lineLimit(2)
                 Spacer()
                 Image(systemName: "arrow.up.right")
                     .font(.caption2.weight(.bold))
-                    .foregroundStyle(timelessBrown)
+                    .foregroundStyle(.white)
             }
         }
+        .padding(14)
+        .glassSurface(cornerRadius: 24)
+        .padding(2)
         .containerBackground(for: .widget) {
-            lightGradient
-        }
-    }
-}
-
-private struct LightStaffContactRow: View {
-    let staff: WidgetStaffContact
-
-    var body: some View {
-        HStack(spacing: 10) {
-            ZStack {
-                Circle()
-                    .fill(timelessBrown.opacity(0.12))
-                    .frame(width: 32, height: 32)
-                Image(systemName: "person.fill")
-                    .font(.caption)
-                    .foregroundStyle(timelessBrown)
-            }
-            VStack(alignment: .leading, spacing: 1) {
-                Text(staff.name.isEmpty ? "Your AVIA team" : staff.name)
-                    .font(.caption.weight(.semibold))
-                    .foregroundStyle(aviaBlack)
-                    .lineLimit(1)
-                Text(staff.roleLabel)
-                    .font(.caption2)
-                    .foregroundStyle(aviaBlack.opacity(0.7))
-                    .lineLimit(1)
-            }
-            Spacer()
+            FrostedWidgetBackground(imageURL: nil, tint: .warm)
         }
     }
 }
@@ -423,147 +577,162 @@ private struct PackageWidgetView: View {
     let family: WidgetFamily
 
     var body: some View {
-        switch family {
-        case .systemSmall:
-            VStack(alignment: .leading, spacing: 6) {
+        Group {
+            switch family {
+            case .systemSmall: small
+            case .systemMedium: medium
+            default: large
+            }
+        }
+        .containerBackground(for: .widget) {
+            FrostedWidgetBackground(imageURL: snapshot.package?.imageURL, tint: .dark)
+        }
+    }
+
+    private var small: some View {
+        VStack(alignment: .leading, spacing: 6) {
+            EyebrowLabel(icon: "shippingbox.fill", text: "YOUR PACKAGE")
+            Spacer(minLength: 0)
+            Text(snapshot.package?.title ?? "House & Land Package")
+                .font(.subheadline.weight(.bold))
+                .foregroundStyle(.white)
+                .lineLimit(2)
+            Text(snapshot.package?.location ?? "")
+                .font(.caption2)
+                .foregroundStyle(.white.opacity(0.8))
+                .lineLimit(1)
+            if let pkg = snapshot.package {
                 HStack(spacing: 6) {
-                    Image(systemName: "shippingbox.fill")
-                        .font(.caption)
-                        .foregroundStyle(aviaWhite)
-                    Text("YOUR PACKAGE")
-                        .font(.system(size: 9, weight: .semibold))
-                        .tracking(1.2)
-                        .foregroundStyle(.white.opacity(0.7))
+                    PackageStat(icon: "bed.double.fill", value: "\(pkg.bedrooms)")
+                    PackageStat(icon: "shower.fill", value: "\(pkg.bathrooms)")
+                    PackageStat(icon: "car.fill", value: "\(pkg.garages)")
                 }
-                Spacer(minLength: 0)
-                Text(snapshot.package?.title ?? "House & Land Package")
+            }
+            if let price = snapshot.package?.price, !price.isEmpty {
+                Text(price)
+                    .font(.caption.weight(.bold))
+                    .foregroundStyle(.white)
+            }
+        }
+        .padding(14)
+        .glassSurface(cornerRadius: 22)
+        .padding(2)
+    }
+
+    private var medium: some View {
+        HStack(spacing: 10) {
+            if let urlString = snapshot.package?.imageURL, let url = URL(string: urlString) {
+                Color.black.opacity(0.2)
+                    .frame(width: 108)
+                    .overlay {
+                        AsyncImage(url: url) { phase in
+                            if let image = phase.image {
+                                image.resizable().aspectRatio(contentMode: .fill).allowsHitTesting(false)
+                            }
+                        }
+                    }
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 14, style: .continuous)
+                            .strokeBorder(.white.opacity(0.25), lineWidth: 0.6)
+                    )
+                    .clipShape(.rect(cornerRadius: 14))
+            }
+            VStack(alignment: .leading, spacing: 4) {
+                EyebrowLabel(icon: nil, text: "YOUR PACKAGE")
+                Text(snapshot.package?.title ?? "House & Land")
                     .font(.subheadline.weight(.bold))
                     .foregroundStyle(.white)
                     .lineLimit(2)
                 Text(snapshot.package?.location ?? "")
                     .font(.caption2)
-                    .foregroundStyle(.white.opacity(0.75))
-                    .lineLimit(1)
-                Spacer(minLength: 0)
-                if let price = snapshot.package?.price, !price.isEmpty {
-                    Text(price)
-                        .font(.caption.weight(.bold))
-                        .foregroundStyle(aviaWhite)
-                }
-            }
-            .containerBackground(for: .widget) {
-                darkGradientVertical
-            }
-        case .systemMedium:
-            HStack(spacing: 12) {
-                if let urlString = snapshot.package?.imageURL, let url = URL(string: urlString) {
-                    Color.black.opacity(0.2)
-                        .frame(width: 110)
-                        .overlay {
-                            AsyncImage(url: url) { phase in
-                                if let image = phase.image {
-                                    image.resizable().aspectRatio(contentMode: .fill).allowsHitTesting(false)
-                                }
-                            }
-                        }
-                        .clipShape(.rect(cornerRadius: 8))
-                }
-                VStack(alignment: .leading, spacing: 4) {
-                    Text("YOUR PACKAGE")
-                        .font(.system(size: 9, weight: .semibold))
-                        .tracking(1.2)
-                        .foregroundStyle(.white.opacity(0.7))
-                    Text(snapshot.package?.title ?? "House & Land")
-                        .font(.subheadline.weight(.bold))
-                        .foregroundStyle(.white)
-                        .lineLimit(2)
-                    Text(snapshot.package?.location ?? "")
-                        .font(.caption2)
-                        .foregroundStyle(.white.opacity(0.75))
-                        .lineLimit(1)
-                    if let pkg = snapshot.package {
-                        HStack(spacing: 8) {
-                            PackageStat(icon: "bed.double.fill", value: "\(pkg.bedrooms)")
-                            PackageStat(icon: "shower.fill", value: "\(pkg.bathrooms)")
-                            PackageStat(icon: "car.fill", value: "\(pkg.garages)")
-                        }
-                    }
-                    Spacer(minLength: 0)
-                    if let price = snapshot.package?.price, !price.isEmpty {
-                        Text(price)
-                            .font(.subheadline.weight(.bold))
-                            .foregroundStyle(aviaWhite)
-                    }
-                }
-                Spacer(minLength: 0)
-            }
-            .containerBackground(for: .widget) {
-                darkGradient
-            }
-        default:
-            VStack(alignment: .leading, spacing: 10) {
-                HStack {
-                    Text("YOUR PACKAGE")
-                        .font(.system(size: 10, weight: .semibold))
-                        .tracking(1.4)
-                        .foregroundStyle(.white.opacity(0.7))
-                    Spacer()
-                    if let status = snapshot.package?.responseStatus, !status.isEmpty {
-                        Text(status.uppercased())
-                            .font(.system(size: 9, weight: .semibold))
-                            .tracking(1.0)
-                            .foregroundStyle(aviaWhite)
-                            .padding(.horizontal, 8)
-                            .padding(.vertical, 3)
-                            .background(aviaWhite.opacity(0.18), in: .capsule)
-                    }
-                }
-                if let urlString = snapshot.package?.imageURL, let url = URL(string: urlString) {
-                    Color.black.opacity(0.2)
-                        .frame(height: 110)
-                        .overlay {
-                            AsyncImage(url: url) { phase in
-                                if let image = phase.image {
-                                    image.resizable().aspectRatio(contentMode: .fill).allowsHitTesting(false)
-                                }
-                            }
-                        }
-                        .clipShape(.rect(cornerRadius: 10))
-                }
-                Text(snapshot.package?.title ?? "House & Land Package")
-                    .font(.headline)
-                    .foregroundStyle(.white)
-                    .lineLimit(1)
-                Text(snapshot.package?.location ?? "")
-                    .font(.caption)
                     .foregroundStyle(.white.opacity(0.8))
                     .lineLimit(1)
                 if let pkg = snapshot.package {
-                    HStack(spacing: 12) {
+                    HStack(spacing: 6) {
                         PackageStat(icon: "bed.double.fill", value: "\(pkg.bedrooms)")
                         PackageStat(icon: "shower.fill", value: "\(pkg.bathrooms)")
                         PackageStat(icon: "car.fill", value: "\(pkg.garages)")
-                        Spacer()
-                        if !pkg.price.isEmpty {
-                            Text(pkg.price)
-                                .font(.subheadline.weight(.bold))
-                                .foregroundStyle(aviaWhite)
-                        }
                     }
                 }
                 Spacer(minLength: 0)
-                HStack(spacing: 4) {
-                    Text("Tap to view package")
-                        .font(.caption.weight(.semibold))
-                    Image(systemName: "arrow.up.right")
-                        .font(.caption.weight(.bold))
+                if let price = snapshot.package?.price, !price.isEmpty {
+                    Text(price)
+                        .font(.subheadline.weight(.bold))
+                        .foregroundStyle(.white)
                 }
-                .foregroundStyle(aviaWhite)
             }
-            .containerBackground(for: .widget) {
-                darkGradient
-            }
+            Spacer(minLength: 0)
         }
+        .padding(12)
+        .glassSurface(cornerRadius: 24)
+        .padding(2)
+    }
+
+    private var large: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            HStack {
+                EyebrowLabel(icon: nil, text: "YOUR PACKAGE")
+                Spacer()
+                if let status = snapshot.package?.responseStatus, !status.isEmpty {
+                    Text(status.uppercased())
+                        .font(.system(size: 9, weight: .semibold))
+                        .tracking(1.0)
+                        .foregroundStyle(.white)
+                        .padding(.horizontal, 8)
+                        .padding(.vertical, 3)
+                        .background(.ultraThinMaterial, in: .capsule)
+                        .overlay(Capsule().strokeBorder(.white.opacity(0.3), lineWidth: 0.6))
+                }
+            }
+            if let urlString = snapshot.package?.imageURL, let url = URL(string: urlString) {
+                Color.black.opacity(0.2)
+                    .frame(height: 120)
+                    .overlay {
+                        AsyncImage(url: url) { phase in
+                            if let image = phase.image {
+                                image.resizable().aspectRatio(contentMode: .fill).allowsHitTesting(false)
+                            }
+                        }
+                    }
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 16, style: .continuous)
+                            .strokeBorder(.white.opacity(0.25), lineWidth: 0.6)
+                    )
+                    .clipShape(.rect(cornerRadius: 16))
+            }
+            Text(snapshot.package?.title ?? "House & Land Package")
+                .font(.headline)
+                .foregroundStyle(.white)
+                .lineLimit(1)
+            Text(snapshot.package?.location ?? "")
+                .font(.caption)
+                .foregroundStyle(.white.opacity(0.8))
+                .lineLimit(1)
+            if let pkg = snapshot.package {
+                HStack(spacing: 8) {
+                    PackageStat(icon: "bed.double.fill", value: "\(pkg.bedrooms)")
+                    PackageStat(icon: "shower.fill", value: "\(pkg.bathrooms)")
+                    PackageStat(icon: "car.fill", value: "\(pkg.garages)")
+                    Spacer()
+                    if !pkg.price.isEmpty {
+                        Text(pkg.price)
+                            .font(.subheadline.weight(.bold))
+                            .foregroundStyle(.white)
+                    }
+                }
+            }
+            Spacer(minLength: 0)
+            HStack(spacing: 4) {
+                Text("Tap to view package")
+                    .font(.caption.weight(.semibold))
+                Image(systemName: "arrow.up.right")
+                    .font(.caption.weight(.bold))
+            }
+            .foregroundStyle(.white)
+        }
+        .padding(14)
+        .glassSurface(cornerRadius: 26)
+        .padding(2)
     }
 }
 
@@ -578,7 +747,15 @@ private struct PackageStat: View {
             Text(value)
                 .font(.caption2.weight(.semibold))
         }
-        .foregroundStyle(.white.opacity(0.85))
+        .foregroundStyle(.white.opacity(0.9))
+        .padding(.horizontal, 7)
+        .padding(.vertical, 3)
+        .background(
+            Capsule().fill(.white.opacity(0.12))
+        )
+        .overlay(
+            Capsule().strokeBorder(.white.opacity(0.18), lineWidth: 0.5)
+        )
     }
 }
 
@@ -588,101 +765,119 @@ private struct NoBuildWidgetView: View {
     let snapshot: WidgetSnapshot
     let family: WidgetFamily
 
-    var body: some View {
-        switch family {
-        case .systemSmall:
-            VStack(alignment: .leading, spacing: 6) {
-                HStack(spacing: 6) {
-                    Image(systemName: "newspaper.fill")
-                        .font(.caption)
-                        .foregroundStyle(aviaWhite)
-                    Text("LATEST NEWS")
-                        .font(.system(size: 9, weight: .semibold))
-                        .tracking(1.2)
-                        .foregroundStyle(.white.opacity(0.7))
-                }
-                if let first = snapshot.news.first {
-                    Spacer(minLength: 0)
-                    Text(first.title)
-                        .font(.subheadline.weight(.bold))
-                        .foregroundStyle(.white)
-                        .lineLimit(4)
-                } else {
-                    Spacer(minLength: 0)
-                    Text("Discover AVIA Homes")
-                        .font(.subheadline.weight(.bold))
-                        .foregroundStyle(.white)
-                }
-                Spacer(minLength: 0)
-                HStack {
-                    Text("View more")
-                        .font(.caption2.weight(.semibold))
-                        .foregroundStyle(aviaWhite)
-                    Image(systemName: "arrow.up.right")
-                        .font(.caption2.weight(.bold))
-                        .foregroundStyle(aviaWhite)
-                }
-            }
-            .containerBackground(for: .widget) {
-                darkGradientVertical
-            }
-        case .systemMedium:
-            HStack(alignment: .top, spacing: 12) {
-                VStack(alignment: .leading, spacing: 6) {
-                    Text("LATEST FROM AVIA")
-                        .font(.system(size: 10, weight: .semibold))
-                        .tracking(1.4)
-                        .foregroundStyle(.white.opacity(0.7))
-                    if let first = snapshot.news.first {
-                        Text(first.title)
-                            .font(.headline)
-                            .foregroundStyle(.white)
-                            .lineLimit(3)
-                        Text(first.excerpt)
-                            .font(.caption)
-                            .foregroundStyle(.white.opacity(0.8))
-                            .lineLimit(2)
-                    } else {
-                        Text("Discover home designs, packages & news")
-                            .font(.headline)
-                            .foregroundStyle(.white)
-                            .lineLimit(3)
-                    }
-                    Spacer(minLength: 0)
-                    HStack(spacing: 4) {
-                        Text("View more in app")
-                            .font(.caption.weight(.semibold))
-                        Image(systemName: "arrow.up.right")
-                            .font(.caption.weight(.bold))
-                    }
-                    .foregroundStyle(aviaWhite)
-                }
-                Spacer(minLength: 0)
-            }
-            .containerBackground(for: .widget) {
-                darkGradient
-            }
-        default:
-            VStack(alignment: .leading, spacing: 10) {
-                HStack {
-                    Text("LATEST FROM AVIA")
-                        .font(.system(size: 10, weight: .semibold))
-                        .tracking(1.4)
-                        .foregroundStyle(.white.opacity(0.7))
-                    Spacer()
-                    Image(systemName: "newspaper.fill")
-                        .font(.caption)
-                        .foregroundStyle(aviaWhite)
-                }
+    private var heroImageURL: String? {
+        snapshot.news.first?.imageURL
+    }
 
-                if snapshot.news.isEmpty {
-                    Spacer(minLength: 0)
-                    Text("Discover home designs, packages and the latest from AVIA Homes.")
+    var body: some View {
+        Group {
+            switch family {
+            case .systemSmall: small
+            case .systemMedium: medium
+            default: large
+            }
+        }
+        .containerBackground(for: .widget) {
+            FrostedWidgetBackground(imageURL: heroImageURL, tint: .warm)
+        }
+    }
+
+    private var small: some View {
+        VStack(alignment: .leading, spacing: 6) {
+            EyebrowLabel(icon: "newspaper.fill", text: "LATEST NEWS")
+            Spacer(minLength: 0)
+            if let first = snapshot.news.first {
+                Text(first.title)
+                    .font(.subheadline.weight(.bold))
+                    .foregroundStyle(.white)
+                    .lineLimit(4)
+            } else {
+                Text("Discover AVIA Homes")
+                    .font(.subheadline.weight(.bold))
+                    .foregroundStyle(.white)
+            }
+            Spacer(minLength: 0)
+            HStack {
+                Text("View more")
+                    .font(.caption2.weight(.semibold))
+                    .foregroundStyle(.white)
+                Image(systemName: "arrow.up.right")
+                    .font(.caption2.weight(.bold))
+                    .foregroundStyle(.white)
+            }
+        }
+        .padding(14)
+        .glassSurface(cornerRadius: 22)
+        .padding(2)
+    }
+
+    private var medium: some View {
+        HStack(alignment: .top, spacing: 12) {
+            VStack(alignment: .leading, spacing: 6) {
+                EyebrowLabel(icon: "newspaper.fill", text: "LATEST FROM AVIA")
+                if let first = snapshot.news.first {
+                    Text(first.title)
                         .font(.headline)
                         .foregroundStyle(.white)
-                    Spacer(minLength: 0)
+                        .lineLimit(3)
+                    Text(first.excerpt)
+                        .font(.caption)
+                        .foregroundStyle(.white.opacity(0.85))
+                        .lineLimit(2)
                 } else {
-                    ForEach(Array(snapshot.news.prefix(3).enumerated()), id: \.element.id) { index, item in
+                    Text("Discover home designs, packages & news")
+                        .font(.headline)
+                        .foregroundStyle(.white)
+                        .lineLimit(3)
+                }
+                Spacer(minLength: 0)
+                HStack(spacing: 4) {
+                    Text("View more in app")
+                        .font(.caption.weight(.semibold))
+                    Image(systemName: "arrow.up.right")
+                        .font(.caption.weight(.bold))
+                }
+                .foregroundStyle(.white)
+            }
+            Spacer(minLength: 0)
+        }
+        .padding(14)
+        .glassSurface(cornerRadius: 24)
+        .padding(2)
+    }
+
+    private var large: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            HStack {
+                EyebrowLabel(icon: "newspaper.fill", text: "LATEST FROM AVIA")
+                Spacer()
+            }
+
+            if snapshot.news.isEmpty {
+                Spacer(minLength: 0)
+                Text("Discover home designs, packages and the latest from AVIA Homes.")
+                    .font(.headline)
+                    .foregroundStyle(.white)
+                Spacer(minLength: 0)
+            } else {
+                ForEach(Array(snapshot.news.prefix(3).enumerated()), id: \.element.id) { index, item in
+                    HStack(alignment: .top, spacing: 10) {
+                        if let urlString = item.imageURL, let url = URL(string: urlString) {
+                            Color.black.opacity(0.2)
+                                .frame(width: 44, height: 44)
+                                .overlay {
+                                    AsyncImage(url: url) { phase in
+                                        if let image = phase.image {
+                                            image.resizable().aspectRatio(contentMode: .fill).allowsHitTesting(false)
+                                        }
+                                    }
+                                }
+                                .clipShape(.rect(cornerRadius: 10))
+                                .overlay(
+                                    RoundedRectangle(cornerRadius: 10, style: .continuous)
+                                        .strokeBorder(.white.opacity(0.25), lineWidth: 0.6)
+                                )
+                        }
                         VStack(alignment: .leading, spacing: 2) {
                             Text(item.title)
                                 .font(.subheadline.weight(.semibold))
@@ -695,27 +890,30 @@ private struct NoBuildWidgetView: View {
                                     .lineLimit(1)
                             }
                         }
-                        if index < min(snapshot.news.count, 3) - 1 {
-                            Divider().background(.white.opacity(0.15))
-                        }
+                        Spacer(minLength: 0)
                     }
-                    Spacer(minLength: 0)
+                    if index < min(snapshot.news.count, 3) - 1 {
+                        Divider().background(.white.opacity(0.15))
+                    }
                 }
+                Spacer(minLength: 0)
+            }
 
-                HStack(spacing: 4) {
-                    Text("View more in app")
-                        .font(.caption.weight(.semibold))
-                    Image(systemName: "arrow.up.right")
-                        .font(.caption.weight(.bold))
-                }
-                .foregroundStyle(aviaWhite)
+            HStack(spacing: 4) {
+                Text("View more in app")
+                    .font(.caption.weight(.semibold))
+                Image(systemName: "arrow.up.right")
+                    .font(.caption.weight(.bold))
             }
-            .containerBackground(for: .widget) {
-                darkGradient
-            }
+            .foregroundStyle(.white)
         }
+        .padding(14)
+        .glassSurface(cornerRadius: 26)
+        .padding(2)
     }
 }
+
+// MARK: - Widget configuration
 
 struct AVIAHomesWidget: Widget {
     let kind: String = "AVIAHomesWidget"
