@@ -87,13 +87,13 @@ struct AdminSpecItemsEditorView: View {
             }
         }
         .sheet(isPresented: $showingAddSheet) {
-            SpecItemEditSheet(item: nil, categories: viewModel.specCategoryOrder) { row, tierImages, swatches in
-                Task { await viewModel.saveSpecItem(row, tierImages: tierImages, productSwatches: swatches) }
+            SpecItemEditSheet(item: nil, categories: viewModel.specCategoryOrder) { row, swatches in
+                Task { await viewModel.saveSpecItem(row, productSwatches: swatches) }
             }
         }
         .sheet(item: $editingItem) { item in
-            SpecItemEditSheet(item: item, categories: viewModel.specCategoryOrder) { row, tierImages, swatches in
-                Task { await viewModel.saveSpecItem(row, tierImages: tierImages, productSwatches: swatches) }
+            SpecItemEditSheet(item: item, categories: viewModel.specCategoryOrder) { row, swatches in
+                Task { await viewModel.saveSpecItem(row, productSwatches: swatches) }
             }
         }
         .alert("Delete Item", isPresented: .init(
@@ -268,7 +268,7 @@ struct SpecItemEditSheet: View {
     @Environment(\.dismiss) private var dismiss
     let item: SpecItemFlatRow?
     let categories: [(id: String, name: String, icon: String)]
-    let onSave: (SpecItemFlatRow, [String: String], [EditableColourOption]) -> Void
+    let onSave: (SpecItemFlatRow, [EditableColourOption]) -> Void
 
     @State private var itemId: String = ""
     @State private var name: String = ""
@@ -286,10 +286,6 @@ struct SpecItemEditSheet: View {
     @State private var isFixedInclusion: Bool = false
     @State private var imageURL: String = ""
     @State private var sortOrder: Int = 0
-    @State private var volosImageURL: String = ""
-    @State private var messinaImageURL: String = ""
-    @State private var portobelloImageURL: String = ""
-    @State private var isLoadingTierImages: Bool = false
 
     // Per-product colour swatches — stored as a dedicated ColourCategory per spec item.
     @State private var swatches: [EditableColourOption] = []
@@ -364,31 +360,6 @@ struct SpecItemEditSheet: View {
                             tierField("Volos", text: $volosDesc, color: AVIATheme.timelessBrown)
                             tierField("Messina", text: $messinaDesc, color: AVIATheme.warning)
                             tierField("Portobello", text: $portobelloDesc, color: AVIATheme.heritageBlue)
-                        }
-                        .padding(.vertical, 14)
-                    }
-
-                    BentoCard(cornerRadius: 11) {
-                        VStack(alignment: .leading, spacing: 14) {
-                            sectionHeader("Tier-Specific Images")
-                            Text("Upload a different image for each spec range. These override the base image when viewing a specific tier.")
-                                .font(.neueCaption2)
-                                .foregroundStyle(AVIATheme.textTertiary)
-                                .padding(.horizontal, 14)
-
-                            if isLoadingTierImages {
-                                HStack {
-                                    Spacer()
-                                    ProgressView()
-                                        .tint(AVIATheme.timelessBrown)
-                                    Spacer()
-                                }
-                                .padding(.vertical, 8)
-                            } else {
-                                tierImageField("Volos", imageURL: $volosImageURL, color: AVIATheme.timelessBrown, tierKey: "volos")
-                                tierImageField("Messina", imageURL: $messinaImageURL, color: AVIATheme.warning, tierKey: "messina")
-                                tierImageField("Portobello", imageURL: $portobelloImageURL, color: AVIATheme.heritageBlue, tierKey: "portobello")
-                            }
                         }
                         .padding(.vertical, 14)
                     }
@@ -542,25 +513,6 @@ struct SpecItemEditSheet: View {
         .padding(.horizontal, 14)
     }
 
-    private func tierImageField(_ tier: String, imageURL: Binding<String>, color: Color, tierKey: String) -> some View {
-        VStack(alignment: .leading, spacing: 6) {
-            HStack(spacing: 6) {
-                Circle().fill(color).frame(width: 8, height: 8)
-                Text(tier)
-                    .font(.neueCaption2Medium)
-                    .foregroundStyle(AVIATheme.textSecondary)
-            }
-            .padding(.horizontal, 14)
-
-            AdminImagePickerField(
-                label: "\(tier) Image",
-                imageURL: imageURL,
-                folder: "spec-items/\(tierKey)",
-                itemId: isNew ? itemId : (item?.id ?? itemId)
-            )
-        }
-    }
-
     private func formatCost(_ value: Double) -> String {
         String(format: "%.2f", value)
     }
@@ -601,21 +553,6 @@ struct SpecItemEditSheet: View {
         } else {
             swatches = []
         }
-        loadTierImages()
-    }
-
-    private func loadTierImages() {
-        isLoadingTierImages = true
-        Task {
-            if let row = await SupabaseService.shared.fetchSpecItemImageRow(specItemId: item?.id ?? "") {
-                if let tiers = row.tier_images {
-                    volosImageURL = tiers["volos"] ?? ""
-                    messinaImageURL = tiers["messina"] ?? ""
-                    portobelloImageURL = tiers["portobello"] ?? ""
-                }
-            }
-            isLoadingTierImages = false
-        }
     }
 
     private func save() {
@@ -643,12 +580,8 @@ struct SpecItemEditSheet: View {
             description: trimmedDescription.isEmpty ? nil : trimmedDescription,
             sku: trimmedSku.isEmpty ? nil : trimmedSku
         )
-        var tierImages: [String: String] = [:]
-        if !volosImageURL.isEmpty { tierImages["volos"] = volosImageURL }
-        if !messinaImageURL.isEmpty { tierImages["messina"] = messinaImageURL }
-        if !portobelloImageURL.isEmpty { tierImages["portobello"] = portobelloImageURL }
         let payload = isFixedInclusion ? [] : swatches.filter { !$0.name.isEmpty }
-        onSave(row, tierImages, payload)
+        onSave(row, payload)
         dismiss()
     }
 }

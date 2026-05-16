@@ -129,17 +129,17 @@ struct AdminAllProductsView: View {
             }
         }
         .sheet(isPresented: $showingAddSheet) {
-            SpecItemEditSheet(item: nil, categories: viewModel.specCategoryOrder) { row, tierImages, swatches in
+            SpecItemEditSheet(item: nil, categories: viewModel.specCategoryOrder) { row, swatches in
                 Task {
-                    await viewModel.saveSpecItem(row, tierImages: tierImages, productSwatches: swatches)
+                    await viewModel.saveSpecItem(row, productSwatches: swatches)
                     await reload()
                 }
             }
         }
         .sheet(item: $editingItem) { item in
-            SpecItemEditSheet(item: item, categories: viewModel.specCategoryOrder) { row, tierImages, swatches in
+            SpecItemEditSheet(item: item, categories: viewModel.specCategoryOrder) { row, swatches in
                 Task {
-                    await viewModel.saveSpecItem(row, tierImages: tierImages, productSwatches: swatches)
+                    await viewModel.saveSpecItem(row, productSwatches: swatches)
                     await reload()
                 }
             }
