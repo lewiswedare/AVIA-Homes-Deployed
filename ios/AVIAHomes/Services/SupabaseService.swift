@@ -3355,6 +3355,48 @@ class SupabaseService {
         }
     }
 
+    /// Delete every facade-agnostic (`facade_id IS NULL`) assignment for a
+    /// variant. Used by the variant Room Assignments editor to do a clean
+    /// replace on save — far simpler and more reliable than per-row upserts
+    /// against the partial unique indexes. Facade-scoped rows are preserved.
+    func deleteFacadeAgnosticAssignments(variantId: String) async -> (ok: Bool, error: String?) {
+        guard isConfigured else { return (false, "Supabase not configured") }
+        do {
+            try await client
+                .from("variant_room_assignments")
+                .delete()
+                .eq("variant_id", value: variantId)
+                .is("facade_id", value: nil)
+                .execute()
+            return (true, nil)
+        } catch {
+            let message = String(describing: error)
+            print("[SupabaseService] deleteFacadeAgnosticAssignments FAILED: \(message)")
+            lastUpsertError = message
+            return (false, message)
+        }
+    }
+
+    /// Bulk-insert a batch of facade-agnostic variant room assignments. Uses
+    /// the id-less `VariantRoomAssignmentInsert` payload so Postgres'
+    /// `DEFAULT gen_random_uuid()` generates new primary keys.
+    func bulkInsertVariantRoomAssignments(_ rows: [VariantRoomAssignmentInsert]) async -> (ok: Bool, error: String?) {
+        guard isConfigured else { return (false, "Supabase not configured") }
+        guard !rows.isEmpty else { return (true, nil) }
+        do {
+            try await client
+                .from("variant_room_assignments")
+                .insert(rows)
+                .execute()
+            return (true, nil)
+        } catch {
+            let message = String(describing: error)
+            print("[SupabaseService] bulkInsertVariantRoomAssignments FAILED: \(message)")
+            lastUpsertError = message
+            return (false, message)
+        }
+    }
+
     func deleteRangeItemProduct(rangeId: String, specItemId: String, productId: String) async -> Bool {
         guard isConfigured else { return false }
         do {

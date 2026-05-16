@@ -277,15 +277,13 @@ struct AdminVariantRoomAssignmentsView: View {
         isSaving = true
         defer { isSaving = false }
         let svc = SupabaseService.shared
-        var failures = 0
 
-        // Only manage facade-agnostic rows here; facade-scoped rows are
-        // owned by the separate facade-specific products editor.
-        let existing = await svc.fetchVariantRoomAssignments()
-        let mineExisting = existing.filter { $0.variant_id == variantId && $0.facade_id == nil }
-
-        // Build target set of (room, range) we will keep.
-        var keep: Set<String> = []
+        // Build the desired list of facade-agnostic assignments from the
+        // editor state. For every enabled room we emit one row per range
+        // (volos / messina / portobello) using the per-range cell values
+        // entered by the admin (defaulting to Included / $0 / no image when
+        // the admin left a range blank).
+        var desired: [VariantRoomAssignmentInsert] = []
         for (roomId, state) in rows {
             guard state.enabled else { continue }
             for rangeId in rangeIds {
@@ -294,41 +292,41 @@ struct AdminVariantRoomAssignmentsView: View {
                     .replacingOccurrences(of: "$", with: "")
                     .replacingOccurrences(of: ",", with: "")
                 let cost = Double(trimmedCost) ?? 0
-                let row = VariantRoomAssignmentRow(
-                    id: nil,
-                    variant_id: variantId,
-                    room_id: roomId,
-                    range_id: rangeId,
-                    facade_id: nil,
-                    image_url: cell.imageURL.isEmpty ? nil : cell.imageURL,
-                    cost: cost,
-                    inclusion: cell.inclusion.rawValue,
-                    sort_order: 0
+                desired.append(
+                    VariantRoomAssignmentInsert(
+                        variant_id: variantId,
+                        room_id: roomId,
+                        range_id: rangeId,
+                        facade_id: nil,
+                        image_url: cell.imageURL.isEmpty ? nil : cell.imageURL,
+                        cost: cost,
+                        inclusion: cell.inclusion.rawValue,
+                        sort_order: 0
+                    )
                 )
-                if !(await svc.upsertVariantRoomAssignment(row)) { failures += 1 }
-                keep.insert("\(roomId)|\(rangeId)")
             }
         }
 
-        for existingRow in mineExisting {
-            let key = "\(existingRow.room_id)|\(existingRow.range_id)"
-            if !keep.contains(key) {
-                _ = await svc.deleteVariantRoomAssignment(
-                    variantId: existingRow.variant_id,
-                    roomId: existingRow.room_id,
-                    rangeId: existingRow.range_id,
-                    facadeId: nil
-                )
-            }
+        // Replace strategy: wipe all facade-agnostic rows for this variant,
+        // then bulk-insert the desired set. Far more reliable than per-row
+        // upserts against the partial unique indexes (which Postgres treats
+        // NULL-distinct). Facade-scoped rows are left untouched and managed
+        // by the dedicated facade-specific products editor.
+        let del = await svc.deleteFacadeAgnosticAssignments(variantId: variantId)
+        guard del.ok else {
+            errorMessage = "Couldn't clear old assignments: \(del.error ?? "unknown")"
+            return
+        }
+
+        let ins = await svc.bulkInsertVariantRoomAssignments(desired)
+        guard ins.ok else {
+            errorMessage = "Save failed: \(ins.error ?? "unknown")"
+            return
         }
 
         await CatalogDataManager.shared.loadAll()
-        if failures == 0 {
-            successMessage = "Room assignments saved"
-            dismiss()
-        } else {
-            errorMessage = "Some assignments failed (\(failures))"
-        }
+        successMessage = "Room assignments saved"
+        dismiss()
     }
 }
 
