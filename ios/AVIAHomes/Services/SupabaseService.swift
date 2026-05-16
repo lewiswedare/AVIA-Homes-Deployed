@@ -3304,9 +3304,24 @@ class SupabaseService {
                     .eq("id", value: existingId)
                     .execute()
             } else {
+                // Encode the insert payload WITHOUT an `id` field so Postgres'
+                // `DEFAULT gen_random_uuid()` fires. Sending `{"id": null, …}`
+                // (which is what the default Codable does for an Optional nil)
+                // would force a NULL into the PRIMARY KEY and fail — that
+                // bug was silently dropping every brand-new room assignment.
+                let insertPayload = VariantRoomAssignmentInsert(
+                    variant_id: row.variant_id,
+                    room_id: row.room_id,
+                    range_id: row.range_id,
+                    facade_id: row.facade_id,
+                    image_url: row.image_url,
+                    cost: row.cost,
+                    inclusion: row.inclusion,
+                    sort_order: row.sort_order
+                )
                 try await client
                     .from("variant_room_assignments")
-                    .insert(row)
+                    .insert(insertPayload)
                     .execute()
             }
             return true

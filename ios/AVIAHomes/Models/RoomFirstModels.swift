@@ -58,3 +58,18 @@ nonisolated struct VariantRoomAssignmentRow: Codable, Sendable, Identifiable, Ha
         "\(variant_id)|\(room_id)|\(range_id)|\(facade_id ?? "-")"
     }
 }
+
+/// Insert-only payload for `variant_room_assignments`. Omits `id` entirely so
+/// PostgREST lets the `DEFAULT gen_random_uuid()` default fire. If we encoded
+/// `VariantRoomAssignmentRow` (which has `id: String?`), the default Codable
+/// would emit `"id": null` and Postgres would reject the NOT NULL primary key.
+nonisolated struct VariantRoomAssignmentInsert: Encodable, Sendable {
+    let variant_id: String
+    let room_id: String
+    let range_id: String
+    var facade_id: String?
+    var image_url: String?
+    var cost: Double
+    var inclusion: String
+    var sort_order: Int?
+}
