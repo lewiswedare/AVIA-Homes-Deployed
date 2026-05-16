@@ -21,9 +21,11 @@ class CatalogDataManager {
     var coloursByProduct: [String: [SpecProductColourRow]] = [:]
     /// Admin-defined product categories (Tile, Stone, Tapware…) keyed by id.
     var productCategories: [String: ProductCategoryRow] = [:]
-    /// Variant × Room × Range × Facade assignments keyed by composite key
-    /// ("variantId|roomId|rangeId|facadeId|"-"). Drives the room-first client
-    /// experience. Facade-agnostic rows use "-" as the facade segment.
+    /// Variant × Room × Range × Facade × Slot assignments keyed by composite
+    /// key (`variantId|roomId|rangeId|facadeId|slotId`). Drives the room-first
+    /// client experience. Facade-agnostic rows use `-` as the facade segment.
+    /// Multiple slots of the same (variant, room, range) coexist with
+    /// different slot ids — see `selection_slot_id` on the schema.
     var variantRoomAssignments: [String: VariantRoomAssignmentRow] = [:]
     /// All raw assignments — used when iterating facade scopes for a given
     /// (variant, room, range).
@@ -394,16 +396,77 @@ class CatalogDataManager {
         productCategories.values.sorted { $0.sort_order < $1.sort_order }
     }
 
-    /// Returns the room assignment for a specific (variant, room, range,
-    /// facade). When `facadeId` is provided, prefers a facade-specific row,
-    /// falling back to the facade-agnostic default. When `facadeId` is `nil`,
-    /// only the facade-agnostic row is returned (legacy behaviour).
+    /// Returns *an* assignment for a specific (variant, room, range, facade).
+    /// With slots, there may be multiple rows; this helper returns the first
+    /// one found (preferring facade-specific over facade-agnostic). Callers
+    /// that care about a specific slot should use `assignment(slotId:rangeId:)`
+    /// or `assignments(variantId:roomId:rangeId:facadeId:)` instead.
     func assignment(variantId: String, roomId: String, rangeId: String, facadeId: String? = nil) -> VariantRoomAssignmentRow? {
+        let matches = allVariantAssignments.filter {
+            $0.variant_id == variantId && $0.room_id == roomId && $0.range_id == rangeId
+        }
         if let fid = facadeId,
-           let specific = variantRoomAssignments["\(variantId)|\(roomId)|\(rangeId)|\(fid)"] {
+           let specific = matches.first(where: { $0.facade_id == fid }) {
             return specific
         }
-        return variantRoomAssignments["\(variantId)|\(roomId)|\(rangeId)|-"]
+        return matches.first(where: { $0.facade_id == nil })
+    }
+
+    /// All assignments matching `(variant, room, range)` with the given
+    /// facade scope. Used when iterating per-slot rows for the same variant.
+    func assignments(variantId: String, roomId: String, rangeId: String, facadeId: String? = nil) -> [VariantRoomAssignmentRow] {
+        allVariantAssignments.filter { a in
+            guard a.variant_id == variantId, a.room_id == roomId, a.range_id == rangeId else { return false }
+            if let aFid = a.facade_id { return aFid == facadeId }
+            return true
+        }
+    }
+
+    /// Returns the assignment row matching the given slot id for the given
+    /// range — each slot has exactly one row per range.
+    func assignment(slotId: String, rangeId: String) -> VariantRoomAssignmentRow? {
+        allVariantAssignments.first { $0.selection_slot_id == slotId && $0.range_id == rangeId }
+    }
+
+    /// Distinct slot ids for an item in a room, scoped to `(range, facade)`.
+    /// Used to materialise per-slot client selections when a build snapshot
+    /// is created, and to filter slots on the admin Room editor.
+    func slotIds(forSpecItem specItemId: String, roomId: String, rangeId: String, facadeId: String? = nil) -> [String] {
+        var seen = Set<String>()
+        var ordered: [String] = []
+        let matching = allVariantAssignments
+            .filter { a in
+                guard a.room_id == roomId, a.range_id == rangeId else { return false }
+                guard self.specItemId(forVariantId: a.variant_id) == specItemId else { return false }
+                if let aFid = a.facade_id { return aFid == facadeId }
+                return true
+            }
+            .sorted { ($0.sort_order ?? 0) < ($1.sort_order ?? 0) }
+        for a in matching {
+            guard let slot = a.selection_slot_id else { continue }
+            if seen.insert(slot).inserted { ordered.append(slot) }
+        }
+        return ordered
+    }
+
+    /// Distinct slot ids assigned to a room across any range / facade. Used
+    /// by the admin Room editor where ranges are presented side-by-side.
+    func slotIds(forRoom roomId: String) -> [String] {
+        var seen = Set<String>()
+        var ordered: [String] = []
+        let rows = allVariantAssignments
+            .filter { $0.room_id == roomId && $0.facade_id == nil }
+            .sorted { ($0.sort_order ?? 0) < ($1.sort_order ?? 0) }
+        for a in rows {
+            guard let slot = a.selection_slot_id else { continue }
+            if seen.insert(slot).inserted { ordered.append(slot) }
+        }
+        return ordered
+    }
+
+    /// All assignment rows (any range) that share the given slot id.
+    func rows(forSlot slotId: String) -> [VariantRoomAssignmentRow] {
+        allVariantAssignments.filter { $0.selection_slot_id == slotId }
     }
 
     /// Every variant assigned to a given room+range, in sort_order. Used by the
@@ -498,26 +561,35 @@ class CatalogDataManager {
         return false
     }
 
-    /// Per-room display title override for a spec item. Picks the title from
-    /// any assignment matching the item in `(room, range, facade)` — the
-    /// admin editor writes the same title across all 3 ranges of one
-    /// (variant, room) pair, but if values differ we prefer the row matching
-    /// the saved variant first, then any row in the same range, then any row
-    /// in any range. Returns `nil` when no override is set.
-    func displayTitle(forSpecItem specItemId: String, roomId: String, rangeId: String, facadeId: String? = nil, preferredVariantId: String? = nil) -> String? {
-        // 1. Saved variant in this exact (room, range, facade).
+    /// Per-room display title override for a spec item. When a `slotId` is
+    /// supplied the title is sourced from that specific slot first (each
+    /// slot in a room can have its own title — "Floor Tiles" vs "Wall
+    /// Tiles"). Falls back to the saved variant’s row, then any matching
+    /// row in `(room, range, facade)`. Returns `nil` when no override is set.
+    func displayTitle(forSpecItem specItemId: String, roomId: String, rangeId: String, facadeId: String? = nil, preferredVariantId: String? = nil, slotId: String? = nil) -> String? {
+        // 1. Specific slot row for this range.
+        if let slot = slotId, let a = assignment(slotId: slot, rangeId: rangeId),
+           let t = a.display_title, !t.isEmpty {
+            return t
+        }
+        // 1b. Specific slot in any range (titles are shared across the 3 ranges).
+        if let slot = slotId,
+           let t = allVariantAssignments.first(where: { $0.selection_slot_id == slot && ($0.display_title?.isEmpty == false) })?.display_title {
+            return t
+        }
+        // 2. Saved variant in this exact (room, range, facade).
         if let vid = preferredVariantId,
            let a = assignment(variantId: vid, roomId: roomId, rangeId: rangeId, facadeId: facadeId),
            let t = a.display_title, !t.isEmpty {
             return t
         }
-        // 2. Any variant of this item in this (room, range) with the right facade scope.
+        // 3. Any variant of this item in this (room, range) with the right facade scope.
         for a in allVariantAssignments where a.room_id == roomId && a.range_id == rangeId {
             if let fid = a.facade_id, fid != facadeId { continue }
             guard self.specItemId(forVariantId: a.variant_id) == specItemId else { continue }
             if let t = a.display_title, !t.isEmpty { return t }
         }
-        // 3. Any variant of this item in this room (any range, matching facade scope).
+        // 4. Any variant of this item in this room (any range, matching facade scope).
         for a in allVariantAssignments where a.room_id == roomId {
             if let fid = a.facade_id, fid != facadeId { continue }
             guard self.specItemId(forVariantId: a.variant_id) == specItemId else { continue }

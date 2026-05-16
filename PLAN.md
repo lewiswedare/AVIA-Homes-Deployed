@@ -149,13 +149,22 @@ different rooms with a different per-room display title ("Floor Tiles",
 - [x] Client `SelectionItemCard` (room detail) uses
       `CatalogDataManager.displayTitle(…)` to override the item name when
       the admin has set a room-specific title.
-- [ ] **Follow-up (not yet implemented):** support the *same variant*
-      appearing **multiple times in one room** with different titles
-      (e.g. tile SKU A used as both "Floor Tiles" and "Wall Tiles"). This
-      requires per-slot client `BuildSpecSelection`s and a `selection_slot_id`
-      grouping on `variant_room_assignments`. Today the schema enforces one
-      facade-agnostic row per (variant, room, range); the same variant in
-      *different* rooms with different titles is fully supported.
+- [x] **Follow-up: per-slot variants.** Migration
+      `20260525_variant_room_assignment_slot.sql` adds `selection_slot_id`
+      (uuid) to `variant_room_assignments` (slot-aware partial unique
+      indexes) and to `build_spec_selections` (relaxed partial unique
+      indexes so the same spec_item can have multiple selections, one per
+      slot). Each slot groups the 3 range rows of one client-facing
+      line-item; the same SKU can now be added to a room multiple times
+      with different titles ("Floor Tiles" + "Wall Tiles").
+      `AdminRoomProductsView` is rewritten around slots — every "Add
+      Product" press creates a new slot uuid, tapping an existing slot
+      edits just that slot's 3 rows. `createBuildSpecSnapshot` materialises
+      one `build_spec_selections` row per slot (slot-less legacy items
+      fall back to the single-row materialisation, scoped to the build's
+      facade). `SelectionsRoomDetailView` and `SelectionItemCard` consult
+      `selection_slot_id` so two slots of the same SKU surface as two cards
+      with their own slot title + image.
 
 ## Migration safety
 - Every new column / table uses `IF NOT EXISTS`.

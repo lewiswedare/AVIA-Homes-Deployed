@@ -1586,7 +1586,7 @@ class SupabaseService {
             // index there to prevent duplicate selections per item per build.
             try await client
                 .from("build_spec_selections")
-                .upsert(selection.toRow(), onConflict: "build_id,spec_item_id")
+                .upsert(selection.toRow(), onConflict: "id")
                 .execute()
             return true
         } catch {
@@ -1601,7 +1601,7 @@ class SupabaseService {
         do {
             try await client
                 .from("build_spec_selections")
-                .upsert(rows, onConflict: "build_id,spec_item_id")
+                .upsert(rows, onConflict: "id")
                 .execute()
             return true
         } catch {
@@ -1622,21 +1622,78 @@ class SupabaseService {
             return false
         }
         let tierKey = specTier.imageKeySuffix
+        let rangeId = specTier.rawValue
+
+        // Look up the build's facade so facade-scoped slots are materialised
+        // only when relevant. Failure here just means no facade filtering.
+        let facadeId = await fetchBuildFacadeId(buildId: buildId)
 
         var selections: [BuildSpecSelection] = []
         var sortIndex = 0
+        // Track which (spec_item_id, slot_id) pairs we've already covered so
+        // legacy fall-through doesn't double-create selections.
+        var coveredSlotItems: Set<String> = []
 
         for category in categories {
+            // 1. Per-slot selections sourced from variant_room_assignments.
+            //    One row per slot in the room — same SKU added twice with
+            //    different titles surfaces as two cards.
+            let slotsInRoom = catalog.slotIds(forRoom: category.id)
+            for slot in slotsInRoom {
+                let rows = catalog.rows(forSlot: slot)
+                guard let representative = rows.first else { continue }
+                // Respect facade scoping: skip facade-scoped slots that don't
+                // match the build's facade.
+                if let rowFacade = representative.facade_id, rowFacade != facadeId {
+                    continue
+                }
+                guard let itemId = catalog.specItemId(forVariantId: representative.variant_id),
+                      let item = catalog.specItem(for: itemId) else { continue }
+                let title = representative.display_title?.isEmpty == false
+                    ? representative.display_title!
+                    : item.name
+                let description = item.description(for: specTier)
+                let rangeRow = rows.first(where: { $0.range_id == rangeId }) ?? representative
+                let imageURL = rangeRow.image_url ?? item.customImageURL ?? catalog.specItemBaseImages[itemId]
+                let selection = BuildSpecSelection(
+                    id: UUID().uuidString,
+                    buildId: buildId,
+                    categoryId: category.id,
+                    specItemId: itemId,
+                    specTier: tierKey,
+                    selectionType: .included,
+                    clientNotes: nil,
+                    adminNotes: nil,
+                    clientConfirmed: false,
+                    adminConfirmed: false,
+                    clientConfirmedAt: nil,
+                    adminConfirmedAt: nil,
+                    lockedForClient: false,
+                    status: .draft,
+                    snapshotName: title,
+                    snapshotDescription: description,
+                    snapshotImageURL: imageURL,
+                    snapshotCategoryName: category.name,
+                    sortOrder: sortIndex,
+                    productId: nil,
+                    colourId: nil,
+                    selectionSlotId: slot
+                )
+                selections.append(selection)
+                sortIndex += 1
+                coveredSlotItems.insert("\(itemId)|\(category.id)")
+            }
+
+            // 2. Legacy fallback: items still pinned to this room via
+            //    `spec_items.category_id` that don't have any variant_room
+            //    _assignments yet. These get the historical single-selection
+            //    row with `selection_slot_id == NULL`.
             for item in category.items {
+                let key = "\(item.id)|\(category.id)"
+                if coveredSlotItems.contains(key) { continue }
+                if catalog.hasAnyRoomAssignment(forSpecItem: item.id) { continue }
                 let description = item.description(for: specTier)
                 let imageURL = item.customImageURL ?? catalog.specItemBaseImages[item.id]
-                // Standard tier items are pre-confirmed by default.
-                // Only manually upgraded items will deviate from this state.
-                // Do NOT pre-seed product/colour. Clients must explicitly
-                // choose every product + colour from the start so nothing is
-                // accidentally accepted (especially upgrades). The selection
-                // remains "included" (range-tier inclusion) but is treated as
-                // incomplete until productId + colourId are set.
                 let selection = BuildSpecSelection(
                     id: UUID().uuidString,
                     buildId: buildId,
@@ -1658,17 +1715,63 @@ class SupabaseService {
                     snapshotCategoryName: category.name,
                     sortOrder: sortIndex,
                     productId: nil,
-                    colourId: nil
+                    colourId: nil,
+                    selectionSlotId: nil
                 )
                 selections.append(selection)
                 sortIndex += 1
             }
         }
 
-        // Idempotent rebuild: upsert by (build_id, spec_item_id) so re-running
-        // never produces duplicate rows. The unique constraint enforced in the
-        // Phase-1 migration backs this contract at the DB level.
+        // Slot-aware idempotency: delete any rows for this build that aren't
+        // in the freshly built set, then upsert the new payload.
+        await deleteStaleBuildSpecSelections(buildId: buildId, keepIds: selections.map(\.id))
         return await upsertBuildSpecSelections(selections)
+    }
+
+    /// Fetches the facade id stored on the build row, when present. Used by
+    /// snapshot materialisation to scope facade-specific slots.
+    private func fetchBuildFacadeId(buildId: String) async -> String? {
+        guard isConfigured else { return nil }
+        struct FacadeRow: Decodable { let facade_id: String? }
+        do {
+            let rows: [FacadeRow] = try await client
+                .from("client_builds")
+                .select("facade_id")
+                .eq("id", value: buildId)
+                .limit(1)
+                .execute()
+                .value
+            return rows.first?.facade_id
+        } catch {
+            return nil
+        }
+    }
+
+    /// Removes any `build_spec_selections` rows for a build whose `id` isn't
+    /// in `keepIds`. Called from `createBuildSpecSnapshot` so re-snapshotting
+    /// after slot changes never leaves orphaned rows.
+    private func deleteStaleBuildSpecSelections(buildId: String, keepIds: [String]) async {
+        guard isConfigured else { return }
+        do {
+            struct IdOnly: Decodable { let id: String }
+            let existing: [IdOnly] = try await client
+                .from("build_spec_selections")
+                .select("id")
+                .eq("build_id", value: buildId)
+                .execute()
+                .value
+            let keep = Set(keepIds)
+            let stale = existing.map(\.id).filter { !keep.contains($0) }
+            guard !stale.isEmpty else { return }
+            try await client
+                .from("build_spec_selections")
+                .delete()
+                .in("id", values: stale)
+                .execute()
+        } catch {
+            print("[SupabaseService] deleteStaleBuildSpecSelections FAILED: \(error)")
+        }
     }
 
     func submitClientSpecConfirmation(buildId: String) async -> Bool {
@@ -3332,6 +3435,26 @@ class SupabaseService {
             print("[SupabaseService] upsertVariantRoomAssignment FAILED: \(message)")
             lastUpsertError = message
             return false
+        }
+    }
+
+    /// Delete every assignment row tied to a given slot id. Used by the
+    /// room-first admin editor when an admin removes a slot or replaces all
+    /// of its 3 range rows on save.
+    func deleteVariantRoomAssignmentsBySlot(slotId: String) async -> (ok: Bool, error: String?) {
+        guard isConfigured else { return (false, "Supabase not configured") }
+        do {
+            try await client
+                .from("variant_room_assignments")
+                .delete()
+                .eq("selection_slot_id", value: slotId)
+                .execute()
+            return (true, nil)
+        } catch {
+            let message = String(describing: error)
+            print("[SupabaseService] deleteVariantRoomAssignmentsBySlot FAILED: \(message)")
+            lastUpsertError = message
+            return (false, message)
         }
     }
 

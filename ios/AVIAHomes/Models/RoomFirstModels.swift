@@ -53,6 +53,13 @@ nonisolated struct VariantRoomAssignmentRow: Codable, Sendable, Identifiable, Ha
     /// ranges of a single (variant, room) pair — the admin editor enforces
     /// that and the client picks any range's value with a fallback.
     var display_title: String?
+    /// Stable uuid that ties together the 3 range rows of one logical
+    /// client-facing line-item. Two slots in the same room with the same
+    /// variant share a variant but differ on slot id, allowing the admin to
+    /// add the same SKU to a room multiple times ("Floor Tiles" + "Wall
+    /// Tiles"). Backfilled by the migration; new rows generate one slot per
+    /// (variant, room, facade) when omitted on insert.
+    var selection_slot_id: String?
 
     var inclusionValue: VariantInclusion {
         VariantInclusion(rawValue: inclusion) ?? .included
@@ -60,9 +67,10 @@ nonisolated struct VariantRoomAssignmentRow: Codable, Sendable, Identifiable, Ha
 
     /// Stable composite key used to index assignments client-side. Includes
     /// the facade scope so facade-specific rows don't collide with the
-    /// facade-agnostic default.
+    /// facade-agnostic default, and the slot id so multiple slots of the
+    /// same (variant, room, range) coexist.
     var compositeKey: String {
-        "\(variant_id)|\(room_id)|\(range_id)|\(facade_id ?? "-")"
+        "\(variant_id)|\(room_id)|\(range_id)|\(facade_id ?? "-")|\(selection_slot_id ?? "-")"
     }
 }
 
@@ -80,4 +88,8 @@ nonisolated struct VariantRoomAssignmentInsert: Encodable, Sendable {
     var inclusion: String
     var sort_order: Int?
     var display_title: String?
+    /// Slot id grouping the 3 range rows of one slot. When omitted, Postgres'
+    /// `DEFAULT gen_random_uuid()` fires; callers usually pre-compute one
+    /// uuid per slot so all 3 ranges share the same id.
+    var selection_slot_id: String?
 }

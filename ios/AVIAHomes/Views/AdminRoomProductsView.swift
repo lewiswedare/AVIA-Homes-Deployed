@@ -1,13 +1,14 @@
 import SwiftUI
 
-// MARK: - Room Products
+// MARK: - Room Products (slot-based)
 //
 // Room-first editor: from a room, search products + variants and add them to
-// the room. Each assignment supports a per-room "Selection title" override
-// (e.g. one tile variant can appear as "Floor Tiles" in the Bathroom and
-// "Splashback" in the Kitchen) plus the existing per-range image + cost +
-// inclusion. Only facade-agnostic rows are managed here; facade-scoped
-// assignments live in the dedicated facade editor.
+// the room. Each assignment is one **slot** — a uuid grouping the 3 range
+// rows of one logical client-facing line-item. The same variant can be added
+// to a room multiple times as separate slots (e.g. tile SKU A used as both
+// "Floor Tiles" AND "Wall Tiles"), each with its own selection title, image
+// and per-range cost / inclusion. Only facade-agnostic slots are managed
+// here; facade-scoped assignments live in the dedicated facade editor.
 
 struct AdminRoomProductsView: View {
     let room: SpecCategoryRow
@@ -18,7 +19,7 @@ struct AdminRoomProductsView: View {
     @State private var successMessage: String?
     @State private var searchText: String = ""
     @State private var addingPickerOpen = false
-    @State private var editingVariantId: String?
+    @State private var editingSlot: IdentifiedSlot?
 
     private var catalog: CatalogDataManager { CatalogDataManager.shared }
 
@@ -30,45 +31,74 @@ struct AdminRoomProductsView: View {
         "portobello": AVIATheme.heritageBlue
     ]
 
-    // MARK: Grouped state
+    // MARK: Slot grouping
 
-    /// Variants currently assigned to this room (facade-agnostic), grouped by
-    /// their spec_item id.
-    private var groupedAssignedVariants: [(itemId: String, itemName: String, variants: [SpecProductColourRow])] {
-        let mine = catalog.allVariantAssignments.filter { $0.room_id == room.id && $0.facade_id == nil }
-        let variantIds = Set(mine.map(\.variant_id))
-        var byItem: [String: [SpecProductColourRow]] = [:]
-        for v in catalog.coloursByProduct.values.flatMap({ $0 }) where variantIds.contains(v.id) {
-            guard let itemId = catalog.specItemId(forVariantId: v.id) else { continue }
-            byItem[itemId, default: []].append(v)
-        }
-        let itemMap: [String: SpecItemFlatRow] = Dictionary(uniqueKeysWithValues: allItems.map { ($0.id, $0) })
-        var result: [(itemId: String, itemName: String, variants: [SpecProductColourRow])] = []
-        for (itemId, vs) in byItem {
-            let item = itemMap[itemId]
-            let name = item?.name ?? "Unnamed item"
-            // Filter by search across item name, variant name & SKU.
-            let q = searchText.trimmingCharacters(in: .whitespaces)
-            if !q.isEmpty {
-                let itemHits = name.localizedStandardContains(q)
-                let variantHits = vs.contains { v in
-                    v.name.localizedStandardContains(q) || (v.sku ?? "").localizedStandardContains(q)
-                }
-                let titleHits: Bool = {
-                    let title = catalog.displayTitle(forSpecItem: itemId, roomId: room.id, rangeId: rangeIds[0]) ?? ""
-                    return title.localizedStandardContains(q)
-                }()
-                guard itemHits || variantHits || titleHits else { continue }
-            }
-            let sortedVariants = vs.sorted { ($0.sort_order ?? 0) < ($1.sort_order ?? 0) }
-            result.append((itemId: itemId, itemName: name, variants: sortedVariants))
-        }
-        return result.sorted { $0.itemName.localizedStandardCompare($1.itemName) == .orderedAscending }
+    /// One row per slot currently assigned (facade-agnostic) to this room.
+    /// Grouped by the parent spec item so visually related slots stay
+    /// together.
+    private struct SlotEntry: Identifiable {
+        let id: String          // slot id
+        let variant: SpecProductColourRow
+        let itemId: String
+        let itemName: String
+        let displayTitle: String
+        let sortOrder: Int
     }
 
-    private var totalAssignedVariants: Int {
-        let mine = catalog.allVariantAssignments.filter { $0.room_id == room.id && $0.facade_id == nil }
-        return Set(mine.map(\.variant_id)).count
+    private var groupedSlots: [(itemId: String, itemName: String, slots: [SlotEntry])] {
+        let itemMap: [String: SpecItemFlatRow] = Dictionary(uniqueKeysWithValues: allItems.map { ($0.id, $0) })
+        let variants: [String: SpecProductColourRow] = Dictionary(uniqueKeysWithValues: catalog.coloursByProduct.values.flatMap { $0 }.map { ($0.id, $0) })
+
+        // Build one entry per slot.
+        var bySlot: [String: [VariantRoomAssignmentRow]] = [:]
+        for a in catalog.allVariantAssignments where a.room_id == room.id && a.facade_id == nil {
+            guard let slot = a.selection_slot_id else { continue }
+            bySlot[slot, default: []].append(a)
+        }
+
+        var entries: [SlotEntry] = []
+        for (slotId, rows) in bySlot {
+            guard let rep = rows.sorted(by: { ($0.sort_order ?? 0) < ($1.sort_order ?? 0) }).first else { continue }
+            guard let variant = variants[rep.variant_id] else { continue }
+            guard let itemId = catalog.specItemId(forVariantId: variant.id) else { continue }
+            let itemName = itemMap[itemId]?.name ?? "Unnamed item"
+            let title = rows.compactMap { $0.display_title?.trimmingCharacters(in: .whitespaces) }.first(where: { !$0.isEmpty }) ?? ""
+            entries.append(SlotEntry(
+                id: slotId,
+                variant: variant,
+                itemId: itemId,
+                itemName: itemName,
+                displayTitle: title,
+                sortOrder: rep.sort_order ?? 0
+            ))
+        }
+
+        // Filter by search.
+        let q = searchText.trimmingCharacters(in: .whitespaces)
+        let filtered: [SlotEntry] = q.isEmpty ? entries : entries.filter { e in
+            e.itemName.localizedStandardContains(q)
+                || e.variant.name.localizedStandardContains(q)
+                || (e.variant.sku ?? "").localizedStandardContains(q)
+                || e.displayTitle.localizedStandardContains(q)
+        }
+
+        // Group by item id.
+        var byItem: [String: [SlotEntry]] = [:]
+        for e in filtered { byItem[e.itemId, default: []].append(e) }
+        var groups: [(itemId: String, itemName: String, slots: [SlotEntry])] = []
+        for (itemId, slots) in byItem {
+            let sorted = slots.sorted { lhs, rhs in
+                if lhs.sortOrder != rhs.sortOrder { return lhs.sortOrder < rhs.sortOrder }
+                return lhs.displayTitle.localizedStandardCompare(rhs.displayTitle) == .orderedAscending
+            }
+            let name = sorted.first?.itemName ?? "Unnamed item"
+            groups.append((itemId: itemId, itemName: name, slots: sorted))
+        }
+        return groups.sorted { $0.itemName.localizedStandardCompare($1.itemName) == .orderedAscending }
+    }
+
+    private var totalSlots: Int {
+        groupedSlots.reduce(0) { $0 + $1.slots.count }
     }
 
     // MARK: Body
@@ -79,9 +109,9 @@ struct AdminRoomProductsView: View {
                 heroHeader
                 statsBar
 
-                if isLoading && groupedAssignedVariants.isEmpty {
+                if isLoading && groupedSlots.isEmpty {
                     ProgressView().tint(AVIATheme.timelessBrown).padding(.vertical, 60)
-                } else if groupedAssignedVariants.isEmpty {
+                } else if groupedSlots.isEmpty {
                     AdminEmptyState(
                         icon: "shippingbox",
                         title: "No products in this room yet",
@@ -90,7 +120,7 @@ struct AdminRoomProductsView: View {
                     addButton
                         .padding(.top, 8)
                 } else {
-                    ForEach(groupedAssignedVariants, id: \.itemId) { group in
+                    ForEach(groupedSlots, id: \.itemId) { group in
                         itemSection(group)
                     }
                     addButton
@@ -120,21 +150,22 @@ struct AdminRoomProductsView: View {
                 catalog: catalog
             ) { variantId in
                 addingPickerOpen = false
-                // Small delay so the picker dismisses before the editor opens.
+                // New slot id for each "add" — that's what lets the same
+                // variant be added to the same room multiple times.
+                let newSlot = UUID().uuidString
                 DispatchQueue.main.asyncAfter(deadline: .now() + 0.25) {
-                    editingVariantId = variantId
+                    editingSlot = IdentifiedSlot(id: newSlot, variantId: variantId, isNew: true)
                 }
             }
         }
-        .sheet(item: Binding(
-            get: { editingVariantId.map { IdentifiedVariant(id: $0) } },
-            set: { editingVariantId = $0?.id }
-        )) { wrapped in
-            let variant = catalog.coloursByProduct.values.flatMap { $0 }.first(where: { $0.id == wrapped.id })
-            RoomVariantAssignmentSheet(
+        .sheet(item: $editingSlot) { wrapped in
+            let variant = catalog.coloursByProduct.values.flatMap { $0 }.first(where: { $0.id == wrapped.variantId })
+            RoomSlotAssignmentSheet(
                 room: room,
-                variantId: wrapped.id,
+                slotId: wrapped.id,
+                variantId: wrapped.variantId,
                 variantName: variant?.name ?? "Variant",
+                isNew: wrapped.isNew,
                 onSaved: {
                     Task { await reload() }
                 }
@@ -157,7 +188,7 @@ struct AdminRoomProductsView: View {
                     Text(room.name)
                         .font(.neueSubheadlineMedium)
                         .foregroundStyle(AVIATheme.textPrimary)
-                    Text("Search the catalogue and add products + variants. Set a per-room title, image and price per range.")
+                    Text("Add products as titled slots — e.g. the same tile SKU as both \"Floor Tiles\" and \"Wall Tiles\". Each slot has its own image + price per range.")
                         .font(.neueCaption2)
                         .foregroundStyle(AVIATheme.textTertiary)
                         .lineLimit(3)
@@ -170,8 +201,8 @@ struct AdminRoomProductsView: View {
 
     private var statsBar: some View {
         HStack(spacing: 12) {
-            AdminMiniStat(value: "\(groupedAssignedVariants.count)", label: "Products", color: AVIATheme.timelessBrown)
-            AdminMiniStat(value: "\(totalAssignedVariants)", label: "Variants", color: AVIATheme.warning)
+            AdminMiniStat(value: "\(groupedSlots.count)", label: "Products", color: AVIATheme.timelessBrown)
+            AdminMiniStat(value: "\(totalSlots)", label: "Slots", color: AVIATheme.warning)
             AdminMiniStat(value: "\(allItems.count)", label: "In Catalogue", color: AVIATheme.heritageBlue)
         }
     }
@@ -194,35 +225,19 @@ struct AdminRoomProductsView: View {
     // MARK: Item section
 
     @ViewBuilder
-    private func itemSection(_ group: (itemId: String, itemName: String, variants: [SpecProductColourRow])) -> some View {
-        let displayTitle = catalog.displayTitle(forSpecItem: group.itemId, roomId: room.id, rangeId: rangeIds[0]) ?? ""
-
+    private func itemSection(_ group: (itemId: String, itemName: String, slots: [SlotEntry])) -> some View {
         BentoCard(cornerRadius: 12) {
             VStack(alignment: .leading, spacing: 10) {
                 HStack(alignment: .top, spacing: 10) {
                     VStack(alignment: .leading, spacing: 3) {
-                        if !displayTitle.isEmpty {
-                            Text(displayTitle)
-                                .font(.neueCaptionMedium)
-                                .foregroundStyle(AVIATheme.textPrimary)
-                            Text(group.itemName)
-                                .font(.neueCaption2)
-                                .foregroundStyle(AVIATheme.textTertiary)
-                        } else {
-                            Text(group.itemName)
-                                .font(.neueCaptionMedium)
-                                .foregroundStyle(AVIATheme.textPrimary)
-                            Text("No room title — using product name")
-                                .font(.neueCaption2)
-                                .foregroundStyle(AVIATheme.textTertiary)
-                        }
+                        Text(group.itemName)
+                            .font(.neueCaptionMedium)
+                            .foregroundStyle(AVIATheme.textPrimary)
+                        Text("\(group.slots.count) \(group.slots.count == 1 ? "slot" : "slots") in this room")
+                            .font(.neueCaption2)
+                            .foregroundStyle(AVIATheme.textTertiary)
                     }
                     Spacer()
-                    Text("\(group.variants.count) \(group.variants.count == 1 ? "variant" : "variants")")
-                        .font(.neueCaption2Medium)
-                        .foregroundStyle(AVIATheme.textSecondary)
-                        .padding(.horizontal, 8).padding(.vertical, 3)
-                        .background(AVIATheme.surfaceElevated, in: Capsule())
                 }
                 .padding(.horizontal, 14)
                 .padding(.top, 12)
@@ -230,8 +245,8 @@ struct AdminRoomProductsView: View {
                 Divider().background(AVIATheme.surfaceBorder)
 
                 VStack(spacing: 6) {
-                    ForEach(group.variants, id: \.id) { variant in
-                        variantRow(variant)
+                    ForEach(group.slots) { entry in
+                        slotRow(entry)
                     }
                 }
                 .padding(.horizontal, 10)
@@ -240,22 +255,26 @@ struct AdminRoomProductsView: View {
         }
     }
 
-    private func variantRow(_ variant: SpecProductColourRow) -> some View {
-        let assignments = catalog.allVariantAssignments.filter { $0.variant_id == variant.id && $0.room_id == room.id && $0.facade_id == nil }
+    private func slotRow(_ entry: SlotEntry) -> some View {
+        let assignments = catalog.rows(forSlot: entry.id).filter { $0.facade_id == nil }
+        let titleText = entry.displayTitle.isEmpty ? entry.variant.name : entry.displayTitle
+        let subtitle: String = entry.displayTitle.isEmpty
+            ? (entry.variant.sku.map { "SKU \($0)" } ?? "No selection title")
+            : entry.variant.name
         return Button {
-            editingVariantId = variant.id
+            editingSlot = IdentifiedSlot(id: entry.id, variantId: entry.variant.id, isNew: false)
         } label: {
             HStack(spacing: 10) {
-                variantSwatch(variant)
+                variantSwatch(entry.variant)
                 VStack(alignment: .leading, spacing: 2) {
-                    Text(variant.name.isEmpty ? "Unnamed variant" : variant.name)
+                    Text(titleText)
                         .font(.neueCaption2Medium)
                         .foregroundStyle(AVIATheme.textPrimary)
-                    if let sku = variant.sku, !sku.isEmpty {
-                        Text("SKU \(sku)")
-                            .font(.neueCaption2)
-                            .foregroundStyle(AVIATheme.textTertiary)
-                    }
+                        .lineLimit(1)
+                    Text(subtitle)
+                        .font(.neueCaption2)
+                        .foregroundStyle(AVIATheme.textTertiary)
+                        .lineLimit(1)
                 }
                 Spacer()
                 HStack(spacing: 5) {
@@ -275,9 +294,9 @@ struct AdminRoomProductsView: View {
         .buttonStyle(.plain)
         .contextMenu {
             Button(role: .destructive) {
-                Task { await removeVariantFromRoom(variant.id) }
+                Task { await removeSlot(entry.id) }
             } label: {
-                Label("Remove from \(room.name)", systemImage: "trash")
+                Label("Remove slot from \(room.name)", systemImage: "trash")
             }
         }
     }
@@ -372,32 +391,26 @@ struct AdminRoomProductsView: View {
         await catalog.loadAll()
     }
 
-    private func removeVariantFromRoom(_ variantId: String) async {
-        let svc = SupabaseService.shared
-        var allOk = true
-        for rangeId in rangeIds {
-            let ok = await svc.deleteVariantRoomAssignment(
-                variantId: variantId,
-                roomId: room.id,
-                rangeId: rangeId,
-                facadeId: nil
-            )
-            if !ok { allOk = false }
-        }
-        if allOk {
-            successMessage = "Removed from \(room.name)"
+    private func removeSlot(_ slotId: String) async {
+        let result = await SupabaseService.shared.deleteVariantRoomAssignmentsBySlot(slotId: slotId)
+        if result.ok {
+            successMessage = "Removed slot from \(room.name)"
             await reload()
         } else {
-            errorMessage = "Couldn't remove all assignments"
+            errorMessage = "Couldn't remove slot"
         }
     }
 }
 
-// MARK: - Add Picker Sheet
+// MARK: - Identified types
 
-private struct IdentifiedVariant: Identifiable, Hashable {
+private struct IdentifiedSlot: Identifiable, Hashable {
     let id: String
+    let variantId: String
+    let isNew: Bool
 }
+
+// MARK: - Add Picker Sheet
 
 private struct RoomProductPickerSheet: View {
     @Environment(\.dismiss) private var dismiss
@@ -599,13 +612,15 @@ private struct RoomProductPickerSheet: View {
     }
 }
 
-// MARK: - Variant Assignment Editor (scoped to ONE room)
+// MARK: - Per-slot Assignment Editor
 
-private struct RoomVariantAssignmentSheet: View {
+private struct RoomSlotAssignmentSheet: View {
     @Environment(\.dismiss) private var dismiss
     let room: SpecCategoryRow
+    let slotId: String
     let variantId: String
     let variantName: String
+    let isNew: Bool
     let onSaved: () -> Void
 
     @State private var displayTitle: String = ""
@@ -641,7 +656,7 @@ private struct RoomVariantAssignmentSheet: View {
                 .padding(.bottom, 40)
             }
             .background(AVIATheme.background)
-            .navigationTitle("Assign to \(room.name)")
+            .navigationTitle(isNew ? "New slot in \(room.name)" : "Edit slot in \(room.name)")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
@@ -677,7 +692,7 @@ private struct RoomVariantAssignmentSheet: View {
                     Text(variantName.isEmpty ? "Variant" : variantName)
                         .font(.neueCaptionMedium)
                         .foregroundStyle(AVIATheme.textPrimary)
-                    Text("Per-range image, cost & inclusion for \(room.name).")
+                    Text(isNew ? "Adding a new slot. Save to publish to \(room.name)." : "Per-range image, cost & inclusion for this slot.")
                         .font(.neueCaption2)
                         .foregroundStyle(AVIATheme.textTertiary)
                 }
@@ -698,7 +713,7 @@ private struct RoomVariantAssignmentSheet: View {
                     .padding(10)
                     .background(AVIATheme.surfaceElevated)
                     .clipShape(.rect(cornerRadius: 6))
-                Text("Overrides the product's name when this variant is shown to clients in this room. Leave blank to use the product name.")
+                Text("Shown to clients in place of the product name. Use distinct titles to add the same variant multiple times (e.g. \"Floor Tiles\" + \"Wall Tiles\").")
                     .font(.neueCaption2)
                     .foregroundStyle(AVIATheme.textTertiary)
             }
@@ -754,7 +769,7 @@ private struct RoomVariantAssignmentSheet: View {
                 }
 
                 VStack(alignment: .leading, spacing: 4) {
-                    Text("Image for \(rangeNames[rangeId] ?? rangeId) in this room")
+                    Text("Image for \(rangeNames[rangeId] ?? rangeId) in this slot")
                         .font(.neueCaption2)
                         .foregroundStyle(AVIATheme.textTertiary)
                     AdminCompactImagePicker(
@@ -767,7 +782,7 @@ private struct RoomVariantAssignmentSheet: View {
                             }
                         ),
                         folder: "variant-room-assignments/\(rangeId)",
-                        itemId: "\(variantId)_\(room.id)_\(rangeId)"
+                        itemId: "\(variantId)_\(room.id)_\(rangeId)_\(slotId)"
                     )
                 }
             }
@@ -778,7 +793,7 @@ private struct RoomVariantAssignmentSheet: View {
     private func load() {
         let catalog = CatalogDataManager.shared
         let mine = catalog.allVariantAssignments.filter {
-            $0.variant_id == variantId && $0.room_id == room.id && $0.facade_id == nil
+            $0.selection_slot_id == slotId && $0.facade_id == nil
         }
         for a in mine {
             if let t = a.display_title, !t.isEmpty, displayTitle.isEmpty {
@@ -800,18 +815,10 @@ private struct RoomVariantAssignmentSheet: View {
         let title = displayTitle.trimmingCharacters(in: .whitespaces)
         let titleOpt: String? = title.isEmpty ? nil : title
 
-        // Delete any facade-agnostic rows for this (variant, room) so we can
-        // bulk re-insert with the new values. Mirrors AdminVariantRoomAssignmentsView's
-        // replace-on-save strategy — far simpler than per-row upserts against
-        // the partial unique indexes.
-        for rangeId in rangeIds {
-            _ = await svc.deleteVariantRoomAssignment(
-                variantId: variantId,
-                roomId: room.id,
-                rangeId: rangeId,
-                facadeId: nil
-            )
-        }
+        // Delete this slot's existing rows so we can re-insert with the
+        // current values. Scoped tightly by slot id so other slots of the
+        // same variant in the same room are untouched.
+        _ = await svc.deleteVariantRoomAssignmentsBySlot(slotId: slotId)
 
         var inserts: [VariantRoomAssignmentInsert] = []
         for rangeId in rangeIds {
@@ -830,7 +837,8 @@ private struct RoomVariantAssignmentSheet: View {
                     cost: cost,
                     inclusion: cell.inclusion.rawValue,
                     sort_order: 0,
-                    display_title: titleOpt
+                    display_title: titleOpt,
+                    selection_slot_id: slotId
                 )
             )
         }

@@ -24,14 +24,23 @@ struct SelectionsRoomDetailView: View {
     }
 
     /// Items shown in this room are driven by `variant_room_assignments`:
-    /// any selection whose spec item has a variant assigned to this room
-    /// (for the current range + facade) appears here. Legacy items with no
-    /// assignments at all fall back to matching by snapshot category so they
-    /// don't silently disappear.
+    /// any selection whose slot lives in this room (or, for legacy slot-less
+    /// selections, whose spec item has a variant assigned to this room)
+    /// appears here. Legacy items with no assignments at all fall back to
+    /// matching by snapshot category so they don't silently disappear.
     private var items: [BuildSpecSelection] {
         let active = viewModel.selections.filter { $0.selectionType != .removed }
         let facadeId = viewModel.selectedFacadeId
         return active.filter { sel in
+            // 1. Slot-backed selections: trust the slot's room directly. Two
+            //    slots of the same spec item show up as two separate cards.
+            if let slotId = sel.selectionSlotId,
+               let assignment = catalog.assignment(slotId: slotId, rangeId: rangeId) {
+                guard assignment.room_id == room.categoryId else { return false }
+                if let aFid = assignment.facade_id, aFid != facadeId { return false }
+                return true
+            }
+            // 2. Legacy slot-less rows fall back to spec_item ↔ room mapping.
             if let rid = room.categoryId {
                 let assignedRooms = catalog.roomIds(forSpecItem: sel.specItemId, rangeId: rangeId, facadeId: facadeId)
                 if assignedRooms.contains(rid) { return true }
@@ -48,13 +57,17 @@ struct SelectionsRoomDetailView: View {
     private var rangeId: String { viewModel.specTier.lowercased() }
 
     /// Classify an item by whether — for this room — its variants are
-    /// included or only available as an upgrade. If the client has saved a
-    /// variant we trust that variant's assignment; otherwise we look at what
-    /// the item offers in this room overall.
+    /// included or only available as an upgrade. Slot-backed selections
+    /// consult their specific slot first; otherwise we look at what the
+    /// item offers in this room overall.
     private func isItemIncluded(_ sel: BuildSpecSelection) -> Bool {
         guard let roomId = room.categoryId else { return true }
         let cat = CatalogDataManager.shared
         let facadeId = viewModel.selectedFacadeId
+        if let slot = sel.selectionSlotId,
+           let a = cat.assignment(slotId: slot, rangeId: rangeId) {
+            return a.inclusionValue == .included
+        }
         if let cid = sel.colourId,
            let a = cat.assignment(variantId: cid, roomId: roomId, rangeId: rangeId, facadeId: facadeId) {
             return a.inclusionValue == .included
@@ -402,7 +415,8 @@ private struct SelectionItemCard: View {
 
     /// Per-room display title override for the linked spec item. Returns nil
     /// when the admin hasn't set one for this (room, range, facade), so the
-    /// card falls back to the underlying item name.
+    /// card falls back to the underlying item name. When the selection is
+    /// slot-backed, the slot's own title wins over any item-level fallback.
     private var roomTitleOverride: String? {
         guard let roomId else { return nil }
         return catalog.displayTitle(
@@ -410,12 +424,19 @@ private struct SelectionItemCard: View {
             roomId: roomId,
             rangeId: selection.specTier.lowercased(),
             facadeId: viewModel.selectedFacadeId,
-            preferredVariantId: selection.colourId
+            preferredVariantId: selection.colourId,
+            slotId: selection.selectionSlotId
         )
     }
 
     private var currentImageURL: String? {
-        // Prefer a room-specific image for the chosen variant when available.
+        // Prefer the slot's image when this selection is slot-backed.
+        if let slot = selection.selectionSlotId,
+           let a = catalog.assignment(slotId: slot, rangeId: selection.specTier.lowercased()),
+           let u = a.image_url, !u.isEmpty {
+            return u
+        }
+        // Then a room-specific image for the chosen variant.
         if let roomId, let cid = selection.colourId,
            let a = catalog.assignment(variantId: cid, roomId: roomId, rangeId: selection.specTier.lowercased(), facadeId: viewModel.selectedFacadeId),
            let u = a.image_url, !u.isEmpty {
