@@ -498,6 +498,34 @@ class CatalogDataManager {
         return false
     }
 
+    /// Per-room display title override for a spec item. Picks the title from
+    /// any assignment matching the item in `(room, range, facade)` — the
+    /// admin editor writes the same title across all 3 ranges of one
+    /// (variant, room) pair, but if values differ we prefer the row matching
+    /// the saved variant first, then any row in the same range, then any row
+    /// in any range. Returns `nil` when no override is set.
+    func displayTitle(forSpecItem specItemId: String, roomId: String, rangeId: String, facadeId: String? = nil, preferredVariantId: String? = nil) -> String? {
+        // 1. Saved variant in this exact (room, range, facade).
+        if let vid = preferredVariantId,
+           let a = assignment(variantId: vid, roomId: roomId, rangeId: rangeId, facadeId: facadeId),
+           let t = a.display_title, !t.isEmpty {
+            return t
+        }
+        // 2. Any variant of this item in this (room, range) with the right facade scope.
+        for a in allVariantAssignments where a.room_id == roomId && a.range_id == rangeId {
+            if let fid = a.facade_id, fid != facadeId { continue }
+            guard self.specItemId(forVariantId: a.variant_id) == specItemId else { continue }
+            if let t = a.display_title, !t.isEmpty { return t }
+        }
+        // 3. Any variant of this item in this room (any range, matching facade scope).
+        for a in allVariantAssignments where a.room_id == roomId {
+            if let fid = a.facade_id, fid != facadeId { continue }
+            guard self.specItemId(forVariantId: a.variant_id) == specItemId else { continue }
+            if let t = a.display_title, !t.isEmpty { return t }
+        }
+        return nil
+    }
+
     /// Returns the parent spec item id for a variant (via spec_products).
     func specItemId(forVariantId variantId: String) -> String? {
         guard let colour = coloursByProduct.values.flatMap({ $0 }).first(where: { $0.id == variantId }) else {

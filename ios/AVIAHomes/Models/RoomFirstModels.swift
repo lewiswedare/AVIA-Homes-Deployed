@@ -46,6 +46,13 @@ nonisolated struct VariantRoomAssignmentRow: Codable, Sendable, Identifiable, Ha
     var cost: Double
     var inclusion: String       // "included" | "upgrade"
     var sort_order: Int?
+    /// Optional per-room title override. When set, the client surfaces this
+    /// instead of the underlying `spec_items.name` (e.g. one tile variant
+    /// can appear as "Floor Tiles" in the Bathroom and "Splashback" in the
+    /// Kitchen). Conventionally the same title is repeated across the 3
+    /// ranges of a single (variant, room) pair — the admin editor enforces
+    /// that and the client picks any range's value with a fallback.
+    var display_title: String?
 
     var inclusionValue: VariantInclusion {
         VariantInclusion(rawValue: inclusion) ?? .included
@@ -72,4 +79,5 @@ nonisolated struct VariantRoomAssignmentInsert: Encodable, Sendable {
     var cost: Double
     var inclusion: String
     var sort_order: Int?
+    var display_title: String?
 }

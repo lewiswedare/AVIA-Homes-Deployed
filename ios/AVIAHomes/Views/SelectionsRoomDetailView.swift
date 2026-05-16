@@ -400,6 +400,20 @@ private struct SelectionItemCard: View {
 
     private var hasImage: Bool { currentImageURL != nil }
 
+    /// Per-room display title override for the linked spec item. Returns nil
+    /// when the admin hasn't set one for this (room, range, facade), so the
+    /// card falls back to the underlying item name.
+    private var roomTitleOverride: String? {
+        guard let roomId else { return nil }
+        return catalog.displayTitle(
+            forSpecItem: selection.specItemId,
+            roomId: roomId,
+            rangeId: selection.specTier.lowercased(),
+            facadeId: viewModel.selectedFacadeId,
+            preferredVariantId: selection.colourId
+        )
+    }
+
     private var currentImageURL: String? {
         // Prefer a room-specific image for the chosen variant when available.
         if let roomId, let cid = selection.colourId,
@@ -440,7 +454,7 @@ private struct SelectionItemCard: View {
             }
 
             VStack(alignment: .leading, spacing: 4) {
-                Text(linkedSpecItem?.name ?? selection.snapshotName)
+                Text(roomTitleOverride ?? linkedSpecItem?.name ?? selection.snapshotName)
                     .font(.neueCorpMedium(15))
                     .foregroundStyle(AVIATheme.textPrimary)
                     .multilineTextAlignment(.leading)

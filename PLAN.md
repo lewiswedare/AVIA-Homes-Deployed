@@ -122,6 +122,41 @@ change depending on which Facade has been allocated to their build.
       items whose variants change per facade (render colour, front door,
       garage door trim, etc.).
 
+### Phase 6 — Room-first admin (add products from the room)
+
+Flip the admin workflow so products + variants are added to a room *from the
+room* (not by drilling into a variant first). Same variant can appear in
+different rooms with a different per-room display title ("Floor Tiles",
+"Wall Tiles", "Splashback").
+
+- [x] Migration `20260524_variant_room_assignment_display_title.sql`: add
+      nullable `display_title` column to `variant_room_assignments`.
+- [x] Swift model: `VariantRoomAssignmentRow.display_title` (+ Insert payload).
+- [x] `CatalogDataManager.displayTitle(forSpecItem:roomId:rangeId:facadeId:preferredVariantId:)`
+      helper: prefers the saved variant's row, falls back to any other
+      variant of the item in that (room, range, facade) scope.
+- [x] New `AdminRoomProductsView`: reached by tapping a room in the Rooms
+      editor. Lists every product (grouped by spec_item) currently assigned
+      to the room, with per-variant range badges. Top-right `+` (or empty-
+      state CTA) opens a product picker that searches the catalogue by
+      product name, supplier, SKU and variant name. Picking a variant opens
+      a per-room editor sheet with: selection title override, per-range
+      inclusion + cost + image. Save replaces facade-agnostic rows for that
+      (variant, room) pair.
+- [x] `AdminVariantRoomAssignmentsView` (variant-first editor) gains a
+      per-room "Selection title in this room" field, written to all 3
+      ranges of that (variant, room) pair on save.
+- [x] Client `SelectionItemCard` (room detail) uses
+      `CatalogDataManager.displayTitle(…)` to override the item name when
+      the admin has set a room-specific title.
+- [ ] **Follow-up (not yet implemented):** support the *same variant*
+      appearing **multiple times in one room** with different titles
+      (e.g. tile SKU A used as both "Floor Tiles" and "Wall Tiles"). This
+      requires per-slot client `BuildSpecSelection`s and a `selection_slot_id`
+      grouping on `variant_room_assignments`. Today the schema enforces one
+      facade-agnostic row per (variant, room, range); the same variant in
+      *different* rooms with different titles is fully supported.
+
 ## Migration safety
 - Every new column / table uses `IF NOT EXISTS`.
 - Existing read paths keep working until Phase 3 cutover.

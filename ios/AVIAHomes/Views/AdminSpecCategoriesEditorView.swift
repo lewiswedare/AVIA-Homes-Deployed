@@ -128,7 +128,9 @@ struct AdminSpecCategoriesEditorView: View {
     }
 
     private func categoryRow(_ cat: SpecCategoryRow) -> some View {
-        Button { editingCategory = cat } label: {
+        NavigationLink {
+            AdminRoomProductsView(room: cat)
+        } label: {
             HStack(spacing: 12) {
                 Image(systemName: cat.icon)
                     .font(.neueCorp(14))
@@ -173,9 +175,10 @@ struct AdminSpecCategoriesEditorView: View {
             .padding(.horizontal, 14)
             .padding(.vertical, 12)
         }
+        .buttonStyle(.plain)
         .contextMenu {
             Button { editingCategory = cat } label: {
-                Label("Edit", systemImage: "pencil")
+                Label("Edit room details", systemImage: "pencil")
             }
             Button(role: .destructive) { categoryToDelete = cat } label: {
                 Label("Delete", systemImage: "trash")

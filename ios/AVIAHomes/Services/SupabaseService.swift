@@ -3296,7 +3296,8 @@ class SupabaseService {
                     image_url: row.image_url,
                     cost: row.cost,
                     inclusion: row.inclusion,
-                    sort_order: row.sort_order
+                    sort_order: row.sort_order,
+                    display_title: row.display_title
                 )
                 try await client
                     .from("variant_room_assignments")
@@ -3317,7 +3318,8 @@ class SupabaseService {
                     image_url: row.image_url,
                     cost: row.cost,
                     inclusion: row.inclusion,
-                    sort_order: row.sort_order
+                    sort_order: row.sort_order,
+                    display_title: row.display_title
                 )
                 try await client
                     .from("variant_room_assignments")

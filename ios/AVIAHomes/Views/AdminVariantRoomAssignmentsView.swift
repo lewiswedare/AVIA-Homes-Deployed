@@ -125,6 +125,8 @@ struct AdminVariantRoomAssignmentsView: View {
                 .padding(.top, 12)
 
                 if isOn {
+                    displayTitleField(roomId: room.id)
+                        .padding(.horizontal, 14)
                     ForEach(rangeIds, id: \.self) { rangeId in
                         rangeBlock(roomId: room.id, rangeId: rangeId)
                     }
@@ -138,6 +140,29 @@ struct AdminVariantRoomAssignmentsView: View {
                         .padding(.bottom, 12)
                 }
             }
+        }
+    }
+
+    private func displayTitleField(roomId: String) -> some View {
+        VStack(alignment: .leading, spacing: 4) {
+            Text("Selection title in this room")
+                .font(.neueCaption2)
+                .foregroundStyle(AVIATheme.textTertiary)
+            TextField("e.g. Floor Tiles", text: Binding(
+                get: { rows[roomId]?.displayTitle ?? "" },
+                set: { newValue in
+                    var state = rows[roomId] ?? VariantRoomRowState(enabled: true)
+                    state.displayTitle = newValue
+                    rows[roomId] = state
+                }
+            ))
+            .font(.neueCaption)
+            .padding(10)
+            .background(AVIATheme.surfaceElevated)
+            .clipShape(.rect(cornerRadius: 6))
+            Text("Overrides the product's name when this variant appears in this room. Leave blank to use the product name.")
+                .font(.neueCaption2)
+                .foregroundStyle(AVIATheme.textTertiary)
         }
     }
 
@@ -261,6 +286,12 @@ struct AdminVariantRoomAssignmentsView: View {
         for assignment in mine {
             var row = state[assignment.room_id] ?? VariantRoomRowState(enabled: true)
             row.enabled = true
+            // Display title is room-scoped: take the first non-empty value
+            // we see for this room (admin editor enforces consistency across
+            // the 3 ranges).
+            if let t = assignment.display_title, !t.isEmpty, row.displayTitle.isEmpty {
+                row.displayTitle = t
+            }
             var cell = VariantRoomCellState()
             cell.inclusion = assignment.inclusionValue
             cell.cost = assignment.cost > 0 ? String(format: "%.2f", assignment.cost) : ""
@@ -286,6 +317,8 @@ struct AdminVariantRoomAssignmentsView: View {
         var desired: [VariantRoomAssignmentInsert] = []
         for (roomId, state) in rows {
             guard state.enabled else { continue }
+            let trimmedTitle = state.displayTitle.trimmingCharacters(in: .whitespaces)
+            let title: String? = trimmedTitle.isEmpty ? nil : trimmedTitle
             for rangeId in rangeIds {
                 let cell = state.perRange[rangeId] ?? VariantRoomCellState()
                 let trimmedCost = cell.cost.trimmingCharacters(in: .whitespaces)
@@ -301,7 +334,8 @@ struct AdminVariantRoomAssignmentsView: View {
                         image_url: cell.imageURL.isEmpty ? nil : cell.imageURL,
                         cost: cost,
                         inclusion: cell.inclusion.rawValue,
-                        sort_order: 0
+                        sort_order: 0,
+                        display_title: title
                     )
                 )
             }
@@ -338,5 +372,6 @@ struct VariantRoomCellState: Hashable {
 
 struct VariantRoomRowState: Hashable {
     var enabled: Bool
+    var displayTitle: String = ""
     var perRange: [String: VariantRoomCellState] = [:]
 }
