@@ -1,57 +1,41 @@
 import SwiftUI
 
 // Brand styling for the AVIA Homes widget.
-// Mirrors AVIATheme + PP Neue Corp from the main app so the widget feels native.
+// Mirrors AVIATheme + PP Neue Corp from the main app so the widget
+// reads like a mini dashboard pulled straight out of the app.
 
 enum AVIAWidgetBrand {
-    // Palette — mirror AVIATheme exactly.
-    static let aviaBlack      = Color(red: 26/255,  green: 26/255,  blue: 26/255)
-    static let aviaWhite      = Color(red: 225/255, green: 221/255, blue: 220/255)
-    static let timelessBrown  = Color(red: 55/255,  green: 51/255,  blue: 43/255)
-    static let heritageBlue   = Color(red: 142/255, green: 155/255, blue: 146/255)
-    static let cardCream      = Color(red: 235/255, green: 232/255, blue: 231/255)
-    static let cardCreamAlt   = Color(red: 242/255, green: 240/255, blue: 239/255)
-    static let surfaceBorder  = Color(red: 205/255, green: 201/255, blue: 199/255)
+    // Palette — kept in sync with AVIATheme in the main app.
+    static let aviaBlack         = Color(red: 26/255,  green: 26/255,  blue: 26/255)
+    static let aviaWhite         = Color(red: 225/255, green: 221/255, blue: 220/255)
+    static let timelessBrown     = Color(red: 55/255,  green: 51/255,  blue: 43/255)
+    static let heritageBlue      = Color(red: 142/255, green: 155/255, blue: 146/255)
 
-    // The warm AVIA backdrop the frosted glass sits over.
-    // Cream → soft brown → black wash, with a hint of heritage blue. The blurred
-    // orbs painted on top of this gradient give the glass something to refract.
-    static let backdropGradient = LinearGradient(
+    static let background        = aviaWhite
+    static let cardBackground    = Color(red: 235/255, green: 232/255, blue: 231/255)
+    static let cardBackgroundAlt = Color(red: 242/255, green: 240/255, blue: 239/255)
+    static let surfaceElevated   = Color(red: 216/255, green: 212/255, blue: 211/255)
+    static let surfaceBorder     = Color(red: 205/255, green: 201/255, blue: 199/255)
+
+    static let textPrimary       = aviaBlack
+    static let textSecondary     = aviaBlack.opacity(0.55)
+    static let textTertiary      = aviaBlack.opacity(0.35)
+
+    static let primaryGradient = LinearGradient(
+        colors: [aviaBlack, timelessBrown],
+        startPoint: .topLeading,
+        endPoint: .bottomTrailing
+    )
+
+    // Gentle cream-to-warm wash used as the widget container background.
+    // Same vibe as DashboardView — never dark.
+    static let widgetBackdrop = LinearGradient(
         stops: [
-            .init(color: Color(red: 240/255, green: 235/255, blue: 230/255), location: 0.0),
-            .init(color: Color(red: 215/255, green: 203/255, blue: 191/255), location: 0.45),
-            .init(color: Color(red: 99/255,  green: 86/255,  blue: 73/255),  location: 0.85),
-            .init(color: Color(red: 41/255,  green: 36/255,  blue: 30/255),  location: 1.0),
+            .init(color: Color(red: 232/255, green: 228/255, blue: 226/255), location: 0.0),
+            .init(color: aviaWhite,                                              location: 1.0)
         ],
-        startPoint: .topLeading,
-        endPoint: .bottomTrailing
-    )
-
-    // Soft luminous gradient used inside glass surfaces for the inner-light effect.
-    static let glassSheen = LinearGradient(
-        colors: [
-            Color.white.opacity(0.42),
-            Color.white.opacity(0.08),
-            Color.white.opacity(0.18),
-        ],
-        startPoint: .topLeading,
-        endPoint: .bottomTrailing
-    )
-
-    static let glassBorder = LinearGradient(
-        colors: [
-            Color.white.opacity(0.55),
-            Color.white.opacity(0.10),
-            Color.white.opacity(0.35),
-        ],
-        startPoint: .topLeading,
-        endPoint: .bottomTrailing
-    )
-
-    static let progressFill = LinearGradient(
-        colors: [aviaWhite, aviaWhite.opacity(0.7)],
-        startPoint: .leading,
-        endPoint: .trailing
+        startPoint: .top,
+        endPoint: .bottom
     )
 }
 
@@ -69,138 +53,114 @@ extension Font {
     }
 }
 
-// MARK: - Frosted glass surface
+// MARK: - Bento Card (in-app cream card, mirrors BentoCard in Theme.swift)
 
-/// The signature widget surface — a translucent, soft-edged frosted glass
-/// panel that picks up the warm AVIA backdrop sitting behind it.
-struct AVIAGlassSurface<Content: View>: View {
-    var cornerRadius: CGFloat = 18
+struct AVIABentoCard<Content: View>: View {
+    var cornerRadius: CGFloat = 13
+    var background: Color = AVIAWidgetBrand.cardBackground
     @ViewBuilder var content: () -> Content
 
     var body: some View {
         content()
-            .background {
-                ZStack {
-                    // The blur layer — picks up the warm gradient + orbs behind it.
-                    RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
-                        .fill(.ultraThinMaterial)
-
-                    // A faint cream tint so the glass reads warm rather than cold.
-                    RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
-                        .fill(AVIAWidgetBrand.aviaWhite.opacity(0.10))
-
-                    // Inner sheen for the liquid-glass look.
-                    RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
-                        .fill(AVIAWidgetBrand.glassSheen)
-                        .blendMode(.plusLighter)
-                        .opacity(0.55)
-                }
-            }
-            .overlay {
-                RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
-                    .strokeBorder(AVIAWidgetBrand.glassBorder, lineWidth: 0.8)
-            }
+            .background(background)
             .clipShape(RoundedRectangle(cornerRadius: cornerRadius, style: .continuous))
     }
 }
 
-// MARK: - Backdrop
-
-/// The warm gradient + soft blurred orbs that live behind the glass.
-/// Without something visually rich behind it, the frosted material has
-/// nothing to blur and just looks flat.
-struct AVIAWarmBackdrop: View {
-    var body: some View {
-        ZStack {
-            AVIAWidgetBrand.backdropGradient
-
-            // Three softly blurred orbs that act as the "light" the glass refracts.
-            Circle()
-                .fill(Color(red: 248/255, green: 220/255, blue: 195/255).opacity(0.85))
-                .frame(width: 220, height: 220)
-                .blur(radius: 60)
-                .offset(x: -90, y: -110)
-
-            Circle()
-                .fill(AVIAWidgetBrand.heritageBlue.opacity(0.55))
-                .frame(width: 180, height: 180)
-                .blur(radius: 70)
-                .offset(x: 110, y: 30)
-
-            Circle()
-                .fill(AVIAWidgetBrand.timelessBrown.opacity(0.45))
-                .frame(width: 200, height: 200)
-                .blur(radius: 80)
-                .offset(x: 60, y: 140)
-
-            // Very subtle warm wash on top so the orbs blend into the gradient.
-            LinearGradient(
-                colors: [Color.clear, AVIAWidgetBrand.timelessBrown.opacity(0.15)],
-                startPoint: .top,
-                endPoint: .bottom
-            )
-        }
-    }
-}
-
-// MARK: - Eyebrow label (uppercase tracked label used across the widget)
+// MARK: - Eyebrow label (tracked caption used across the app)
 
 struct AVIAEyebrow: View {
     let text: String
-    var icon: String? = nil
-    var tint: Color = .white.opacity(0.75)
+    var tint: Color = AVIAWidgetBrand.timelessBrown
 
     var body: some View {
-        HStack(spacing: 5) {
-            if let icon {
-                Image(systemName: icon)
-                    .font(.system(size: 9, weight: .medium))
-            }
-            Text(text.uppercased())
-                .font(.aviaCorpMedium(9))
-                .tracking(1.6)
-        }
-        .foregroundStyle(tint)
+        Text(text.uppercased())
+            .font(.aviaCorpMedium(9))
+            .kerning(1)
+            .foregroundStyle(tint)
+            .lineLimit(1)
     }
 }
 
-// MARK: - Inline mini tile (bento atom)
+// MARK: - Progress Ring (mirrors BuildJourneyCard's header ring)
 
-struct AVIAGlassTile<Content: View>: View {
-    var cornerRadius: CGFloat = 12
-    @ViewBuilder var content: () -> Content
+struct AVIAProgressRing: View {
+    let progress: Double
+    let icon: String
+    var diameter: CGFloat = 44
+    var lineWidth: CGFloat = 4
 
     var body: some View {
-        content()
-            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
-            .padding(10)
-            .background {
-                RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
-                    .fill(Color.white.opacity(0.10))
-            }
-            .overlay {
-                RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
-                    .strokeBorder(Color.white.opacity(0.18), lineWidth: 0.6)
-            }
+        ZStack {
+            Circle()
+                .stroke(AVIAWidgetBrand.timelessBrown.opacity(0.15), lineWidth: lineWidth)
+            Circle()
+                .trim(from: 0, to: max(0, min(1, progress)))
+                .stroke(
+                    AVIAWidgetBrand.timelessBrown,
+                    style: StrokeStyle(lineWidth: lineWidth, lineCap: .round)
+                )
+                .rotationEffect(.degrees(-90))
+            Image(systemName: icon)
+                .font(.aviaCorpMedium(diameter * 0.36))
+                .foregroundStyle(AVIAWidgetBrand.timelessBrown)
+        }
+        .frame(width: diameter, height: diameter)
     }
 }
 
-// MARK: - Glass progress bar
+// MARK: - Step Indicator (compact horizontal dots)
 
-struct AVIAGlassProgressBar: View {
-    let value: Double
-    var height: CGFloat = 6
+struct AVIAStepIndicator: View {
+    let total: Int
+    let current: Int   // 0-based index of the active step
 
     var body: some View {
-        GeometryReader { geo in
-            ZStack(alignment: .leading) {
+        HStack(spacing: 4) {
+            ForEach(0..<max(total, 1), id: \.self) { i in
                 Capsule()
-                    .fill(Color.white.opacity(0.18))
-                Capsule()
-                    .fill(AVIAWidgetBrand.progressFill)
-                    .frame(width: max(0, min(1, value)) * geo.size.width)
+                    .fill(fill(for: i))
+                    .frame(height: 4)
             }
         }
-        .frame(height: height)
+    }
+
+    private func fill(for i: Int) -> Color {
+        if i < current { return AVIAWidgetBrand.timelessBrown }
+        if i == current { return AVIAWidgetBrand.timelessBrown.opacity(0.55) }
+        return AVIAWidgetBrand.surfaceBorder
+    }
+}
+
+// MARK: - Bento Icon Circle (matches Theme.swift BentoIconCircle)
+
+struct AVIABentoIcon: View {
+    let icon: String
+    var color: Color = AVIAWidgetBrand.timelessBrown
+    var size: CGFloat = 26
+
+    var body: some View {
+        Image(systemName: icon)
+            .font(.aviaCorpMedium(size * 0.42))
+            .foregroundStyle(color)
+            .frame(width: size, height: size)
+            .background(color.opacity(0.12))
+            .clipShape(Circle())
+    }
+}
+
+// MARK: - AVIA wordmark (template-rendered like in DashboardView)
+
+struct AVIAWordmark: View {
+    var height: CGFloat = 18
+    var tint: Color = AVIAWidgetBrand.timelessBrown
+
+    var body: some View {
+        Image("AVIALogo")
+            .renderingMode(.template)
+            .resizable()
+            .aspectRatio(contentMode: .fit)
+            .frame(height: height)
+            .foregroundStyle(tint)
     }
 }
