@@ -282,9 +282,9 @@ struct AdminRoomProductsView: View {
                         rangeBadge(rangeId: rangeId, assignments: assignments)
                     }
                 }
-                Image(systemName: "chevron.right")
+                Image(systemName: "pencil")
                     .font(.neueCaption2)
-                    .foregroundStyle(AVIATheme.textTertiary)
+                    .foregroundStyle(AVIATheme.timelessBrown)
             }
             .padding(8)
             .background(AVIATheme.surfaceElevated.opacity(0.6))
@@ -293,6 +293,11 @@ struct AdminRoomProductsView: View {
         }
         .buttonStyle(.plain)
         .contextMenu {
+            Button {
+                editingSlot = IdentifiedSlot(id: entry.id, variantId: entry.variant.id, isNew: false)
+            } label: {
+                Label("Rename / Edit slot", systemImage: "pencil")
+            }
             Button(role: .destructive) {
                 Task { await removeSlot(entry.id) }
             } label: {
@@ -814,6 +819,26 @@ private struct RoomSlotAssignmentSheet: View {
 
         let title = displayTitle.trimmingCharacters(in: .whitespaces)
         let titleOpt: String? = title.isEmpty ? nil : title
+
+        // Guard: prevent two slots in the same room from sharing the same
+        // (variant, title) pair. A variant can be added to a room many
+        // times — but only once per logical "product slot" (e.g. one
+        // "Floor Tiles" slot using SKU X). Title comparison is case-
+        // insensitive on the trimmed value; empty titles are treated as a
+        // single "untitled" bucket per variant.
+        let normalized = title.lowercased()
+        let conflict = CatalogDataManager.shared.allVariantAssignments.contains { row in
+            guard row.room_id == room.id, row.facade_id == nil else { return false }
+            guard row.variant_id == variantId else { return false }
+            guard let otherSlot = row.selection_slot_id, otherSlot != slotId else { return false }
+            let otherTitle = (row.display_title ?? "").trimmingCharacters(in: .whitespaces).lowercased()
+            return otherTitle == normalized
+        }
+        if conflict {
+            let label = title.isEmpty ? "(no title)" : "\"\(title)\""
+            errorMessage = "This variant is already in \(room.name) as a slot titled \(label). Use a different selection title to add it again."
+            return
+        }
 
         // Delete this slot's existing rows so we can re-insert with the
         // current values. Scoped tightly by slot id so other slots of the
