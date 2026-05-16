@@ -3260,13 +3260,55 @@ class SupabaseService {
         }
     }
 
+    /// Upsert a variant room assignment. Because Postgres treats NULLs as
+    /// distinct in unique constraints — and the table uses partial unique
+    /// indexes split between facade-agnostic (`facade_id IS NULL`) and
+    /// facade-scoped rows — we cannot rely on a single onConflict target.
+    /// Instead, look up the existing row by composite key and update or
+    /// insert as appropriate.
     func upsertVariantRoomAssignment(_ row: VariantRoomAssignmentRow) async -> Bool {
         guard isConfigured else { return false }
         do {
-            try await client
+            // Find existing match on (variant, room, range, facade) — the
+            // partial unique indexes guarantee at most one match.
+            var query = client
                 .from("variant_room_assignments")
-                .upsert(row, onConflict: "variant_id,room_id,range_id")
-                .execute()
+                .select("id")
+                .eq("variant_id", value: row.variant_id)
+                .eq("room_id", value: row.room_id)
+                .eq("range_id", value: row.range_id)
+            if let fid = row.facade_id {
+                query = query.eq("facade_id", value: fid)
+            } else {
+                query = query.is("facade_id", value: nil)
+            }
+            struct IdOnly: Decodable { let id: String }
+            let existing: [IdOnly] = try await query.execute().value
+
+            if let existingId = existing.first?.id {
+                var rowWithId = row
+                rowWithId = VariantRoomAssignmentRow(
+                    id: existingId,
+                    variant_id: row.variant_id,
+                    room_id: row.room_id,
+                    range_id: row.range_id,
+                    facade_id: row.facade_id,
+                    image_url: row.image_url,
+                    cost: row.cost,
+                    inclusion: row.inclusion,
+                    sort_order: row.sort_order
+                )
+                try await client
+                    .from("variant_room_assignments")
+                    .update(rowWithId)
+                    .eq("id", value: existingId)
+                    .execute()
+            } else {
+                try await client
+                    .from("variant_room_assignments")
+                    .insert(row)
+                    .execute()
+            }
             return true
         } catch {
             let message = String(describing: error)
@@ -3276,16 +3318,21 @@ class SupabaseService {
         }
     }
 
-    func deleteVariantRoomAssignment(variantId: String, roomId: String, rangeId: String) async -> Bool {
+    func deleteVariantRoomAssignment(variantId: String, roomId: String, rangeId: String, facadeId: String? = nil) async -> Bool {
         guard isConfigured else { return false }
         do {
-            try await client
+            var query = client
                 .from("variant_room_assignments")
                 .delete()
                 .eq("variant_id", value: variantId)
                 .eq("room_id", value: roomId)
                 .eq("range_id", value: rangeId)
-                .execute()
+            if let fid = facadeId {
+                query = query.eq("facade_id", value: fid)
+            } else {
+                query = query.is("facade_id", value: nil)
+            }
+            try await query.execute()
             return true
         } catch {
             print("[SupabaseService] deleteVariantRoomAssignment FAILED: \(error)")

@@ -18,6 +18,10 @@ struct SelectionProductPickerView: View {
     /// this room and prefers the room-specific image + cost from
     /// `variant_room_assignments` over the product/colour defaults.
     var roomId: String? = nil
+    /// Facade scope. When the build has a selected facade, variant lookups
+    /// prefer facade-specific assignment rows and hide variants only scoped
+    /// to a different facade.
+    var facadeId: String? = nil
     /// Called after the client taps Confirm and the selection is saved. The
     /// parent can use this to scroll to / expand the next incomplete item.
     var onConfirmed: () -> Void = {}
@@ -35,7 +39,7 @@ struct SelectionProductPickerView: View {
     /// context, otherwise nil. Drives image + cost overrides.
     private func assignment(for variantId: String) -> VariantRoomAssignmentRow? {
         guard let roomId else { return nil }
-        return catalog.assignment(variantId: variantId, roomId: roomId, rangeId: rangeId)
+        return catalog.assignment(variantId: variantId, roomId: roomId, rangeId: rangeId, facadeId: facadeId)
     }
 
     /// Variants for a product, filtered to those assigned to the active room

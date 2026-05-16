@@ -38,14 +38,15 @@ struct SelectionsRoomDetailView: View {
     private func isItemIncluded(_ sel: BuildSpecSelection) -> Bool {
         guard let roomId = room.categoryId else { return true }
         let cat = CatalogDataManager.shared
+        let facadeId = viewModel.selectedFacadeId
         if let cid = sel.colourId,
-           let a = cat.assignment(variantId: cid, roomId: roomId, rangeId: rangeId) {
+           let a = cat.assignment(variantId: cid, roomId: roomId, rangeId: rangeId, facadeId: facadeId) {
             return a.inclusionValue == .included
         }
-        let variantIds = cat.variantIds(forRoom: roomId, rangeId: rangeId)
+        let variantIds = cat.variantIds(forRoom: roomId, rangeId: rangeId, facadeId: facadeId)
         let matching = variantIds.compactMap { vid -> VariantRoomAssignmentRow? in
             guard cat.specItemId(forVariantId: vid) == sel.specItemId else { return nil }
-            return cat.assignment(variantId: vid, roomId: roomId, rangeId: rangeId)
+            return cat.assignment(variantId: vid, roomId: roomId, rangeId: rangeId, facadeId: facadeId)
         }
         if matching.isEmpty { return true }
         return matching.contains { $0.inclusionValue == .included }
@@ -317,8 +318,9 @@ private struct SelectionItemCard: View {
     private func tierUpgradeCost(at tier: SpecTier) -> Double? {
         guard let item = linkedSpecItem else { return nil }
         let rangeId = tier.rawValue
+        let facadeId = viewModel.selectedFacadeId
         if let roomId,
-           let cost = catalog.cheapestUpgradeCost(forSpecItem: item.id, roomId: roomId, rangeId: rangeId) {
+           let cost = catalog.cheapestUpgradeCost(forSpecItem: item.id, roomId: roomId, rangeId: rangeId, facadeId: facadeId) {
             return cost
         }
         return catalog.cheapestUpgradeCost(forSpecItem: item.id, rangeId: rangeId)
@@ -389,7 +391,7 @@ private struct SelectionItemCard: View {
     private var currentImageURL: String? {
         // Prefer a room-specific image for the chosen variant when available.
         if let roomId, let cid = selection.colourId,
-           let a = catalog.assignment(variantId: cid, roomId: roomId, rangeId: selection.specTier.lowercased()),
+           let a = catalog.assignment(variantId: cid, roomId: roomId, rangeId: selection.specTier.lowercased(), facadeId: viewModel.selectedFacadeId),
            let u = a.image_url, !u.isEmpty {
             return u
         }
@@ -559,6 +561,7 @@ private struct SelectionItemCard: View {
                     selection: selection,
                     products: rangeProducts,
                     roomId: roomId,
+                    facadeId: viewModel.selectedFacadeId,
                     onConfirmed: onConfirmed
                 )
             } else if hasColours || canRequestUpgrade {

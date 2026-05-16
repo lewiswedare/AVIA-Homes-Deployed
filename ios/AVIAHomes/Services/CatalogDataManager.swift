@@ -21,10 +21,15 @@ class CatalogDataManager {
     var coloursByProduct: [String: [SpecProductColourRow]] = [:]
     /// Admin-defined product categories (Tile, Stone, Tapware…) keyed by id.
     var productCategories: [String: ProductCategoryRow] = [:]
-    /// Variant × Room × Range assignments keyed by composite key
-    /// ("variantId|roomId|rangeId"). Drives the room-first client experience.
+    /// Variant × Room × Range × Facade assignments keyed by composite key
+    /// ("variantId|roomId|rangeId|facadeId|"-"). Drives the room-first client
+    /// experience. Facade-agnostic rows use "-" as the facade segment.
     var variantRoomAssignments: [String: VariantRoomAssignmentRow] = [:]
-    /// Variant ids grouped by (roomId|rangeId) for fast room lookups.
+    /// All raw assignments — used when iterating facade scopes for a given
+    /// (variant, room, range).
+    var allVariantAssignments: [VariantRoomAssignmentRow] = []
+    /// Variant ids grouped by (roomId|rangeId) for fast room lookups
+    /// (deduplicated across facade scopes).
     var variantsByRoomRange: [String: [String]] = [:]
     var isLoaded: Bool = false
 
@@ -257,13 +262,14 @@ class CatalogDataManager {
         productCategories = pcMap
 
         var vraMap: [String: VariantRoomAssignmentRow] = [:]
-        var byRoomRange: [String: [String]] = [:]
+        var byRoomRange: [String: Set<String>] = [:]
         for a in variantAssignments {
             vraMap[a.compositeKey] = a
-            byRoomRange["\(a.room_id)|\(a.range_id)", default: []].append(a.variant_id)
+            byRoomRange["\(a.room_id)|\(a.range_id)", default: []].insert(a.variant_id)
         }
         variantRoomAssignments = vraMap
-        variantsByRoomRange = byRoomRange
+        allVariantAssignments = variantAssignments
+        variantsByRoomRange = byRoomRange.mapValues { Array($0) }
 
         isLoaded = true
         print("[CatalogDataManager] Loaded — colours: \(colours.count), specs: \(specs.count), flatItems: \(flatItems.count), ranges: \(ranges.count), schemes: \(schemes.count), mapping: \(mapping.count), products: \(products.count), productColours: \(productColours.count), memberships: \(memberships.count), productCategories: \(prodCategories.count), variantAssignments: \(variantAssignments.count)")
@@ -364,20 +370,52 @@ class CatalogDataManager {
         productCategories.values.sorted { $0.sort_order < $1.sort_order }
     }
 
-    /// Returns the room assignment for a specific (variant, room, range).
-    func assignment(variantId: String, roomId: String, rangeId: String) -> VariantRoomAssignmentRow? {
-        variantRoomAssignments["\(variantId)|\(roomId)|\(rangeId)"]
+    /// Returns the room assignment for a specific (variant, room, range,
+    /// facade). When `facadeId` is provided, prefers a facade-specific row,
+    /// falling back to the facade-agnostic default. When `facadeId` is `nil`,
+    /// only the facade-agnostic row is returned (legacy behaviour).
+    func assignment(variantId: String, roomId: String, rangeId: String, facadeId: String? = nil) -> VariantRoomAssignmentRow? {
+        if let fid = facadeId,
+           let specific = variantRoomAssignments["\(variantId)|\(roomId)|\(rangeId)|\(fid)"] {
+            return specific
+        }
+        return variantRoomAssignments["\(variantId)|\(roomId)|\(rangeId)|-"]
     }
 
     /// Every variant assigned to a given room+range, in sort_order. Used by the
     /// room-first client experience.
-    func variantIds(forRoom roomId: String, rangeId: String) -> [String] {
+    ///
+    /// When `facadeId` is provided, scopes the list to variants that either
+    /// have a facade-agnostic assignment OR a facade-specific assignment
+    /// matching `facadeId`. Variants whose only assignments are scoped to a
+    /// *different* facade are excluded so the client only sees what's
+    /// available for their build.
+    func variantIds(forRoom roomId: String, rangeId: String, facadeId: String? = nil) -> [String] {
         let ids = variantsByRoomRange["\(roomId)|\(rangeId)"] ?? []
-        return ids.sorted { lhs, rhs in
-            let a = assignment(variantId: lhs, roomId: roomId, rangeId: rangeId)?.sort_order ?? 0
-            let b = assignment(variantId: rhs, roomId: roomId, rangeId: rangeId)?.sort_order ?? 0
+        let filtered = ids.filter { vid in
+            isVariantAvailable(variantId: vid, roomId: roomId, rangeId: rangeId, facadeId: facadeId)
+        }
+        return filtered.sorted { lhs, rhs in
+            let a = assignment(variantId: lhs, roomId: roomId, rangeId: rangeId, facadeId: facadeId)?.sort_order ?? 0
+            let b = assignment(variantId: rhs, roomId: roomId, rangeId: rangeId, facadeId: facadeId)?.sort_order ?? 0
             return a < b
         }
+    }
+
+    /// Whether a variant is available in `(room, range)` for the given
+    /// facade context. A variant is available when it has either a
+    /// facade-agnostic assignment OR a facade-specific assignment matching
+    /// `facadeId`. If `facadeId` is nil, the variant is available as long as
+    /// it has *any* assignment for that room+range.
+    func isVariantAvailable(variantId: String, roomId: String, rangeId: String, facadeId: String?) -> Bool {
+        let hasAgnostic = variantRoomAssignments["\(variantId)|\(roomId)|\(rangeId)|-"] != nil
+        guard let fid = facadeId else {
+            // No facade context — include any variant with an assignment.
+            if hasAgnostic { return true }
+            return allVariantAssignments.contains { $0.variant_id == variantId && $0.room_id == roomId && $0.range_id == rangeId }
+        }
+        if hasAgnostic { return true }
+        return variantRoomAssignments["\(variantId)|\(roomId)|\(rangeId)|\(fid)"] != nil
     }
 
     /// Cheapest upgrade-variant cost for a given spec item in a specific room
@@ -385,11 +423,11 @@ class CatalogDataManager {
     /// that room in that range. Used by client-facing tier-upgrade flows to
     /// price items off `variant_room_assignments` instead of the legacy
     /// per-tier cost columns on `spec_items`.
-    func cheapestUpgradeCost(forSpecItem specItemId: String, roomId: String, rangeId: String) -> Double? {
-        let costs: [Double] = variantIds(forRoom: roomId, rangeId: rangeId)
+    func cheapestUpgradeCost(forSpecItem specItemId: String, roomId: String, rangeId: String, facadeId: String? = nil) -> Double? {
+        let costs: [Double] = variantIds(forRoom: roomId, rangeId: rangeId, facadeId: facadeId)
             .compactMap { vid -> Double? in
                 guard self.specItemId(forVariantId: vid) == specItemId else { return nil }
-                guard let a = assignment(variantId: vid, roomId: roomId, rangeId: rangeId),
+                guard let a = assignment(variantId: vid, roomId: roomId, rangeId: rangeId, facadeId: facadeId),
                       a.inclusionValue == .upgrade else { return nil }
                 return a.cost
             }

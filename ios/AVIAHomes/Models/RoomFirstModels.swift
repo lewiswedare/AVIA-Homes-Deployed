@@ -38,6 +38,10 @@ nonisolated struct VariantRoomAssignmentRow: Codable, Sendable, Identifiable, Ha
     let variant_id: String
     let room_id: String
     let range_id: String
+    /// Optional facade scope. `nil` means the assignment applies to every
+    /// facade (default). A non-nil value scopes the assignment so it only
+    /// surfaces for builds whose `selectedFacadeId` matches.
+    var facade_id: String?
     var image_url: String?
     var cost: Double
     var inclusion: String       // "included" | "upgrade"
@@ -47,6 +51,10 @@ nonisolated struct VariantRoomAssignmentRow: Codable, Sendable, Identifiable, Ha
         VariantInclusion(rawValue: inclusion) ?? .included
     }
 
-    /// Stable composite key used to index assignments client-side.
-    var compositeKey: String { "\(variant_id)|\(room_id)|\(range_id)" }
+    /// Stable composite key used to index assignments client-side. Includes
+    /// the facade scope so facade-specific rows don't collide with the
+    /// facade-agnostic default.
+    var compositeKey: String {
+        "\(variant_id)|\(room_id)|\(range_id)|\(facade_id ?? "-")"
+    }
 }

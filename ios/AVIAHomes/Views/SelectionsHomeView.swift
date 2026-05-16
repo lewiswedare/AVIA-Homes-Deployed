@@ -135,6 +135,7 @@ struct SelectionsHomeView: View {
                 let estate = build.estate
                 let combined = [lot, estate].filter { !$0.isEmpty }.joined(separator: ", ")
                 viewModel.buildAddress = combined.isEmpty ? build.homeDesign : combined
+                viewModel.selectedFacadeId = build.selectedFacadeId
             }
             await viewModel.load(buildId: buildId)
         }

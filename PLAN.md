@@ -87,6 +87,33 @@ Existing concept | New concept | Why
         `volos_to_portobello_cost`, `messina_to_portobello_cost` columns
         and remove `SpecItem.upgradeCost(from:to:)`.
 
+### Phase 5 — Facade-scoped exterior selections
+
+Some exterior items (e.g. Render colour, Front door, Garage door trim) are
+facade-specific: the options a client sees in the External room should
+change depending on which Facade has been allocated to their build.
+
+- [x] Migration `20260523_variant_room_assignment_facade.sql`: add nullable
+      `facade_id` column to `variant_room_assignments` (`NULL` = applies to
+      all facades; non-null = only that facade). Replaces the 3-tuple
+      uniqueness with partial unique indexes that allow at most one
+      facade-agnostic row plus N facade-scoped rows per (variant, room,
+      range).
+- [x] Swift model: `VariantRoomAssignmentRow.facade_id` + composite key
+      includes the facade scope.
+- [x] `CatalogDataManager` learns about facade context: `assignment(…)`,
+      `variantIds(forRoom:rangeId:facadeId:)`, and `cheapestUpgradeCost(…)`
+      all accept an optional `facadeId` and prefer facade-specific rows over
+      the facade-agnostic default.
+- [x] Client selections pipe the build's `selectedFacadeId` into the room
+      detail view, the item card included/upgrade classification, and the
+      product picker.
+- [x] Admin Variant → Room Assignments matrix gains a per-room Facade
+      picker (“All facades” or one of the configured facades).
+- [x] `SupabaseService.upsertVariantRoomAssignment` reworked to handle the
+      partial unique indexes (NULLs are distinct in Postgres unique
+      constraints).
+
 ## Migration safety
 - Every new column / table uses `IF NOT EXISTS`.
 - Existing read paths keep working until Phase 3 cutover.

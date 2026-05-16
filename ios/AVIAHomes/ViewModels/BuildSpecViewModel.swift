@@ -14,6 +14,9 @@ class BuildSpecViewModel {
 
     var buildId: String = ""
     var specTier: String = "messina"
+    /// Facade selected for this build, when one has been chosen. Drives
+    /// facade-scoped exterior selections (`variant_room_assignments.facade_id`).
+    var selectedFacadeId: String?
 
     var notificationService: NotificationService?
     var adminRecipientIds: [String] = []
