@@ -86,3 +86,7 @@ CREATE UNIQUE INDEX IF NOT EXISTS bss_unique_no_slot
 CREATE UNIQUE INDEX IF NOT EXISTS bss_unique_with_slot
     ON build_spec_selections(build_id, spec_item_id, selection_slot_id)
     WHERE selection_slot_id IS NOT NULL;
+
+-- Force PostgREST to refresh its schema cache so newly added columns
+-- (selection_slot_id on both tables) are visible immediately.
+NOTIFY pgrst, 'reload schema';

@@ -10,3 +10,7 @@
 
 ALTER TABLE variant_room_assignments
     ADD COLUMN IF NOT EXISTS display_title text;
+
+-- Force PostgREST to reload its schema cache so the new column is visible
+-- to PostgREST clients immediately after the migration applies.
+NOTIFY pgrst, 'reload schema';
