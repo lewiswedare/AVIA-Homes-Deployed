@@ -272,7 +272,31 @@ class CatalogDataManager {
         variantsByRoomRange = byRoomRange.mapValues { Array($0) }
 
         isLoaded = true
+        warmImageCache()
         print("[CatalogDataManager] Loaded — colours: \(colours.count), specs: \(specs.count), flatItems: \(flatItems.count), ranges: \(ranges.count), schemes: \(schemes.count), mapping: \(mapping.count), products: \(products.count), productColours: \(productColours.count), memberships: \(memberships.count), productCategories: \(prodCategories.count), variantAssignments: \(variantAssignments.count)")
+    }
+
+    // MARK: - Image prefetching
+
+    /// Push every URL we know about into `ImagePrefetcher` so the first scroll
+    /// through Selections / Spec Ranges / Colours never shows a blank tile.
+    private func warmImageCache() {
+        var urls: [String?] = []
+        urls.append(contentsOf: specItemBaseImages.values.map { Optional($0) })
+        urls.append(contentsOf: specItemTierImages.values.map { Optional($0) })
+        for c in colourCategories {
+            urls.append(c.imageURL)
+            urls.append(contentsOf: c.options.map { $0.imageURL })
+        }
+        for (_, row) in specRangeTiers {
+            urls.append(row.hero_image_url)
+        }
+        for cols in coloursByProduct.values {
+            urls.append(contentsOf: cols.map { $0.image_url })
+        }
+        urls.append(contentsOf: allVariantAssignments.map { $0.image_url })
+
+        ImagePrefetcher.prefetch(urlStrings: urls)
     }
 
     // MARK: - Product helpers
