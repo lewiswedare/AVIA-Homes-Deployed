@@ -697,6 +697,11 @@
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = AVIAHomesWidget/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = "$(PRODUCT_NAME)";
+				INFOPLIST_KEY_UIAppFonts = (
+					"Fonts/PPNeueCorp-NormalRegular.otf",
+					"Fonts/PPNeueCorp-NormalUltralight.otf",
+					"Fonts/PPNeueCorp-NormalMedium.otf",
+				);
 				IPHONEOS_DEPLOYMENT_TARGET = 18.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @executable_path/../../Frameworks";
 				MARKETING_VERSION = 1.0;
@@ -720,6 +725,11 @@
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = AVIAHomesWidget/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = "$(PRODUCT_NAME)";
+				INFOPLIST_KEY_UIAppFonts = (
+					"Fonts/PPNeueCorp-NormalRegular.otf",
+					"Fonts/PPNeueCorp-NormalUltralight.otf",
+					"Fonts/PPNeueCorp-NormalMedium.otf",
+				);
 				IPHONEOS_DEPLOYMENT_TARGET = 18.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @executable_path/../../Frameworks";
 				MARKETING_VERSION = 1.0;
