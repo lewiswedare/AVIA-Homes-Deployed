@@ -204,7 +204,7 @@ struct AdminAllProductsView: View {
                 sub + (catalog.coloursByProduct[pid]?.count ?? 0)
             } ?? 0)
         }
-        let assignedRooms = Set(catalog.allVariantAssignments.map(\.room_id)).count
+        let assignedRooms = Set(catalog.allVariantAssignments.filter { $0.facade_id == nil }.map(\.room_id)).count
         return HStack(spacing: 12) {
             AdminMiniStat(value: "\(viewModel.specItems.count)", label: "Products", color: AVIATheme.timelessBrown)
             AdminMiniStat(value: "\(totalVariants)", label: "Variants", color: AVIATheme.warning)
@@ -409,7 +409,9 @@ struct AdminAllProductsView: View {
 
     @ViewBuilder
     private func variantBlock(_ variant: SpecProductColourRow) -> some View {
-        let assignments = catalog.allVariantAssignments.filter { $0.variant_id == variant.id }
+        // Hide facade-scoped rows from the All Products view; they are
+        // surfaced in a separate facade-specific products editor.
+        let assignments = catalog.allVariantAssignments.filter { $0.variant_id == variant.id && $0.facade_id == nil }
         let roomsForVariant = roomGroups(from: assignments)
 
         VStack(alignment: .leading, spacing: 8) {
@@ -528,12 +530,10 @@ struct AdminAllProductsView: View {
     }
 
     private func rangeAssignmentBadge(rangeId: String, assignments: [VariantRoomAssignmentRow]) -> some View {
-        // Prefer facade-agnostic; otherwise show "scoped" tag.
-        let inRange = assignments.filter { $0.range_id == rangeId }
-        let agnostic = inRange.first { $0.facade_id == nil }
-        let scopedCount = inRange.filter { $0.facade_id != nil }.count
-
-        let primary = agnostic ?? inRange.first
+        // All Products only surfaces facade-agnostic assignments. Facade-
+        // specific items are managed in a dedicated editor.
+        let inRange = assignments.filter { $0.range_id == rangeId && $0.facade_id == nil }
+        let primary = inRange.first
         let color = rangeColors[rangeId] ?? AVIATheme.textTertiary
         return HStack(spacing: 4) {
             Circle().fill(color).frame(width: 6, height: 6)
@@ -548,15 +548,6 @@ struct AdminAllProductsView: View {
                     Text("+$\(Int(p.cost))")
                         .font(.neueCaption2)
                         .foregroundStyle(AVIATheme.warning)
-                }
-                if scopedCount > 0 && agnostic != nil {
-                    Text("+\(scopedCount) facade")
-                        .font(.neueCaption2)
-                        .foregroundStyle(AVIATheme.textTertiary)
-                } else if scopedCount > 0 {
-                    Text("\(scopedCount) facade")
-                        .font(.neueCaption2)
-                        .foregroundStyle(AVIATheme.textTertiary)
                 }
             } else {
                 Image(systemName: "minus.circle")

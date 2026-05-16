@@ -13,12 +13,7 @@ struct AdminVariantRoomAssignmentsView: View {
 
     @Environment(\.dismiss) private var dismiss
     @State private var rooms: [SpecCategoryRow] = []
-    @State private var facades: [Facade] = []
     @State private var rows: [String: VariantRoomRowState] = [:] // keyed by room_id
-    /// Tracks the (room_id, facade_id) keys of the assignments that existed
-    /// when we loaded, so we can detect deletes for facade-scoped rows that
-    /// the admin has unscoped or removed.
-    @State private var existingAssignmentKeys: Set<String> = []
     @State private var isLoading = false
     @State private var isSaving = false
     @State private var errorMessage: String?
@@ -130,8 +125,6 @@ struct AdminVariantRoomAssignmentsView: View {
                 .padding(.top, 12)
 
                 if isOn {
-                    facadePicker(roomId: room.id)
-                        .padding(.horizontal, 14)
                     ForEach(rangeIds, id: \.self) { rangeId in
                         rangeBlock(roomId: room.id, rangeId: rangeId)
                     }
@@ -146,42 +139,6 @@ struct AdminVariantRoomAssignmentsView: View {
                 }
             }
         }
-    }
-
-    @ViewBuilder
-    private func facadePicker(roomId: String) -> some View {
-        VStack(alignment: .leading, spacing: 6) {
-            HStack(spacing: 6) {
-                Image(systemName: "building.2.fill")
-                    .font(.neueCorp(11))
-                    .foregroundStyle(AVIATheme.heritageBlue)
-                Text("Facade scope")
-                    .font(.neueCaption2Medium)
-                    .foregroundStyle(AVIATheme.textPrimary)
-                Spacer()
-            }
-            Picker("", selection: Binding(
-                get: { rows[roomId]?.facadeId ?? "" },
-                set: { newValue in
-                    var state = rows[roomId] ?? VariantRoomRowState(enabled: true)
-                    state.facadeId = newValue.isEmpty ? nil : newValue
-                    rows[roomId] = state
-                }
-            )) {
-                Text("All facades").tag("")
-                ForEach(facades, id: \.id) { facade in
-                    Text(facade.name).tag(facade.id)
-                }
-            }
-            .pickerStyle(.menu)
-            .tint(AVIATheme.timelessBrown)
-            Text("Pick a facade to only surface this variant when the build uses that facade. Leave on “All facades” for the default behaviour.")
-                .font(.neueCaption2)
-                .foregroundStyle(AVIATheme.textTertiary)
-        }
-        .padding(10)
-        .background(AVIATheme.heritageBlue.opacity(0.06))
-        .clipShape(.rect(cornerRadius: 8))
     }
 
     private func rangeBlock(roomId: String, rangeId: String) -> some View {
@@ -295,30 +252,24 @@ struct AdminVariantRoomAssignmentsView: View {
         isLoading = true
         async let rmsTask = SupabaseService.shared.fetchSpecCategoryRowsPublic()
         async let allTask = SupabaseService.shared.fetchVariantRoomAssignments()
-        async let facadesTask = SupabaseService.shared.fetchFacades()
-        let (rms, all, fcs) = await (rmsTask, allTask, facadesTask)
-        let mine = all.filter { $0.variant_id == variantId }
+        let (rms, all) = await (rmsTask, allTask)
+        // This screen now only manages facade-agnostic assignments. Any
+        // facade-scoped rows are owned by the dedicated facade-specific
+        // products editor and are left untouched here.
+        let mine = all.filter { $0.variant_id == variantId && $0.facade_id == nil }
         var state: [String: VariantRoomRowState] = [:]
-        var keys: Set<String> = []
         for assignment in mine {
             var row = state[assignment.room_id] ?? VariantRoomRowState(enabled: true)
             row.enabled = true
-            // The admin UI surfaces a single facade scope per room. If the
-            // variant has multiple facade-scoped rows we display the first
-            // one and rely on duplicate variants to express the rest.
-            if row.facadeId == nil { row.facadeId = assignment.facade_id }
             var cell = VariantRoomCellState()
             cell.inclusion = assignment.inclusionValue
             cell.cost = assignment.cost > 0 ? String(format: "%.2f", assignment.cost) : ""
             cell.imageURL = assignment.image_url ?? ""
             row.perRange[assignment.range_id] = cell
             state[assignment.room_id] = row
-            keys.insert("\(assignment.room_id)|\(assignment.range_id)|\(assignment.facade_id ?? "-")")
         }
         rooms = rms
-        facades = fcs
         rows = state
-        existingAssignmentKeys = keys
         isLoading = false
     }
 
@@ -328,11 +279,12 @@ struct AdminVariantRoomAssignmentsView: View {
         let svc = SupabaseService.shared
         var failures = 0
 
-        // Fetch existing to delete rows that are no longer present.
+        // Only manage facade-agnostic rows here; facade-scoped rows are
+        // owned by the separate facade-specific products editor.
         let existing = await svc.fetchVariantRoomAssignments()
-        let mineExisting = existing.filter { $0.variant_id == variantId }
+        let mineExisting = existing.filter { $0.variant_id == variantId && $0.facade_id == nil }
 
-        // Build target set of (room, range, facade) we will keep.
+        // Build target set of (room, range) we will keep.
         var keep: Set<String> = []
         for (roomId, state) in rows {
             guard state.enabled else { continue }
@@ -347,25 +299,25 @@ struct AdminVariantRoomAssignmentsView: View {
                     variant_id: variantId,
                     room_id: roomId,
                     range_id: rangeId,
-                    facade_id: state.facadeId,
+                    facade_id: nil,
                     image_url: cell.imageURL.isEmpty ? nil : cell.imageURL,
                     cost: cost,
                     inclusion: cell.inclusion.rawValue,
                     sort_order: 0
                 )
                 if !(await svc.upsertVariantRoomAssignment(row)) { failures += 1 }
-                keep.insert("\(roomId)|\(rangeId)|\(state.facadeId ?? "-")")
+                keep.insert("\(roomId)|\(rangeId)")
             }
         }
 
         for existingRow in mineExisting {
-            let key = "\(existingRow.room_id)|\(existingRow.range_id)|\(existingRow.facade_id ?? "-")"
+            let key = "\(existingRow.room_id)|\(existingRow.range_id)"
             if !keep.contains(key) {
                 _ = await svc.deleteVariantRoomAssignment(
                     variantId: existingRow.variant_id,
                     roomId: existingRow.room_id,
                     rangeId: existingRow.range_id,
-                    facadeId: existingRow.facade_id
+                    facadeId: nil
                 )
             }
         }
@@ -388,8 +340,5 @@ struct VariantRoomCellState: Hashable {
 
 struct VariantRoomRowState: Hashable {
     var enabled: Bool
-    /// Optional facade scope for this room's assignments. `nil` = applies to
-    /// every facade (default).
-    var facadeId: String? = nil
     var perRange: [String: VariantRoomCellState] = [:]
 }

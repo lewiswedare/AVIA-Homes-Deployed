@@ -110,9 +110,17 @@ change depending on which Facade has been allocated to their build.
       product picker.
 - [x] Admin Variant → Room Assignments matrix gains a per-room Facade
       picker (“All facades” or one of the configured facades).
+      **Rolled back from All Products:** the picker + facade-scoped badges
+      proved too confusing inside the unified "All Products" admin view.
+      `AdminAllProductsView` and the variant Room Assignments editor it
+      launches now only surface facade-agnostic rows. Existing facade-
+      scoped assignments are preserved untouched in the database.
 - [x] `SupabaseService.upsertVariantRoomAssignment` reworked to handle the
       partial unique indexes (NULLs are distinct in Postgres unique
       constraints).
+- [ ] Dedicated "Facade-specific Products" admin editor for the handful of
+      items whose variants change per facade (render colour, front door,
+      garage door trim, etc.).
 
 ## Migration safety
 - Every new column / table uses `IF NOT EXISTS`.
