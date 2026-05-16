@@ -471,6 +471,33 @@ class CatalogDataManager {
         return best
     }
 
+    /// All room ids the given spec item has at least one variant assigned to,
+    /// scoped to `rangeId` and (optionally) `facadeId`. Drives room-first
+    /// client navigation — an item appears in every room it's been assigned
+    /// to, regardless of its legacy `spec_items.category_id`.
+    func roomIds(forSpecItem specItemId: String, rangeId: String, facadeId: String? = nil) -> Set<String> {
+        var result: Set<String> = []
+        for a in allVariantAssignments where a.range_id == rangeId {
+            guard self.specItemId(forVariantId: a.variant_id) == specItemId else { continue }
+            // Respect facade scope: facade-agnostic rows always apply; facade-
+            // specific rows only apply when matching the build's facade.
+            if let fid = a.facade_id, fid != facadeId { continue }
+            result.insert(a.room_id)
+        }
+        return result
+    }
+
+    /// Whether the spec item has ANY variant_room_assignments at all (any
+    /// range/facade). Used to decide between new room-first routing and the
+    /// legacy snapshot-category fallback for items that haven't been
+    /// reassigned yet.
+    func hasAnyRoomAssignment(forSpecItem specItemId: String) -> Bool {
+        for a in allVariantAssignments {
+            if self.specItemId(forVariantId: a.variant_id) == specItemId { return true }
+        }
+        return false
+    }
+
     /// Returns the parent spec item id for a variant (via spec_products).
     func specItemId(forVariantId variantId: String) -> String? {
         guard let colour = coloursByProduct.values.flatMap({ $0 }).first(where: { $0.id == variantId }) else {

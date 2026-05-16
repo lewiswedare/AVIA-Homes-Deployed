@@ -15,14 +15,46 @@ struct SelectionsHomeView: View {
         SpecTier(rawValue: viewModel.specTier.lowercased()) ?? .messina
     }
 
+    /// Room membership is driven by `variant_room_assignments`: an item shows
+    /// up in every room any of its variants are assigned to for the current
+    /// range + facade. Legacy items with no assignments at all fall back to
+    /// their snapshot category so nothing silently disappears.
     private var roomsWithItems: [(room: SelectionRoom, items: [BuildSpecSelection])] {
-        let grouped = Dictionary(grouping: viewModel.selections.filter { $0.selectionType != .removed }) {
-            SelectionRoom.from(snapshotCategoryName: $0.snapshotCategoryName)
+        let active = viewModel.selections.filter { $0.selectionType != .removed }
+        let rangeId = viewModel.specTier.lowercased()
+        let facadeId = viewModel.selectedFacadeId
+        var bucket: [String: [BuildSpecSelection]] = [:]
+        var legacyBucket: [String: [BuildSpecSelection]] = [:]
+
+        for sel in active {
+            let roomIds = catalog.roomIds(forSpecItem: sel.specItemId, rangeId: rangeId, facadeId: facadeId)
+            if roomIds.isEmpty {
+                // No room assignments yet — fall back to snapshot category.
+                legacyBucket[sel.snapshotCategoryName, default: []].append(sel)
+            } else {
+                for rid in roomIds {
+                    bucket[rid, default: []].append(sel)
+                }
+            }
         }
-        return SelectionRoom.displayOrder.compactMap { room in
-            guard let items = grouped[room], !items.isEmpty else { return nil }
-            return (room: room, items: items.sorted { $0.sortOrder < $1.sortOrder })
+
+        var result: [(room: SelectionRoom, items: [BuildSpecSelection])] = []
+        for room in SelectionRoom.displayOrder {
+            var items: [BuildSpecSelection] = []
+            if let rid = room.categoryId, let assigned = bucket[rid] {
+                items.append(contentsOf: assigned)
+            }
+            if let legacy = legacyBucket[room.snapshotCategoryName] {
+                items.append(contentsOf: legacy)
+            }
+            guard !items.isEmpty else { continue }
+            // De-dupe (an item could legitimately match by both paths) and sort.
+            var seen = Set<String>()
+            let deduped = items.filter { seen.insert($0.id).inserted }
+                .sorted { $0.sortOrder < $1.sortOrder }
+            result.append((room: room, items: deduped))
         }
+        return result
     }
 
     private var totalUpgradeCost: Double {

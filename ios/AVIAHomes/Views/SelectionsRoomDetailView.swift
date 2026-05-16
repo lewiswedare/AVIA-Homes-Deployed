@@ -23,10 +23,26 @@ struct SelectionsRoomDetailView: View {
         SpecTier(rawValue: viewModel.specTier.lowercased()) ?? .messina
     }
 
+    /// Items shown in this room are driven by `variant_room_assignments`:
+    /// any selection whose spec item has a variant assigned to this room
+    /// (for the current range + facade) appears here. Legacy items with no
+    /// assignments at all fall back to matching by snapshot category so they
+    /// don't silently disappear.
     private var items: [BuildSpecSelection] {
-        viewModel.selections
-            .filter { $0.snapshotCategoryName == room.snapshotCategoryName && $0.selectionType != .removed }
-            .sorted { $0.sortOrder < $1.sortOrder }
+        let active = viewModel.selections.filter { $0.selectionType != .removed }
+        let facadeId = viewModel.selectedFacadeId
+        return active.filter { sel in
+            if let rid = room.categoryId {
+                let assignedRooms = catalog.roomIds(forSpecItem: sel.specItemId, rangeId: rangeId, facadeId: facadeId)
+                if assignedRooms.contains(rid) { return true }
+                if assignedRooms.isEmpty {
+                    return sel.snapshotCategoryName == room.snapshotCategoryName
+                }
+                return false
+            }
+            return sel.snapshotCategoryName == room.snapshotCategoryName
+        }
+        .sorted { $0.sortOrder < $1.sortOrder }
     }
 
     private var rangeId: String { viewModel.specTier.lowercased() }
