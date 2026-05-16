@@ -42,14 +42,14 @@ struct AdminCatalogHubView: View {
                     }
 
                     NavigationLink {
-                        AdminSpecItemsEditorView()
+                        AdminAllProductsView()
                     } label: {
                         catalogCard(
-                            icon: "list.clipboard.fill",
-                            title: "Spec Range Items",
-                            subtitle: "Manage products across Volos, Messina & Portobello — colours included per product",
+                            icon: "shippingbox.fill",
+                            title: "All Products",
+                            subtitle: "Every product grouped by category — expand each to see its variants & room assignments",
                             count: specCount,
-                            countLabel: "items",
+                            countLabel: "products",
                             color: AVIATheme.timelessBrown
                         )
                     }
