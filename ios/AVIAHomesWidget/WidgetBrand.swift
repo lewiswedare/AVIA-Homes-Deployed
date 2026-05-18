@@ -21,22 +21,17 @@ enum AVIAWidgetBrand {
     static let textSecondary     = aviaBlack.opacity(0.55)
     static let textTertiary      = aviaBlack.opacity(0.35)
 
+    static let success           = Color(red: 76/255,  green: 122/255, blue: 90/255)
+
     static let primaryGradient = LinearGradient(
         colors: [aviaBlack, timelessBrown],
         startPoint: .topLeading,
         endPoint: .bottomTrailing
     )
 
-    // Gentle cream-to-warm wash used as the widget container background.
-    // Same vibe as DashboardView — never dark.
-    static let widgetBackdrop = LinearGradient(
-        stops: [
-            .init(color: Color(red: 232/255, green: 228/255, blue: 226/255), location: 0.0),
-            .init(color: aviaWhite,                                              location: 1.0)
-        ],
-        startPoint: .top,
-        endPoint: .bottom
-    )
+    // Plain cream background, identical to AVIATheme.background.
+    // The dashboard sits on flat cream, not a gradient.
+    static let widgetBackdrop = aviaWhite
 }
 
 // MARK: - Fonts
@@ -68,21 +63,25 @@ struct AVIABentoCard<Content: View>: View {
 }
 
 // MARK: - Eyebrow label (tracked caption used across the app)
+//   Mirrors:  Text("YOUR JOURNEY")
+//             .font(.neueCaption2Medium).kerning(1).foregroundStyle(timelessBrown)
 
 struct AVIAEyebrow: View {
     let text: String
+    var size: CGFloat = 10
     var tint: Color = AVIAWidgetBrand.timelessBrown
 
     var body: some View {
         Text(text.uppercased())
-            .font(.aviaCorpMedium(9))
+            .font(.aviaCorpMedium(size))
             .kerning(1)
             .foregroundStyle(tint)
             .lineLimit(1)
     }
 }
 
-// MARK: - Progress Ring (mirrors BuildJourneyCard's header ring)
+// MARK: - Progress Ring (mirrors BuildJourneyCard.headerSection ring)
+//   44pt circle, 4pt stroke, brown trim, sf-symbol icon centred
 
 struct AVIAProgressRing: View {
     let progress: Double
@@ -109,26 +108,54 @@ struct AVIAProgressRing: View {
     }
 }
 
-// MARK: - Step Indicator (compact horizontal dots)
+// MARK: - Stage Indicator (mirrors BuildJourneyCard.stageIndicator)
+//   Filled brown for completed, brown-on-tint for current, grey for upcoming.
+//   Connectors between dots: brown if completed, surfaceBorder otherwise.
 
-struct AVIAStepIndicator: View {
+struct AVIAStageIndicator: View {
     let total: Int
-    let current: Int   // 0-based index of the active step
+    let current: Int      // 0-based active index
+    var dotSize: CGFloat = 14
+    var fillSize: CGFloat = 6
+    var connectorHeight: CGFloat = 2
 
     var body: some View {
-        HStack(spacing: 4) {
+        HStack(spacing: 0) {
             ForEach(0..<max(total, 1), id: \.self) { i in
-                Capsule()
-                    .fill(fill(for: i))
-                    .frame(height: 4)
+                dot(at: i)
+                if i < total - 1 {
+                    Rectangle()
+                        .fill(i < current ? AVIAWidgetBrand.timelessBrown : AVIAWidgetBrand.surfaceBorder)
+                        .frame(height: connectorHeight)
+                        .frame(maxWidth: .infinity)
+                }
             }
         }
     }
 
-    private func fill(for i: Int) -> Color {
-        if i < current { return AVIAWidgetBrand.timelessBrown }
-        if i == current { return AVIAWidgetBrand.timelessBrown.opacity(0.55) }
-        return AVIAWidgetBrand.surfaceBorder
+    @ViewBuilder
+    private func dot(at i: Int) -> some View {
+        ZStack {
+            if i < current {
+                Circle()
+                    .fill(AVIAWidgetBrand.timelessBrown)
+                    .frame(width: dotSize, height: dotSize)
+                Image(systemName: "checkmark")
+                    .font(.aviaCorpMedium(dotSize * 0.45))
+                    .foregroundStyle(AVIAWidgetBrand.aviaWhite)
+            } else if i == current {
+                Circle()
+                    .fill(AVIAWidgetBrand.timelessBrown.opacity(0.15))
+                    .frame(width: dotSize, height: dotSize)
+                Circle()
+                    .fill(AVIAWidgetBrand.timelessBrown)
+                    .frame(width: fillSize, height: fillSize)
+            } else {
+                Circle()
+                    .fill(AVIAWidgetBrand.surfaceElevated)
+                    .frame(width: dotSize, height: dotSize)
+            }
+        }
     }
 }
 
@@ -137,7 +164,7 @@ struct AVIAStepIndicator: View {
 struct AVIABentoIcon: View {
     let icon: String
     var color: Color = AVIAWidgetBrand.timelessBrown
-    var size: CGFloat = 26
+    var size: CGFloat = 36
 
     var body: some View {
         Image(systemName: icon)
@@ -162,5 +189,48 @@ struct AVIAWordmark: View {
             .aspectRatio(contentMode: .fit)
             .frame(height: height)
             .foregroundStyle(tint)
+    }
+}
+
+// MARK: - Gradient action pill (mirrors BuildJourneyCard.actionButton)
+
+struct AVIAActionPill: View {
+    let title: String
+    var icon: String = "arrow.right"
+    var height: CGFloat = 36
+
+    var body: some View {
+        HStack(spacing: 6) {
+            Text(title)
+                .font(.aviaCorpMedium(12))
+            Image(systemName: icon)
+                .font(.aviaCorpMedium(10))
+        }
+        .foregroundStyle(AVIAWidgetBrand.aviaWhite)
+        .frame(maxWidth: .infinity)
+        .frame(height: height)
+        .background(AVIAWidgetBrand.primaryGradient)
+        .clipShape(RoundedRectangle(cornerRadius: 9, style: .continuous))
+    }
+}
+
+// MARK: - Task row (mirrors BuildJourneyCard.tasksList)
+
+struct AVIATaskRow: View {
+    let title: String
+    let isComplete: Bool
+
+    var body: some View {
+        HStack(spacing: 8) {
+            Image(systemName: isComplete ? "checkmark.circle.fill" : "circle")
+                .font(.aviaCorp(11))
+                .foregroundStyle(isComplete ? AVIAWidgetBrand.success : AVIAWidgetBrand.textTertiary)
+            Text(title)
+                .font(.aviaCorp(11))
+                .foregroundStyle(isComplete ? AVIAWidgetBrand.textSecondary : AVIAWidgetBrand.textPrimary)
+                .strikethrough(isComplete, color: AVIAWidgetBrand.textTertiary)
+                .lineLimit(1)
+            Spacer(minLength: 0)
+        }
     }
 }
