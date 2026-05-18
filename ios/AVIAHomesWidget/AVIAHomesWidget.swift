@@ -236,17 +236,41 @@ private struct AVIAWidgetLarge: View {
         VStack(spacing: 10) {
             dashboardHeader
 
-            // Journey card — full BuildJourneyCard mirror
-            journeyCard
-
-            // Bottom row — staff card + package card
+            // Hero row — Build Progress gauge + Contact block (mirrors dashboard)
             HStack(spacing: 10) {
+                buildProgressCard
                 staffCard
-                packageCard
             }
             .frame(maxHeight: .infinity)
+
+            // Package card sits below, full width
+            packageCard
+                .frame(maxHeight: .infinity)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
+    }
+
+    // MARK: - Build Progress card (semicircular gauge, mirrors dashboard)
+
+    @ViewBuilder
+    private var buildProgressCard: some View {
+        AVIABentoCard(cornerRadius: 13) {
+            VStack(alignment: .leading, spacing: 0) {
+                Text("Build Progress")
+                    .font(.aviaCorpMedium(11))
+                    .foregroundStyle(AVIAWidgetBrand.textSecondary)
+                Spacer(minLength: 0)
+                AVIASemicircleGauge(progress: snapshot.overallProgress)
+                    .frame(maxWidth: .infinity)
+                Spacer(minLength: 0)
+                HStack(spacing: 10) {
+                    GaugeLegendDot(color: AVIAWidgetBrand.timelessBrown, label: "Complete")
+                    GaugeLegendDot(color: AVIAWidgetBrand.surfaceElevated, label: "Remaining")
+                }
+            }
+            .padding(12)
+            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
+        }
     }
 
     // MARK: - Dashboard header (mirror DashboardView.headerRow at small scale)
@@ -261,90 +285,6 @@ private struct AVIAWidgetLarge: View {
                     .foregroundStyle(AVIAWidgetBrand.timelessBrown)
             }
         }
-    }
-
-    // MARK: - Journey card — mirrors BuildJourneyCard structure
-
-    private var journeyCard: some View {
-        AVIABentoCard(cornerRadius: 14) {
-            VStack(spacing: 0) {
-                journeyHeaderSection
-                Divider().overlay(AVIAWidgetBrand.surfaceBorder)
-                stageIndicatorRow
-                Divider().overlay(AVIAWidgetBrand.surfaceBorder)
-                actionFooter
-            }
-        }
-    }
-
-    private var journeyHeaderSection: some View {
-        HStack(spacing: 12) {
-            AVIAProgressRing(
-                progress: snapshot.overallProgress,
-                icon: stageIcon(for: snapshot.kind),
-                diameter: 44,
-                lineWidth: 4
-            )
-            VStack(alignment: .leading, spacing: 2) {
-                HStack {
-                    AVIAEyebrow(text: journeyHeading(for: snapshot.kind))
-                    Spacer()
-                    Text("Step \(min(snapshot.completedStages + 1, max(snapshot.totalStages, 1))) of \(max(snapshot.totalStages, 1))")
-                        .font(.aviaCorp(9))
-                        .foregroundStyle(AVIAWidgetBrand.textTertiary)
-                }
-                Text(stageTitle(snapshot))
-                    .font(.aviaCorpMedium(15))
-                    .foregroundStyle(AVIAWidgetBrand.textPrimary)
-                    .lineLimit(1)
-                if !snapshot.nextStepDetail.isEmpty {
-                    Text(snapshot.nextStepDetail)
-                        .font(.aviaCorp(10))
-                        .foregroundStyle(AVIAWidgetBrand.textSecondary)
-                        .lineLimit(1)
-                }
-            }
-        }
-        .padding(12)
-    }
-
-    private var stageIndicatorRow: some View {
-        AVIAStageIndicator(
-            total: max(snapshot.totalStages, 1),
-            current: snapshot.completedStages,
-            dotSize: 14,
-            fillSize: 6
-        )
-        .padding(.horizontal, 18)
-        .padding(.vertical, 10)
-    }
-
-    private var actionFooter: some View {
-        HStack(spacing: 10) {
-            VStack(alignment: .leading, spacing: 1) {
-                Text(snapshot.nextStepTitle.isEmpty ? "All up to date" : snapshot.nextStepTitle)
-                    .font(.aviaCorpMedium(11))
-                    .foregroundStyle(AVIAWidgetBrand.textPrimary)
-                    .lineLimit(1)
-                Text("\(overallProgressPercent(snapshot))% complete")
-                    .font(.aviaCorp(9))
-                    .foregroundStyle(AVIAWidgetBrand.textSecondary)
-            }
-            Spacer()
-            HStack(spacing: 5) {
-                Text(actionLabel(snapshot))
-                    .font(.aviaCorpMedium(11))
-                Image(systemName: "arrow.right")
-                    .font(.aviaCorpMedium(9))
-            }
-            .foregroundStyle(AVIAWidgetBrand.aviaWhite)
-            .padding(.horizontal, 12)
-            .padding(.vertical, 7)
-            .background(AVIAWidgetBrand.primaryGradient)
-            .clipShape(Capsule())
-        }
-        .padding(.horizontal, 12)
-        .padding(.vertical, 10)
     }
 
     // MARK: - Staff card (mirrors DashboardView.staffContactCard — photo + dark gradient)
@@ -388,7 +328,7 @@ private struct AVIAWidgetLarge: View {
                         .font(.aviaCorp(9))
                         .foregroundStyle(AVIAWidgetBrand.aviaWhite.opacity(0.75))
                         .lineLimit(1)
-                    HStack(spacing: 5) {
+                    HStack(spacing: 6) {
                         if !staff.phone.isEmpty {
                             StaffChip(icon: "phone.fill")
                         }
@@ -396,7 +336,7 @@ private struct AVIAWidgetLarge: View {
                             StaffChip(icon: "envelope.fill")
                         }
                     }
-                    .padding(.top, 2)
+                    .padding(.top, 4)
                 } else {
                     Text("Your AVIA Contact")
                         .font(.aviaCorpMedium(12))
@@ -472,11 +412,89 @@ private struct StaffChip: View {
 
     var body: some View {
         Image(systemName: icon)
-            .font(.aviaCorpMedium(9))
+            .font(.aviaCorpMedium(11))
             .foregroundStyle(AVIAWidgetBrand.aviaWhite)
-            .frame(width: 22, height: 22)
-            .background(AVIAWidgetBrand.aviaWhite.opacity(0.2))
-            .clipShape(Circle())
+            .frame(width: 28, height: 28)
+            .background(.ultraThinMaterial, in: Circle())
+            .overlay(
+                Circle().stroke(AVIAWidgetBrand.aviaWhite.opacity(0.18), lineWidth: 0.5)
+            )
+    }
+}
+
+// MARK: - Semicircular gauge (mirrors dashboard Build Progress gauge)
+
+private struct AVIASemicircleGauge: View {
+    let progress: Double
+    var lineWidth: CGFloat = 10
+
+    private var clamped: Double { max(0, min(1, progress)) }
+
+    var body: some View {
+        GeometryReader { geo in
+            let w = geo.size.width
+            let diameter = min(w, geo.size.height * 2)
+            ZStack {
+                // Track — full half-circle background
+                Semicircle(trim: 1)
+                    .stroke(
+                        AVIAWidgetBrand.surfaceElevated,
+                        style: StrokeStyle(lineWidth: lineWidth, lineCap: .round)
+                    )
+                // Filled — proportional
+                Semicircle(trim: clamped)
+                    .stroke(
+                        AVIAWidgetBrand.timelessBrown,
+                        style: StrokeStyle(lineWidth: lineWidth, lineCap: .round)
+                    )
+
+                // Centred percentage label sits just below the arc midpoint
+                VStack(spacing: 0) {
+                    Spacer()
+                    HStack(alignment: .lastTextBaseline, spacing: 2) {
+                        Text("\(Int((clamped * 100).rounded()))")
+                            .font(.aviaCorpMedium(28))
+                            .foregroundStyle(AVIAWidgetBrand.textPrimary)
+                        Text("%")
+                            .font(.aviaCorp(12))
+                            .foregroundStyle(AVIAWidgetBrand.textSecondary)
+                    }
+                }
+                .frame(width: diameter, height: diameter / 2)
+            }
+            .frame(width: diameter, height: diameter / 2)
+            .frame(maxWidth: .infinity, alignment: .center)
+        }
+        .frame(height: 70)
+    }
+}
+
+private struct Semicircle: Shape {
+    var trim: Double  // 0...1
+    func path(in rect: CGRect) -> Path {
+        var p = Path()
+        let radius = min(rect.width / 2, rect.height)
+        let center = CGPoint(x: rect.midX, y: rect.maxY)
+        let start = Angle.degrees(180)
+        let end = Angle.degrees(180 + 180 * max(0, min(1, trim)))
+        p.addArc(center: center, radius: radius - 5, startAngle: start, endAngle: end, clockwise: false)
+        return p
+    }
+}
+
+private struct GaugeLegendDot: View {
+    let color: Color
+    let label: String
+
+    var body: some View {
+        HStack(spacing: 4) {
+            Circle()
+                .fill(color)
+                .frame(width: 6, height: 6)
+            Text(label)
+                .font(.aviaCorp(9))
+                .foregroundStyle(AVIAWidgetBrand.textSecondary)
+        }
     }
 }
 
