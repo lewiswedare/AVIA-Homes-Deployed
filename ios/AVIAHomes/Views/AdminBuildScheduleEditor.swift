@@ -14,6 +14,7 @@ struct AdminBuildScheduleEditor: View {
     @State private var hasActualStart = false
     @State private var hasActualCompletion = false
     @State private var isSaving = false
+    @State private var saveError: String?
 
     var body: some View {
         NavigationStack {
@@ -39,6 +40,16 @@ struct AdminBuildScheduleEditor: View {
                             row(label: "Actual Completion", icon: "checkmark.seal.fill", color: AVIATheme.success, hasValue: $hasActualCompletion, value: $actualCompletion)
                         }
                         .padding(16)
+                    }
+
+                    if let saveError {
+                        Text(saveError)
+                            .font(.neueCaption)
+                            .foregroundStyle(AVIATheme.destructive)
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                            .padding(12)
+                            .background(AVIATheme.destructive.opacity(0.08))
+                            .clipShape(.rect(cornerRadius: 10))
                     }
 
                     PremiumButton(isSaving ? "Saving…" : "Save Schedule", icon: "checkmark", style: .primary) {
@@ -102,14 +113,20 @@ struct AdminBuildScheduleEditor: View {
 
     private func save() async {
         isSaving = true
+        saveError = nil
         defer { isSaving = false }
-        await viewModel.updateBuildSchedule(
+        let success = await viewModel.updateBuildSchedule(
             buildId: build.id,
             estimatedStartDate: hasEstStart ? (estStart ?? .now) : nil,
             estimatedCompletionDate: hasEstCompletion ? (estCompletion ?? .now) : nil,
             actualStartDate: hasActualStart ? (actualStart ?? .now) : nil,
             actualCompletionDate: hasActualCompletion ? (actualCompletion ?? .now) : nil
         )
+        if !success {
+            let detail = SupabaseService.shared.lastUpsertError ?? "Unknown Supabase error."
+            saveError = "Couldn’t save schedule. \(detail)\n\nLikely cause: the schedule columns are missing from the builds table. Run migration 20260526_build_timeline_schedule.sql."
+            return
+        }
         dismiss()
     }
 }

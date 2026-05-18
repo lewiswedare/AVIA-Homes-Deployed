@@ -1250,8 +1250,9 @@ class AppViewModel {
         Task { await SupabaseService.shared.updateBuildStage(updatedStage, buildId: buildId, sortOrder: stageIndex) }
     }
 
-    func updateBuildSchedule(buildId: String, estimatedStartDate: Date?, estimatedCompletionDate: Date?, actualStartDate: Date?, actualCompletionDate: Date?) async {
-        guard let index = allClientBuilds.firstIndex(where: { $0.id == buildId }) else { return }
+    @discardableResult
+    func updateBuildSchedule(buildId: String, estimatedStartDate: Date?, estimatedCompletionDate: Date?, actualStartDate: Date?, actualCompletionDate: Date?) async -> Bool {
+        guard let index = allClientBuilds.firstIndex(where: { $0.id == buildId }) else { return false }
         let oldBuild = allClientBuilds[index]
         let updated = ClientBuild(
             id: oldBuild.id,
@@ -1287,7 +1288,14 @@ class AppViewModel {
         let success = await SupabaseService.shared.upsertBuild(updated)
         if success {
             await refreshBuildsAndAssignments()
+        } else {
+            // Roll back the optimistic local update so the UI matches DB state.
+            if let revertIndex = allClientBuilds.firstIndex(where: { $0.id == buildId }) {
+                allClientBuilds[revertIndex] = oldBuild
+                syncBuildStagesForCurrentUser()
+            }
         }
+        return success
     }
 
     func addAwaitingRegistrationStage(buildId: String, estimatedDate: Date?, notes: String?) {

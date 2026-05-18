@@ -232,17 +232,21 @@ class SupabaseService {
     func upsertBuild(_ build: ClientBuild) async -> Bool {
         guard isConfigured else {
             print("[SupabaseService] upsertBuild: not configured")
+            lastUpsertError = "Supabase is not configured."
             return false
         }
         let row = BuildRow(from: build)
+        lastUpsertError = nil
         do {
             try await client
                 .from("builds")
-                .upsert(row)
+                .upsert(row, onConflict: "id")
                 .execute()
             print("[SupabaseService] upsertBuild SUCCESS for id=\(build.id), client=\(build.client.id)")
         } catch {
-            print("[SupabaseService] upsertBuild FAILED for id=\(build.id) — error: \(error)")
+            let message = "\(error)"
+            print("[SupabaseService] upsertBuild FAILED for id=\(build.id) — error: \(message)")
+            lastUpsertError = message
             return false
         }
         for (index, stage) in build.buildStages.enumerated() {
