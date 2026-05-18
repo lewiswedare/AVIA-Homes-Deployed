@@ -26,6 +26,7 @@ struct AdminBuildStageEditor: View {
     @State private var hasEstEnd = false
     @State private var hasActualStart = false
     @State private var hasActualEnd = false
+    @State private var saveError: String?
 
     var body: some View {
         NavigationStack {
@@ -108,6 +109,14 @@ struct AdminBuildStageEditor: View {
                             }
                         }
                         .padding(16)
+                    }
+
+                    if let saveError {
+                        Text(saveError)
+                            .font(.neueCaption)
+                            .foregroundStyle(.red)
+                            .multilineTextAlignment(.center)
+                            .padding(.horizontal, 12)
                     }
 
                     PremiumButton("Save Stage", icon: "checkmark", style: .primary) {
@@ -196,6 +205,7 @@ struct AdminBuildStageEditor: View {
 
     private func save() async {
         isSaving = true
+        saveError = nil
         defer { isSaving = false }
 
         let updated = BuildStage(
@@ -214,7 +224,15 @@ struct AdminBuildStageEditor: View {
             actualEndDate: hasActualEnd ? (actualEndDate ?? .now) : nil
         )
 
-        await SupabaseService.shared.updateBuildStage(updated, buildId: buildId, sortOrder: sortOrder)
+        // Optimistic local update so the UI reflects the change immediately,
+        // even if the refresh lags behind realtime.
+        viewModel.applyLocalStageUpdate(buildId: buildId, stage: updated)
+
+        let success = await SupabaseService.shared.updateBuildStage(updated, buildId: buildId, sortOrder: sortOrder)
+        if !success {
+            saveError = "Couldn’t save stage schedule to Supabase. Check that the schedule columns exist on build_stages (migration 20260526) and that your admin RLS allows updates."
+            return
+        }
         await viewModel.refreshBuildsAndAssignments()
         dismiss()
     }

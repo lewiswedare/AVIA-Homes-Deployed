@@ -343,13 +343,24 @@ class SupabaseService {
         }
     }
 
-    func updateBuildStage(_ stage: BuildStage, buildId: String, sortOrder: Int) async {
-        guard isConfigured else { return }
+    @discardableResult
+    func updateBuildStage(_ stage: BuildStage, buildId: String, sortOrder: Int) async -> Bool {
+        guard isConfigured else {
+            print("[SupabaseService] updateBuildStage: not configured")
+            return false
+        }
         let row = BuildStageRow(from: stage, buildId: buildId, sortOrder: sortOrder)
-        _ = try? await client
-            .from("build_stages")
-            .upsert(row)
-            .execute()
+        do {
+            try await client
+                .from("build_stages")
+                .upsert(row, onConflict: "id")
+                .execute()
+            print("[SupabaseService] updateBuildStage SUCCESS stage=\(stage.id) build=\(buildId) estStart=\(String(describing: stage.estimatedStartDate)) estEnd=\(String(describing: stage.estimatedEndDate)) actStart=\(String(describing: stage.actualStartDate)) actEnd=\(String(describing: stage.actualEndDate))")
+            return true
+        } catch {
+            print("[SupabaseService] updateBuildStage FAILED stage=\(stage.id) — error: \(error)")
+            return false
+        }
     }
 
     func deleteBuildStage(stageId: String) async {

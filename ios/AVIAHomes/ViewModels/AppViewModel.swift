@@ -1157,6 +1157,44 @@ class AppViewModel {
         }
     }
 
+    func applyLocalStageUpdate(buildId: String, stage: BuildStage) {
+        guard let buildIndex = allClientBuilds.firstIndex(where: { $0.id == buildId }) else { return }
+        var stages = allClientBuilds[buildIndex].buildStages
+        guard let stageIndex = stages.firstIndex(where: { $0.id == stage.id }) else { return }
+        stages[stageIndex] = stage
+        let oldBuild = allClientBuilds[buildIndex]
+        allClientBuilds[buildIndex] = ClientBuild(
+            id: oldBuild.id,
+            client: oldBuild.client,
+            homeDesign: oldBuild.homeDesign,
+            lotNumber: oldBuild.lotNumber,
+            estate: oldBuild.estate,
+            contractDate: oldBuild.contractDate,
+            buildStages: stages,
+            assignedStaffId: oldBuild.assignedStaffId,
+            salesPartnerId: oldBuild.salesPartnerId,
+            isCustom: oldBuild.isCustom,
+            selectedFacadeId: oldBuild.selectedFacadeId,
+            customBedrooms: oldBuild.customBedrooms,
+            customBathrooms: oldBuild.customBathrooms,
+            customGarages: oldBuild.customGarages,
+            customSquareMeters: oldBuild.customSquareMeters,
+            customStoreys: oldBuild.customStoreys,
+            additionalClients: oldBuild.additionalClients,
+            preConstructionStaffId: oldBuild.preConstructionStaffId,
+            buildingSupportStaffId: oldBuild.buildingSupportStaffId,
+            handoverTriggeredAt: oldBuild.handoverTriggeredAt,
+            buildStatus: oldBuild.buildStatus,
+            eoiId: oldBuild.eoiId,
+            specTier: oldBuild.specTier,
+            estimatedStartDate: oldBuild.estimatedStartDate,
+            estimatedCompletionDate: oldBuild.estimatedCompletionDate,
+            actualStartDate: oldBuild.actualStartDate,
+            actualCompletionDate: oldBuild.actualCompletionDate
+        )
+        syncBuildStagesForCurrentUser()
+    }
+
     func updateBuildStageProgress(buildId: String, stageId: String, progress: Double, notes: String?) {
         guard let buildIndex = allClientBuilds.firstIndex(where: { $0.id == buildId }) else { return }
         var stages = allClientBuilds[buildIndex].buildStages
