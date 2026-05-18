@@ -89,7 +89,7 @@ struct AVIAHomesWidgetView: View {
             }
         }
         .containerBackground(for: .widget) {
-            AVIAWidgetBrand.widgetBackdrop
+            AVIAWidgetBrand.cardBackground
         }
     }
 }
@@ -100,59 +100,53 @@ private struct AVIAWidgetSmall: View {
     let snapshot: WidgetSnapshot
 
     var body: some View {
-        AVIABentoCard(cornerRadius: 16) {
-            VStack(alignment: .leading, spacing: 0) {
-                // Mini header row — AVIA mark + step counter
-                HStack(alignment: .center, spacing: 6) {
-                    AVIAWordmark(height: 11)
-                    Spacer()
-                    Text("Step \(min(snapshot.completedStages + 1, max(snapshot.totalStages, 1))) of \(max(snapshot.totalStages, 1))")
-                        .font(.aviaCorp(9))
-                        .foregroundStyle(AVIAWidgetBrand.textTertiary)
-                }
-                .padding(.horizontal, 12)
-                .padding(.top, 12)
-                .padding(.bottom, 10)
-
-                Divider().overlay(AVIAWidgetBrand.surfaceBorder)
-
-                // Body — ring + journey label + stage title
-                VStack(alignment: .leading, spacing: 10) {
-                    HStack(spacing: 10) {
-                        AVIAProgressRing(
-                            progress: snapshot.overallProgress,
-                            icon: stageIcon(for: snapshot.kind),
-                            diameter: 40,
-                            lineWidth: 3.5
-                        )
-                        VStack(alignment: .leading, spacing: 2) {
-                            AVIAEyebrow(text: journeyHeading(for: snapshot.kind), size: 9)
-                            Text(stageTitle(snapshot))
-                                .font(.aviaCorpMedium(12))
-                                .foregroundStyle(AVIAWidgetBrand.textPrimary)
-                                .lineLimit(2)
-                                .multilineTextAlignment(.leading)
-                        }
-                    }
-
-                    Spacer(minLength: 0)
-
-                    AVIAStageIndicator(
-                        total: max(snapshot.totalStages, 1),
-                        current: snapshot.completedStages,
-                        dotSize: 10,
-                        fillSize: 4
-                    )
-
-                    Text("\(overallProgressPercent(snapshot))% complete")
-                        .font(.aviaCorp(9))
-                        .foregroundStyle(AVIAWidgetBrand.textTertiary)
-                }
-                .padding(.horizontal, 12)
-                .padding(.vertical, 10)
-                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
+        VStack(alignment: .leading, spacing: 0) {
+            // Mini header row — AVIA mark + step counter
+            HStack(alignment: .center, spacing: 6) {
+                AVIAWordmark(height: 11)
+                Spacer()
+                Text("Step \(min(snapshot.completedStages + 1, max(snapshot.totalStages, 1))) of \(max(snapshot.totalStages, 1))")
+                    .font(.aviaCorp(9))
+                    .foregroundStyle(AVIAWidgetBrand.textTertiary)
             }
+            .padding(.bottom, 8)
+
+            Divider().overlay(AVIAWidgetBrand.surfaceBorder)
+                .padding(.bottom, 8)
+
+            // Body — ring + journey label + stage title
+            HStack(spacing: 10) {
+                AVIAProgressRing(
+                    progress: snapshot.overallProgress,
+                    icon: stageIcon(for: snapshot.kind),
+                    diameter: 40,
+                    lineWidth: 3.5
+                )
+                VStack(alignment: .leading, spacing: 2) {
+                    AVIAEyebrow(text: journeyHeading(for: snapshot.kind), size: 9)
+                    Text(stageTitle(snapshot))
+                        .font(.aviaCorpMedium(12))
+                        .foregroundStyle(AVIAWidgetBrand.textPrimary)
+                        .lineLimit(2)
+                        .multilineTextAlignment(.leading)
+                }
+            }
+
+            Spacer(minLength: 8)
+
+            AVIAStageIndicator(
+                total: max(snapshot.totalStages, 1),
+                current: snapshot.completedStages,
+                dotSize: 10,
+                fillSize: 4
+            )
+            .padding(.bottom, 6)
+
+            Text("\(overallProgressPercent(snapshot))% complete")
+                .font(.aviaCorp(9))
+                .foregroundStyle(AVIAWidgetBrand.textTertiary)
         }
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
     }
 }
 
@@ -162,15 +156,14 @@ private struct AVIAWidgetMedium: View {
     let snapshot: WidgetSnapshot
 
     var body: some View {
-        AVIABentoCard(cornerRadius: 16) {
-            VStack(spacing: 0) {
-                headerRow
-                Divider().overlay(AVIAWidgetBrand.surfaceBorder)
-                journeyBody
-                Divider().overlay(AVIAWidgetBrand.surfaceBorder)
-                footerRow
-            }
+        VStack(spacing: 0) {
+            headerRow
+            Divider().overlay(AVIAWidgetBrand.surfaceBorder)
+            journeyBody
+            Divider().overlay(AVIAWidgetBrand.surfaceBorder)
+            footerRow
         }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
 
     // Mirrors dashboard headerRow — wordmark left, completion chip right.
@@ -186,7 +179,6 @@ private struct AVIAWidgetMedium: View {
                 .background(AVIAWidgetBrand.timelessBrown.opacity(0.10))
                 .clipShape(Capsule())
         }
-        .padding(.horizontal, 14)
         .padding(.vertical, 10)
     }
 
@@ -219,8 +211,7 @@ private struct AVIAWidgetMedium: View {
                 }
             }
         }
-        .padding(.horizontal, 14)
-        .padding(.vertical, 10)
+        .padding(.vertical, 12)
     }
 
     // Stage dots row.
@@ -231,7 +222,7 @@ private struct AVIAWidgetMedium: View {
             dotSize: 14,
             fillSize: 6
         )
-        .padding(.horizontal, 18)
+        .padding(.horizontal, 4)
         .padding(.vertical, 12)
     }
 }
@@ -255,6 +246,7 @@ private struct AVIAWidgetLarge: View {
             }
             .frame(maxHeight: .infinity)
         }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
 
     // MARK: - Dashboard header (mirror DashboardView.headerRow at small scale)
