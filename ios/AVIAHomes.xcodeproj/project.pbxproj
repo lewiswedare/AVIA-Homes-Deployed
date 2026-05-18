@@ -516,6 +516,7 @@
 				INFOPLIST_KEY_ITSAppUsesNonExemptEncryption = NO;
 				INFOPLIST_KEY_NSCalendarsFullAccessUsageDescription = "AVIA Homes needs calendar access to add your build milestones and appointments.";
 				INFOPLIST_KEY_NSCameraUsageDescription = "AVIA Homes needs camera access to take photos for your support requests.";
+				INFOPLIST_KEY_NSFaceIDUsageDescription = "AVIA Homes uses Face ID to securely unlock your account.";
 				INFOPLIST_KEY_NSPhotoLibraryUsageDescription = "AVIA Homes needs photo library access to attach photos to your support requests.";
 				INFOPLIST_KEY_NSRemindersFullAccessUsageDescription = "AVIA Homes needs reminders access to set reminders for your upcoming build events.";
 				INFOPLIST_KEY_UIAppFonts = (
@@ -568,6 +569,7 @@
 				INFOPLIST_KEY_ITSAppUsesNonExemptEncryption = NO;
 				INFOPLIST_KEY_NSCalendarsFullAccessUsageDescription = "AVIA Homes needs calendar access to add your build milestones and appointments.";
 				INFOPLIST_KEY_NSCameraUsageDescription = "AVIA Homes needs camera access to take photos for your support requests.";
+				INFOPLIST_KEY_NSFaceIDUsageDescription = "AVIA Homes uses Face ID to securely unlock your account.";
 				INFOPLIST_KEY_NSPhotoLibraryUsageDescription = "AVIA Homes needs photo library access to attach photos to your support requests.";
 				INFOPLIST_KEY_NSRemindersFullAccessUsageDescription = "AVIA Homes needs reminders access to set reminders for your upcoming build events.";
 				INFOPLIST_KEY_UIAppFonts = (

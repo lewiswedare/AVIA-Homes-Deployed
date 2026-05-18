@@ -120,6 +120,33 @@ struct LoginView: View {
                         .disabled(email.isEmpty || password.isEmpty || appViewModel.authService.isLoading)
                         .opacity(email.isEmpty || password.isEmpty ? 0.6 : 1)
 
+                        if appViewModel.biometricAuth.isEnabled && appViewModel.biometricAuth.isAvailable {
+                            Button {
+                                Task {
+                                    let ok = await appViewModel.unlockWithBiometrics()
+                                    if !ok {
+                                        errorMessage = "\(appViewModel.biometricAuth.biometryKind.displayName) authentication failed."
+                                        showError = true
+                                    }
+                                }
+                            } label: {
+                                HStack(spacing: 10) {
+                                    Image(systemName: appViewModel.biometricAuth.biometryKind.systemImage)
+                                    Text("Sign in with \(appViewModel.biometricAuth.biometryKind.displayName)")
+                                        .font(.neueSubheadlineMedium)
+                                }
+                                .frame(maxWidth: .infinity)
+                                .frame(height: 52)
+                                .foregroundStyle(AVIATheme.timelessBrown)
+                                .background(AVIATheme.timelessBrown.opacity(0.08))
+                                .clipShape(.rect(cornerRadius: 11))
+                                .overlay {
+                                    RoundedRectangle(cornerRadius: 11)
+                                        .stroke(AVIATheme.timelessBrown.opacity(0.2), lineWidth: 1)
+                                }
+                            }
+                        }
+
                         Button("Forgot Password?") {
                             showForgotPassword = true
                         }
@@ -191,5 +218,62 @@ struct LoginView: View {
                 showError = true
             }
         }
+    }
+}
+
+/// Shown after a successful password sign-in when biometrics are available
+/// but not yet enabled, so the user can opt-in for next launch.
+struct EnableBiometricsPrompt: View {
+    @Environment(AppViewModel.self) private var appViewModel
+    @Environment(\.dismiss) private var dismiss
+
+    var body: some View {
+        VStack(spacing: 24) {
+            Image(systemName: appViewModel.biometricAuth.biometryKind.systemImage)
+                .font(.system(size: 64, weight: .light))
+                .foregroundStyle(AVIATheme.timelessBrown)
+                .padding(.top, 40)
+
+            VStack(spacing: 10) {
+                Text("Enable \(appViewModel.biometricAuth.biometryKind.displayName)")
+                    .font(.neueCorpMedium(24))
+                    .foregroundStyle(AVIATheme.textPrimary)
+                Text("Sign in faster next time without typing your password.")
+                    .font(.neueSubheadline)
+                    .foregroundStyle(AVIATheme.textSecondary)
+                    .multilineTextAlignment(.center)
+                    .padding(.horizontal, 32)
+            }
+
+            Spacer()
+
+            VStack(spacing: 12) {
+                Button {
+                    Task {
+                        _ = await appViewModel.enableBiometrics()
+                        dismiss()
+                    }
+                } label: {
+                    Text("Enable \(appViewModel.biometricAuth.biometryKind.displayName)")
+                        .font(.neueSubheadlineMedium)
+                        .frame(maxWidth: .infinity)
+                        .frame(height: 52)
+                        .foregroundStyle(AVIATheme.aviaWhite)
+                        .background(AVIATheme.primaryGradient)
+                        .clipShape(.rect(cornerRadius: 12))
+                }
+
+                Button("Not Now") {
+                    appViewModel.shouldPromptEnableBiometrics = false
+                    dismiss()
+                }
+                .font(.neueSubheadlineMedium)
+                .foregroundStyle(AVIATheme.textSecondary)
+            }
+            .padding(.horizontal, 28)
+            .padding(.bottom, 40)
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .background(AVIATheme.background)
     }
 }

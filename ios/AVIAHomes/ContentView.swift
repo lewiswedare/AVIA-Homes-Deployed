@@ -7,7 +7,9 @@ struct ContentView: View {
         if appViewModel.authService.isRestoringSession {
             launchScreen
         } else if appViewModel.isAuthenticated {
-            if appViewModel.hasCompletedProfile {
+            if appViewModel.biometricAuth.isEnabled && !appViewModel.biometricUnlocked {
+                BiometricLockView()
+            } else if appViewModel.hasCompletedProfile {
                 switch appViewModel.currentRole {
                 case .pending, .client:
                     if appViewModel.clientHasBuild {

@@ -33,6 +33,12 @@ struct ProfileView: View {
                     DetailRow(icon: "phone.fill", title: "Phone", value: viewModel.currentUser.phone)
                 }
 
+                if viewModel.biometricAuth.isAvailable {
+                    settingsSection(title: "Security") {
+                        BiometricToggleRow()
+                    }
+                }
+
                 settingsSection(title: "Notifications") {
                     ToggleRow(icon: "bell.fill", title: "Push Notifications", isOn: $notificationsEnabled)
                     if notificationsEnabled {
@@ -140,6 +146,41 @@ struct ProfileView: View {
             }
             .padding(.horizontal, 16)
         }
+    }
+}
+
+/// Toggle in Profile for enabling/disabling Face ID / Touch ID sign-in.
+/// Enabling prompts the user for biometrics so we don't lock anyone out by
+/// flipping the flag for someone whose face/finger isn't enrolled.
+struct BiometricToggleRow: View {
+    @Environment(AppViewModel.self) private var viewModel
+
+    var body: some View {
+        Toggle(isOn: Binding(
+            get: { viewModel.biometricAuth.isEnabled },
+            set: { newValue in
+                Task {
+                    if newValue {
+                        _ = await viewModel.enableBiometrics()
+                    } else {
+                        viewModel.disableBiometrics()
+                    }
+                }
+            }
+        )) {
+            HStack(spacing: 12) {
+                Image(systemName: viewModel.biometricAuth.biometryKind.systemImage)
+                    .font(.neueSubheadline)
+                    .foregroundStyle(AVIATheme.timelessBrown)
+                    .frame(width: 28)
+                Text("Sign in with \(viewModel.biometricAuth.biometryKind.displayName)")
+                    .font(.neueSubheadline)
+                    .foregroundStyle(AVIATheme.textPrimary)
+            }
+        }
+        .tint(AVIATheme.timelessBrown)
+        .padding(.horizontal, 16)
+        .padding(.vertical, 10)
     }
 }
 

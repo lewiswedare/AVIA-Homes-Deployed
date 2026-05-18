@@ -12,6 +12,13 @@ extension Notification.Name {
 @Observable
 class AppViewModel {
     var authService = AuthService()
+    var biometricAuth = BiometricAuthService()
+    /// True after a successful Face ID / Touch ID prompt this session.
+    /// When biometric auth is enabled, the app gates content behind this.
+    var biometricUnlocked: Bool = false
+    /// Set after a successful password sign-in when biometrics are available
+    /// but not yet enabled, so the UI can prompt to turn them on.
+    var shouldPromptEnableBiometrics: Bool = false
     var notificationService = NotificationService()
     var messagingService = MessagingService()
     var pushManager = PushNotificationManager()
@@ -81,6 +88,9 @@ class AppViewModel {
 
     func restoreSession() async {
         if let userId = await authService.restoreSession() {
+            // If the user has enabled biometric protection, leave the app
+            // locked until ContentView prompts and unlockWithBiometrics() runs.
+            biometricUnlocked = !biometricAuth.isEnabled
             if let profile = await SupabaseService.shared.fetchProfile(userId: userId) {
                 currentUser = profile
                 authService.updateRole(profile.role)
@@ -662,8 +672,37 @@ class AppViewModel {
                 currentUser = user
             }
             await loadUserData()
+            // Successful password sign-in counts as a biometric unlock for
+            // this session. Offer to enable Face ID for next launch.
+            biometricUnlocked = true
+            shouldPromptEnableBiometrics = biometricAuth.isAvailable && !biometricAuth.isEnabled
         }
         return success
+    }
+
+    /// Prompt for Face ID / Touch ID and, on success, flip the session to
+    /// unlocked. Called by ContentView when a restored session is gated by
+    /// biometrics, or by LoginView when the user taps "Sign in with Face ID".
+    func unlockWithBiometrics() async -> Bool {
+        let ok = await biometricAuth.authenticate(reason: "Unlock AVIA Homes")
+        if ok { biometricUnlocked = true }
+        return ok
+    }
+
+    func enableBiometrics() async -> Bool {
+        let ok = await biometricAuth.authenticate(
+            reason: "Enable \(biometricAuth.biometryKind.displayName) for AVIA Homes"
+        )
+        if ok {
+            biometricAuth.setEnabled(true)
+            biometricUnlocked = true
+        }
+        shouldPromptEnableBiometrics = false
+        return ok
+    }
+
+    func disableBiometrics() {
+        biometricAuth.setEnabled(false)
     }
 
     func handleSignUp(email: String) async {
@@ -806,6 +845,9 @@ class AppViewModel {
             await SupabaseService.shared.removeAllChannels()
         }
         authService.signOut()
+        biometricAuth.setEnabled(false)
+        biometricUnlocked = false
+        shouldPromptEnableBiometrics = false
         currentUser = .empty
         cachedUsers = []
         allClientBuilds = []
