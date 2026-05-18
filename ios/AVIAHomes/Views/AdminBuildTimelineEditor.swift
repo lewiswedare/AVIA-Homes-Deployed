@@ -11,12 +11,16 @@ struct AdminBuildTimelineEditor: View {
     @State private var showingAddReminder = false
     @State private var editingMilestone: BuildMilestone?
     @State private var selectedStageId: String = ""
+    @State private var showingScheduleEditor = false
 
     var body: some View {
         VStack(spacing: 16) {
             timelineOverviewCard
             milestonesSection
             remindersSection
+        }
+        .sheet(isPresented: $showingScheduleEditor) {
+            AdminBuildScheduleEditor(build: build)
         }
         .task {
             await loadData()
@@ -56,25 +60,28 @@ struct AdminBuildTimelineEditor: View {
                         .foregroundStyle(AVIATheme.timelessBrown)
                 }
 
-                if let start = build.estimatedStartDate {
-                    HStack(spacing: 8) {
-                        Image(systemName: "play.circle.fill")
-                            .foregroundStyle(AVIATheme.timelessBrown)
-                        Text("Est. Start: \(start.formatted(.dateTime.month(.abbreviated).day().year()))")
-                            .font(.neueCaption)
-                            .foregroundStyle(AVIATheme.textSecondary)
+                Button {
+                    showingScheduleEditor = true
+                } label: {
+                    HStack(spacing: 10) {
+                        VStack(alignment: .leading, spacing: 6) {
+                            scheduleDateRow(icon: "play.circle.fill", color: AVIATheme.timelessBrown, label: "Est. Start", date: build.estimatedStartDate)
+                            scheduleDateRow(icon: "flag.checkered", color: AVIATheme.success, label: "Est. Completion", date: build.estimatedCompletionDate)
+                            if build.actualStartDate != nil || build.actualCompletionDate != nil {
+                                scheduleDateRow(icon: "hammer.fill", color: AVIATheme.warning, label: "Actual Start", date: build.actualStartDate)
+                                scheduleDateRow(icon: "checkmark.seal.fill", color: AVIATheme.success, label: "Actual Completion", date: build.actualCompletionDate)
+                            }
+                        }
+                        Spacer()
+                        Image(systemName: "pencil.circle.fill")
+                            .font(.system(size: 22))
+                            .foregroundStyle(AVIATheme.timelessBrown.opacity(0.7))
                     }
+                    .padding(12)
+                    .background(AVIATheme.surfaceElevated)
+                    .clipShape(.rect(cornerRadius: 10))
                 }
-
-                if let end = build.estimatedCompletionDate {
-                    HStack(spacing: 8) {
-                        Image(systemName: "flag.checkered")
-                            .foregroundStyle(AVIATheme.success)
-                        Text("Est. Completion: \(end.formatted(.dateTime.month(.abbreviated).day().year()))")
-                            .font(.neueCaption)
-                            .foregroundStyle(AVIATheme.textSecondary)
-                    }
-                }
+                .buttonStyle(.pressable(.subtle))
 
                 HStack(spacing: 16) {
                     statItem(label: "Stages", value: "\(build.buildStages.count)", color: AVIATheme.timelessBrown)
@@ -83,6 +90,21 @@ struct AdminBuildTimelineEditor: View {
                 }
             }
             .padding(16)
+        }
+    }
+
+    private func scheduleDateRow(icon: String, color: Color, label: String, date: Date?) -> some View {
+        HStack(spacing: 8) {
+            Image(systemName: icon)
+                .foregroundStyle(color)
+                .frame(width: 18)
+            Text(label)
+                .font(.neueCaption)
+                .foregroundStyle(AVIATheme.textTertiary)
+            Spacer()
+            Text(date.map { $0.formatted(.dateTime.month(.abbreviated).day().year()) } ?? "—")
+                .font(.neueCaptionMedium)
+                .foregroundStyle(date == nil ? AVIATheme.textTertiary : AVIATheme.textPrimary)
         }
     }
 

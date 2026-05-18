@@ -90,7 +90,8 @@ struct AdminBuildEditSheet: View {
                 }
             }
             .sheet(item: $editingStage) { stage in
-                StageEditSheet(build: build, stage: stage)
+                let sortOrder = latestBuild.buildStages.firstIndex(where: { $0.id == stage.id }) ?? 0
+                AdminBuildStageEditor(buildId: latestBuild.id, stage: stage, sortOrder: sortOrder)
             }
             .sheet(isPresented: $showingAddClient) {
                 AddClientToBuildSheet(build: latestBuild)

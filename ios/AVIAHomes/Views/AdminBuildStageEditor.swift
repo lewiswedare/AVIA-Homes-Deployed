@@ -18,6 +18,14 @@ struct AdminBuildStageEditor: View {
     @State private var isSaving = false
     @State private var hasStartDate = false
     @State private var hasCompletionDate = false
+    @State private var estimatedStartDate: Date?
+    @State private var estimatedEndDate: Date?
+    @State private var actualStartDate: Date?
+    @State private var actualEndDate: Date?
+    @State private var hasEstStart = false
+    @State private var hasEstEnd = false
+    @State private var hasActualStart = false
+    @State private var hasActualEnd = false
 
     var body: some View {
         NavigationStack {
@@ -88,6 +96,10 @@ struct AdminBuildStageEditor: View {
 
                             Rectangle().fill(AVIATheme.surfaceBorder).frame(height: 1)
 
+                            scheduleSection
+
+                            Rectangle().fill(AVIATheme.surfaceBorder).frame(height: 1)
+
                             field(label: "Notes") {
                                 TextEditor(text: $notes)
                                     .font(.neueSubheadline)
@@ -125,6 +137,49 @@ struct AdminBuildStageEditor: View {
                 notes = stage.notes ?? ""
                 hasStartDate = stage.startDate != nil
                 hasCompletionDate = stage.completionDate != nil
+                estimatedStartDate = stage.estimatedStartDate
+                estimatedEndDate = stage.estimatedEndDate
+                actualStartDate = stage.actualStartDate
+                actualEndDate = stage.actualEndDate
+                hasEstStart = stage.estimatedStartDate != nil
+                hasEstEnd = stage.estimatedEndDate != nil
+                hasActualStart = stage.actualStartDate != nil
+                hasActualEnd = stage.actualEndDate != nil
+            }
+        }
+    }
+
+    @ViewBuilder
+    private var scheduleSection: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            Label("Schedule (Client Timeline)", systemImage: "calendar.badge.clock")
+                .font(.neueCaption2Medium)
+                .kerning(0.5)
+                .foregroundStyle(AVIATheme.textTertiary)
+
+            datedField(label: "Estimated Start", hasValue: $hasEstStart, value: $estimatedStartDate)
+            datedField(label: "Estimated End", hasValue: $hasEstEnd, value: $estimatedEndDate)
+            datedField(label: "Actual Start", hasValue: $hasActualStart, value: $actualStartDate)
+            datedField(label: "Actual End", hasValue: $hasActualEnd, value: $actualEndDate)
+        }
+    }
+
+    private func datedField(label: String, hasValue: Binding<Bool>, value: Binding<Date?>) -> some View {
+        HStack(spacing: 10) {
+            Toggle(isOn: hasValue) {
+                Text(label)
+                    .font(.neueCaption)
+                    .foregroundStyle(AVIATheme.textSecondary)
+            }
+            .tint(AVIATheme.timelessBrown)
+
+            if hasValue.wrappedValue {
+                DatePicker("", selection: Binding(
+                    get: { value.wrappedValue ?? .now },
+                    set: { value.wrappedValue = $0 }
+                ), displayedComponents: .date)
+                .labelsHidden()
+                .tint(AVIATheme.timelessBrown)
             }
         }
     }
@@ -152,7 +207,11 @@ struct AdminBuildStageEditor: View {
             startDate: hasStartDate ? (startDate ?? .now) : nil,
             completionDate: hasCompletionDate ? (completionDate ?? .now) : nil,
             notes: notes.isEmpty ? nil : notes,
-            photoCount: stage.photoCount
+            photoCount: stage.photoCount,
+            estimatedStartDate: hasEstStart ? (estimatedStartDate ?? .now) : nil,
+            estimatedEndDate: hasEstEnd ? (estimatedEndDate ?? .now) : nil,
+            actualStartDate: hasActualStart ? (actualStartDate ?? .now) : nil,
+            actualEndDate: hasActualEnd ? (actualEndDate ?? .now) : nil
         )
 
         await SupabaseService.shared.updateBuildStage(updated, buildId: buildId, sortOrder: sortOrder)

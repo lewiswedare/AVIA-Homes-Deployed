@@ -1172,7 +1172,11 @@ class AppViewModel {
             startDate: old.startDate ?? (progress > 0 ? .now : nil),
             completionDate: progress >= 1.0 ? .now : old.completionDate,
             notes: notes ?? old.notes,
-            photoCount: old.photoCount
+            photoCount: old.photoCount,
+            estimatedStartDate: old.estimatedStartDate,
+            estimatedEndDate: old.estimatedEndDate,
+            actualStartDate: old.actualStartDate ?? (progress > 0 ? old.actualStartDate : nil),
+            actualEndDate: progress >= 1.0 ? (old.actualEndDate ?? .now) : old.actualEndDate
         )
         stages[stageIndex] = updatedStage
         let oldBuild = allClientBuilds[buildIndex]
@@ -1198,10 +1202,54 @@ class AppViewModel {
             buildingSupportStaffId: oldBuild.buildingSupportStaffId,
             handoverTriggeredAt: oldBuild.handoverTriggeredAt,
             buildStatus: oldBuild.buildStatus,
-            specTier: oldBuild.specTier
+            specTier: oldBuild.specTier,
+            estimatedStartDate: oldBuild.estimatedStartDate,
+            estimatedCompletionDate: oldBuild.estimatedCompletionDate,
+            actualStartDate: oldBuild.actualStartDate,
+            actualCompletionDate: oldBuild.actualCompletionDate
         )
         syncBuildStagesForCurrentUser()
         Task { await SupabaseService.shared.updateBuildStage(updatedStage, buildId: buildId, sortOrder: stageIndex) }
+    }
+
+    func updateBuildSchedule(buildId: String, estimatedStartDate: Date?, estimatedCompletionDate: Date?, actualStartDate: Date?, actualCompletionDate: Date?) async {
+        guard let index = allClientBuilds.firstIndex(where: { $0.id == buildId }) else { return }
+        let oldBuild = allClientBuilds[index]
+        let updated = ClientBuild(
+            id: oldBuild.id,
+            client: oldBuild.client,
+            homeDesign: oldBuild.homeDesign,
+            lotNumber: oldBuild.lotNumber,
+            estate: oldBuild.estate,
+            contractDate: oldBuild.contractDate,
+            buildStages: oldBuild.buildStages,
+            assignedStaffId: oldBuild.assignedStaffId,
+            salesPartnerId: oldBuild.salesPartnerId,
+            isCustom: oldBuild.isCustom,
+            selectedFacadeId: oldBuild.selectedFacadeId,
+            customBedrooms: oldBuild.customBedrooms,
+            customBathrooms: oldBuild.customBathrooms,
+            customGarages: oldBuild.customGarages,
+            customSquareMeters: oldBuild.customSquareMeters,
+            customStoreys: oldBuild.customStoreys,
+            additionalClients: oldBuild.additionalClients,
+            preConstructionStaffId: oldBuild.preConstructionStaffId,
+            buildingSupportStaffId: oldBuild.buildingSupportStaffId,
+            handoverTriggeredAt: oldBuild.handoverTriggeredAt,
+            buildStatus: oldBuild.buildStatus,
+            eoiId: oldBuild.eoiId,
+            specTier: oldBuild.specTier,
+            estimatedStartDate: estimatedStartDate,
+            estimatedCompletionDate: estimatedCompletionDate,
+            actualStartDate: actualStartDate,
+            actualCompletionDate: actualCompletionDate
+        )
+        allClientBuilds[index] = updated
+        syncBuildStagesForCurrentUser()
+        let success = await SupabaseService.shared.upsertBuild(updated)
+        if success {
+            await refreshBuildsAndAssignments()
+        }
     }
 
     func addAwaitingRegistrationStage(buildId: String, estimatedDate: Date?, notes: String?) {
