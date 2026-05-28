@@ -4,7 +4,10 @@
     {
       "name": "AVIA Homes",
       "path": "ios",
-      "framework": "swift"
+      "framework": "swift",
+      "settings": {
+        "iosBundleId": "com.wedare.aviahomes"
+      }
     }
   ]
 }
