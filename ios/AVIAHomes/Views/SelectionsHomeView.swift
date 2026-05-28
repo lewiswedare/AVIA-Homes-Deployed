@@ -15,10 +15,13 @@ struct SelectionsHomeView: View {
         SpecTier(rawValue: viewModel.specTier.lowercased()) ?? .messina
     }
 
-    /// Room membership is driven by `variant_room_assignments`: an item shows
-    /// up in every room any of its variants are assigned to for the current
-    /// range + facade. Legacy items with no assignments at all fall back to
-    /// their snapshot category so nothing silently disappears.
+    /// Rooms are the admin-managed `spec_categories`. Every room the admin
+    /// has set up in the catalogue appears here whenever it has *any*
+    /// content — either selections already materialised onto this build, or
+    /// variant assignments in the catalogue for the build's range/facade.
+    /// Items inside each room come from `variant_room_assignments`; legacy
+    /// slot-less rows fall back to matching by snapshot category so nothing
+    /// silently disappears.
     private var roomsWithItems: [(room: SelectionRoom, items: [BuildSpecSelection])] {
         let active = viewModel.selections.filter { $0.selectionType != .removed }
         let rangeId = viewModel.specTier.lowercased()
@@ -47,7 +50,15 @@ struct SelectionsHomeView: View {
             if let legacy = legacyBucket[room.snapshotCategoryName] {
                 items.append(contentsOf: legacy)
             }
-            guard !items.isEmpty else { continue }
+            // Surface the room whenever the admin catalogue has content for
+            // it in this build's range/facade — even if the build snapshot
+            // doesn't yet contain any selections. This keeps the client room
+            // list in lock-step with the admin Rooms editor.
+            let hasCatalogueContent: Bool = {
+                guard let rid = room.categoryId else { return false }
+                return !catalog.variantIds(forRoom: rid, rangeId: rangeId, facadeId: facadeId).isEmpty
+            }()
+            guard !items.isEmpty || hasCatalogueContent else { continue }
             // De-dupe (an item could legitimately match by both paths) and sort.
             var seen = Set<String>()
             let deduped = items.filter { seen.insert($0.id).inserted }
