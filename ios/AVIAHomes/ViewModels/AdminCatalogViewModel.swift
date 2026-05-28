@@ -84,19 +84,20 @@ class AdminCatalogViewModel {
 
     func deleteSpecCategory(id: String) async {
         errorMessage = nil
-        // Block deletion if items still reference this category.
-        let itemsInCategory = specItems.filter { $0.category_id == id }
-        if !itemsInCategory.isEmpty {
-            errorMessage = "Cannot delete: \(itemsInCategory.count) item(s) still in this category"
-            return
-        }
+        // Phase 4: `spec_items.category_id` is legacy and no longer drives any
+        // client surface — rooms are defined entirely by
+        // `variant_room_assignments`. Deleting a room cascades and removes its
+        // room assignments via the `ON DELETE CASCADE` FK on
+        // `variant_room_assignments.room_id`. Items keep their stale
+        // `category_id` but they're invisible to clients without a room
+        // assignment, so it's safe to delete a room directly.
         let success = await SupabaseService.shared.deleteSpecCategory(id: id)
         if success {
-            successMessage = "Category deleted"
+            successMessage = "Room deleted"
             await loadSpecCategories()
             await catalog.loadAll()
         } else {
-            errorMessage = "Failed to delete category"
+            errorMessage = "Failed to delete room"
         }
     }
 

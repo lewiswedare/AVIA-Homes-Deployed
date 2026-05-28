@@ -106,7 +106,7 @@ struct AdminSpecCategoriesEditorView: View {
             let cat = categoryToDelete
             let count = cat.map { itemCount(for: $0.id) } ?? 0
             if count > 0 {
-                Text("\(cat?.name ?? "") has \(count) item(s). Move or delete those items first.")
+                Text("\(cat?.name ?? "") has \(count) item(s) assigned. Deleting the room will also remove its variant assignments — the items themselves stay in the catalogue.")
             } else {
                 Text("Delete \"\(cat?.name ?? "")\"? This cannot be undone.")
             }
