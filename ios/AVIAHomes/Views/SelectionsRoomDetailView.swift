@@ -165,6 +165,8 @@ struct SelectionsRoomDetailView: View {
             viewModel: viewModel,
             selection: item,
             roomId: room.categoryId,
+            roomFallbackImageURL: room.heroImageURL,
+            roomFallbackImageName: room.heroImageName,
             isExpanded: expandedItemId == item.id,
             onToggle: {
                 AVIAHaptic.lightTap.trigger()
@@ -286,6 +288,10 @@ private struct SelectionItemCard: View {
     /// Room context — when set, image + cost are sourced from
     /// `variant_room_assignments` for the active variant.
     var roomId: String? = nil
+    /// Room banner fallbacks used when the item has no slot/variant/snapshot
+    /// image of its own — so every card defaults to the room's image.
+    var roomFallbackImageURL: String? = nil
+    var roomFallbackImageName: String? = nil
     let isExpanded: Bool
     let onToggle: () -> Void
     let onRequestUpgrade: () -> Void
@@ -411,7 +417,9 @@ private struct SelectionItemCard: View {
         }
     }
 
-    private var hasImage: Bool { currentImageURL != nil }
+    private var hasImage: Bool {
+        currentImageURL != nil || (roomFallbackImageName?.isEmpty == false)
+    }
 
     /// Per-room display title override for the linked spec item. Returns nil
     /// when the admin hasn't set one for this (room, range, facade), so the
@@ -444,6 +452,7 @@ private struct SelectionItemCard: View {
         }
         if let s = selection.snapshotImageURL, !s.isEmpty, URL(string: s) != nil { return s }
         if let url = linkedSpecItem?.imageURL { return url.absoluteString }
+        if let roomURL = roomFallbackImageURL, !roomURL.isEmpty { return roomURL }
         return nil
     }
 
@@ -551,6 +560,14 @@ private struct SelectionItemCard: View {
                             placeholderIcon
                         }
                         .allowsHitTesting(false)
+                    }
+            } else if let name = roomFallbackImageName, !name.isEmpty {
+                Color(.secondarySystemBackground)
+                    .overlay {
+                        Image(name)
+                            .resizable()
+                            .aspectRatio(contentMode: .fill)
+                            .allowsHitTesting(false)
                     }
             }
         }
