@@ -68,6 +68,8 @@ struct LifecycleContext {
     let communications: [ClientCommunication]
     let notes: [ClientNote]
     let tasks: [ClientTask]
+    /// Requirement ids an admin has manually ticked off, overriding auto-detection.
+    var manualCompletions: Set<String> = []
 
     var hasAnyCommunication: Bool { !communications.isEmpty || profile.lastContactedAt != nil }
     var hasMeetingOrCall: Bool { communications.contains { $0.kind == .call || $0.kind == .meeting } }
@@ -90,7 +92,21 @@ struct LifecycleContext {
 
 enum LifecycleStageGuide {
     /// Returns the checklist of requirements to advance from `stage` to its next stage.
+    /// Auto-detected completion is OR-ed with any manual override the admin set.
     static func requirements(for stage: LeadStatus, ctx: LifecycleContext) -> [StageRequirement] {
+        autoRequirements(for: stage, ctx: ctx).map { req in
+            guard ctx.manualCompletions.contains(req.id), !req.isComplete else { return req }
+            return StageRequirement(
+                id: req.id,
+                title: req.title,
+                detail: req.detail,
+                icon: req.icon,
+                isComplete: true
+            )
+        }
+    }
+
+    private static func autoRequirements(for stage: LeadStatus, ctx: LifecycleContext) -> [StageRequirement] {
         switch stage {
         case .new:
             return [

@@ -187,7 +187,8 @@ nonisolated enum TaskPriority: String, Codable, CaseIterable, Sendable {
 
 struct ClientTask: Identifiable, Hashable {
     let id: String
-    let clientId: String
+    /// nil for general team to-dos that aren't tied to a specific client.
+    let clientId: String?
     var title: String
     var detail: String?
     var dueAt: Date?
@@ -207,7 +208,7 @@ struct ClientTask: Identifiable, Hashable {
 
 nonisolated struct ClientTaskRow: Codable, Sendable {
     let id: String
-    let client_id: String
+    let client_id: String?
     let title: String
     let detail: String?
     let due_at: String?
@@ -243,6 +244,48 @@ nonisolated struct ClientTaskRow: Codable, Sendable {
             createdBy: created_by,
             priority: TaskPriority(rawValue: priority ?? "normal") ?? .normal,
             createdAt: ClientCRMProfileRow.parse(created_at) ?? .now
+        )
+    }
+}
+
+// MARK: - Stage Completions (manual completion of automated workflow steps)
+
+/// A manual override marking an automated lifecycle requirement as done for a client.
+struct StageCompletion: Identifiable, Hashable {
+    let id: String
+    let clientId: String
+    let requirementId: String
+    var leadStatus: String?
+    var completedAt: Date
+    var completedBy: String?
+}
+
+nonisolated struct StageCompletionRow: Codable, Sendable {
+    let id: String
+    let client_id: String
+    let requirement_id: String
+    let lead_status: String?
+    let completed_at: String?
+    let completed_by: String?
+
+    init(completion: StageCompletion) {
+        let iso = ISO8601DateFormatter()
+        self.id = completion.id
+        self.client_id = completion.clientId
+        self.requirement_id = completion.requirementId
+        self.lead_status = completion.leadStatus
+        self.completed_at = iso.string(from: completion.completedAt)
+        self.completed_by = completion.completedBy
+    }
+
+    func toCompletion() -> StageCompletion {
+        StageCompletion(
+            id: id,
+            clientId: client_id,
+            requirementId: requirement_id,
+            leadStatus: lead_status,
+            completedAt: ClientCRMProfileRow.parse(completed_at) ?? .now,
+            completedBy: completed_by
         )
     }
 }

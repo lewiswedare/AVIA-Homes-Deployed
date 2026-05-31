@@ -12,6 +12,7 @@ struct AdminClientCRMView: View {
     @State private var crmProfile: ClientCRMProfile = .empty(clientId: "")
     @State private var notes: [ClientNote] = []
     @State private var tasks: [ClientTask] = []
+    @State private var manualCompletions: Set<String> = []
     @State private var isLoadingCRM: Bool = true
 
     @State private var showAddNote: Bool = false
@@ -183,11 +184,13 @@ struct AdminClientCRMView: View {
         async let notesList = SupabaseService.shared.fetchClientNotes(clientId: client.id)
         async let tasksList = SupabaseService.shared.fetchClientTasks(clientId: client.id)
         async let commsList = SupabaseService.shared.fetchClientCommunications(clientId: client.id)
+        async let completionsList = SupabaseService.shared.fetchStageCompletions(clientId: client.id)
         let p = await profile
         crmProfile = p ?? .empty(clientId: client.id)
         notes = await notesList
         tasks = await tasksList
         communications = await commsList
+        manualCompletions = Set((await completionsList).map(\.requirementId))
         isLoadingCRM = false
     }
 
@@ -264,7 +267,8 @@ struct AdminClientCRMView: View {
             activities: activities,
             communications: communications,
             notes: notes,
-            tasks: tasks
+            tasks: tasks,
+            manualCompletions: manualCompletions
         )
     }
 
@@ -426,9 +430,17 @@ struct AdminClientCRMView: View {
                 }
                 VStack(spacing: 8) {
                     ForEach(stageRequirements) { req in
-                        requirementRow(req)
+                        Button {
+                            toggleRequirement(req)
+                        } label: {
+                            requirementRow(req)
+                        }
+                        .buttonStyle(.plain)
                     }
                 }
+                Text("Tap a step to mark it done manually.")
+                    .font(.neueCaption2)
+                    .foregroundStyle(AVIATheme.textTertiary)
             }
         }
     }
@@ -514,6 +526,26 @@ struct AdminClientCRMView: View {
             }
         } else if crmProfile.leadStatus != .lost && crmProfile.leadStatus != .won {
             EmptyView()
+        }
+    }
+
+    /// Toggle a manual completion override for an automated workflow step.
+    private func toggleRequirement(_ req: StageRequirement) {
+        let isManual = manualCompletions.contains(req.id)
+        if isManual {
+            manualCompletions.remove(req.id)
+            Task { await SupabaseService.shared.deleteStageCompletion(clientId: client.id, requirementId: req.id) }
+        } else {
+            manualCompletions.insert(req.id)
+            let completion = StageCompletion(
+                id: UUID().uuidString,
+                clientId: client.id,
+                requirementId: req.id,
+                leadStatus: crmProfile.leadStatus.rawValue,
+                completedAt: .now,
+                completedBy: viewModel.currentUser.id
+            )
+            Task { await SupabaseService.shared.upsertStageCompletion(completion) }
         }
     }
 

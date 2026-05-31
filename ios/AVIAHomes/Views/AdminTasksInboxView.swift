@@ -7,6 +7,14 @@ struct AdminTasksInboxView: View {
     @State private var isLoading: Bool = true
     @State private var filter: InboxFilter = .all
 
+    @State private var showAddTask: Bool = false
+    @State private var newTaskTitle: String = ""
+    @State private var newTaskDetail: String = ""
+    @State private var newTaskDue: Date = .now.addingTimeInterval(86400)
+    @State private var newTaskPriority: TaskPriority = .normal
+    @State private var newTaskHasDue: Bool = true
+    @State private var newTaskClientId: String? = nil
+
     enum InboxFilter: String, CaseIterable, Identifiable {
         case all, mine, overdue, today, week
         var id: String { rawValue }
@@ -43,12 +51,20 @@ struct AdminTasksInboxView: View {
         }
     }
 
-    private func clientName(for clientId: String) -> String {
-        viewModel.allRegisteredUsers.first(where: { $0.id == clientId })?.fullName ?? "Client"
+    private func clientName(for clientId: String?) -> String {
+        guard let clientId else { return "General task" }
+        return viewModel.allRegisteredUsers.first(where: { $0.id == clientId })?.fullName ?? "Client"
     }
 
-    private func client(for id: String) -> ClientUser? {
-        viewModel.allRegisteredUsers.first(where: { $0.id == id })
+    private func client(for id: String?) -> ClientUser? {
+        guard let id else { return nil }
+        return viewModel.allRegisteredUsers.first(where: { $0.id == id })
+    }
+
+    private var clientOptions: [ClientUser] {
+        let clients = viewModel.allRegisteredUsers.filter { $0.role == .client }
+        return Array(Dictionary(grouping: clients, by: \.id).compactMap(\.value.first))
+            .sorted { $0.lastName < $1.lastName }
     }
 
     var body: some View {
@@ -116,8 +132,91 @@ struct AdminTasksInboxView: View {
         .background(AVIATheme.background)
         .navigationTitle("Tasks Inbox")
         .navigationBarTitleDisplayMode(.inline)
+        .toolbar {
+            ToolbarItem(placement: .topBarTrailing) {
+                Button {
+                    resetNewTask()
+                    showAddTask = true
+                } label: {
+                    Image(systemName: "plus")
+                }
+            }
+        }
+        .sheet(isPresented: $showAddTask) { addTaskSheet }
         .task { await load() }
         .refreshable { await load() }
+    }
+
+    // MARK: - Add task
+
+    private func resetNewTask() {
+        newTaskTitle = ""
+        newTaskDetail = ""
+        newTaskDue = .now.addingTimeInterval(86400)
+        newTaskPriority = .normal
+        newTaskHasDue = true
+        newTaskClientId = nil
+    }
+
+    private var addTaskSheet: some View {
+        NavigationStack {
+            Form {
+                Section("Task") {
+                    TextField("Title", text: $newTaskTitle)
+                    TextField("Details (optional)", text: $newTaskDetail, axis: .vertical)
+                        .lineLimit(2...5)
+                }
+                Section("Link to client") {
+                    Picker("Client", selection: $newTaskClientId) {
+                        Text("General (no client)").tag(String?.none)
+                        ForEach(clientOptions) { c in
+                            Text(c.fullName.trimmingCharacters(in: .whitespaces).isEmpty ? c.email : c.fullName)
+                                .tag(String?.some(c.id))
+                        }
+                    }
+                }
+                Section("Schedule") {
+                    Toggle("Has due date", isOn: $newTaskHasDue)
+                    if newTaskHasDue {
+                        DatePicker("Due", selection: $newTaskDue)
+                    }
+                    Picker("Priority", selection: $newTaskPriority) {
+                        ForEach(TaskPriority.allCases, id: \.self) { p in
+                            Text(p.label).tag(p)
+                        }
+                    }
+                }
+            }
+            .navigationTitle("New Task")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .cancellationAction) {
+                    Button("Cancel") { showAddTask = false }
+                }
+                ToolbarItem(placement: .confirmationAction) {
+                    Button("Save") { saveNewTask() }
+                        .disabled(newTaskTitle.trimmingCharacters(in: .whitespaces).isEmpty)
+                }
+            }
+        }
+    }
+
+    private func saveNewTask() {
+        let task = ClientTask(
+            id: UUID().uuidString,
+            clientId: newTaskClientId,
+            title: newTaskTitle.trimmingCharacters(in: .whitespaces),
+            detail: newTaskDetail.trimmingCharacters(in: .whitespaces).isEmpty ? nil : newTaskDetail,
+            dueAt: newTaskHasDue ? newTaskDue : nil,
+            completedAt: nil,
+            assigneeId: viewModel.currentUser.id,
+            createdBy: viewModel.currentUser.id,
+            priority: newTaskPriority,
+            createdAt: .now
+        )
+        tasks.insert(task, at: 0)
+        showAddTask = false
+        Task { await SupabaseService.shared.upsertClientTask(task) }
     }
 
     private var summaryStrip: some View {

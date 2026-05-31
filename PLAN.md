@@ -34,4 +34,11 @@ Sending as your real Microsoft accounts requires a small one-time setup in your 
 
 ## Remaining to go live
 - [ ] Microsoft 365 tenant credentials (client ID, client secret, tenant ID) added as secrets.
-- [ ] Database migrations applied (`20260526_build_timeline_schedule.sql`, `20260527_microsoft_mail.sql`).
+- [ ] Database migrations applied (`20260526_build_timeline_schedule.sql`, `20260527_microsoft_mail.sql`, `20260528_task_management.sql`).
+
+---
+
+# Admin task management (added)
+- [x] Manual tasks can be created directly from the Tasks dashboard, optionally linked to a client or left as a general team to-do.
+- [x] Automated sales-workflow steps in each client's CRM can be ticked off manually (overriding auto-detection), persisted per client via `client_stage_completions`.
+- [ ] Apply migration `20260528_task_management.sql` (client tasks become optionally client-less + adds the stage-completion table).

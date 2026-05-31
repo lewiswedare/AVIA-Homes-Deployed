@@ -3091,6 +3091,55 @@ class SupabaseService {
         }
     }
 
+    // MARK: - Stage Completions (manual workflow overrides)
+
+    func fetchStageCompletions(clientId: String) async -> [StageCompletion] {
+        guard isConfigured else { return [] }
+        do {
+            let rows: [StageCompletionRow] = try await client
+                .from("client_stage_completions")
+                .select()
+                .eq("client_id", value: clientId)
+                .execute()
+                .value
+            return rows.map { $0.toCompletion() }
+        } catch {
+            print("[SupabaseService] fetchStageCompletions FAILED: \(error)")
+            return []
+        }
+    }
+
+    @discardableResult
+    func upsertStageCompletion(_ completion: StageCompletion) async -> Bool {
+        guard isConfigured else { return false }
+        let row = StageCompletionRow(completion: completion)
+        do {
+            try await client.from("client_stage_completions")
+                .upsert(row, onConflict: "client_id,requirement_id")
+                .execute()
+            return true
+        } catch {
+            print("[SupabaseService] upsertStageCompletion FAILED: \(error)")
+            return false
+        }
+    }
+
+    @discardableResult
+    func deleteStageCompletion(clientId: String, requirementId: String) async -> Bool {
+        guard isConfigured else { return false }
+        do {
+            try await client.from("client_stage_completions")
+                .delete()
+                .eq("client_id", value: clientId)
+                .eq("requirement_id", value: requirementId)
+                .execute()
+            return true
+        } catch {
+            print("[SupabaseService] deleteStageCompletion FAILED: \(error)")
+            return false
+        }
+    }
+
     // MARK: - Client Communications (CRM log)
 
     func fetchClientCommunications(clientId: String) async -> [ClientCommunication] {
