@@ -3137,6 +3137,44 @@ class SupabaseService {
         }
     }
 
+    // MARK: - Microsoft Mail (connection status + sent emails)
+
+    /// Non-sensitive Microsoft connection status for a staff member (no tokens).
+    func fetchMicrosoftAccount(userId: String) async -> MicrosoftAccount? {
+        guard isConfigured else { return nil }
+        do {
+            let rows: [MicrosoftAccountRow] = try await client
+                .from("microsoft_accounts")
+                .select()
+                .eq("user_id", value: userId)
+                .limit(1)
+                .execute()
+                .value
+            return rows.first?.toAccount()
+        } catch {
+            print("[SupabaseService] fetchMicrosoftAccount FAILED: \(error)")
+            return nil
+        }
+    }
+
+    /// Every email sent from the app to a given client, newest first.
+    func fetchEmailSends(clientId: String) async -> [EmailSend] {
+        guard isConfigured else { return [] }
+        do {
+            let rows: [EmailSendRow] = try await client
+                .from("email_sends")
+                .select()
+                .eq("client_id", value: clientId)
+                .order("created_at", ascending: false)
+                .execute()
+                .value
+            return rows.map { $0.toEmailSend() }
+        } catch {
+            print("[SupabaseService] fetchEmailSends FAILED: \(error)")
+            return []
+        }
+    }
+
     // MARK: - Spec Products (catalogue v2)
 
     /// All products inside a given spec slot, ordered by sort_order.

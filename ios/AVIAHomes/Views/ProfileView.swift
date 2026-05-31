@@ -33,6 +33,12 @@ struct ProfileView: View {
                     DetailRow(icon: "phone.fill", title: "Phone", value: viewModel.currentUser.phone)
                 }
 
+                if viewModel.currentRole.isAnyStaffRole {
+                    settingsSection(title: "Email Sending") {
+                        MicrosoftConnectionRow()
+                    }
+                }
+
                 if viewModel.biometricAuth.isAvailable {
                     settingsSection(title: "Security") {
                         BiometricToggleRow()

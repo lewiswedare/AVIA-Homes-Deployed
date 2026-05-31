@@ -1,0 +1,9 @@
+# Supabase project config.
+#
+# The microsoft-mail function must be reachable WITHOUT a Supabase JWT:
+#   - Microsoft redirects the browser to /callback with no auth header.
+#   - Email clients load the open-tracking pixel with no auth header.
+# So JWT verification is disabled for it; the function does its own checks
+# and uses the service role internally.
+[functions.microsoft-mail]
+verify_jwt = false

@@ -123,6 +123,7 @@ struct AdminClientCRMView: View {
                 quickActions
                 metricsGrid
                 tasksSection
+                ClientDocumentsSendingSection(client: client)
                 communicationsSection
                 notesSection
                 if !topDesigns.isEmpty || !topSpecs.isEmpty {
