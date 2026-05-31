@@ -27,7 +27,11 @@
 Sending as your real Microsoft accounts requires a small one-time setup in your Microsoft 365 tenant (registering AVIA Homes as an approved app so staff can grant permission to send mail on their behalf). I'll need three values from that registration — a client ID, a client secret, and your tenant ID. I'll request these securely when we get to that step. Everything else (the CRM UI, document library, sending, and open tracking) I'll build now.
 
 ## Build order
-1. The behind-the-scenes sending + open-tracking service.
-2. The "Connect Microsoft" button in each staff member's profile.
-3. The Documents & Sending area inside the client CRM (browse, compose, attach, send).
-4. The Sent history list with live Sent/Opened status.
+- [x] The behind-the-scenes sending + open-tracking service.
+- [x] The "Connect Microsoft" button in each staff member's profile.
+- [x] The Documents & Sending area inside the client CRM (browse, compose, attach, send).
+- [x] The Sent history list with live Sent/Opened status.
+
+## Remaining to go live
+- [ ] Microsoft 365 tenant credentials (client ID, client secret, tenant ID) added as secrets.
+- [ ] Database migrations applied (`20260526_build_timeline_schedule.sql`, `20260527_microsoft_mail.sql`).
