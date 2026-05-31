@@ -914,6 +914,25 @@ class SupabaseService {
         }
     }
 
+    /// Fetches every client's upcoming schedule items in one query, paired with the
+    /// owning client id so admins can see a unified schedule across all clients.
+    func fetchAllScheduleItems(limit: Int = 500) async -> [(clientId: String, item: ScheduleItem)] {
+        guard isConfigured else { return [] }
+        do {
+            let rows: [ScheduleItemRow] = try await client
+                .from("schedule_items")
+                .select()
+                .order("date", ascending: true)
+                .limit(limit)
+                .execute()
+                .value
+            return rows.map { ($0.client_id, $0.toScheduleItem()) }
+        } catch {
+            print("[SupabaseService] fetchAllScheduleItems FAILED: \(error)")
+            return []
+        }
+    }
+
     // MARK: - Build Field Updates
 
     func updateBuildFields(buildId: String, fields: [String: String]) async -> Bool {

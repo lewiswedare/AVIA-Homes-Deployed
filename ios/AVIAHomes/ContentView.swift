@@ -179,8 +179,8 @@ struct AdminTabView: View {
 
     var body: some View {
         TabView(selection: $selectedTab) {
-            Tab("Dashboard", systemImage: "square.grid.2x2.fill", value: 0) {
-                AdminDashboardView()
+            Tab("Workspace", systemImage: "square.grid.2x2.fill", value: 0) {
+                AdminWorkspaceView()
             }
             Tab("Packages", systemImage: "house.and.flag.fill", value: 1) {
                 NavigationStack {
@@ -365,8 +365,8 @@ struct SuperAdminTabView: View {
             Tab("Overview", systemImage: "chart.bar.doc.horizontal.fill", value: 0) {
                 SuperAdminDashboard()
             }
-            Tab("Dashboard", systemImage: "square.grid.2x2.fill", value: 1) {
-                AdminDashboardView()
+            Tab("Workspace", systemImage: "square.grid.2x2.fill", value: 1) {
+                AdminWorkspaceView()
             }
             Tab("Packages", systemImage: "house.and.flag.fill", value: 2) {
                 NavigationStack {
