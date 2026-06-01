@@ -881,6 +881,47 @@ class SupabaseService {
         }
     }
 
+    // MARK: - Document library (shared stock files)
+
+    func fetchLibraryDocuments() async -> [LibraryDocument] {
+        guard isConfigured else { return [] }
+        do {
+            let rows: [LibraryDocumentRow] = try await client
+                .from("document_library")
+                .select()
+                .order("sort_order", ascending: true)
+                .order("created_at", ascending: false)
+                .execute()
+                .value
+            return rows.map { $0.toModel() }
+        } catch {
+            print("[SupabaseService] fetchLibraryDocuments FAILED: \(error)")
+            return []
+        }
+    }
+
+    func upsertLibraryDocument(_ row: LibraryDocumentRow) async -> Bool {
+        guard isConfigured else { return false }
+        do {
+            try await client.from("document_library").upsert(row, onConflict: "id").execute()
+            return true
+        } catch {
+            print("[SupabaseService] upsertLibraryDocument FAILED: \(error)")
+            return false
+        }
+    }
+
+    func deleteLibraryDocument(id: String) async -> Bool {
+        guard isConfigured else { return false }
+        do {
+            _ = try await client.from("document_library").delete().eq("id", value: id).execute()
+            return true
+        } catch {
+            print("[SupabaseService] deleteLibraryDocument FAILED: \(error)")
+            return false
+        }
+    }
+
     func fetchRequestClientId(requestId: String) async -> String? {
         guard isConfigured else { return nil }
         do {

@@ -48,6 +48,39 @@ class PDFUploadService {
         }
     }
 
+    /// Upload an arbitrary document (any content type) to a named folder in the
+    /// documents bucket. Used for the shared stock library and ad-hoc custom files.
+    func uploadFile(_ data: Data, fileName: String, folder: String, contentType: String) async -> String? {
+        isUploading = true
+        uploadProgress = 0
+        defer { isUploading = false }
+
+        let safeName = fileName.replacingOccurrences(of: " ", with: "_")
+        let path = "\(folder)/\(UUID().uuidString)_\(safeName)"
+
+        do {
+            try await client.storage
+                .from(bucketName)
+                .upload(
+                    path,
+                    data: data,
+                    options: FileOptions(
+                        cacheControl: "3600",
+                        contentType: contentType,
+                        upsert: false
+                    )
+                )
+            let publicURL = try client.storage
+                .from(bucketName)
+                .getPublicURL(path: path)
+            uploadProgress = 1.0
+            return publicURL.absoluteString
+        } catch {
+            print("[PDFUploadService] uploadFile failed: \(error)")
+            return nil
+        }
+    }
+
     func deletePDF(fileURL: String, buildId: String) async {
         guard let url = URL(string: fileURL),
               let pathComponent = url.pathComponents.last else { return }

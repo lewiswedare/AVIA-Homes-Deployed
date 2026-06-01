@@ -7,6 +7,7 @@ struct ClientDocumentsSendingSection: View {
     let client: ClientUser
 
     @State private var documents: [ClientDocument] = []
+    @State private var libraryDocs: [LibraryDocument] = []
     @State private var sends: [EmailSend] = []
     @State private var msAccount: MicrosoftAccount?
     @State private var isLoading: Bool = true
@@ -24,6 +25,9 @@ struct ClientDocumentsSendingSection: View {
                 connectPrompt
             }
             composeButton
+            if !libraryDocs.isEmpty {
+                stockLibrary
+            }
             if !documents.isEmpty {
                 documentLibrary
             }
@@ -132,11 +136,39 @@ struct ClientDocumentsSendingSection: View {
         }
     }
 
-    // MARK: - Document library
+    // MARK: - Stock library
+
+    private var stockLibrary: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            HStack(spacing: 6) {
+                Image(systemName: "books.vertical.fill")
+                    .font(.neueCaption2)
+                    .foregroundStyle(AVIATheme.timelessBrown)
+                Text("Stock library")
+                    .font(.neueCaption2Medium)
+                    .foregroundStyle(AVIATheme.textSecondary)
+            }
+            VStack(spacing: 6) {
+                ForEach(libraryDocs) { doc in
+                    Button {
+                        let attachment = doc.asAttachment()
+                        composeAttachment = attachment
+                        prefill = .document(attachment)
+                        showCompose = true
+                    } label: {
+                        documentRow(doc.asAttachment())
+                    }
+                    .buttonStyle(.plain)
+                }
+            }
+        }
+    }
+
+    // MARK: - Client document library
 
     private var documentLibrary: some View {
         VStack(alignment: .leading, spacing: 8) {
-            Text("Document library")
+            Text("Client files")
                 .font(.neueCaption2Medium)
                 .foregroundStyle(AVIATheme.textSecondary)
             VStack(spacing: 6) {
@@ -219,9 +251,11 @@ struct ClientDocumentsSendingSection: View {
     private func load() async {
         isLoading = true
         async let docs = SupabaseService.shared.fetchDocuments(clientId: client.id)
+        async let lib = SupabaseService.shared.fetchLibraryDocuments()
         async let sendsList = SupabaseService.shared.fetchEmailSends(clientId: client.id)
         async let account = MicrosoftMailService.shared.fetchStatus(staffId: viewModel.currentUser.id)
         documents = await docs
+        libraryDocs = await lib
         sends = await sendsList
         msAccount = await account
         isLoading = false

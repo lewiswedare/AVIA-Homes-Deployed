@@ -559,6 +559,34 @@ struct AdminWorkspaceView: View {
                 .padding(14)
             }
 
+            NavigationLink { AdminDocumentLibraryView() } label: {
+                BentoCard(cornerRadius: 12) {
+                    HStack(spacing: 12) {
+                        Image(systemName: "books.vertical.fill")
+                            .font(.system(size: 16))
+                            .foregroundStyle(AVIATheme.aviaWhite)
+                            .frame(width: 36, height: 36)
+                            .background(AVIATheme.timelessBrown)
+                            .clipShape(.rect(cornerRadius: 9))
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text("Manage stock library")
+                                .font(.neueCaptionMedium)
+                                .foregroundStyle(AVIATheme.textPrimary)
+                            Text("Upload reusable files your team can send to any client.")
+                                .font(.neueCaption2)
+                                .foregroundStyle(AVIATheme.textSecondary)
+                                .lineLimit(2)
+                        }
+                        Spacer()
+                        Image(systemName: "chevron.right")
+                            .font(.neueCaption2)
+                            .foregroundStyle(AVIATheme.textTertiary)
+                    }
+                    .padding(14)
+                }
+            }
+            .buttonStyle(.pressable(.subtle))
+
             Text("PICK A CLIENT")
                 .font(.neueCaption2Medium)
                 .kerning(1.0)

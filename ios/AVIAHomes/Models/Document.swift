@@ -7,6 +7,8 @@ nonisolated enum DocumentCategory: String, CaseIterable, Sendable {
     case certificates = "Certificates"
     case invoices = "Invoices"
     case financial = "Financial"
+    case marketing = "Marketing"
+    case templates = "Templates"
 
     var icon: String {
         switch self {
@@ -16,6 +18,8 @@ nonisolated enum DocumentCategory: String, CaseIterable, Sendable {
         case .certificates: "rosette"
         case .invoices: "dollarsign.circle.fill"
         case .financial: "banknote.fill"
+        case .marketing: "megaphone.fill"
+        case .templates: "doc.on.doc.fill"
         }
     }
 }
