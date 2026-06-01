@@ -11,7 +11,29 @@ struct AdminLeadsSection: View {
     @State private var isLoading: Bool = false
     @State private var sourceFilter: LeadSource? = nil
     @State private var ownerFilter: OwnerFilter = .all
+    @State private var kindFilter: KindFilter = .all
     @State private var showAddLead: Bool = false
+
+    enum KindFilter: String, CaseIterable, Identifiable {
+        case all, leads, opportunities, clients
+        var id: String { rawValue }
+        var label: String {
+            switch self {
+            case .all: return "All"
+            case .leads: return "Leads"
+            case .opportunities: return "Opps"
+            case .clients: return "Clients"
+            }
+        }
+        func matches(_ kind: LeadKind) -> Bool {
+            switch self {
+            case .all: return true
+            case .leads: return kind == .lead
+            case .opportunities: return kind == .opportunity
+            case .clients: return kind == .client
+            }
+        }
+    }
 
     enum OwnerFilter: String, CaseIterable, Identifiable {
         case all, mine, unassigned
@@ -26,15 +48,20 @@ struct AdminLeadsSection: View {
     }
 
     private var activeLeads: [Lead] {
-        leads.filter { $0.status != .won && $0.status != .lost && !$0.isConverted }
+        leads.filter { $0.kind == .lead && $0.status != .lost }
     }
 
-    private var unassignedCount: Int {
-        leads.filter { $0.ownerId == nil && !$0.isConverted }.count
+    private var opportunityCount: Int {
+        leads.filter { $0.kind == .opportunity }.count
+    }
+
+    private var clientCount: Int {
+        leads.filter { $0.kind == .client }.count
     }
 
     private var filteredLeads: [Lead] {
         var result = leads
+        result = result.filter { kindFilter.matches($0.kind) }
         switch ownerFilter {
         case .all: break
         case .mine: result = result.filter { $0.ownerId == viewModel.currentUser.id }
@@ -58,8 +85,8 @@ struct AdminLeadsSection: View {
         VStack(spacing: 12) {
             HStack(spacing: 10) {
                 AdminMetricCard(value: "\(activeLeads.count)", label: "Active Leads", icon: "person.crop.circle.badge.plus", color: AVIATheme.timelessBrown)
-                AdminMetricCard(value: "\(unassignedCount)", label: "Unassigned", icon: "person.crop.circle.badge.questionmark", color: AVIATheme.warning)
-                AdminMetricCard(value: "\(leads.filter { $0.ownerId == viewModel.currentUser.id && !$0.isConverted }.count)", label: "Mine", icon: "person.fill", color: AVIATheme.success)
+                AdminMetricCard(value: "\(opportunityCount)", label: "Opportunities", icon: "chart.line.uptrend.xyaxis", color: AVIATheme.warning)
+                AdminMetricCard(value: "\(clientCount)", label: "Clients Won", icon: "checkmark.seal.fill", color: AVIATheme.success)
             }
             .fixedSize(horizontal: false, vertical: true)
 
@@ -68,6 +95,7 @@ struct AdminLeadsSection: View {
             }
             .buttonStyle(.pressable(.subtle))
 
+            kindFilterRow
             ownerFilterRow
             sourceFilterRow
 
@@ -97,6 +125,15 @@ struct AdminLeadsSection: View {
     }
 
     // MARK: - Filters
+
+    private var kindFilterRow: some View {
+        Picker("Kind", selection: $kindFilter) {
+            ForEach(KindFilter.allCases) { f in
+                Text(f.label).tag(f)
+            }
+        }
+        .pickerStyle(.segmented)
+    }
 
     private var ownerFilterRow: some View {
         Picker("Owner", selection: $ownerFilter) {

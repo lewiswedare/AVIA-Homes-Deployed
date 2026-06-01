@@ -16,6 +16,14 @@ struct AdminLeadDetailView: View {
     @State private var notesDraft: String = ""
     @State private var isSavingNotes: Bool = false
 
+    private var navTitle: String {
+        switch lead.kind {
+        case .lead: return "Lead"
+        case .opportunity: return "Opportunity"
+        case .client: return "Client"
+        }
+    }
+
     private var owner: ClientUser? {
         guard let id = lead.ownerId else { return nil }
         return viewModel.allRegisteredUsers.first { $0.id == id }
@@ -31,8 +39,16 @@ struct AdminLeadDetailView: View {
         ScrollView {
             VStack(spacing: 16) {
                 headerCard
+                conversionBanner
                 assignmentCard
-                pipelineCard
+                switch lead.kind {
+                case .lead:
+                    pipelineCard
+                case .opportunity:
+                    opportunityWorkflowCard
+                case .client:
+                    EmptyView()
+                }
                 if lead.message?.isEmpty == false {
                     inboundMessageCard
                 }
@@ -43,7 +59,7 @@ struct AdminLeadDetailView: View {
             .padding(.bottom, 40)
         }
         .background(AVIATheme.background)
-        .navigationTitle("Lead")
+        .navigationTitle(navTitle)
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
             ToolbarItem(placement: .primaryAction) {
@@ -337,6 +353,330 @@ struct AdminLeadDetailView: View {
         .clipShape(.rect(cornerRadius: 11))
     }
 
+    // MARK: - Conversion banner
+
+    @ViewBuilder
+    private var conversionBanner: some View {
+        switch lead.kind {
+        case .lead:
+            Button {
+                convertToOpportunity()
+            } label: {
+                HStack(spacing: 10) {
+                    Image(systemName: "chart.line.uptrend.xyaxis")
+                        .font(.neueSubheadlineMedium)
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text("Convert to Opportunity")
+                            .font(.neueCaptionMedium)
+                        Text("Open the full sales workflow to win this deal.")
+                            .font(.neueCaption2)
+                            .foregroundStyle(AVIATheme.aviaWhite.opacity(0.85))
+                    }
+                    Spacer()
+                    Image(systemName: "arrow.right").font(.neueCaption)
+                }
+                .foregroundStyle(AVIATheme.aviaWhite)
+                .padding(14)
+                .frame(maxWidth: .infinity)
+                .background(AVIATheme.primaryGradient)
+                .clipShape(.rect(cornerRadius: 13))
+            }
+            .buttonStyle(.pressable(.subtle))
+        case .client:
+            BentoCard(cornerRadius: 13) {
+                HStack(spacing: 12) {
+                    Image(systemName: "checkmark.seal.fill")
+                        .font(.neueTitle3)
+                        .foregroundStyle(AVIATheme.success)
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text("Converted to client")
+                            .font(.neueCaptionMedium)
+                            .foregroundStyle(AVIATheme.textPrimary)
+                        Text(lead.convertedAt.map { "Build contract allocated \($0.formatted(.relative(presentation: .named)))" } ?? "Build contract allocated.")
+                            .font(.neueCaption2)
+                            .foregroundStyle(AVIATheme.textSecondary)
+                    }
+                    Spacer()
+                }
+                .padding(14)
+            }
+        case .opportunity:
+            EmptyView()
+        }
+    }
+
+    // MARK: - Opportunity workflow
+
+    private var workflowSteps: [OpportunityStep] {
+        OpportunityWorkflow.steps(for: lead.status)
+    }
+
+    private var completedStepCount: Int {
+        workflowSteps.filter { lead.workflowCompletions.contains($0.id) }.count
+    }
+
+    private var canAdvanceStage: Bool {
+        guard OpportunityWorkflow.nextStage(after: lead.status) != nil else { return false }
+        if workflowSteps.isEmpty { return true }
+        return completedStepCount >= max(1, workflowSteps.count - 1)
+    }
+
+    private var contractAllocated: Bool {
+        lead.workflowCompletions.contains(OpportunityWorkflow.contractStepID)
+    }
+
+    private var canConvertToClient: Bool {
+        OpportunityWorkflow.normalizedStage(lead.status) == .negotiation && contractAllocated
+    }
+
+    private var opportunityWorkflowCard: some View {
+        BentoCard(cornerRadius: 16) {
+            VStack(alignment: .leading, spacing: 14) {
+                workflowHeader
+                workflowStepper
+                Rectangle().fill(AVIATheme.surfaceBorder).frame(height: 1)
+                workflowChecklist
+                workflowAdvanceButton
+            }
+            .padding(16)
+            .frame(maxWidth: .infinity, alignment: .leading)
+        }
+    }
+
+    private var workflowHeader: some View {
+        HStack(alignment: .top, spacing: 12) {
+            VStack(alignment: .leading, spacing: 4) {
+                Text("SALES WORKFLOW")
+                    .font(.neueCaption2Medium)
+                    .kerning(1.2)
+                    .foregroundStyle(AVIATheme.textTertiary)
+                HStack(spacing: 8) {
+                    Image(systemName: OpportunityWorkflow.normalizedStage(lead.status).icon)
+                        .font(.neueSubheadlineMedium)
+                        .foregroundStyle(OpportunityWorkflow.normalizedStage(lead.status).stageColor)
+                    Text(OpportunityWorkflow.normalizedStage(lead.status).label)
+                        .font(.neueCorpMedium(20))
+                        .foregroundStyle(AVIATheme.textPrimary)
+                }
+                Text(OpportunityWorkflow.normalizedStage(lead.status).lifecycleSubtitle)
+                    .font(.neueCaption)
+                    .foregroundStyle(AVIATheme.textSecondary)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+            Spacer()
+            if !workflowSteps.isEmpty {
+                VStack(spacing: 2) {
+                    Text("\(completedStepCount)/\(workflowSteps.count)")
+                        .font(.neueCorpMedium(16))
+                        .foregroundStyle(AVIATheme.textPrimary)
+                    Text("DONE")
+                        .font(.neueCaption2Medium)
+                        .kerning(0.8)
+                        .foregroundStyle(AVIATheme.textTertiary)
+                }
+                .padding(.horizontal, 10)
+                .padding(.vertical, 6)
+                .background(AVIATheme.warmAccent)
+                .clipShape(.rect(cornerRadius: 10))
+            }
+        }
+    }
+
+    private var workflowStepper: some View {
+        HStack(spacing: 0) {
+            ForEach(Array(OpportunityWorkflow.stages.enumerated()), id: \.element) { index, stage in
+                let current = OpportunityWorkflow.normalizedStage(lead.status)
+                let isCurrent = stage == current
+                let isPast = stage.pipelineIndex < current.pipelineIndex
+                VStack(spacing: 6) {
+                    ZStack {
+                        Circle()
+                            .fill(isPast ? AVIATheme.success : (isCurrent ? stage.stageColor : AVIATheme.surfaceBorder))
+                            .frame(width: isCurrent ? 26 : 18, height: isCurrent ? 26 : 18)
+                        if isPast {
+                            Image(systemName: "checkmark")
+                                .font(.system(size: 10, weight: .bold))
+                                .foregroundStyle(AVIATheme.aviaWhite)
+                        } else if isCurrent {
+                            Circle().fill(AVIATheme.aviaWhite).frame(width: 8, height: 8)
+                        }
+                    }
+                    .animation(.spring(response: 0.45, dampingFraction: 0.8), value: lead.status)
+                    Text(stage.label)
+                        .font(.neueCaption2Medium)
+                        .kerning(0.4)
+                        .foregroundStyle(isCurrent ? AVIATheme.textPrimary : AVIATheme.textTertiary)
+                        .lineLimit(1)
+                        .minimumScaleFactor(0.7)
+                }
+                .frame(maxWidth: .infinity)
+                if index < OpportunityWorkflow.stages.count - 1 {
+                    Rectangle()
+                        .fill(isPast ? AVIATheme.success : AVIATheme.surfaceBorder)
+                        .frame(height: 2)
+                        .padding(.bottom, 22)
+                }
+            }
+        }
+    }
+
+    private var workflowChecklist: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            HStack(spacing: 6) {
+                Image(systemName: "checklist")
+                    .font(.neueCaption)
+                    .foregroundStyle(AVIATheme.timelessBrown)
+                Text("STEPS FOR THIS STAGE")
+                    .font(.neueCaption2Medium)
+                    .kerning(1.0)
+                    .foregroundStyle(AVIATheme.textSecondary)
+            }
+            VStack(spacing: 8) {
+                ForEach(workflowSteps) { step in
+                    Button { toggleStep(step) } label: {
+                        stepRow(step)
+                    }
+                    .buttonStyle(.plain)
+                }
+            }
+            Text("Tap a step to mark it done as you progress the deal.")
+                .font(.neueCaption2)
+                .foregroundStyle(AVIATheme.textTertiary)
+        }
+    }
+
+    private func stepRow(_ step: OpportunityStep) -> some View {
+        let done = lead.workflowCompletions.contains(step.id)
+        let isGate = step.id == OpportunityWorkflow.contractStepID
+        return HStack(alignment: .top, spacing: 10) {
+            Image(systemName: done ? "checkmark.circle.fill" : "circle")
+                .font(.neueSubheadlineMedium)
+                .foregroundStyle(done ? AVIATheme.success : AVIATheme.textTertiary)
+                .animation(.spring(response: 0.4), value: done)
+            VStack(alignment: .leading, spacing: 2) {
+                HStack(spacing: 6) {
+                    Image(systemName: step.icon)
+                        .font(.neueCaption2)
+                        .foregroundStyle(done ? AVIATheme.success : AVIATheme.timelessBrown)
+                    Text(step.title)
+                        .font(.neueCaptionMedium)
+                        .foregroundStyle(AVIATheme.textPrimary)
+                        .strikethrough(done, color: AVIATheme.textTertiary)
+                    if isGate {
+                        Text("GATE")
+                            .font(.neueCaption2Medium)
+                            .kerning(0.6)
+                            .foregroundStyle(AVIATheme.warning)
+                            .padding(.horizontal, 5)
+                            .padding(.vertical, 1)
+                            .background(AVIATheme.warning.opacity(0.14))
+                            .clipShape(.capsule)
+                    }
+                }
+                Text(step.detail)
+                    .font(.neueCaption2)
+                    .foregroundStyle(AVIATheme.textSecondary)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+            Spacer(minLength: 0)
+        }
+        .padding(10)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(done ? AVIATheme.success.opacity(0.07) : AVIATheme.cardBackground)
+        .clipShape(.rect(cornerRadius: 10))
+        .overlay {
+            RoundedRectangle(cornerRadius: 10)
+                .stroke(done ? AVIATheme.success.opacity(0.3) : AVIATheme.surfaceBorder, lineWidth: 1)
+        }
+    }
+
+    @ViewBuilder
+    private var workflowAdvanceButton: some View {
+        let stage = OpportunityWorkflow.normalizedStage(lead.status)
+        HStack(spacing: 10) {
+            if let prev = OpportunityWorkflow.previousStage(before: lead.status) {
+                Button { moveStage(to: prev) } label: {
+                    Image(systemName: "arrow.uturn.backward")
+                        .font(.neueCaptionMedium)
+                        .foregroundStyle(AVIATheme.textSecondary)
+                        .frame(width: 44, height: 44)
+                        .background(AVIATheme.cardBackground)
+                        .clipShape(.rect(cornerRadius: 12))
+                        .overlay { RoundedRectangle(cornerRadius: 12).stroke(AVIATheme.surfaceBorder, lineWidth: 1) }
+                }
+                .buttonStyle(.plain)
+            }
+
+            if stage == .negotiation {
+                Button { convertToClient() } label: {
+                    HStack(spacing: 8) {
+                        Image(systemName: "checkmark.seal.fill").font(.neueSubheadlineMedium)
+                        Text("Convert to Client").font(.neueCaptionMedium)
+                    }
+                    .foregroundStyle(AVIATheme.aviaWhite)
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, 13)
+                    .background { if canConvertToClient { AVIATheme.primaryGradient } else { AVIATheme.textTertiary.opacity(0.5) } }
+                    .clipShape(.rect(cornerRadius: 12))
+                }
+                .buttonStyle(.plain)
+                .disabled(!canConvertToClient)
+            } else if let next = OpportunityWorkflow.nextStage(after: lead.status) {
+                Button { moveStage(to: next) } label: {
+                    HStack(spacing: 8) {
+                        Image(systemName: next.icon).font(.neueSubheadlineMedium)
+                        Text("Advance to \(next.label)").font(.neueCaptionMedium)
+                        Image(systemName: "arrow.right").font(.neueCaption)
+                    }
+                    .foregroundStyle(AVIATheme.aviaWhite)
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, 13)
+                    .background { if canAdvanceStage { AVIATheme.primaryGradient } else { AVIATheme.textTertiary.opacity(0.5) } }
+                    .clipShape(.rect(cornerRadius: 12))
+                }
+                .buttonStyle(.plain)
+                .disabled(!canAdvanceStage)
+            }
+        }
+    }
+
+    private func toggleStep(_ step: OpportunityStep) {
+        if lead.workflowCompletions.contains(step.id) {
+            lead.workflowCompletions.remove(step.id)
+        } else {
+            lead.workflowCompletions.insert(step.id)
+        }
+        persist()
+    }
+
+    private func moveStage(to stage: LeadStatus) {
+        withAnimation(.spring(response: 0.5, dampingFraction: 0.8)) {
+            lead.status = stage
+        }
+        persist()
+    }
+
+    private func convertToOpportunity() {
+        withAnimation(.spring(response: 0.5, dampingFraction: 0.85)) {
+            lead.kind = .opportunity
+            if lead.status == .new || lead.status == .contacted || lead.status == .lost {
+                lead.status = .qualified
+            }
+        }
+        persist()
+    }
+
+    private func convertToClient() {
+        guard canConvertToClient else { return }
+        withAnimation(.spring(response: 0.5, dampingFraction: 0.85)) {
+            lead.kind = .client
+            lead.status = .won
+            lead.convertedAt = .now
+            if lead.convertedClientId == nil { lead.convertedClientId = UUID().uuidString }
+        }
+        persist()
+    }
+
     // MARK: - Persistence
 
     private func persist() {
@@ -375,6 +715,27 @@ struct LeadEditSheet: View {
                     Picker("Source", selection: $lead.source) {
                         ForEach(LeadSource.allCases) { s in
                             Label(s.label, systemImage: s.icon).tag(s)
+                        }
+                    }
+                }
+                if lead.kind == .opportunity {
+                    Section("Deal") {
+                        HStack {
+                            Text("Estimated value")
+                            Spacer()
+                            TextField("$", value: $lead.estimatedValue, format: .number)
+                                .keyboardType(.numberPad)
+                                .multilineTextAlignment(.trailing)
+                        }
+                        Toggle("Expected close date", isOn: Binding(
+                            get: { lead.expectedCloseDate != nil },
+                            set: { lead.expectedCloseDate = $0 ? (lead.expectedCloseDate ?? .now.addingTimeInterval(14 * 86400)) : nil }
+                        ))
+                        if lead.expectedCloseDate != nil {
+                            DatePicker("Closes", selection: Binding(
+                                get: { lead.expectedCloseDate ?? .now },
+                                set: { lead.expectedCloseDate = $0 }
+                            ), displayedComponents: .date)
                         }
                     }
                 }

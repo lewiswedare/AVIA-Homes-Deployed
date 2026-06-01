@@ -38,6 +38,33 @@ nonisolated enum LeadSource: String, Codable, CaseIterable, Sendable, Identifiab
     }
 }
 
+// MARK: - Lead Kind
+
+/// Where a record sits in the lead → opportunity → client progression.
+nonisolated enum LeadKind: String, Codable, CaseIterable, Sendable, Identifiable {
+    case lead
+    case opportunity
+    case client
+
+    nonisolated var id: String { rawValue }
+
+    var label: String {
+        switch self {
+        case .lead: return "Lead"
+        case .opportunity: return "Opportunity"
+        case .client: return "Client"
+        }
+    }
+
+    var icon: String {
+        switch self {
+        case .lead: return "person.crop.circle.badge.plus"
+        case .opportunity: return "chart.line.uptrend.xyaxis"
+        case .client: return "checkmark.seal.fill"
+        }
+    }
+}
+
 // MARK: - Lead
 
 struct Lead: Identifiable, Hashable {
@@ -52,6 +79,11 @@ struct Lead: Identifiable, Hashable {
     var ownerId: String?
     var notes: String?
     var convertedClientId: String?
+    var kind: LeadKind
+    var estimatedValue: Double?
+    var expectedCloseDate: Date?
+    var workflowCompletions: Set<String>
+    var convertedAt: Date?
     var createdAt: Date
     var updatedAt: Date
 
@@ -63,7 +95,7 @@ struct Lead: Identifiable, Hashable {
         return result.isEmpty ? "?" : result
     }
 
-    var isConverted: Bool { convertedClientId != nil }
+    var isConverted: Bool { kind == .client || convertedClientId != nil }
 
     static func new(ownerId: String?) -> Lead {
         Lead(
@@ -78,6 +110,11 @@ struct Lead: Identifiable, Hashable {
             ownerId: ownerId,
             notes: nil,
             convertedClientId: nil,
+            kind: .lead,
+            estimatedValue: nil,
+            expectedCloseDate: nil,
+            workflowCompletions: [],
+            convertedAt: nil,
             createdAt: .now,
             updatedAt: .now
         )
@@ -96,6 +133,11 @@ nonisolated struct LeadRow: Codable, Sendable {
     let owner_id: String?
     let notes: String?
     let converted_client_id: String?
+    let kind: String?
+    let estimated_value: Double?
+    let expected_close_date: String?
+    let workflow_completions: [String]?
+    let converted_at: String?
     let created_at: String?
     let updated_at: String?
 
@@ -112,6 +154,11 @@ nonisolated struct LeadRow: Codable, Sendable {
         self.owner_id = lead.ownerId
         self.notes = lead.notes
         self.converted_client_id = lead.convertedClientId
+        self.kind = lead.kind.rawValue
+        self.estimated_value = lead.estimatedValue
+        self.expected_close_date = lead.expectedCloseDate.map { iso.string(from: $0) }
+        self.workflow_completions = Array(lead.workflowCompletions)
+        self.converted_at = lead.convertedAt.map { iso.string(from: $0) }
         self.created_at = iso.string(from: lead.createdAt)
         self.updated_at = iso.string(from: lead.updatedAt)
     }
@@ -129,6 +176,11 @@ nonisolated struct LeadRow: Codable, Sendable {
             ownerId: owner_id,
             notes: notes,
             convertedClientId: converted_client_id,
+            kind: LeadKind(rawValue: kind ?? "lead") ?? .lead,
+            estimatedValue: estimated_value,
+            expectedCloseDate: ClientCRMProfileRow.parse(expected_close_date),
+            workflowCompletions: Set(workflow_completions ?? []),
+            convertedAt: ClientCRMProfileRow.parse(converted_at),
             createdAt: ClientCRMProfileRow.parse(created_at) ?? .now,
             updatedAt: ClientCRMProfileRow.parse(updated_at) ?? .now
         )
