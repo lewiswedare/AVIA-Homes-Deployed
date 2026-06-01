@@ -3159,6 +3159,54 @@ class SupabaseService {
         }
     }
 
+    // MARK: - Leads
+
+    func fetchAllLeads(limit: Int = 1000) async -> [Lead] {
+        guard isConfigured else { return [] }
+        do {
+            let rows: [LeadRow] = try await client
+                .from("leads")
+                .select()
+                .order("created_at", ascending: false)
+                .limit(limit)
+                .execute()
+                .value
+            return rows.map { $0.toLead() }
+        } catch {
+            print("[SupabaseService] fetchAllLeads FAILED: \(error)")
+            return []
+        }
+    }
+
+    @discardableResult
+    func upsertLead(_ lead: Lead) async -> Bool {
+        guard isConfigured else { return false }
+        var updated = lead
+        updated.updatedAt = .now
+        let row = LeadRow(lead: updated)
+        do {
+            try await client.from("leads")
+                .upsert(row, onConflict: "id")
+                .execute()
+            return true
+        } catch {
+            print("[SupabaseService] upsertLead FAILED: \(error)")
+            return false
+        }
+    }
+
+    @discardableResult
+    func deleteLead(id: String) async -> Bool {
+        guard isConfigured else { return false }
+        do {
+            try await client.from("leads").delete().eq("id", value: id).execute()
+            return true
+        } catch {
+            print("[SupabaseService] deleteLead FAILED: \(error)")
+            return false
+        }
+    }
+
     // MARK: - Client Communications (CRM log)
 
     func fetchClientCommunications(clientId: String) async -> [ClientCommunication] {

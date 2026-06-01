@@ -1,6 +1,6 @@
 # Build an admin "Workspace" — a daily operating-system hub for tasks, clients, jobs, scheduling & sending
 
-_Status: ✅ Implemented — `AdminWorkspaceView` is the admin landing tab (Today, Tasks, Clients, Jobs, Schedule, Sending lanes). Build green._
+_Status: ✅ Implemented — `AdminWorkspaceView` is the admin landing tab (Today, Tasks, Leads, Clients, Jobs, Schedule, Sending lanes). Build green._
 
 Right now admins jump between separate menus for tasks, clients, builds, scheduling and sending. I'll bring it all together into one workflow-driven home screen that acts as their daily operating system.
 
@@ -11,7 +11,8 @@ Right now admins jump between separate menus for tasks, clients, builds, schedul
 - An "Action Required" panel surfaces anything waiting on them (approvals, reviews, pending users, client requests) with one-tap jump-throughs.
 
 **Move between the five workflows in one place**
-- A clean row of workflow lanes at the top: **Today**, **Tasks**, **Clients**, **Jobs**, **Schedule**, **Sending** — tap to switch the workspace without digging through menus.
+- A clean row of workflow lanes at the top: **Today**, **Tasks**, **Leads**, **Clients**, **Jobs**, **Schedule**, **Sending** — tap to switch the workspace without digging through menus.
+- **Leads** — inbound enquiries from the website and social media land here for triage. Each lead can be assigned to an admin or staff member, filtered by owner (all / mine / unassigned) and source, moved through the pipeline, and opened to a full record with notes, call/email actions and editable details.
 - **Today** — the focus view: overdue + due-today tasks, today's and this week's appointments, and follow-ups due, all in one prioritised list they can act on.
 - **Tasks** — the full task board (add manual tasks, tick off automated workflow steps, filter by mine/overdue/today/week).
 - **Clients** — the client pipeline (lead stages) plus quick search into each client's record.

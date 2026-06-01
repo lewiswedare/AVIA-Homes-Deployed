@@ -26,12 +26,13 @@ struct AdminWorkspaceView: View {
     @State private var newTaskClientId: String? = nil
 
     enum WorkflowLane: String, CaseIterable, Identifiable {
-        case today, tasks, clients, jobs, schedule, sending
+        case today, tasks, leads, clients, jobs, schedule, sending
         var id: String { rawValue }
         var label: String {
             switch self {
             case .today: return "Today"
             case .tasks: return "Tasks"
+            case .leads: return "Leads"
             case .clients: return "Clients"
             case .jobs: return "Jobs"
             case .schedule: return "Schedule"
@@ -42,6 +43,7 @@ struct AdminWorkspaceView: View {
             switch self {
             case .today: return "sun.max.fill"
             case .tasks: return "checklist"
+            case .leads: return "person.crop.circle.badge.plus"
             case .clients: return "person.2.fill"
             case .jobs: return "building.2.fill"
             case .schedule: return "calendar"
@@ -72,6 +74,7 @@ struct AdminWorkspaceView: View {
             .sheet(isPresented: $showAddTask) { addTaskSheet }
             .navigationDestination(for: ClientBuild.self) { build in ClientBuildDetailView(build: build) }
             .navigationDestination(for: ClientUser.self) { client in AdminClientCRMView(client: client) }
+            .navigationDestination(for: Lead.self) { lead in AdminLeadDetailView(lead: lead) }
             .task { await load() }
             .refreshable { await load() }
         }
@@ -209,6 +212,7 @@ struct AdminWorkspaceView: View {
         switch lane {
         case .today: todayLane
         case .tasks: tasksLane
+        case .leads: AdminLeadsSection(searchText: searchText)
         case .clients: AdminClientsSection(searchText: searchText)
         case .jobs: jobsLane
         case .schedule: scheduleLane
