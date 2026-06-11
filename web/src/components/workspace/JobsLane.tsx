@@ -25,7 +25,7 @@ export default function JobsLane({ search }: { search: string }) {
     (clientId: string): string => {
       const p = (profiles ?? []).find((x) => x.id === clientId);
       if (!p) return "Unassigned";
-      return `${p.first_name} ${p.last_name}`.trim() || p.email;
+      return `${p.first_name ?? ""} ${p.last_name ?? ""}`.trim() || p.email || "Unassigned";
     },
     [profiles],
   );
@@ -37,9 +37,9 @@ export default function JobsLane({ search }: { search: string }) {
     return list.filter(
       (b) =>
         nameFor(b.client_id).toLowerCase().includes(q) ||
-        b.home_design.toLowerCase().includes(q) ||
-        b.lot_number.toLowerCase().includes(q) ||
-        b.estate.toLowerCase().includes(q),
+        (b.home_design ?? "").toLowerCase().includes(q) ||
+        (b.lot_number ?? "").toLowerCase().includes(q) ||
+        (b.estate ?? "").toLowerCase().includes(q),
     );
   }, [builds, search, nameFor]);
 

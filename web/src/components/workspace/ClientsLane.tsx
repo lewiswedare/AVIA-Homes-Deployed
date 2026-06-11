@@ -23,8 +23,8 @@ export default function ClientsLane({ search }: { search: string }) {
     if (q) {
       list = list.filter(
         (p) =>
-          `${p.first_name} ${p.last_name}`.toLowerCase().includes(q) ||
-          p.email.toLowerCase().includes(q),
+          `${p.first_name ?? ""} ${p.last_name ?? ""}`.toLowerCase().includes(q) ||
+          (p.email ?? "").toLowerCase().includes(q),
       );
     }
     return list;
@@ -54,7 +54,7 @@ export default function ClientsLane({ search }: { search: string }) {
         <div className="space-y-2">
           {clients.map((client) => {
             const record = crmMap.get(client.id);
-            const name = `${client.first_name} ${client.last_name}`.trim() || client.email;
+            const name = `${client.first_name ?? ""} ${client.last_name ?? ""}`.trim() || client.email || "Client";
             return (
               <Link key={client.id} to={`/clients/${client.id}`} className="block">
                 <BentoCard className="flex items-center gap-3 p-3.5">

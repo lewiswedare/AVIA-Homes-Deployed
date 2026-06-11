@@ -333,7 +333,7 @@ export function useOpenRequests(): UseQueryResult<ServiceRequestRow[]> {
       const { data, error } = await supabase.from("service_requests").select("id,client_id,title,status");
       if (error) throw error;
       const rows = (data ?? []) as ServiceRequestRow[];
-      return rows.filter((r) => r.status.toLowerCase() === "open");
+      return rows.filter((r) => (r.status ?? "").toLowerCase() === "open");
     },
   });
 }

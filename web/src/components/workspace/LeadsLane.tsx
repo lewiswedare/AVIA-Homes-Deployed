@@ -73,7 +73,7 @@ export default function LeadsLane({ search }: { search: string }) {
     if (q) {
       list = list.filter(
         (l) =>
-          l.name.toLowerCase().includes(q) ||
+          (l.name ?? "").toLowerCase().includes(q) ||
           (l.email ?? "").toLowerCase().includes(q) ||
           (l.phone ?? "").includes(q),
       );

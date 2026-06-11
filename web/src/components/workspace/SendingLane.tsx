@@ -16,8 +16,8 @@ export default function SendingLane({ search }: { search: string }) {
     if (q) {
       list = list.filter(
         (p) =>
-          `${p.first_name} ${p.last_name}`.toLowerCase().includes(q) ||
-          p.email.toLowerCase().includes(q),
+          `${p.first_name ?? ""} ${p.last_name ?? ""}`.toLowerCase().includes(q) ||
+          (p.email ?? "").toLowerCase().includes(q),
       );
     }
     return list;
@@ -88,7 +88,7 @@ export default function SendingLane({ search }: { search: string }) {
                 <InitialsAvatar initials={initialsOf(client.first_name, client.last_name)} />
                 <div className="min-w-0 flex-1">
                   <div className="truncate text-[14px] font-medium text-avia-black">
-                    {`${client.first_name} ${client.last_name}`.trim() || client.email}
+                    {`${client.first_name ?? ""} ${client.last_name ?? ""}`.trim() || client.email || "Client"}
                   </div>
                   <div className="truncate text-[11px] text-avia-black/55">{client.email}</div>
                 </div>

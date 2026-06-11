@@ -21,10 +21,10 @@ export default function Messages() {
   const selected = list.find((c) => c.id === selectedId) ?? null;
 
   const nameForConversation = (c: ConversationRow): string => {
-    const others = c.participant_ids.filter((p) => p !== userId);
+    const others = (c.participant_ids ?? []).filter((p) => p !== userId);
     const names = others.map((pid) => {
       const p = (profiles ?? []).find((x) => x.id === pid);
-      return p ? `${p.first_name} ${p.last_name}`.trim() || p.email : "Member";
+      return p ? `${p.first_name ?? ""} ${p.last_name ?? ""}`.trim() || p.email || "Member" : "Member";
     });
     return names.join(", ") || "Conversation";
   };

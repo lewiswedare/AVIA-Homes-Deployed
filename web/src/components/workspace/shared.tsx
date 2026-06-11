@@ -42,8 +42,8 @@ export function nameForClient(profiles: ProfileRow[], clientId: string | null): 
   if (!clientId) return "General task";
   const p = profiles.find((x) => x.id === clientId);
   if (!p) return "Client";
-  const name = `${p.first_name} ${p.last_name}`.trim();
-  return name || p.email;
+  const name = `${p.first_name ?? ""} ${p.last_name ?? ""}`.trim();
+  return name || p.email || "Client";
 }
 
 export function useToggleTask(): UseMutationResult<void, Error, ClientTaskRow> {

@@ -7,8 +7,8 @@ import { formatCost, humanize } from "@/lib/format";
 import { useMyBuild, useSpecSelections } from "@/lib/queries";
 import type { BuildSpecSelectionRow } from "@/lib/types";
 
-function statusTone(status: string): Tone {
-  const s = status.toLowerCase();
+function statusTone(status: string | null | undefined): Tone {
+  const s = (status ?? "").toLowerCase();
   if (s.includes("approved")) return "blue";
   if (s.includes("submitted")) return "brown";
   if (s.includes("upgrade")) return "warning";

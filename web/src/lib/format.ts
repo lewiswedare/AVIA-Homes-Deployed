@@ -97,9 +97,9 @@ export function fullNameOf(p: { first_name?: string | null; last_name?: string |
   return name.length > 0 ? name : (p.email ?? "Unknown");
 }
 
-/** Humanizes snake_case / camelCase status keys: "upgrade_requested" → "Upgrade Requested". */
-export function humanize(value: string): string {
-  return value
+/** Humanizes snake_case / camelCase status keys: "upgrade_requested" → "Upgrade Requested". Null-safe. */
+export function humanize(value: string | null | undefined): string {
+  return (value ?? "")
     .replace(/_/g, " ")
     .replace(/([a-z])([A-Z])/g, "$1 $2")
     .replace(/\b\w/g, (c) => c.toUpperCase());

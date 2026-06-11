@@ -19,7 +19,7 @@ export default function ScheduleLane() {
         const d = parseDate(s.date);
         return d !== null && d.getTime() >= start;
       })
-      .sort((a, b) => a.date.localeCompare(b.date));
+      .sort((a, b) => (a.date ?? "").localeCompare(b.date ?? ""));
   }, [schedule]);
 
   const grouped = useMemo(() => {
