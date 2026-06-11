@@ -27,13 +27,19 @@ export default function Login() {
       return;
     }
     setLoading(true);
-    const { error: authError } = await supabase.auth.signInWithPassword({ email, password });
-    setLoading(false);
-    if (authError) {
-      setError(parseAuthError(authError.message));
-      return;
+    try {
+      const { error: authError } = await supabase.auth.signInWithPassword({ email, password });
+      if (authError) {
+        setError(parseAuthError(authError.message));
+        return;
+      }
+      navigate("/", { replace: true });
+    } catch (e) {
+      console.error(`[Login] sign in threw: ${e instanceof Error ? e.message : String(e)}`);
+      setError("Network error. Please check your connection.");
+    } finally {
+      setLoading(false);
     }
-    navigate("/", { replace: true });
   };
 
   return (

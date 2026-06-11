@@ -35,14 +35,20 @@ export default function ProfileSetup() {
       role: profile?.role ?? "Client",
       assigned_client_ids: profile?.assigned_client_ids ?? [],
     };
-    const { error: upsertError } = await supabase.from("profiles").upsert(payload, { onConflict: "id" });
-    setLoading(false);
-    if (upsertError) {
-      console.error("[ProfileSetup] upsert failed", upsertError.message);
-      setError("Could not save your profile. Please try again.");
-      return;
+    try {
+      const { error: upsertError } = await supabase.from("profiles").upsert(payload, { onConflict: "id" });
+      if (upsertError) {
+        console.error(`[ProfileSetup] upsert failed: ${upsertError.message}`);
+        setError("Could not save your profile. Please try again.");
+        return;
+      }
+      await refreshProfile();
+    } catch (e) {
+      console.error(`[ProfileSetup] save threw: ${e instanceof Error ? e.message : String(e)}`);
+      setError("Network error. Please check your connection.");
+    } finally {
+      setLoading(false);
     }
-    await refreshProfile();
   };
 
   return (

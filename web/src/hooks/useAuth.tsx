@@ -62,11 +62,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         .eq("id", userId)
         .maybeSingle();
       if (error) {
-        console.error("[Auth] fetch profile failed", error.message);
+        console.error(`[Auth] fetch profile failed: ${error.message}`);
         setProfile(null);
       } else {
         setProfile((data as ProfileRow | null) ?? null);
       }
+    } catch (e) {
+      console.error(`[Auth] fetch profile threw: ${e instanceof Error ? e.message : String(e)}`);
+      setProfile(null);
     } finally {
       setProfileLoading(false);
     }
@@ -83,7 +86,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const signOut = useCallback(async (): Promise<void> => {
     setProfile(null);
-    await supabase.auth.signOut();
+    try {
+      await supabase.auth.signOut();
+    } catch (e) {
+      console.error(`[Auth] sign out failed: ${e instanceof Error ? e.message : String(e)}`);
+    }
   }, []);
 
   const role: UserRole = (profile?.role as UserRole | undefined) ?? "Client";

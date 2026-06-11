@@ -18,13 +18,19 @@ export default function ForgotPassword() {
       return;
     }
     setLoading(true);
-    const { error: authError } = await supabase.auth.resetPasswordForEmail(email);
-    setLoading(false);
-    if (authError) {
-      setError("Something went wrong. Please try again.");
-      return;
+    try {
+      const { error: authError } = await supabase.auth.resetPasswordForEmail(email);
+      if (authError) {
+        setError("Something went wrong. Please try again.");
+        return;
+      }
+      setSent(true);
+    } catch (e) {
+      console.error(`[ForgotPassword] reset threw: ${e instanceof Error ? e.message : String(e)}`);
+      setError("Network error. Please check your connection.");
+    } finally {
+      setLoading(false);
     }
-    setSent(true);
   };
 
   return (

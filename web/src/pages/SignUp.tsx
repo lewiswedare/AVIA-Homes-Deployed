@@ -31,28 +31,34 @@ export default function SignUp() {
       return;
     }
     setLoading(true);
-    const { error: authError } = await supabase.auth.signUp({
-      email,
-      password,
-      options: {
-        data: {
-          first_name: firstName,
-          last_name: lastName,
-          phone,
+    try {
+      const { error: authError } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          data: {
+            first_name: firstName,
+            last_name: lastName,
+            phone,
+          },
         },
-      },
-    });
-    setLoading(false);
-    if (authError) {
-      const m = authError.message.toLowerCase();
-      setError(
-        m.includes("already")
-          ? "An account with this email already exists."
-          : "Something went wrong. Please try again.",
-      );
-      return;
+      });
+      if (authError) {
+        const m = authError.message.toLowerCase();
+        setError(
+          m.includes("already")
+            ? "An account with this email already exists."
+            : "Something went wrong. Please try again.",
+        );
+        return;
+      }
+      navigate("/", { replace: true });
+    } catch (e) {
+      console.error(`[SignUp] sign up threw: ${e instanceof Error ? e.message : String(e)}`);
+      setError("Network error. Please check your connection.");
+    } finally {
+      setLoading(false);
     }
-    navigate("/", { replace: true });
   };
 
   return (
