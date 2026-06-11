@@ -2,6 +2,8 @@
 
 _Status: ✅ Implemented — `AdminWorkspaceView` is the admin landing tab (Today, Tasks, Leads, Clients, Jobs, Schedule, Sending lanes). Build green._
 
+_Web parity: ✅ The web Workspace now matches the iOS admin panel — lane badges, full Action Required panel (pending users with role assignment, open requests, EOIs, spec reviews, upgrades to price), task inbox filters, full lead/opportunity record with the sales workflow & contract gate, job spec-review badges, and admin-managed stock library uploads._
+
 Right now admins jump between separate menus for tasks, clients, builds, scheduling and sending. I'll bring it all together into one workflow-driven home screen that acts as their daily operating system.
 
 ## What admins will be able to do

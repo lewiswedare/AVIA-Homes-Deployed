@@ -345,3 +345,40 @@ export interface ServiceRequestRow {
   title: string;
   status: string;
 }
+
+/** Minimal slice of package_assignments used for EOI review counts. */
+export interface PackageAssignmentEOIRow {
+  id: string;
+  package_id: string;
+  eoi_status: string | null;
+}
+
+export const leadTemperatureLabel: Record<LeadTemperatureKey, string> = {
+  hot: "Hot",
+  warm: "Warm",
+  cold: "Cold",
+};
+
+/** Stock library categories — mirrors the iOS `DocumentCategory` enum raw values. */
+export const DOCUMENT_CATEGORIES: string[] = [
+  "Contracts",
+  "Plans",
+  "Permits",
+  "Certificates",
+  "Invoices",
+  "Financial",
+  "Marketing",
+  "Templates",
+];
+
+/** Roles an admin can assign to a pending user — mirrors iOS UserManagementView. */
+export const ASSIGNABLE_ROLES: UserRole[] = [
+  "Client",
+  "Staff",
+  "PreConstruction",
+  "BuildingSupport",
+  "Partner",
+  "SalesPartner",
+  "Admin",
+  "SalesAdmin",
+];

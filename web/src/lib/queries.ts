@@ -15,6 +15,7 @@ import type {
   LeadRow,
   LibraryDocumentRow,
   NotificationRow,
+  PackageAssignmentEOIRow,
   ProfileRow,
   ScheduleItemRow,
   ServiceRequestRow,
@@ -53,9 +54,10 @@ export function useProfile(userId: string | null): UseQueryResult<ProfileRow | n
   });
 }
 
-export function useOpenTasks(): UseQueryResult<ClientTaskRow[]> {
+export function useOpenTasks(enabled: boolean = true): UseQueryResult<ClientTaskRow[]> {
   return useQuery({
     queryKey: ["client_tasks", "open"],
+    enabled,
     queryFn: async (): Promise<ClientTaskRow[]> => {
       const { data, error } = await supabase
         .from("client_tasks")
@@ -83,9 +85,10 @@ export function useTasksForClient(clientId: string): UseQueryResult<ClientTaskRo
   });
 }
 
-export function useCRMProfiles(): UseQueryResult<ClientCRMProfileRow[]> {
+export function useCRMProfiles(enabled: boolean = true): UseQueryResult<ClientCRMProfileRow[]> {
   return useQuery({
     queryKey: ["client_crm_profile"],
+    enabled,
     queryFn: async (): Promise<ClientCRMProfileRow[]> => selectAll<ClientCRMProfileRow>("client_crm_profile"),
   });
 }
@@ -334,6 +337,41 @@ export function useOpenRequests(): UseQueryResult<ServiceRequestRow[]> {
       if (error) throw error;
       const rows = (data ?? []) as ServiceRequestRow[];
       return rows.filter((r) => (r.status ?? "").toLowerCase() === "open");
+    },
+  });
+}
+
+/**
+ * Spec selections awaiting admin review — mirrors the iOS
+ * `fetchAllPendingSpecReviews` query (status = awaiting_admin, drafts excluded).
+ */
+export function usePendingSpecReviews(enabled: boolean = true): UseQueryResult<BuildSpecSelectionRow[]> {
+  return useQuery({
+    queryKey: ["build_spec_selections", "pending"],
+    enabled,
+    queryFn: async (): Promise<BuildSpecSelectionRow[]> => {
+      const { data, error } = await supabase
+        .from("build_spec_selections")
+        .select("*")
+        .eq("status", "awaiting_admin")
+        .neq("selection_type", "upgrade_draft");
+      if (error) throw error;
+      return (data ?? []) as BuildSpecSelectionRow[];
+    },
+  });
+}
+
+/** EOI statuses across package assignments, for the Action Required panel. */
+export function useEOIAssignments(enabled: boolean = true): UseQueryResult<PackageAssignmentEOIRow[]> {
+  return useQuery({
+    queryKey: ["package_assignments", "eoi"],
+    enabled,
+    queryFn: async (): Promise<PackageAssignmentEOIRow[]> => {
+      const { data, error } = await supabase
+        .from("package_assignments")
+        .select("id,package_id,eoi_status");
+      if (error) throw error;
+      return (data ?? []) as PackageAssignmentEOIRow[];
     },
   });
 }

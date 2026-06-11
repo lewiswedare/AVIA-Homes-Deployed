@@ -92,7 +92,19 @@ export function TaskRow({
         )}
       </button>
       <div className="min-w-0 flex-1">
-        <div className="text-[13px] font-medium text-avia-black">{task.title}</div>
+        <div className="flex items-center gap-2">
+          <span className="text-[13px] font-medium text-avia-black">{task.title}</span>
+          {task.priority === "high" && (
+            <span className="rounded-full bg-avia-brown/85 px-1.5 py-px text-[9px] font-semibold uppercase tracking-wide text-avia-white">
+              High
+            </span>
+          )}
+          {task.priority === "low" && (
+            <span className="rounded-full bg-avia-black/10 px-1.5 py-px text-[9px] font-semibold uppercase tracking-wide text-avia-black/55">
+              Low
+            </span>
+          )}
+        </div>
         <div className="mt-1 flex items-center gap-1.5 text-[11px] text-avia-black/55">
           <User className="h-3 w-3" />
           {nameForClient(profiles, task.client_id)}
