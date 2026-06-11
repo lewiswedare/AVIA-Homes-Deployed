@@ -21,11 +21,22 @@ struct ChatView: View {
 
     private var otherUser: ClientUser? {
         let otherId = conversation.otherParticipantId(currentUserId: viewModel.currentUser.id)
-        return viewModel.allRegisteredUsers.first { $0.id == otherId }
+        return viewModel.user(withId: otherId)
+    }
+
+    /// For staff viewing a client's "general" thread, show who it belongs to
+    /// instead of the generic AVIA branding the client sees.
+    private var generalThreadClient: ClientUser? {
+        guard conversation.isGeneral, viewModel.currentRole.isAnyStaffRole else { return nil }
+        guard !conversation.includesParticipant(viewModel.currentUser.id) else { return nil }
+        return conversation.participantIds.first.flatMap { viewModel.user(withId: $0) }
     }
 
     private var headerTitle: String {
-        conversation.isGeneral ? "AVIA Homes" : (otherUser?.fullName ?? "Chat")
+        if conversation.isGeneral {
+            return generalThreadClient?.fullName ?? "AVIA Homes"
+        }
+        return otherUser?.fullName ?? "Chat"
     }
 
     private var messages: [ChatMessage] {
@@ -122,7 +133,9 @@ struct ChatView: View {
 
     @ViewBuilder
     private var headerAvatar: some View {
-        if conversation.isGeneral {
+        if let client = generalThreadClient {
+            UserAvatarView(user: client, size: 32)
+        } else if conversation.isGeneral {
             Text("A")
                 .font(.neueCorpMedium(14))
                 .foregroundStyle(AVIATheme.aviaWhite)
@@ -205,7 +218,7 @@ struct ChatView: View {
 
     @ViewBuilder
     private func messageRow(_ message: ChatMessage, at index: Int) -> some View {
-        let isMine = message.senderId == viewModel.currentUser.id
+        let isMine = message.senderId.lowercased() == viewModel.currentUser.id.lowercased()
         let isLastInCluster = isLastInCluster(at: index)
         let showAvatar = !isMine && isLastInCluster
         let showTail = isLastInCluster
@@ -232,7 +245,7 @@ struct ChatView: View {
 
     @ViewBuilder
     private func senderAvatar(for message: ChatMessage) -> some View {
-        if let sender = viewModel.allRegisteredUsers.first(where: { $0.id == message.senderId }) {
+        if let sender = viewModel.user(withId: message.senderId) {
             UserAvatarView(user: sender, size: 28)
         } else if conversation.isGeneral {
             Text("A")
@@ -512,18 +525,40 @@ struct ChatView: View {
     }
 
     private func notifyRecipient(preview: String) async {
-        let recipientId = conversation.otherParticipantId(currentUserId: viewModel.currentUser.id)
-        guard !recipientId.isEmpty else { return }
-        await viewModel.notificationService.createNotification(
-            recipientId: recipientId,
-            senderId: viewModel.currentUser.id,
-            senderName: viewModel.currentUser.fullName,
-            type: .newMessage,
-            title: "New Message",
-            message: "\(viewModel.currentUser.fullName): \(preview.prefix(100))",
-            referenceId: conversation.id,
-            referenceType: "conversation"
-        )
+        let myId = viewModel.currentUser.id.lowercased()
+        var recipientIds: [String]
+
+        if conversation.isGeneral {
+            if conversation.includesParticipant(viewModel.currentUser.id) {
+                // Client messaging the AVIA team — the thread has no staff
+                // participants, so notify the staff team (same recipient set
+                // used for spec/colour submissions). Previously these messages
+                // produced NO notification at all.
+                recipientIds = viewModel.allRegisteredUsers
+                    .filter { $0.role.isAnyStaffRole }
+                    .map(\.id)
+            } else {
+                // Staff replying in a client's general thread — notify the client(s).
+                recipientIds = conversation.participantIds
+            }
+        } else {
+            recipientIds = [conversation.otherParticipantId(currentUserId: viewModel.currentUser.id)]
+        }
+
+        let uniqueRecipients = Array(Set(recipientIds.map { $0.lowercased() }))
+            .filter { !$0.isEmpty && $0 != myId }
+        for recipientId in uniqueRecipients {
+            await viewModel.notificationService.createNotification(
+                recipientId: recipientId,
+                senderId: viewModel.currentUser.id,
+                senderName: viewModel.currentUser.fullName,
+                type: .newMessage,
+                title: "New Message",
+                message: "\(viewModel.currentUser.fullName): \(preview.prefix(100))",
+                referenceId: conversation.id,
+                referenceType: "conversation"
+            )
+        }
     }
 
     private func scrollToBottom() {

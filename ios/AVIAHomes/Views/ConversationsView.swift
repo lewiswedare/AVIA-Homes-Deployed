@@ -46,7 +46,7 @@ struct ConversationsView: View {
             NewConversationSheet()
         }
         .hapticRefresh {
-            await viewModel.messagingService.loadConversations(for: viewModel.currentUser.id)
+            await viewModel.reloadConversations()
             await resolveParticipants()
         }
         .task(id: sortedConversations.map(\.id).joined()) {
@@ -59,13 +59,30 @@ struct ConversationsView: View {
         await viewModel.ensureUsersLoaded(ids: ids)
     }
 
+    /// For staff, a client's "general" thread shows the client's identity
+    /// instead of the generic AVIA branding the client sees.
+    private func generalThreadClient(for conversation: Conversation) -> ClientUser? {
+        guard conversation.isGeneral, viewModel.currentRole.isAnyStaffRole else { return nil }
+        guard !conversation.includesParticipant(viewModel.currentUser.id) else { return nil }
+        return conversation.participantIds.first.flatMap { viewModel.user(withId: $0) }
+    }
+
     private func conversationRow(_ conversation: Conversation) -> some View {
         let otherUserId = conversation.otherParticipantId(currentUserId: viewModel.currentUser.id)
-        let otherUser = viewModel.allRegisteredUsers.first { $0.id == otherUserId }
-        let hasUnread = conversation.unreadCount > 0 && conversation.lastSenderId != viewModel.currentUser.id
+        let otherUser = viewModel.user(withId: otherUserId)
+        let generalClient = generalThreadClient(for: conversation)
+        let hasUnread = conversation.unreadCount > 0 && conversation.lastSenderId.lowercased() != viewModel.currentUser.id.lowercased()
+        let title: String = {
+            if conversation.isGeneral {
+                return generalClient?.fullName ?? "General Message"
+            }
+            return otherUser?.fullName ?? "Unknown User"
+        }()
 
         return HStack(spacing: 14) {
-            if conversation.isGeneral {
+            if let generalClient {
+                UserAvatarView(user: generalClient, size: 48)
+            } else if conversation.isGeneral {
                 Text("A")
                     .font(.neueCorpMedium(18))
                     .foregroundStyle(AVIATheme.aviaWhite)
@@ -82,7 +99,7 @@ struct ConversationsView: View {
 
             VStack(alignment: .leading, spacing: 4) {
                 HStack {
-                    Text(conversation.isGeneral ? "General Message" : (otherUser?.fullName ?? "Unknown User"))
+                    Text(title)
                         .font(.neueSubheadlineMedium)
                         .foregroundStyle(AVIATheme.textPrimary)
                     if conversation.isGeneral {
@@ -95,7 +112,7 @@ struct ConversationsView: View {
                 }
 
                 HStack(spacing: 6) {
-                    if conversation.lastSenderId == viewModel.currentUser.id && !conversation.lastMessage.isEmpty {
+                    if conversation.lastSenderId.lowercased() == viewModel.currentUser.id.lowercased() && !conversation.lastMessage.isEmpty {
                         Text("You:")
                             .font(.neueCaption)
                             .foregroundStyle(AVIATheme.textTertiary)

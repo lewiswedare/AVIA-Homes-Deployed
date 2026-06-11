@@ -47,6 +47,12 @@ class AppViewModel {
     // by multiple role-branch views each calling loadUserData().
     private var realtimeInstalled = false
 
+    // Deduplicates loadUserData() — ContentView mounts several role-branch
+    // views that each fire it, and restoreSession()/signIn() fire it too.
+    // Without this guard the app ran the full data load 2-7x at launch.
+    private var userDataLoadTask: Task<Void, Never>?
+    private var userDataLoadedForUserId: String?
+
     var allHomeDesigns: [HomeDesign] = []
     var allPackages: [HouseLandPackage] = []
     var allBlogPosts: [BlogPost] = []
@@ -103,7 +109,6 @@ class AppViewModel {
                 }
             }
             authService.finishRestoring()
-            await fetchAllUsersFromSupabase()
             await loadUserData()
 
             // One-time demo data cleanup — runs only once
@@ -213,19 +218,43 @@ class AppViewModel {
     }
 
     func loadUserData() async {
-        await loadContentFromSupabase()
-        await fetchAllUsersFromSupabase()
-        await loadBuildsFromSupabase()
-        await loadAssignmentsFromSupabase()
-        await loadRequestsFromSupabase()
-        await loadDocumentsFromSupabase()
-        await loadScheduleItemsFromSupabase()
-        await loadDisplayHomeVisitsFromSupabase()
-        await loadPendingSpecReviews()
-        await loadMilestonesForCurrentBuilds()
-        await loadRemindersForCurrentUser()
-        await notificationService.loadNotifications(for: currentUser.id)
-        await messagingService.loadConversations(for: currentUser.id)
+        let uid = currentUser.id.lowercased()
+        guard !uid.isEmpty else { return }
+        // Already loaded this session — realtime + foreground refresh keep it fresh.
+        if userDataLoadedForUserId == uid { return }
+        // Another branch view kicked the load off — just wait for it.
+        if let inFlight = userDataLoadTask {
+            await inFlight.value
+            if userDataLoadedForUserId == uid { return }
+        }
+        let task = Task { await self.performLoadUserData() }
+        userDataLoadTask = task
+        await task.value
+        userDataLoadedForUserId = uid
+        userDataLoadTask = nil
+    }
+
+    private func performLoadUserData() async {
+        // Independent fetches run in parallel — the previous sequential chain
+        // of ~13 awaits was the main cause of slow cold starts.
+        async let content: () = loadContentFromSupabase()
+        async let users: () = fetchAllUsersFromSupabase()
+        async let builds: () = loadBuildsFromSupabase()
+        async let assignments: () = loadAssignmentsFromSupabase()
+        async let requestsLoad: () = loadRequestsFromSupabase()
+        async let docs: () = loadDocumentsFromSupabase()
+        async let schedule: () = loadScheduleItemsFromSupabase()
+        async let visits: () = loadDisplayHomeVisitsFromSupabase()
+        async let reviews: () = loadPendingSpecReviews()
+        async let notifs: () = notificationService.loadNotifications(for: currentUser.id)
+        async let conversations: () = reloadConversations()
+        _ = await (content, users, builds, assignments, requestsLoad, docs, schedule, visits, reviews, notifs, conversations)
+
+        // These depend on the freshly-loaded builds list.
+        async let milestones: () = loadMilestonesForCurrentBuilds()
+        async let reminders: () = loadRemindersForCurrentUser()
+        _ = await (milestones, reminders)
+
         notificationService.onNotificationReceived = { [weak self] notif in
             guard let self else { return }
             self.pushManager.scheduleLocalNotification(title: notif.pushTitle, body: notif.pushBody, identifier: notif.id)
@@ -241,6 +270,30 @@ class AppViewModel {
         pushManager.updateBadgeCount(totalBadgeCount)
         syncBuildStagesForCurrentUser()
         await WidgetSnapshotBuilder.update(from: self)
+    }
+
+    /// Refetches just the signed-in user's profile — used by the pending
+    /// approval screen so a role assignment is picked up immediately.
+    func refreshCurrentProfile() async {
+        guard !currentUser.id.isEmpty else { return }
+        if let profile = await SupabaseService.shared.fetchProfile(userId: currentUser.id) {
+            currentUser = profile
+            authService.updateRole(profile.role)
+            authService.saveUserProfile(profile)
+            if profile.profileCompleted {
+                authService.completeProfile()
+            }
+        }
+    }
+
+    /// Reloads conversations with role-aware visibility — staff/admins also
+    /// see every "general" (Message AVIA) thread, not just direct ones.
+    func reloadConversations() async {
+        guard !currentUser.id.isEmpty else { return }
+        await messagingService.loadConversations(
+            for: currentUser.id,
+            includeGeneral: currentRole.isAnyStaffRole
+        )
     }
 
     /// Refetches every remote data source in parallel. Use on foreground,
@@ -259,7 +312,7 @@ class AppViewModel {
         async let i: () = loadMilestonesForCurrentBuilds()
         async let j: () = loadRemindersForCurrentUser()
         async let k: () = notificationService.loadNotifications(for: currentUser.id)
-        async let l: () = messagingService.loadConversations(for: currentUser.id)
+        async let l: () = reloadConversations()
         async let m: () = catalogManager.loadAll()
         _ = await (a, b, c, d, e, f, g, g2, h, i, j, k, l, m)
         syncBuildStagesForCurrentUser()
@@ -432,13 +485,13 @@ class AppViewModel {
     }
 
     func loadMilestonesForCurrentBuilds() async {
-        let builds = clientBuildsForCurrentUser
-        var result: [String: [BuildMilestone]] = [:]
-        for build in builds {
-            let milestones = await SupabaseService.shared.fetchMilestonesForBuild(buildId: build.id)
-            result[build.id] = milestones
+        let buildIds = clientBuildsForCurrentUser.map(\.id)
+        guard !buildIds.isEmpty else {
+            buildMilestones = [:]
+            return
         }
-        buildMilestones = result
+        let milestones = await SupabaseService.shared.fetchMilestones(buildIds: buildIds)
+        buildMilestones = Dictionary(grouping: milestones, by: \.buildId)
     }
 
     func loadRemindersForCurrentUser() async {
@@ -446,12 +499,8 @@ class AppViewModel {
         if currentRole == .client {
             buildReminders = await SupabaseService.shared.fetchRemindersForClient(clientId: currentUser.id)
         } else if currentRole.isAnyStaffRole {
-            var allReminders: [BuildReminder] = []
-            for build in clientBuildsForCurrentUser {
-                let reminders = await SupabaseService.shared.fetchRemindersForBuild(buildId: build.id)
-                allReminders.append(contentsOf: reminders)
-            }
-            buildReminders = allReminders
+            let buildIds = clientBuildsForCurrentUser.map(\.id)
+            buildReminders = buildIds.isEmpty ? [] : await SupabaseService.shared.fetchReminders(buildIds: buildIds)
         }
     }
 
@@ -579,7 +628,7 @@ class AppViewModel {
         }
         SupabaseService.shared.subscribeToMessageChanges { [weak self] in
             guard let self else { return }
-            Task { await self.messagingService.loadConversations(for: self.currentUser.id) }
+            Task { await self.reloadConversations() }
         }
         SupabaseService.shared.subscribeToSpecSelectionChanges { [weak self] in
             guard let self else { return }
@@ -797,22 +846,24 @@ class AppViewModel {
 
     /// Lazily fetches any user IDs not already in the cache so avatars/names
     /// can be rendered for conversations / messages whose participants aren't
-    /// part of the current user's normal visible set.
+    /// part of the current user's normal visible set. Batched in one query.
     func ensureUsersLoaded(ids: [String]) async {
-        let missing = Array(Set(ids))
+        let missing = Array(Set(ids.map { $0.lowercased() }))
             .filter { !$0.isEmpty }
-            .filter { id in !cachedUsers.contains(where: { $0.id == id || $0.id.lowercased() == id.lowercased() }) }
+            .filter { id in !cachedUsers.contains(where: { $0.id.lowercased() == id }) }
         guard !missing.isEmpty else { return }
-        var fetched: [ClientUser] = []
-        for id in missing {
-            if let profile = await SupabaseService.shared.fetchProfile(userId: id) {
-                fetched.append(profile)
-            }
-        }
-        guard !fetched.isEmpty else { return }
-        for user in fetched where !cachedUsers.contains(where: { $0.id == user.id }) {
+        let fetched = await SupabaseService.shared.fetchProfiles(ids: missing)
+        for user in fetched where !cachedUsers.contains(where: { $0.id.lowercased() == user.id.lowercased() }) {
             cachedUsers.append(user)
         }
+    }
+
+    /// Case-insensitive profile lookup — legacy rows stored mixed-case ids,
+    /// which made conversations and messages show "Unknown User".
+    func user(withId id: String) -> ClientUser? {
+        guard !id.isEmpty else { return nil }
+        let target = id.lowercased()
+        return cachedUsers.first { $0.id.lowercased() == target }
     }
 
     func assignRole(_ role: UserRole, to userId: String) {
@@ -868,10 +919,14 @@ class AppViewModel {
         allDisplayHomes = []
         displayHomeVisits = []
         contentLoaded = false
-        notificationService.notifications = []
+        notificationService.reset()
         messagingService.conversations = []
         messagingService.currentMessages = []
         pushManager.updateBadgeCount(0)
+        userDataLoadTask?.cancel()
+        userDataLoadTask = nil
+        userDataLoadedForUserId = nil
+        realtimeInstalled = false
         WidgetSnapshotStore.clear()
     }
 

@@ -15,25 +15,33 @@ class MessagingService {
 
     private var currentUserId: String = ""
 
-    func loadConversations(for userId: String) async {
-        currentUserId = userId
+    /// Loads every conversation the user participates in.
+    /// Staff/admin users also see all "general" (Message AVIA) threads, which
+    /// only contain the client in `participant_ids` — without this, client
+    /// messages to the AVIA team were invisible to every staff member.
+    func loadConversations(for userId: String, includeGeneral: Bool = false) async {
+        guard !userId.isEmpty else { return }
+        let normalizedId = userId.lowercased()
+        currentUserId = normalizedId
         guard supabase.isConfigured else { return }
         isLoading = true
         defer { isLoading = false }
         do {
-            let rows: [ConversationRow] = try await supabase.client
-                .from("conversations")
-                .select()
-                .contains("participant_ids", value: [userId])
+            let base = supabase.client.from("conversations").select()
+            let filtered = includeGeneral
+                ? base.or("participant_ids.cs.{\(normalizedId)},conversation_type.eq.general")
+                : base.contains("participant_ids", value: [normalizedId])
+            let rows: [ConversationRow] = try await filtered
                 .order("last_message_date", ascending: false)
                 .execute()
                 .value
-            var result: [Conversation] = []
-            for row in rows {
-                var conv = row.toConversation()
-                let unread = await fetchUnreadCount(conversationId: conv.id, userId: userId)
-                conv.unreadCount = unread
-                result.append(conv)
+            var result = rows.map { $0.toConversation() }
+            let unreadCounts = await fetchUnreadCounts(
+                conversationIds: result.map(\.id),
+                userId: normalizedId
+            )
+            for idx in result.indices {
+                result[idx].unreadCount = unreadCounts[result[idx].id] ?? 0
             }
             conversations = result
         } catch {
@@ -41,20 +49,27 @@ class MessagingService {
         }
     }
 
-    private func fetchUnreadCount(conversationId: String, userId: String) async -> Int {
-        guard supabase.isConfigured else { return 0 }
+    /// Single batched query for unread counts across all conversations —
+    /// replaces the previous one-query-per-conversation pattern that made
+    /// the Messages tab progressively slower as conversations grew.
+    private func fetchUnreadCounts(conversationIds: [String], userId: String) async -> [String: Int] {
+        guard supabase.isConfigured, !conversationIds.isEmpty else { return [:] }
+        struct UnreadRow: Decodable { let conversation_id: String }
         do {
-            let rows: [ChatMessageRow] = try await supabase.client
+            let rows: [UnreadRow] = try await supabase.client
                 .from("messages")
-                .select()
-                .eq("conversation_id", value: conversationId)
+                .select("conversation_id")
+                .in("conversation_id", values: conversationIds)
                 .eq("is_read", value: false)
                 .neq("sender_id", value: userId)
                 .execute()
                 .value
-            return rows.count
+            return rows.reduce(into: [:]) { counts, row in
+                counts[row.conversation_id, default: 0] += 1
+            }
         } catch {
-            return 0
+            print("[MessagingService] fetchUnreadCounts FAILED: \(error)")
+            return [:]
         }
     }
 
@@ -79,7 +94,7 @@ class MessagingService {
         let msg = ChatMessage(
             id: UUID().uuidString,
             conversationId: conversationId,
-            senderId: senderId,
+            senderId: senderId.lowercased(),
             content: content,
             createdAt: .now,
             isRead: false,
@@ -112,28 +127,43 @@ class MessagingService {
 
         guard supabase.isConfigured else { return }
         let row = ChatMessageRow(from: msg)
-        _ = try? await supabase.client
-            .from("messages")
-            .insert(row)
-            .execute()
+        do {
+            try await supabase.client
+                .from("messages")
+                .insert(row)
+                .execute()
+        } catch {
+            print("[MessagingService] sendMessage insert FAILED: \(error)")
+        }
 
-        _ = try? await supabase.client
-            .from("conversations")
-            .update(["last_message": previewText, "last_message_date": ISO8601DateFormatter().string(from: .now), "last_sender_id": senderId])
-            .eq("id", value: conversationId)
-            .execute()
+        do {
+            try await supabase.client
+                .from("conversations")
+                .update(["last_message": previewText, "last_message_date": SupabaseDate.string(from: .now), "last_sender_id": senderId.lowercased()])
+                .eq("id", value: conversationId)
+                .execute()
+        } catch {
+            print("[MessagingService] sendMessage conversation update FAILED: \(error)")
+        }
     }
 
     func getOrCreateConversation(currentUserId: String, otherUserId: String) async -> String {
-        if let existing = conversations.first(where: {
-            $0.participantIds.contains(currentUserId) && $0.participantIds.contains(otherUserId)
+        let meId = currentUserId.lowercased()
+        let otherId = otherUserId.lowercased()
+        // Only match DIRECT threads — previously a general/group thread that
+        // happened to contain both users hijacked the lookup and new messages
+        // landed in the wrong conversation.
+        if let existing = conversations.first(where: { conv in
+            conv.conversationType == "direct" &&
+            conv.participantIds.contains(where: { $0.lowercased() == meId }) &&
+            conv.participantIds.contains(where: { $0.lowercased() == otherId })
         }) {
             return existing.id
         }
 
         let newConv = Conversation(
             id: UUID().uuidString,
-            participantIds: [currentUserId, otherUserId],
+            participantIds: [meId, otherId],
             lastMessage: "",
             lastMessageDate: .now,
             lastSenderId: "",
@@ -154,15 +184,17 @@ class MessagingService {
     }
 
     func getOrCreateGeneralConversation(currentUserId: String) async -> String {
-        if let existing = conversations.first(where: {
-            $0.conversationType == "general" && $0.participantIds.contains(currentUserId)
+        let meId = currentUserId.lowercased()
+        if let existing = conversations.first(where: { conv in
+            conv.conversationType == "general" &&
+            conv.participantIds.contains(where: { $0.lowercased() == meId })
         }) {
             return existing.id
         }
 
         let newConv = Conversation(
             id: UUID().uuidString,
-            participantIds: [currentUserId],
+            participantIds: [meId],
             lastMessage: "",
             lastMessageDate: .now,
             lastSenderId: "",
@@ -208,14 +240,15 @@ class MessagingService {
             .from("messages")
             .update(["is_read": true])
             .eq("conversation_id", value: conversationId)
-            .neq("sender_id", value: userId)
+            .neq("sender_id", value: userId.lowercased())
             .execute()
     }
 
     func subscribeToMessages(conversationId: String) {
         guard supabase.isConfigured else { return }
-        let channel = supabase.client.realtimeV2.channel("messages:\(conversationId)")
-        supabase.realtimeChannels.append(channel)
+        // makeChannel() dedupes by topic — re-opening the same chat no longer
+        // stacks an extra realtime channel each time.
+        guard let channel = supabase.makeChannel("messages:\(conversationId)") else { return }
         let changes = channel.postgresChange(
             InsertAction.self,
             schema: "public",
@@ -266,16 +299,14 @@ nonisolated struct ConversationRow: Codable, Sendable {
     }
 
     func toConversation() -> Conversation {
-        let formatter = ISO8601DateFormatter()
-        formatter.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
-        return Conversation(
+        Conversation(
             id: id,
-            participantIds: participant_ids,
+            participantIds: participant_ids.map { $0.lowercased() },
             lastMessage: last_message ?? "",
-            lastMessageDate: formatter.date(from: last_message_date) ?? .now,
-            lastSenderId: last_sender_id ?? "",
+            lastMessageDate: SupabaseDate.parse(last_message_date, default: .distantPast),
+            lastSenderId: (last_sender_id ?? "").lowercased(),
             unreadCount: unread_count ?? 0,
-            createdAt: formatter.date(from: created_at) ?? .now,
+            createdAt: SupabaseDate.parse(created_at, default: .distantPast),
             conversationType: conversation_type ?? "direct"
         )
     }
@@ -292,10 +323,10 @@ nonisolated struct ConversationInsertRow: Encodable, Sendable {
 
     init(from c: Conversation) {
         id = c.id
-        participant_ids = c.participantIds
+        participant_ids = c.participantIds.map { $0.lowercased() }
         last_message = c.lastMessage
-        last_message_date = ISO8601DateFormatter().string(from: c.lastMessageDate)
-        last_sender_id = c.lastSenderId
+        last_message_date = SupabaseDate.string(from: c.lastMessageDate)
+        last_sender_id = c.lastSenderId.lowercased()
         unread_count = c.unreadCount
         conversation_type = c.conversationType
     }
@@ -330,23 +361,21 @@ nonisolated struct ChatMessageRow: Codable, Sendable {
     init(from m: ChatMessage) {
         id = m.id
         conversation_id = m.conversationId
-        sender_id = m.senderId
+        sender_id = m.senderId.lowercased()
         content = m.content
-        created_at = ISO8601DateFormatter().string(from: m.createdAt)
+        created_at = SupabaseDate.string(from: m.createdAt)
         is_read = m.isRead
         attachment_url = m.attachmentUrl
         attachment_type = m.attachmentType
     }
 
     func toChatMessage() -> ChatMessage {
-        let formatter = ISO8601DateFormatter()
-        formatter.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
-        return ChatMessage(
+        ChatMessage(
             id: id,
             conversationId: conversation_id,
-            senderId: sender_id,
+            senderId: sender_id.lowercased(),
             content: content,
-            createdAt: formatter.date(from: created_at) ?? .now,
+            createdAt: SupabaseDate.parse(created_at, default: .now),
             isRead: is_read,
             attachmentUrl: attachment_url,
             attachmentType: attachment_type

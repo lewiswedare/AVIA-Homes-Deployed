@@ -158,7 +158,7 @@ class AppDelegate: NSObject, UIApplicationDelegate, UNUserNotificationCenterDele
             case let t where t.hasPrefix("invoice") || t.hasPrefix("contract") || t.hasPrefix("eoi"):
                 Task { await vm.loadBuildsFromSupabase() }
             case let t where t.hasPrefix("message"):
-                Task { await vm.messagingService.loadConversations(for: userId) }
+                Task { await vm.reloadConversations() }
             default:
                 // Unknown push — do a safe broad refresh.
                 Task { await vm.refreshAllData() }

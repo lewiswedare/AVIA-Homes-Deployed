@@ -23,7 +23,14 @@ nonisolated struct Conversation: Identifiable, Sendable, Hashable {
     }
 
     func otherParticipantId(currentUserId: String) -> String {
-        participantIds.first { $0 != currentUserId } ?? ""
+        let me = currentUserId.lowercased()
+        return participantIds.first { $0.lowercased() != me } ?? ""
+    }
+
+    /// Case-insensitive participant check — legacy rows stored mixed-case ids.
+    func includesParticipant(_ userId: String) -> Bool {
+        let target = userId.lowercased()
+        return participantIds.contains { $0.lowercased() == target }
     }
 
     static let samples: [Conversation] = []

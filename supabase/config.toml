@@ -7,3 +7,8 @@
 # and uses the service role internally.
 [functions.microsoft-mail]
 verify_jwt = false
+
+# Called by the trg_notify_push database trigger via pg_net, which cannot
+# attach a user JWT. The function only reads device tokens and pushes to APNs.
+[functions.send-push-notification]
+verify_jwt = false

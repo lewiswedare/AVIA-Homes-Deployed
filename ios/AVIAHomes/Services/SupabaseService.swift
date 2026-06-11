@@ -75,6 +75,20 @@ class SupabaseService {
         realtimeChannels.removeAll()
     }
 
+    /// Creates and tracks a realtime channel, deduplicating by topic.
+    /// Returns nil when a live channel with the same name already exists so
+    /// callers never stack duplicate subscriptions (e.g. reopening a chat,
+    /// repeated foreground cycles).
+    func makeChannel(_ name: String) -> RealtimeChannelV2? {
+        guard isConfigured else { return nil }
+        if realtimeChannels.contains(where: { $0.topic == name || $0.topic.hasSuffix(":\(name)") }) {
+            return nil
+        }
+        let channel = client.realtimeV2.channel(name)
+        realtimeChannels.append(channel)
+        return channel
+    }
+
     func fetchProfile(userId: String) async -> ClientUser? {
         guard isConfigured else {
             print("[SupabaseService] fetchProfile: not configured")
@@ -170,6 +184,25 @@ class SupabaseService {
         }
     }
 
+    /// Batched profile lookup — one round trip for any number of ids.
+    func fetchProfiles(ids: [String]) async -> [ClientUser] {
+        guard isConfigured else { return [] }
+        let normalized = Array(Set(ids.map { $0.lowercased() })).filter { !$0.isEmpty }
+        guard !normalized.isEmpty else { return [] }
+        do {
+            let rows: [ProfileRow] = try await client
+                .from("profiles")
+                .select()
+                .in("id", values: normalized)
+                .execute()
+                .value
+            return rows.map { $0.toClientUser() }
+        } catch {
+            print("[SupabaseService] fetchProfiles(ids:) FAILED: \(error)")
+            return []
+        }
+    }
+
     func updateProfileField(userId: String, fields: [String: String]) async {
         guard isConfigured else { return }
         do {
@@ -194,20 +227,52 @@ class SupabaseService {
                 .order("created_at", ascending: false)
                 .execute()
                 .value
-            var builds: [ClientBuild] = []
+            guard !buildRows.isEmpty else { return [] }
+
+            // Batch the child fetches — the old per-build loop issued 3+ round
+            // trips per build and was the single biggest cause of slow loads.
+            let buildIds = buildRows.map(\.id)
+            var profileIds = Set<String>()
             for row in buildRows {
-                let stages = await fetchBuildStages(buildId: row.id)
-                let clientUser = await fetchProfile(userId: row.client_id) ?? .empty
-                var additionalClients: [ClientUser] = []
-                for additionalId in (row.additional_client_ids ?? []) where !additionalId.isEmpty {
-                    if let user = await fetchProfile(userId: additionalId) {
-                        additionalClients.append(user)
-                    }
+                if !row.client_id.isEmpty { profileIds.insert(row.client_id.lowercased()) }
+                for extra in (row.additional_client_ids ?? []) where !extra.isEmpty {
+                    profileIds.insert(extra.lowercased())
                 }
-                builds.append(row.toClientBuild(client: clientUser, stages: stages, additionalClients: additionalClients))
             }
-            return builds
+
+            async let stagesTask = fetchBuildStageRows(buildIds: buildIds)
+            async let profilesTask = fetchProfiles(ids: Array(profileIds))
+            let (stageRows, profiles) = await (stagesTask, profilesTask)
+
+            let stagesByBuild = Dictionary(grouping: stageRows, by: { $0.build_id })
+            let profilesById = Dictionary(uniqueKeysWithValues: profiles.map { ($0.id.lowercased(), $0) })
+
+            return buildRows.map { row in
+                let stages = (stagesByBuild[row.id] ?? []).map { $0.toBuildStage() }
+                let clientUser = profilesById[row.client_id.lowercased()] ?? .empty
+                let additionalClients = (row.additional_client_ids ?? [])
+                    .compactMap { profilesById[$0.lowercased()] }
+                return row.toClientBuild(client: clientUser, stages: stages, additionalClients: additionalClients)
+            }
         } catch {
+            print("[SupabaseService] fetchBuilds FAILED: \(error)")
+            return []
+        }
+    }
+
+    private func fetchBuildStageRows(buildIds: [String]) async -> [BuildStageRow] {
+        guard isConfigured, !buildIds.isEmpty else { return [] }
+        do {
+            let rows: [BuildStageRow] = try await client
+                .from("build_stages")
+                .select()
+                .in("build_id", values: buildIds)
+                .order("sort_order", ascending: true)
+                .execute()
+                .value
+            return rows
+        } catch {
+            print("[SupabaseService] fetchBuildStageRows FAILED: \(error)")
             return []
         }
     }
@@ -395,6 +460,24 @@ class SupabaseService {
         }
     }
 
+    /// Batched milestone fetch for every visible build in one round trip.
+    func fetchMilestones(buildIds: [String]) async -> [BuildMilestone] {
+        guard isConfigured, !buildIds.isEmpty else { return [] }
+        do {
+            let rows: [BuildMilestoneRow] = try await client
+                .from("build_milestones")
+                .select()
+                .in("build_id", values: buildIds)
+                .order("due_date", ascending: true)
+                .execute()
+                .value
+            return rows.map { $0.toBuildMilestone() }
+        } catch {
+            print("[SupabaseService] fetchMilestones(buildIds:) FAILED: \(error)")
+            return []
+        }
+    }
+
     func fetchMilestonesForStage(stageId: String) async -> [BuildMilestone] {
         guard isConfigured else { return [] }
         do {
@@ -475,6 +558,24 @@ class SupabaseService {
             return rows.map { $0.toBuildReminder() }
         } catch {
             print("[SupabaseService] fetchRemindersForClient FAILED: \(error)")
+            return []
+        }
+    }
+
+    /// Batched reminder fetch across every visible build in one round trip.
+    func fetchReminders(buildIds: [String]) async -> [BuildReminder] {
+        guard isConfigured, !buildIds.isEmpty else { return [] }
+        do {
+            let rows: [BuildReminderRow] = try await client
+                .from("build_reminders")
+                .select()
+                .in("build_id", values: buildIds)
+                .order("reminder_date", ascending: true)
+                .execute()
+                .value
+            return rows.map { $0.toBuildReminder() }
+        } catch {
+            print("[SupabaseService] fetchReminders(buildIds:) FAILED: \(error)")
             return []
         }
     }
@@ -2769,9 +2870,7 @@ class SupabaseService {
     /// Installs a generic AnyAction realtime listener on `table` in the `public` schema
     /// and forwards each event to `onUpdate` on the MainActor.
     private func installChannel(name: String, table: String, onUpdate: @escaping @Sendable () -> Void) {
-        guard isConfigured else { return }
-        let channel = client.realtimeV2.channel(name)
-        realtimeChannels.append(channel)
+        guard let channel = makeChannel(name) else { return }
         let changes = channel.postgresChange(
             AnyAction.self,
             schema: "public",

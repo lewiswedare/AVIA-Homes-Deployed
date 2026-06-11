@@ -52,19 +52,24 @@ class PushNotificationManager: NSObject {
     }
 
     func saveTokenToServer(userId: String) async {
-        guard let token = deviceToken, supabase.isConfigured else { return }
-        pendingUserId = userId
+        guard let token = deviceToken, supabase.isConfigured, !userId.isEmpty else { return }
+        let normalizedId = userId.lowercased()
+        pendingUserId = normalizedId
         let row: [String: String] = [
             "id": UUID().uuidString,
-            "user_id": userId,
+            "user_id": normalizedId,
             "token": token,
             "platform": "ios",
-            "updated_at": ISO8601DateFormatter().string(from: .now)
+            "updated_at": SupabaseDate.string(from: .now)
         ]
-        _ = try? await supabase.client
-            .from("device_tokens")
-            .upsert(row, onConflict: "user_id,token")
-            .execute()
+        do {
+            try await supabase.client
+                .from("device_tokens")
+                .upsert(row, onConflict: "user_id,token")
+                .execute()
+        } catch {
+            print("[PushNotificationManager] saveTokenToServer FAILED: \(error)")
+        }
     }
 
     func removeToken(userId: String) async {
@@ -72,7 +77,7 @@ class PushNotificationManager: NSObject {
         _ = try? await supabase.client
             .from("device_tokens")
             .delete()
-            .eq("user_id", value: userId)
+            .eq("user_id", value: userId.lowercased())
             .eq("token", value: token)
             .execute()
         pendingUserId = nil

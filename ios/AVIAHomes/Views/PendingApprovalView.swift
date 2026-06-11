@@ -102,6 +102,12 @@ struct PendingApprovalView: View {
         .onAppear { animatePulse = true }
         .task {
             await appViewModel.loadUserData()
+            // Poll the profile while waiting so a role assignment made by an
+            // admin flips this screen without requiring an app restart.
+            while !Task.isCancelled {
+                await appViewModel.refreshCurrentProfile()
+                try? await Task.sleep(for: .seconds(20))
+            }
         }
         .alert("Sign Out?", isPresented: $showSignOutAlert) {
             Button("Cancel", role: .cancel) {}

@@ -6,6 +6,11 @@ class NotificationService {
     var notifications: [AppNotification] = []
     var isLoading = false
 
+    /// The user whose notifications are currently loaded. Used so that
+    /// locally-created notifications only appear in the in-app list when
+    /// they actually belong to the signed-in user.
+    private(set) var activeRecipientId: String?
+
     private let supabase = SupabaseService.shared
 
     var unreadCount: Int {
@@ -13,14 +18,15 @@ class NotificationService {
     }
 
     func loadNotifications(for userId: String) async {
-        guard supabase.isConfigured else { return }
+        guard supabase.isConfigured, !userId.isEmpty else { return }
+        activeRecipientId = userId.lowercased()
         isLoading = true
         defer { isLoading = false }
         do {
             let rows: [NotificationRow] = try await supabase.client
                 .from("notifications")
                 .select()
-                .eq("recipient_id", value: userId)
+                .eq("recipient_id", value: userId.lowercased())
                 .order("created_at", ascending: false)
                 .limit(100)
                 .execute()
@@ -29,6 +35,12 @@ class NotificationService {
         } catch {
             print("[NotificationService] loadNotifications FAILED: \(error)")
         }
+    }
+
+    /// Clears all local state on sign-out.
+    func reset() {
+        notifications = []
+        activeRecipientId = nil
     }
 
     func markAsRead(_ notificationId: String) async {
@@ -65,10 +77,11 @@ class NotificationService {
         referenceId: String? = nil,
         referenceType: String? = nil
     ) async {
+        guard !recipientId.isEmpty else { return }
         let notification = AppNotification(
             id: UUID().uuidString,
-            recipientId: recipientId,
-            senderId: senderId,
+            recipientId: recipientId.lowercased(),
+            senderId: senderId?.lowercased(),
             senderName: senderName,
             type: type,
             title: title,
@@ -79,29 +92,38 @@ class NotificationService {
             isRead: false
         )
 
-        if recipientId == notifications.first?.recipientId {
+        // Only mirror into the local list if this notification is addressed
+        // to the signed-in user (e.g. self-notifications), never someone else's.
+        if notification.recipientId == activeRecipientId {
             notifications.insert(notification, at: 0)
         }
 
         guard supabase.isConfigured else { return }
         let row = NotificationRow(from: notification)
-        _ = try? await supabase.client
-            .from("notifications")
-            .insert(row)
-            .execute()
+        do {
+            try await supabase.client
+                .from("notifications")
+                .insert(row)
+                .execute()
+        } catch {
+            print("[NotificationService] createNotification FAILED for type=\(type.rawValue): \(error)")
+        }
     }
 
     var onNotificationReceived: ((AppNotification) -> Void)?
 
     func subscribeToNotifications(for userId: String) {
-        guard supabase.isConfigured else { return }
-        let channel = supabase.client.realtimeV2.channel("notifications:\(userId)")
-        supabase.realtimeChannels.append(channel)
+        guard supabase.isConfigured, !userId.isEmpty else { return }
+        let normalizedId = userId.lowercased()
+        activeRecipientId = normalizedId
+        // makeChannel() dedupes by topic so repeated calls (foreground cycles,
+        // multiple tab roots) never stack duplicate subscriptions.
+        guard let channel = supabase.makeChannel("notifications:\(normalizedId)") else { return }
         let changes = channel.postgresChange(
             InsertAction.self,
             schema: "public",
             table: "notifications",
-            filter: .eq("recipient_id", value: userId)
+            filter: .eq("recipient_id", value: normalizedId)
         )
         Task {
             try? await channel.subscribeWithError()
@@ -143,25 +165,22 @@ nonisolated struct NotificationRow: Codable, Sendable {
         message = n.message
         reference_id = n.referenceId
         reference_type = n.referenceType
-        created_at = ISO8601DateFormatter().string(from: n.createdAt)
+        created_at = SupabaseDate.string(from: n.createdAt)
         is_read = n.isRead
     }
 
     func toAppNotification() -> AppNotification {
-        let formatter = ISO8601DateFormatter()
-        formatter.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
-        let date = formatter.date(from: created_at) ?? .now
-        return AppNotification(
+        AppNotification(
             id: id,
-            recipientId: recipient_id,
-            senderId: sender_id,
+            recipientId: recipient_id.lowercased(),
+            senderId: sender_id?.lowercased(),
             senderName: sender_name,
             type: NotificationType(rawValue: type) ?? .newMessage,
             title: title,
             message: message,
             referenceId: reference_id,
             referenceType: reference_type,
-            createdAt: date,
+            createdAt: SupabaseDate.parse(created_at, default: .now),
             isRead: is_read
         )
     }
