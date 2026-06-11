@@ -8,6 +8,11 @@
       "settings": {
         "iosBundleId": "com.wedare.aviahomes"
       }
+    },
+    {
+      "name": "AVIA Homes Web",
+      "path": "web",
+      "framework": "web"
     }
   ]
 }

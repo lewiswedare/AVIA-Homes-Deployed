@@ -1,0 +1,97 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@font-face {
+  font-family: "PP Neue Corp";
+  src: url("/fonts/PPNeueCorp-NormalUltralight.otf") format("opentype");
+  font-weight: 200;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "PP Neue Corp";
+  src: url("/fonts/PPNeueCorp-NormalRegular.otf") format("opentype");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "PP Neue Corp";
+  src: url("/fonts/PPNeueCorp-NormalMedium.otf") format("opentype");
+  font-weight: 500 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+@layer base {
+  :root {
+    /* AVIA palette mapped onto shadcn tokens */
+    --background: 12 8% 87%; /* #E1DDDC aviaWhite */
+    --foreground: 0 0% 10%; /* #1A1A1A aviaBlack */
+
+    --card: 15 9% 91%; /* #EBE8E7 */
+    --card-foreground: 0 0% 10%;
+
+    --popover: 20 10% 94%; /* #F2F0EF */
+    --popover-foreground: 0 0% 10%;
+
+    --primary: 40 12% 19%; /* #37332B timelessBrown */
+    --primary-foreground: 12 8% 87%;
+
+    --secondary: 20 10% 94%;
+    --secondary-foreground: 0 0% 10%;
+
+    --muted: 12 6% 84%; /* #D8D4D3 */
+    --muted-foreground: 20 2% 45%;
+
+    --accent: 30 8% 82%;
+    --accent-foreground: 0 0% 10%;
+
+    --destructive: 0 0% 17%;
+    --destructive-foreground: 12 8% 87%;
+
+    --border: 20 6% 79%; /* #CDC9C7 */
+    --input: 20 6% 79%;
+    --ring: 40 12% 19%;
+
+    --radius: 0.8rem;
+
+    --sidebar-background: 15 9% 91%;
+    --sidebar-foreground: 0 0% 10%;
+    --sidebar-primary: 40 12% 19%;
+    --sidebar-primary-foreground: 12 8% 87%;
+    --sidebar-accent: 30 8% 82%;
+    --sidebar-accent-foreground: 0 0% 10%;
+    --sidebar-border: 20 6% 79%;
+    --sidebar-ring: 40 12% 19%;
+  }
+
+  * {
+    @apply border-border;
+  }
+
+  html {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  body {
+    @apply bg-background text-foreground font-sans;
+  }
+
+  ::selection {
+    background: rgba(55, 51, 43, 0.22);
+  }
+}
+
+@layer utilities {
+  .scrollbar-none {
+    scrollbar-width: none;
+  }
+  .scrollbar-none::-webkit-scrollbar {
+    display: none;
+  }
+}
