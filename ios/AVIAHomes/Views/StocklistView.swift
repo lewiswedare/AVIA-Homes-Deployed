@@ -324,6 +324,7 @@ struct StocklistView: View {
             }
             .padding(.horizontal, 16)
             .padding(.bottom, 24)
+            .adaptiveWideWidth()
         }
     }
 
@@ -428,7 +429,7 @@ struct StocklistView: View {
 
                     // Lot cards grid
                     let lots = sortedLots(stocklistVM.filteredItems(for: estate.id))
-                    let columns = [GridItem(.flexible(), spacing: 12), GridItem(.flexible(), spacing: 12)]
+                    let columns = AdaptiveLayout.cardColumns(spacing: 12)
                     LazyVGrid(columns: columns, spacing: 12) {
                         ForEach(lots) { lot in
                             if isEditMode && canEdit {

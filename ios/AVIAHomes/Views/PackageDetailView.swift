@@ -175,6 +175,7 @@ struct PackageDetailView: View {
         .padding(.horizontal, 20)
         .padding(.top, 4)
         .padding(.bottom, 48)
+        .adaptiveContentWidth()
     }
 
     // MARK: - Title

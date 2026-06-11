@@ -22,6 +22,7 @@ struct ColourOverviewView: View {
                     }
                     .padding(.horizontal, 16)
                     .padding(.bottom, 40)
+                    .adaptiveContentWidth()
                 }
             }
             .ignoresSafeArea(edges: [.top, .horizontal])
@@ -241,7 +242,7 @@ struct ColourOverviewView: View {
             : viewModel.interiorCategories
 
         return LazyVGrid(
-            columns: [GridItem(.flexible(), spacing: 12), GridItem(.flexible(), spacing: 12)],
+            columns: AdaptiveLayout.cardColumns(spacing: 12),
             spacing: 12
         ) {
             ForEach(categories) { category in

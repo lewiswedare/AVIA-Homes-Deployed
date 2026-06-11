@@ -56,6 +56,7 @@ struct HomeDesignDirectoryView: View {
                         designGrid
                     }
                     .padding(.bottom, isCompareMode ? 100 : 40)
+                    .adaptiveWideWidth()
                 }
 
                 if isCompareMode && compareSelections.count == 2 {
@@ -245,7 +246,7 @@ struct HomeDesignDirectoryView: View {
     }
 
     private var designGrid: some View {
-        LazyVGrid(columns: [GridItem(.flexible(), spacing: 12), GridItem(.flexible(), spacing: 12)], spacing: 14) {
+        LazyVGrid(columns: AdaptiveLayout.cardColumns(spacing: 12), spacing: 14) {
             ForEach(filteredDesigns) { design in
                 if isCompareMode {
                     Button {

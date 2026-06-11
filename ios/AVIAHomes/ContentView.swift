@@ -93,6 +93,7 @@ struct ClientTabView: View {
             }
             .badge(viewModel.notificationService.unreadCount)
         }
+        .tabViewStyle(.sidebarAdaptable)
         .tint(AVIATheme.timelessBrown)
         .task { await viewModel.loadUserData() }
     }
@@ -122,6 +123,7 @@ struct StaffTabView: View {
                         PackagesContentView()
                             .padding(.horizontal, 16)
                             .padding(.vertical, 8)
+                            .adaptiveWideWidth()
                     }
                     .background(AVIATheme.background)
                     .navigationTitle("Packages")
@@ -159,6 +161,7 @@ struct StaffTabView: View {
                 MoreView()
             }
         }
+        .tabViewStyle(.sidebarAdaptable)
         .tint(AVIATheme.timelessBrown)
         .task { await viewModel.loadUserData() }
     }
@@ -188,6 +191,7 @@ struct AdminTabView: View {
                         PackagesContentView()
                             .padding(.horizontal, 16)
                             .padding(.vertical, 8)
+                            .adaptiveWideWidth()
                     }
                     .background(AVIATheme.background)
                     .navigationTitle("Packages")
@@ -238,6 +242,7 @@ struct AdminTabView: View {
                 MoreView()
             }
         }
+        .tabViewStyle(.sidebarAdaptable)
         .tint(AVIATheme.timelessBrown)
         .task { await viewModel.loadUserData() }
     }
@@ -283,6 +288,7 @@ struct PartnerTabView: View {
                 MoreView()
             }
         }
+        .tabViewStyle(.sidebarAdaptable)
         .tint(AVIATheme.timelessBrown)
         .task { await viewModel.loadUserData() }
     }
@@ -342,6 +348,7 @@ struct ClientDiscoverTabView: View {
                 MoreView()
             }
         }
+        .tabViewStyle(.sidebarAdaptable)
         .tint(AVIATheme.timelessBrown)
         .task { await viewModel.loadUserData() }
     }
@@ -374,6 +381,7 @@ struct SuperAdminTabView: View {
                         PackagesContentView()
                             .padding(.horizontal, 16)
                             .padding(.vertical, 8)
+                            .adaptiveWideWidth()
                     }
                     .background(AVIATheme.background)
                     .navigationTitle("Packages")
@@ -418,6 +426,7 @@ struct SuperAdminTabView: View {
                 MoreView()
             }
         }
+        .tabViewStyle(.sidebarAdaptable)
         .tint(AVIATheme.timelessBrown)
         .task { await viewModel.loadUserData() }
     }
@@ -472,6 +481,7 @@ struct StaffScheduleView: View {
                 }
                 .padding(.horizontal, 16)
                 .padding(.vertical, 8)
+                .adaptiveContentWidth()
             }
             .background(AVIATheme.background)
             .navigationTitle("Schedule")
@@ -685,6 +695,7 @@ struct MoreView: View {
                     .padding(.horizontal, 16)
                     .padding(.top, 8)
                     .padding(.bottom, 16)
+                    .adaptiveContentWidth()
                 }
 
                 Spacer(minLength: 0)
@@ -693,6 +704,7 @@ struct MoreView: View {
                     .renderingMode(.template)
                     .resizable()
                     .aspectRatio(contentMode: .fit)
+                    .frame(maxWidth: 420)
                     .foregroundStyle(AVIATheme.timelessBrown.opacity(0.4))
                     .padding(.horizontal, 0)
                     .padding(.bottom, 8)

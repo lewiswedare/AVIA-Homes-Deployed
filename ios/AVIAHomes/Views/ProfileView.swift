@@ -85,6 +85,7 @@ struct ProfileView: View {
                     .padding(.bottom, 24)
             }
             .padding(.bottom, 20)
+            .adaptiveContentWidth()
         }
         .background(AVIATheme.background)
         .navigationTitle("Profile")

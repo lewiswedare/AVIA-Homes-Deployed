@@ -110,6 +110,7 @@ struct ProfileSetupView: View {
             }
             .padding(.horizontal, 24)
             .padding(.top, 24)
+            .adaptiveContentWidth(560)
         }
         .scrollDismissesKeyboard(.interactively)
     }
@@ -132,6 +133,7 @@ struct ProfileSetupView: View {
             }
             .padding(.horizontal, 24)
             .padding(.top, 24)
+            .adaptiveContentWidth(560)
         }
         .scrollDismissesKeyboard(.interactively)
     }
@@ -175,6 +177,7 @@ struct ProfileSetupView: View {
             }
             .padding(.horizontal, 24)
             .padding(.top, 12)
+            .adaptiveContentWidth(560)
         }
     }
 
@@ -234,6 +237,7 @@ struct ProfileSetupView: View {
         }
         .padding(.horizontal, 24)
         .padding(.vertical, 16)
+        .adaptiveContentWidth(560)
         .background(AVIATheme.background)
     }
 

@@ -172,6 +172,7 @@ struct LoginView: View {
                         }
                     }
                     .padding(.horizontal, 28)
+                    .adaptiveContentWidth(520)
                     .padding(.top, 32)
 
                     Spacer(minLength: 40)

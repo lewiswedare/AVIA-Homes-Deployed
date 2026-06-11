@@ -158,6 +158,7 @@ struct ChatView: View {
                 .padding(.horizontal, 12)
                 .padding(.top, 8)
                 .padding(.bottom, 8)
+                .adaptiveContentWidth()
             }
             .scrollDismissesKeyboard(.interactively)
             .scrollIndicators(.hidden)
@@ -362,6 +363,7 @@ struct ChatView: View {
         .padding(.horizontal, 12)
         .padding(.top, 8)
         .padding(.bottom, 8)
+        .adaptiveContentWidth()
         .background {
             ZStack {
                 Rectangle().fill(.ultraThinMaterial)

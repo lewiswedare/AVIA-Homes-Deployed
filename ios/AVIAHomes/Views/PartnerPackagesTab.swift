@@ -13,6 +13,7 @@ struct PartnerPackagesTab: View {
                 }
                 .padding(.horizontal, 16)
                 .padding(.vertical, 8)
+                .adaptiveWideWidth()
             }
             .background(AVIATheme.background)
             .navigationTitle("My Packages")

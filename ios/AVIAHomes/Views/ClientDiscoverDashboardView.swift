@@ -18,6 +18,7 @@ struct ClientDiscoverDashboardView: View {
                     }
                     .padding(.horizontal, 16)
                     .padding(.bottom, 40)
+                    .adaptiveContentWidth()
                 }
             }
             .ignoresSafeArea(edges: [.top, .horizontal])

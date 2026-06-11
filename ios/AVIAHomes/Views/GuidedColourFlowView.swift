@@ -147,11 +147,7 @@ struct GuidedColourFlowView: View {
                     .padding(.horizontal, 20)
                 }
 
-                let columns = [
-                    GridItem(.flexible(), spacing: 12),
-                    GridItem(.flexible(), spacing: 12),
-                    GridItem(.flexible(), spacing: 12)
-                ]
+                let columns = AdaptiveLayout.swatchColumns(spacing: 12)
 
                 LazyVGrid(columns: columns, spacing: 16) {
                     ForEach(category.options) { option in
@@ -170,6 +166,7 @@ struct GuidedColourFlowView: View {
                 .padding(.horizontal, 20)
             }
             .padding(.bottom, 24)
+            .adaptiveContentWidth()
         }
         .id(category.id)
     }

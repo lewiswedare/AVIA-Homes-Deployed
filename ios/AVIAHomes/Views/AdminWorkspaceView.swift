@@ -64,6 +64,7 @@ struct AdminWorkspaceView: View {
                 }
                 .padding(.horizontal, 16)
                 .padding(.bottom, 40)
+                .adaptiveContentWidth(AdaptiveLayout.workspaceWidth)
             }
             .background(AVIATheme.background)
             .navigationTitle("Workspace")

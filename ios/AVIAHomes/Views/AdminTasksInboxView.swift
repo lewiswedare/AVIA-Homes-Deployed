@@ -128,6 +128,7 @@ struct AdminTasksInboxView: View {
                 }
             }
             .padding(.vertical, 14)
+            .adaptiveContentWidth()
         }
         .background(AVIATheme.background)
         .navigationTitle("Tasks Inbox")

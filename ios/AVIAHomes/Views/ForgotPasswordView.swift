@@ -79,6 +79,7 @@ struct ForgotPasswordView: View {
                         .opacity(email.isEmpty ? 0.6 : 1)
                     }
                     .padding(.horizontal, 28)
+                    .adaptiveContentWidth(520)
                 }
                 .scrollDismissesKeyboard(.interactively)
             }

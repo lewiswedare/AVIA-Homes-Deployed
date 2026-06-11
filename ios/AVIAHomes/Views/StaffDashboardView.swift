@@ -44,6 +44,7 @@ struct StaffDashboardView: View {
                     clientBuildsList
                 }
                 .padding(.bottom, 40)
+                .adaptiveContentWidth(AdaptiveLayout.workspaceWidth)
             }
             .background(AVIATheme.background)
             .navigationTitle("My Builds")

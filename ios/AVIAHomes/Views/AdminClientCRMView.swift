@@ -134,6 +134,7 @@ struct AdminClientCRMView: View {
                 activityTimeline
             }
             .padding(16)
+            .adaptiveContentWidth()
         }
         .background(AVIATheme.background)
         .navigationTitle("Client CRM")

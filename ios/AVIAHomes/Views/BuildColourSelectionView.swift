@@ -155,6 +155,7 @@ struct BuildColourSelectionView: View {
             }
             .padding(.horizontal, 16)
             .padding(.bottom, 40)
+            .adaptiveContentWidth()
         }
         .hapticRefresh { await appViewModel.refreshAllData() }
     }
@@ -757,11 +758,7 @@ struct BuildColourPickerSheet: View {
                             }
 
                             let tier = resolvedTier
-                            let columns = [
-                                GridItem(.flexible(), spacing: 12),
-                                GridItem(.flexible(), spacing: 12),
-                                GridItem(.flexible(), spacing: 12)
-                            ]
+                            let columns = AdaptiveLayout.swatchColumns(spacing: 12)
 
                             LazyVGrid(columns: columns, spacing: 14) {
                                 ForEach(cat.options) { option in

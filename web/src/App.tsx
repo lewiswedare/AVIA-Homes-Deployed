@@ -1,6 +1,7 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Loader2 } from "lucide-react";
-import { BrowserRouter, Navigate, Outlet, Route, Routes } from "react-router-dom";
+import { useEffect } from "react";
+import { BrowserRouter, Navigate, Outlet, Route, Routes, useLocation } from "react-router-dom";
 
 import AppShell from "@/components/AppShell";
 import { Toaster as Sonner } from "@/components/ui/sonner";
@@ -56,12 +57,41 @@ function RoleHome() {
   return <Navigate to={isClientRole(role) ? "/home" : "/workspace"} replace />;
 }
 
+const PAGE_TITLES: Record<string, string> = {
+  "/home": "Home",
+  "/selections": "Selections",
+  "/progress": "Progress",
+  "/documents": "Documents",
+  "/workspace": "Workspace",
+  "/clients": "Client Record",
+  "/messages": "Messages",
+  "/alerts": "Alerts",
+  "/profile": "Profile",
+  "/login": "Sign In",
+  "/signup": "Create Account",
+  "/forgot-password": "Reset Password",
+};
+
+/** Syncs the document title with the route and scrolls to top on navigation. */
+function RouteEffects() {
+  const { pathname } = useLocation();
+
+  useEffect(() => {
+    const entry = Object.entries(PAGE_TITLES).find(([path]) => pathname.startsWith(path));
+    document.title = entry ? `${entry[1]} — AVIA Homes` : "AVIA Homes";
+    window.scrollTo({ top: 0 });
+  }, [pathname]);
+
+  return null;
+}
+
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
       <Sonner position="top-center" />
       <AuthProvider>
         <BrowserRouter>
+          <RouteEffects />
           <Routes>
             <Route path="/login" element={<Login />} />
             <Route path="/signup" element={<SignUp />} />

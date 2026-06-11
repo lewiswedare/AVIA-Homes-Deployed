@@ -24,6 +24,7 @@ struct ClientPackageReviewView: View {
             }
             .padding(.horizontal, 16)
             .padding(.bottom, 40)
+            .adaptiveContentWidth()
         }
         .hapticRefresh { await viewModel.refreshAllData() }
         .background(AVIATheme.background)

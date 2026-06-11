@@ -215,11 +215,7 @@ struct ColourDetailView: View {
     }
 
     private var optionsGrid: some View {
-        let columns = [
-            GridItem(.flexible(), spacing: 12),
-            GridItem(.flexible(), spacing: 12),
-            GridItem(.flexible(), spacing: 12)
-        ]
+        let columns = AdaptiveLayout.swatchColumns(spacing: 12)
 
         return LazyVGrid(columns: columns, spacing: 16) {
             ForEach(category.options) { option in

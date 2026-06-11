@@ -57,6 +57,7 @@ struct AdminLeadDetailView: View {
             }
             .padding(16)
             .padding(.bottom, 40)
+            .adaptiveContentWidth()
         }
         .background(AVIATheme.background)
         .navigationTitle(navTitle)

@@ -53,6 +53,7 @@ struct UserManagementView: View {
             }
             .padding(.horizontal, 16)
             .padding(.vertical, 8)
+            .adaptiveContentWidth()
         }
         .background(AVIATheme.background)
         .navigationTitle("User Management")

@@ -41,6 +41,7 @@ struct SuperAdminDashboard: View {
                 }
                 .padding(.horizontal, 16)
                 .padding(.vertical, 8)
+                .adaptiveContentWidth(AdaptiveLayout.workspaceWidth)
             }
             .background(AVIATheme.background)
             .navigationTitle("Super Admin")
@@ -267,6 +268,7 @@ struct SuperAdminStaffDetailView: View {
             }
             .padding(.horizontal, 16)
             .padding(.vertical, 8)
+            .adaptiveContentWidth()
         }
         .background(AVIATheme.background)
         .navigationTitle(staffUser.fullName)
@@ -308,6 +310,7 @@ struct SuperAdminBuildListView: View {
             }
             .padding(.horizontal, 16)
             .padding(.vertical, 8)
+            .adaptiveContentWidth()
         }
         .background(AVIATheme.background)
         .navigationTitle("All Builds")

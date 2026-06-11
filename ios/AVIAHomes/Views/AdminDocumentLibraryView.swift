@@ -39,6 +39,7 @@ struct AdminDocumentLibraryView: View {
                 }
             }
             .padding(16)
+            .adaptiveContentWidth()
         }
         .background(AVIATheme.background)
         .navigationTitle("Stock Library")

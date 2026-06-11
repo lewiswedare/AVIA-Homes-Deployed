@@ -35,6 +35,7 @@ struct SelectionsReviewView: View {
                     }
                 }
                 .padding(16)
+                .adaptiveContentWidth()
             }
             .background(AVIATheme.background)
             .navigationTitle("Review Selections")

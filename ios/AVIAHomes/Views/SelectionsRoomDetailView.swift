@@ -143,6 +143,7 @@ struct SelectionsRoomDetailView: View {
                     Color.clear.frame(height: 24)
                 }
                 .padding(.top, 6)
+                .adaptiveContentWidth()
             }
         }
         .background(AVIATheme.background)
@@ -825,11 +826,7 @@ private struct SelectionItemCard: View {
     private func colourCategoryGroup(_ category: ColourCategory) -> some View {
         let existing = colourSelectionsForItem.first { $0.colourCategoryId == category.id }
         let tier = buildSpecTier
-        let columns = [
-            GridItem(.flexible(), spacing: 10),
-            GridItem(.flexible(), spacing: 10),
-            GridItem(.flexible(), spacing: 10)
-        ]
+        let columns = AdaptiveLayout.swatchColumns(spacing: 10)
         return VStack(alignment: .leading, spacing: 8) {
             HStack(spacing: 6) {
                 Image(systemName: category.icon)

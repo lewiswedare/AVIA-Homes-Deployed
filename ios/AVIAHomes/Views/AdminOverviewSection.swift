@@ -189,7 +189,7 @@ struct AdminOverviewSection: View {
                 .font(.neueCaption2Medium)
                 .kerning(1.0)
                 .foregroundStyle(AVIATheme.textTertiary)
-            LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 10) {
+            LazyVGrid(columns: AdaptiveLayout.cardColumns(spacing: 10), spacing: 10) {
                 Button { showingAddBuild = true } label: {
                     AdminQuickActionContent(icon: "plus.circle.fill", label: "New Build", color: AVIATheme.timelessBrown)
                 }

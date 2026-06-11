@@ -171,7 +171,7 @@ struct PackagesContentView: View {
     }
 
     private var packagesList: some View {
-        LazyVStack(spacing: 12) {
+        LazyVGrid(columns: AdaptiveLayout.featureColumns(spacing: 12), spacing: 12) {
             ForEach(filteredPackages) { pkg in
                 NavigationLink(value: pkg) {
                     packageCard(package: pkg)

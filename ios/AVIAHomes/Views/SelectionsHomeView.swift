@@ -199,12 +199,14 @@ struct SelectionsHomeView: View {
             }
             .padding(.horizontal, 16)
             .padding(.top, 12)
+            .adaptiveContentWidth()
         }
         .safeAreaInset(edge: .bottom) {
             if !roomsWithItems.isEmpty {
                 summaryPill
                     .padding(.horizontal, 16)
                     .padding(.bottom, 14)
+                    .adaptiveContentWidth()
             }
         }
     }

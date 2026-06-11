@@ -46,6 +46,7 @@ struct AdminEOIReviewView: View {
             }
             .padding(.horizontal, 16)
             .padding(.bottom, 40)
+            .adaptiveContentWidth()
         }
         .background(AVIATheme.background)
         .navigationTitle("EOI Reviews")

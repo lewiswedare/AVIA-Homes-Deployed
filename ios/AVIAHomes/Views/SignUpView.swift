@@ -155,6 +155,7 @@ struct SignUpView: View {
                     }
                     .padding(.horizontal, 28)
                     .padding(.top, 28)
+                    .adaptiveContentWidth(520)
 
                     Spacer(minLength: 40)
                 }

@@ -35,6 +35,7 @@ struct NotificationsView: View {
                     }
                 }
                 .padding(.bottom, 40)
+                .adaptiveContentWidth()
             }
         }
         .background(AVIATheme.background)

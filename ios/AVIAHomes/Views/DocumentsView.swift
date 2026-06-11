@@ -94,6 +94,7 @@ struct DocumentsView: View {
             .padding(.horizontal, 16)
             .padding(.top, 8)
             .padding(.bottom, 40)
+            .adaptiveContentWidth()
         }
         .searchable(text: $searchText, prompt: "Search documents")
     }

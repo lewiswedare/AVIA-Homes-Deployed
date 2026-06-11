@@ -22,6 +22,7 @@ struct ConversationsView: View {
                         .buttonStyle(.pressable(.subtle))
                     }
                 }
+                .adaptiveContentWidth()
             }
         }
         .background(AVIATheme.background)

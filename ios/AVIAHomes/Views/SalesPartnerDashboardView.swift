@@ -26,6 +26,7 @@ struct PartnerDashboardView: View {
                 }
                 .padding(.horizontal, 16)
                 .padding(.bottom, 40)
+                .adaptiveContentWidth(AdaptiveLayout.workspaceWidth)
             }
             .background(AVIATheme.background)
             .navigationTitle("My Clients")
@@ -196,6 +197,7 @@ struct PartnerClientDetailView: View {
             }
             .padding(.horizontal, 16)
             .padding(.bottom, 40)
+            .adaptiveContentWidth()
         }
         .background(AVIATheme.background)
         .navigationTitle(build.clientDisplayName)

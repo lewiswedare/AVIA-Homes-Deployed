@@ -32,6 +32,7 @@ struct DisplayHomesListView: View {
             .padding(.horizontal, 16)
             .padding(.vertical, 12)
             .padding(.bottom, 32)
+            .adaptiveWideWidth()
         }
         .background(AVIATheme.background)
         .navigationTitle("Display Homes")

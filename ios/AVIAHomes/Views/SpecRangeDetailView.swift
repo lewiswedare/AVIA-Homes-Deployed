@@ -76,7 +76,7 @@ struct SpecRangeDetailView: View {
                     .font(.neueCaption)
                     .foregroundStyle(AVIATheme.textSecondary)
 
-                LazyVGrid(columns: [GridItem(.flexible(), spacing: 10), GridItem(.flexible(), spacing: 10), GridItem(.flexible(), spacing: 10)], spacing: 16) {
+                LazyVGrid(columns: AdaptiveLayout.swatchColumns(spacing: 10), spacing: 16) {
                     ForEach(logos, id: \.self) { logo in
                         Color(AVIATheme.surfaceElevated)
                             .frame(height: 64)

@@ -451,12 +451,7 @@ struct SelectionProductPickerView: View {
     // MARK: - Colour grid
 
     private func colourGrid(productId: String, colours: [SpecProductColourRow]) -> some View {
-        let columns = [
-            GridItem(.flexible(), spacing: 10),
-            GridItem(.flexible(), spacing: 10),
-            GridItem(.flexible(), spacing: 10),
-            GridItem(.flexible(), spacing: 10)
-        ]
+        let columns = AdaptiveLayout.denseSwatchColumns(spacing: 10)
         return VStack(alignment: .leading, spacing: 8) {
             Text("COLOUR")
                 .font(.neueCorpMedium(8))
