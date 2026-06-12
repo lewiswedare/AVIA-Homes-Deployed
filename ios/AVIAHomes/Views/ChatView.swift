@@ -337,7 +337,7 @@ struct ChatView: View {
             attachmentButton
 
             HStack(alignment: .bottom, spacing: 8) {
-                TextField("iMessage", text: $messageText, axis: .vertical)
+                TextField("Message", text: $messageText, axis: .vertical)
                     .font(.neueSubheadline)
                     .foregroundStyle(AVIATheme.textPrimary)
                     .tint(AVIATheme.timelessBrown)
@@ -356,7 +356,10 @@ struct ChatView: View {
                             .frame(width: 28, height: 28)
                             .background(AVIATheme.timelessBrown)
                             .clipShape(Circle())
+                            .padding(4)
+                            .contentShape(Rectangle())
                     }
+                    .accessibilityLabel("Send message")
                     .sensoryFeedback(.impact(weight: .light), trigger: messages.count)
                     .padding(.trailing, 4)
                     .padding(.bottom, 4)
@@ -414,6 +417,7 @@ struct ChatView: View {
                 )
         }
         .disabled(isUploading)
+        .accessibilityLabel("Add attachment")
         .overlay {
             if isUploading {
                 ProgressView()
@@ -561,18 +565,16 @@ struct ChatView: View {
 
         let uniqueRecipients = Array(Set(recipientIds.map { $0.lowercased() }))
             .filter { !$0.isEmpty && $0 != myId }
-        for recipientId in uniqueRecipients {
-            await viewModel.notificationService.createNotification(
-                recipientId: recipientId,
-                senderId: viewModel.currentUser.id,
-                senderName: viewModel.currentUser.fullName,
-                type: .newMessage,
-                title: "New Message",
-                message: "\(viewModel.currentUser.fullName): \(preview.prefix(100))",
-                referenceId: conversation.id,
-                referenceType: "conversation"
-            )
-        }
+        await viewModel.notificationService.createNotifications(
+            recipientIds: uniqueRecipients,
+            senderId: viewModel.currentUser.id,
+            senderName: viewModel.currentUser.fullName,
+            type: .newMessage,
+            title: "New Message",
+            message: "\(viewModel.currentUser.fullName): \(preview.prefix(100))",
+            referenceId: conversation.id,
+            referenceType: "conversation"
+        )
     }
 
     private func scrollToBottom() {

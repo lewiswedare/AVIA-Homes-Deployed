@@ -446,18 +446,16 @@ struct EOIFormView: View {
             recipientIdSet.insert(user.id)
         }
         recipientIdSet.remove(viewModel.currentUser.id)
-        for recipientId in recipientIdSet {
-            await viewModel.notificationService.createNotification(
-                recipientId: recipientId,
-                senderId: viewModel.currentUser.id,
-                senderName: viewModel.currentUser.fullName,
-                type: .eoiSubmitted,
-                title: "EOI Submitted",
-                message: "\(viewModel.currentUser.fullName) submitted an EOI for \(packageTitle)",
-                referenceId: package.id,
-                referenceType: "package"
-            )
-        }
+        await viewModel.notificationService.createNotifications(
+            recipientIds: Array(recipientIdSet),
+            senderId: viewModel.currentUser.id,
+            senderName: viewModel.currentUser.fullName,
+            type: .eoiSubmitted,
+            title: "EOI Submitted",
+            message: "\(viewModel.currentUser.fullName) submitted an EOI for \(packageTitle)",
+            referenceId: package.id,
+            referenceType: "package"
+        )
 
         dismiss()
     }

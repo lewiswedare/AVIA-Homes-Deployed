@@ -110,6 +110,55 @@ class NotificationService {
         }
     }
 
+    /// Fan-out helper: creates the same notification for many recipients in a
+    /// SINGLE bulk insert instead of one request per recipient (the old N+1
+    /// pattern made a 20-staff fan-out take 20 round-trips and often dropped
+    /// some on flaky connections).
+    func createNotifications(
+        recipientIds: [String],
+        senderId: String?,
+        senderName: String,
+        type: NotificationType,
+        title: String,
+        message: String,
+        referenceId: String? = nil,
+        referenceType: String? = nil
+    ) async {
+        let uniqueIds = Array(Set(recipientIds.map { $0.lowercased() })).filter { !$0.isEmpty }
+        guard !uniqueIds.isEmpty else { return }
+
+        let items: [AppNotification] = uniqueIds.map { recipientId in
+            AppNotification(
+                id: UUID().uuidString,
+                recipientId: recipientId,
+                senderId: senderId?.lowercased(),
+                senderName: senderName,
+                type: type,
+                title: title,
+                message: message,
+                referenceId: referenceId,
+                referenceType: referenceType,
+                createdAt: .now,
+                isRead: false
+            )
+        }
+
+        if let mine = items.first(where: { $0.recipientId == activeRecipientId }) {
+            notifications.insert(mine, at: 0)
+        }
+
+        guard supabase.isConfigured else { return }
+        let rows = items.map { NotificationRow(from: $0) }
+        do {
+            try await supabase.client
+                .from("notifications")
+                .insert(rows)
+                .execute()
+        } catch {
+            print("[NotificationService] createNotifications FAILED for type=\(type.rawValue) count=\(rows.count): \(error)")
+        }
+    }
+
     var onNotificationReceived: ((AppNotification) -> Void)?
 
     func subscribeToNotifications(for userId: String) {

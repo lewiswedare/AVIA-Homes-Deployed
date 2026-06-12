@@ -75,12 +75,6 @@ class AuthService {
             return false
         }
 
-        guard password.count >= 6 else {
-            errorMessage = "Password must be at least 6 characters."
-            isLoading = false
-            return false
-        }
-
         guard supabase.isConfigured else {
             errorMessage = "Supabase is not configured. Please check your settings."
             isLoading = false
@@ -126,8 +120,8 @@ class AuthService {
             return false
         }
 
-        guard password.count >= 6 else {
-            errorMessage = "Password must be at least 6 characters."
+        guard password.count >= 8 else {
+            errorMessage = "Password must be at least 8 characters."
             isLoading = false
             return false
         }

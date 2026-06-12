@@ -22,8 +22,8 @@ export default function Login() {
   const submit = async (e: FormEvent) => {
     e.preventDefault();
     setError(null);
-    if (password.length < 6) {
-      setError("Password must be at least 6 characters.");
+    if (!password) {
+      setError("Please enter your password.");
       return;
     }
     setLoading(true);

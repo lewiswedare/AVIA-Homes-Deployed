@@ -296,18 +296,16 @@ class BuildSpecViewModel {
             let sender = clientName.isEmpty ? "Client" : clientName
             let addressPart = buildAddress.isEmpty ? "" : " for \(buildAddress)"
             let message = "\(sender) submitted \(count) upgrade request\(count == 1 ? "" : "s")\(addressPart)"
-            for recipientId in adminRecipientIds {
-                await ns.createNotification(
-                    recipientId: recipientId,
-                    senderId: clientId,
-                    senderName: sender,
-                    type: .buildUpdate,
-                    title: "Upgrade Requests Submitted",
-                    message: message,
-                    referenceId: buildId,
-                    referenceType: "build"
-                )
-            }
+            await ns.createNotifications(
+                recipientIds: adminRecipientIds,
+                senderId: clientId,
+                senderName: sender,
+                type: .buildUpdate,
+                title: "Upgrade Requests Submitted",
+                message: message,
+                referenceId: buildId,
+                referenceType: "build"
+            )
             successMessage = "Submitted \(count) upgrade request\(count == 1 ? "" : "s")"
         } else if successCount == 0 {
             errorMessage = "Failed to submit upgrade requests"
@@ -339,18 +337,16 @@ class BuildSpecViewModel {
             if let ns = notificationService {
                 let sender = clientName.isEmpty ? "Client" : clientName
                 let addressPart = buildAddress.isEmpty ? "" : " for \(buildAddress)"
-                for recipientId in adminRecipientIds {
-                    await ns.createNotification(
-                        recipientId: recipientId,
-                        senderId: clientId,
-                        senderName: sender,
-                        type: .buildUpdate,
-                        title: "Specifications Confirmed",
-                        message: "\(sender) has confirmed their specifications\(addressPart) and moved on to colour selections.",
-                        referenceId: buildId,
-                        referenceType: "build"
-                    )
-                }
+                await ns.createNotifications(
+                    recipientIds: adminRecipientIds,
+                    senderId: clientId,
+                    senderName: sender,
+                    type: .buildUpdate,
+                    title: "Specifications Confirmed",
+                    message: "\(sender) has confirmed their specifications\(addressPart) and moved on to colour selections.",
+                    referenceId: buildId,
+                    referenceType: "build"
+                )
             }
         } else {
             errorMessage = "Failed to confirm specifications"
@@ -445,18 +441,16 @@ class BuildSpecViewModel {
             successMessage = "Upgrade accepted"
             await load(buildId: buildId)
             if let ns = notificationService {
-                for recipientId in adminRecipientIds {
-                    await ns.createNotification(
-                        recipientId: recipientId,
-                        senderId: clientId,
-                        senderName: "Client",
-                        type: .buildUpdate,
-                        title: "Upgrade Accepted",
-                        message: "Client has accepted the upgrade cost for \(item.snapshotName)",
-                        referenceId: buildId,
-                        referenceType: "build"
-                    )
-                }
+                await ns.createNotifications(
+                    recipientIds: adminRecipientIds,
+                    senderId: clientId,
+                    senderName: "Client",
+                    type: .buildUpdate,
+                    title: "Upgrade Accepted",
+                    message: "Client has accepted the upgrade cost for \(item.snapshotName)",
+                    referenceId: buildId,
+                    referenceType: "build"
+                )
             }
         }
     }
@@ -482,18 +476,16 @@ class BuildSpecViewModel {
             }
             await load(buildId: buildId)
             if let ns = notificationService {
-                for recipientId in adminRecipientIds {
-                    await ns.createNotification(
-                        recipientId: recipientId,
-                        senderId: clientId,
-                        senderName: "Client",
-                        type: .buildUpdate,
-                        title: "Upgrade Declined",
-                        message: "Client has declined the upgrade cost for \(item.snapshotName)",
-                        referenceId: buildId,
-                        referenceType: "build"
-                    )
-                }
+                await ns.createNotifications(
+                    recipientIds: adminRecipientIds,
+                    senderId: clientId,
+                    senderName: "Client",
+                    type: .buildUpdate,
+                    title: "Upgrade Declined",
+                    message: "Client has declined the upgrade cost for \(item.snapshotName)",
+                    referenceId: buildId,
+                    referenceType: "build"
+                )
             }
         }
     }
@@ -657,18 +649,16 @@ class BuildSpecViewModel {
             if let ns = notificationService {
                 let sender = clientName.isEmpty ? "Client" : clientName
                 let addressPart = buildAddress.isEmpty ? "" : " for \(buildAddress)"
-                for recipientId in adminRecipientIds {
-                    await ns.createNotification(
-                        recipientId: recipientId,
-                        senderId: clientId,
-                        senderName: sender,
-                        type: .buildUpdate,
-                        title: "Spec Range Upgrade Requested",
-                        message: "\(sender) requested an upgrade to \(toTier.capitalized)\(addressPart). Please confirm the final cost.",
-                        referenceId: buildId,
-                        referenceType: "build"
-                    )
-                }
+                await ns.createNotifications(
+                    recipientIds: adminRecipientIds,
+                    senderId: clientId,
+                    senderName: sender,
+                    type: .buildUpdate,
+                    title: "Spec Range Upgrade Requested",
+                    message: "\(sender) requested an upgrade to \(toTier.capitalized)\(addressPart). Please confirm the final cost.",
+                    referenceId: buildId,
+                    referenceType: "build"
+                )
             }
         }
     }
@@ -715,18 +705,16 @@ class BuildSpecViewModel {
             }
             successMessage = "Upgrade confirmed — awaiting admin approval"
             if let ns = notificationService {
-                for recipientId in adminRecipientIds {
-                    await ns.createNotification(
-                        recipientId: recipientId,
-                        senderId: clientId,
-                        senderName: "Client",
-                        type: .buildUpdate,
-                        title: "Range Upgrade Accepted",
-                        message: "Client has accepted the \(req.toTier.capitalized) range upgrade. Please approve.",
-                        referenceId: buildId,
-                        referenceType: "build"
-                    )
-                }
+                await ns.createNotifications(
+                    recipientIds: adminRecipientIds,
+                    senderId: clientId,
+                    senderName: "Client",
+                    type: .buildUpdate,
+                    title: "Range Upgrade Accepted",
+                    message: "Client has accepted the \(req.toTier.capitalized) range upgrade. Please approve.",
+                    referenceId: buildId,
+                    referenceType: "build"
+                )
             }
         }
     }
@@ -743,18 +731,16 @@ class BuildSpecViewModel {
             }
             successMessage = "Upgrade declined"
             if let ns = notificationService {
-                for recipientId in adminRecipientIds {
-                    await ns.createNotification(
-                        recipientId: recipientId,
-                        senderId: clientId,
-                        senderName: "Client",
-                        type: .buildUpdate,
-                        title: "Range Upgrade Declined",
-                        message: "Client has declined the \(req.toTier.capitalized) range upgrade.",
-                        referenceId: buildId,
-                        referenceType: "build"
-                    )
-                }
+                await ns.createNotifications(
+                    recipientIds: adminRecipientIds,
+                    senderId: clientId,
+                    senderName: "Client",
+                    type: .buildUpdate,
+                    title: "Range Upgrade Declined",
+                    message: "Client has declined the \(req.toTier.capitalized) range upgrade.",
+                    referenceId: buildId,
+                    referenceType: "build"
+                )
             }
         }
     }
@@ -861,18 +847,16 @@ class BuildSpecViewModel {
             }
             successMessage = "Colour upgrade confirmed — awaiting admin approval"
             if let ns = notificationService {
-                for recipientId in adminRecipientIds {
-                    await ns.createNotification(
-                        recipientId: recipientId,
-                        senderId: clientId,
-                        senderName: "Client",
-                        type: .buildUpdate,
-                        title: "Colour Upgrade Accepted",
-                        message: "Client has accepted a colour upgrade cost. Please approve.",
-                        referenceId: buildId,
-                        referenceType: "build"
-                    )
-                }
+                await ns.createNotifications(
+                    recipientIds: adminRecipientIds,
+                    senderId: clientId,
+                    senderName: "Client",
+                    type: .buildUpdate,
+                    title: "Colour Upgrade Accepted",
+                    message: "Client has accepted a colour upgrade cost. Please approve.",
+                    referenceId: buildId,
+                    referenceType: "build"
+                )
             }
             await load(buildId: buildId)
         }
@@ -890,18 +874,16 @@ class BuildSpecViewModel {
             }
             successMessage = "Colour upgrade declined"
             if let ns = notificationService {
-                for recipientId in adminRecipientIds {
-                    await ns.createNotification(
-                        recipientId: recipientId,
-                        senderId: clientId,
-                        senderName: "Client",
-                        type: .buildUpdate,
-                        title: "Colour Upgrade Declined",
-                        message: "Client has declined a colour upgrade cost.",
-                        referenceId: buildId,
-                        referenceType: "build"
-                    )
-                }
+                await ns.createNotifications(
+                    recipientIds: adminRecipientIds,
+                    senderId: clientId,
+                    senderName: "Client",
+                    type: .buildUpdate,
+                    title: "Colour Upgrade Declined",
+                    message: "Client has declined a colour upgrade cost.",
+                    referenceId: buildId,
+                    referenceType: "build"
+                )
             }
             await load(buildId: buildId)
         }
@@ -1137,18 +1119,16 @@ class BuildSpecViewModel {
                 let sender = clientName.isEmpty ? "Client" : clientName
                 let addressPart = buildAddress.isEmpty ? "" : " for \(buildAddress)"
                 let message = "\(sender) submitted \(count) colour selection\(count == 1 ? "" : "s")\(addressPart)"
-                for recipientId in adminRecipientIds {
-                    await ns.createNotification(
-                        recipientId: recipientId,
-                        senderId: clientId,
-                        senderName: sender,
-                        type: .colourSelectionSubmitted,
-                        title: "Colour Selections Submitted",
-                        message: message,
-                        referenceId: buildId,
-                        referenceType: "build"
-                    )
-                }
+                await ns.createNotifications(
+                    recipientIds: adminRecipientIds,
+                    senderId: clientId,
+                    senderName: sender,
+                    type: .colourSelectionSubmitted,
+                    title: "Colour Selections Submitted",
+                    message: message,
+                    referenceId: buildId,
+                    referenceType: "build"
+                )
             }
         } else if result == 0 {
             errorMessage = "No draft colour selections to submit"
@@ -1244,18 +1224,16 @@ class BuildSpecViewModel {
             if let ns = notificationService {
                 let sender = clientName.isEmpty ? "Client" : clientName
                 let addressPart = buildAddress.isEmpty ? "" : " for \(buildAddress)"
-                for recipientId in adminRecipientIds {
-                    await ns.createNotification(
-                        recipientId: recipientId,
-                        senderId: clientId,
-                        senderName: sender,
-                        type: .buildUpdate,
-                        title: "Colour Upgrade Requested",
-                        message: "\(sender) picked a colour upgrade\(addressPart). Please confirm the final cost.",
-                        referenceId: buildId,
-                        referenceType: "build"
-                    )
-                }
+                await ns.createNotifications(
+                    recipientIds: adminRecipientIds,
+                    senderId: clientId,
+                    senderName: sender,
+                    type: .buildUpdate,
+                    title: "Colour Upgrade Requested",
+                    message: "\(sender) picked a colour upgrade\(addressPart). Please confirm the final cost.",
+                    referenceId: buildId,
+                    referenceType: "build"
+                )
             }
         }
         if let idx = colourSelections.firstIndex(where: { $0.buildSpecSelectionId == buildSpecSelectionId && $0.colourCategoryId == colourCategoryId }) {

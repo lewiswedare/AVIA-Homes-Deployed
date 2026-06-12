@@ -1703,30 +1703,17 @@ class AppViewModel {
         let partnerIds = packageAssignments.first { $0.packageId == packageId }?.assignedPartnerIds ?? []
         let packageTitle = pkg?.title ?? "a package"
         let clientName = allRegisteredUsers.first { $0.id == clientId }?.fullName ?? "a client"
-        for staff in staffRecipients {
-            await notificationService.createNotification(
-                recipientId: staff.id,
-                senderId: currentUser.id,
-                senderName: currentUser.fullName,
-                type: .packageShared,
-                title: "Package Shared with Client",
-                message: "\(currentUser.fullName) shared \(packageTitle) with \(clientName)",
-                referenceId: packageId,
-                referenceType: "package"
-            )
-        }
-        for partnerId in partnerIds where partnerId != currentUser.id {
-            await notificationService.createNotification(
-                recipientId: partnerId,
-                senderId: currentUser.id,
-                senderName: currentUser.fullName,
-                type: .packageShared,
-                title: "Package Shared with Client",
-                message: "\(currentUser.fullName) shared \(packageTitle) with \(clientName)",
-                referenceId: packageId,
-                referenceType: "package"
-            )
-        }
+        let teamRecipientIds = staffRecipients.map(\.id) + partnerIds.filter { $0 != currentUser.id }
+        await notificationService.createNotifications(
+            recipientIds: teamRecipientIds,
+            senderId: currentUser.id,
+            senderName: currentUser.fullName,
+            type: .packageShared,
+            title: "Package Shared with Client",
+            message: "\(currentUser.fullName) shared \(packageTitle) with \(clientName)",
+            referenceId: packageId,
+            referenceType: "package"
+        )
     }
 
     func removeClientFromPackage(packageId: String, clientId: String) {
@@ -1788,18 +1775,16 @@ class AppViewModel {
         }
         recipientIdSet.remove(currentUser.id)
         let packageTitle = pkg?.title ?? "a package"
-        for recipientId in recipientIdSet {
-            await notificationService.createNotification(
-                recipientId: recipientId,
-                senderId: currentUser.id,
-                senderName: currentUser.fullName,
-                type: notifType,
-                title: "Package \(verb.capitalized)",
-                message: "\(currentUser.fullName) \(verb) \(packageTitle)",
-                referenceId: packageId,
-                referenceType: "package"
-            )
-        }
+        await notificationService.createNotifications(
+            recipientIds: Array(recipientIdSet),
+            senderId: currentUser.id,
+            senderName: currentUser.fullName,
+            type: notifType,
+            title: "Package \(verb.capitalized)",
+            message: "\(currentUser.fullName) \(verb) \(packageTitle)",
+            referenceId: packageId,
+            referenceType: "package"
+        )
     }
 
     func clientResponseForPackage(_ packageId: String, clientId: String) -> ClientPackageResponse? {
@@ -1872,18 +1857,16 @@ class AppViewModel {
         let buildId = clientBuildsForCurrentUser.first?.id
         Task {
             await SupabaseService.shared.upsertServiceRequest(request, clientId: currentUser.id, buildId: buildId)
-            for staff in staffRecipients {
-                await notificationService.createNotification(
-                    recipientId: staff.id,
-                    senderId: currentUser.id,
-                    senderName: currentUser.fullName,
-                    type: .requestSubmitted,
-                    title: "New Request",
-                    message: "\(currentUser.fullName) submitted: \(title)",
-                    referenceId: request.id,
-                    referenceType: "service_request"
-                )
-            }
+            await notificationService.createNotifications(
+                recipientIds: staffRecipients.map(\.id),
+                senderId: currentUser.id,
+                senderName: currentUser.fullName,
+                type: .requestSubmitted,
+                title: "New Request",
+                message: "\(currentUser.fullName) submitted: \(title)",
+                referenceId: request.id,
+                referenceType: "service_request"
+            )
         }
     }
 

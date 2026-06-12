@@ -276,18 +276,16 @@ class SpecificationViewModel {
             let sender = clientName.isEmpty ? "Client" : clientName
             let addressPart = buildAddress.isEmpty ? "" : " for \(buildAddress)"
             let message = "\(sender) submitted \(successCount) upgrade request\(successCount == 1 ? "" : "s")\(addressPart)"
-            for recipientId in adminRecipientIds {
-                await ns.createNotification(
-                    recipientId: recipientId,
-                    senderId: clientId,
-                    senderName: sender,
-                    type: .buildUpdate,
-                    title: "Upgrade Requests Submitted",
-                    message: message,
-                    referenceId: buildId,
-                    referenceType: "build"
-                )
-            }
+            await ns.createNotifications(
+                recipientIds: adminRecipientIds,
+                senderId: clientId,
+                senderName: sender,
+                type: .buildUpdate,
+                title: "Upgrade Requests Submitted",
+                message: message,
+                referenceId: buildId,
+                referenceType: "build"
+            )
             submitMessage = "Submitted \(successCount) upgrade request\(successCount == 1 ? "" : "s")"
         }
     }

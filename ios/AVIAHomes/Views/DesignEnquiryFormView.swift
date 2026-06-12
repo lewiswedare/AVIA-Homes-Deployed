@@ -211,17 +211,15 @@ struct DesignEnquiryFormView: View {
             ? (viewModel.currentUser.fullName.isEmpty ? "A client" : viewModel.currentUser.fullName)
             : fullName.trimmingCharacters(in: .whitespaces)
 
-        for recipientId in recipientIdSet {
-            await viewModel.notificationService.createNotification(
-                recipientId: recipientId,
-                senderId: viewModel.currentUser.id.isEmpty ? nil : viewModel.currentUser.id,
-                senderName: senderName,
-                type: .designEnquiry,
-                title: "Price Enquiry: \(designName)",
-                message: "\(senderName) has requested pricing for \(designName)",
-                referenceId: enquiryId,
-                referenceType: "design_enquiry"
-            )
-        }
+        await viewModel.notificationService.createNotifications(
+            recipientIds: Array(recipientIdSet),
+            senderId: viewModel.currentUser.id.isEmpty ? nil : viewModel.currentUser.id,
+            senderName: senderName,
+            type: .designEnquiry,
+            title: "Price Enquiry: \(designName)",
+            message: "\(senderName) has requested pricing for \(designName)",
+            referenceId: enquiryId,
+            referenceType: "design_enquiry"
+        )
     }
 }
