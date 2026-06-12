@@ -39,8 +39,10 @@ $$;
 -- ---------------------------------------------------------------------------
 -- 2. is_partner helper
 -- ---------------------------------------------------------------------------
+-- NOTE: the parameter is named `_uid` to match the function that already exists
+-- in the database — Postgres cannot rename parameters via CREATE OR REPLACE.
 
-create or replace function public.is_partner(uid uuid)
+create or replace function public.is_partner(_uid uuid)
 returns boolean
 language sql
 stable
@@ -49,7 +51,7 @@ set search_path = public
 as $$
     select exists (
         select 1 from public.profiles p
-        where p.id = uid::text
+        where p.id = _uid::text
           and lower(coalesce(p.role, '')) in ('partner','salespartner','sales_partner')
     );
 $$;
