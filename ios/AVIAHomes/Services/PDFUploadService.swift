@@ -48,6 +48,36 @@ class PDFUploadService {
         }
     }
 
+    /// Upload a PDF to an EXACT storage path (used by the spec/colour summary
+    /// generators whose database rows reference a precomputed `storage_path`).
+    /// Returns the public URL on success.
+    func uploadPDF(_ data: Data, atExactPath path: String) async -> String? {
+        isUploading = true
+        uploadProgress = 0
+        defer { isUploading = false }
+        do {
+            try await client.storage
+                .from(bucketName)
+                .upload(
+                    path,
+                    data: data,
+                    options: FileOptions(
+                        cacheControl: "3600",
+                        contentType: "application/pdf",
+                        upsert: true
+                    )
+                )
+            let publicURL = try client.storage
+                .from(bucketName)
+                .getPublicURL(path: path)
+            uploadProgress = 1.0
+            return publicURL.absoluteString
+        } catch {
+            print("[PDFUploadService] uploadPDF(atExactPath:) failed: \(error)")
+            return nil
+        }
+    }
+
     /// Upload an arbitrary document (any content type) to a named folder in the
     /// documents bucket. Used for the shared stock library and ad-hoc custom files.
     func uploadFile(_ data: Data, fileName: String, folder: String, contentType: String) async -> String? {

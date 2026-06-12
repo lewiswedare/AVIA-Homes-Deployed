@@ -76,15 +76,18 @@ class MessagingService {
     func loadMessages(for conversationId: String) async {
         guard supabase.isConfigured else { return }
         do {
+            // Fetch the NEWEST 200 messages (descending), then restore
+            // chronological order for display. Previously this loaded the
+            // oldest 200, so long threads stopped showing new messages.
             let rows: [ChatMessageRow] = try await supabase.client
                 .from("messages")
                 .select()
                 .eq("conversation_id", value: conversationId)
-                .order("created_at", ascending: true)
+                .order("created_at", ascending: false)
                 .limit(200)
                 .execute()
                 .value
-            currentMessages = rows.map { $0.toChatMessage() }
+            currentMessages = rows.map { $0.toChatMessage() }.reversed()
         } catch {
             print("[MessagingService] loadMessages FAILED: \(error)")
         }

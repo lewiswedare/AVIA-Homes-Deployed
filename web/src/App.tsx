@@ -17,6 +17,7 @@ import NotFound from "./pages/NotFound";
 import Notifications from "./pages/Notifications";
 import Profile from "./pages/Profile";
 import ProfileSetup from "./pages/ProfileSetup";
+import ResetPassword from "./pages/ResetPassword";
 import SignUp from "./pages/SignUp";
 import Workspace from "./pages/Workspace";
 import ClientDashboard from "./pages/client/ClientDashboard";
@@ -43,11 +44,28 @@ function Splash() {
 }
 
 function Protected() {
-  const { session, restoring, profile, profileLoading } = useAuth();
+  const { session, restoring, profile, profileLoading, profileError, refreshProfile } = useAuth();
 
   if (restoring) return <Splash />;
   if (!session) return <Navigate to="/login" replace />;
   if (profileLoading && !profile) return <Splash />;
+  // A FAILED profile fetch must never route an existing user into ProfileSetup
+  // (saving there would overwrite their real profile row). Offer a retry instead.
+  if (!profile && profileError) {
+    return (
+      <div className="flex min-h-screen flex-col items-center justify-center gap-4 bg-avia-white px-6 text-center">
+        <img src="/brand/avia-logo.png" alt="AVIA Homes" className="h-8 w-auto" />
+        <p className="text-[14px] text-avia-black/60">We couldn&apos;t load your profile. Check your connection and try again.</p>
+        <button
+          type="button"
+          onClick={() => void refreshProfile()}
+          className="rounded-full bg-avia-black px-6 py-2.5 text-[14px] font-medium text-white"
+        >
+          Retry
+        </button>
+      </div>
+    );
+  }
   if (!profile || !profile.profile_completed) return <ProfileSetup />;
   return <Outlet />;
 }
@@ -70,6 +88,7 @@ const PAGE_TITLES: Record<string, string> = {
   "/login": "Sign In",
   "/signup": "Create Account",
   "/forgot-password": "Reset Password",
+  "/reset-password": "Set New Password",
 };
 
 /** Syncs the document title with the route and scrolls to top on navigation. */
@@ -96,6 +115,7 @@ const App = () => (
             <Route path="/login" element={<Login />} />
             <Route path="/signup" element={<SignUp />} />
             <Route path="/forgot-password" element={<ForgotPassword />} />
+            <Route path="/reset-password" element={<ResetPassword />} />
             <Route element={<Protected />}>
               <Route element={<AppShell />}>
                 <Route path="/" element={<RoleHome />} />

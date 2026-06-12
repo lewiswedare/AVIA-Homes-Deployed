@@ -2,7 +2,6 @@ import { useState, type FormEvent } from "react";
 
 import { FieldLabel, PrimaryButton, inputClass } from "@/components/avia/ui";
 import { useAuth } from "@/hooks/useAuth";
-import { nowISO } from "@/lib/format";
 import { supabase } from "@/lib/supabase";
 
 /** Shown after sign-up until the profile row is completed (mirrors iOS ProfileSetupView). */
@@ -21,6 +20,9 @@ export default function ProfileSetup() {
     setError(null);
     setLoading(true);
     const email = session?.user?.email ?? profile?.email ?? "";
+    // Only the columns this screen actually owns — never role, assignments,
+    // home design or contract date. On conflict the upsert touches just these,
+    // so an existing profile row can no longer be clobbered with defaults.
     const payload = {
       id: userId,
       first_name: firstName.trim(),
@@ -28,12 +30,7 @@ export default function ProfileSetup() {
       email,
       phone: phone.trim(),
       address: address.trim(),
-      home_design: profile?.home_design ?? "",
-      lot_number: profile?.lot_number ?? "",
-      contract_date: profile?.contract_date ?? nowISO(),
       profile_completed: true,
-      role: profile?.role ?? "Client",
-      assigned_client_ids: profile?.assigned_client_ids ?? [],
     };
     try {
       const { error: upsertError } = await supabase.from("profiles").upsert(payload, { onConflict: "id" });

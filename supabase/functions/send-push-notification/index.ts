@@ -1,12 +1,16 @@
 // Supabase Edge Function: send-push-notification
-// Triggered by a Postgres webhook on INSERT to the `notifications` table.
+// Triggered by a Postgres trigger (pg_net) on INSERT to the `notifications` table.
 // Sends an APNs push notification to the recipient's device.
+//
+// SECURITY: every request must carry the `x-push-secret` header matching the
+// secret stored in private.app_secrets (created by 20260612_security_lockdown.sql).
+// The database trigger includes it automatically; everything else is rejected.
 //
 // Required env vars for APNs:
 //   APNS_KEY_ID       — Apple Key ID
 //   APNS_TEAM_ID      — Apple Team ID
 //   APNS_PRIVATE_KEY  — p8 private key contents (PEM)
-//   APNS_BUNDLE_ID    — e.g. com.aviahomes.app
+//   APNS_BUNDLE_ID    — defaults to com.wedare.aviahomes (the app's bundle id)
 //   APNS_ENVIRONMENT  — "production" or "development" (default: "production")
 //
 // Required env var for Supabase:
@@ -63,6 +67,32 @@ serve(async (req: Request) => {
 
   const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
+  // ── Auth: only the database trigger (which knows the shared secret) may call.
+  const providedSecret = req.headers.get("x-push-secret") ?? "";
+  const secretClient = createClient(supabaseUrl, supabaseServiceKey, {
+    db: { schema: "private" },
+  });
+  const { data: secretRow, error: secretError } = await secretClient
+    .from("app_secrets")
+    .select("value")
+    .eq("key", "push_webhook_secret")
+    .maybeSingle();
+
+  if (secretError || !secretRow?.value) {
+    console.error("[send-push-notification] Could not load push_webhook_secret — run the security_lockdown migration");
+    return new Response(JSON.stringify({ error: "secret not configured" }), {
+      status: 500,
+      headers: { "Content-Type": "application/json" },
+    });
+  }
+
+  if (!providedSecret || providedSecret !== secretRow.value) {
+    return new Response(JSON.stringify({ error: "unauthorized" }), {
+      status: 401,
+      headers: { "Content-Type": "application/json" },
+    });
+  }
+
   // Fetch device tokens for recipient
   const { data: tokens, error: tokenError } = await supabase
     .from("device_tokens")
@@ -89,7 +119,7 @@ serve(async (req: Request) => {
   const apnsKeyId = Deno.env.get("APNS_KEY_ID");
   const apnsTeamId = Deno.env.get("APNS_TEAM_ID");
   const apnsPrivateKey = Deno.env.get("APNS_PRIVATE_KEY");
-  const apnsBundleId = Deno.env.get("APNS_BUNDLE_ID") ?? "com.aviahomes.app";
+  const apnsBundleId = Deno.env.get("APNS_BUNDLE_ID") ?? "com.wedare.aviahomes";
   const apnsEnvironment = Deno.env.get("APNS_ENVIRONMENT") ?? "production";
 
   if (!apnsKeyId || !apnsTeamId || !apnsPrivateKey) {

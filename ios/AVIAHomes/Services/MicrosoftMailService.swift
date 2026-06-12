@@ -1,5 +1,6 @@
 import Foundation
 import AuthenticationServices
+import Supabase
 
 /// Handles connecting a staff member's Microsoft 365 account and sending email
 /// through the `microsoft-mail` Supabase Edge Function (which sends via delegated
@@ -27,17 +28,31 @@ final class MicrosoftMailService: NSObject {
 
     // MARK: - Connect
 
-    /// Opens the Microsoft consent flow for the given staff user. Resolves to true
-    /// once the browser bounces back to the app's callback scheme.
+    /// Opens the Microsoft consent flow for the signed-in staff user. The edge
+    /// function now requires an authenticated request and returns the consent
+    /// URL (with a signed state) instead of redirecting, so we fetch it first
+    /// and then hand the Microsoft URL to ASWebAuthenticationSession.
     @discardableResult
     func connect(staffId: String) async -> Bool {
         guard let base = functionBaseURL,
-              var components = URLComponents(string: "\(base)") else { return false }
-        components.queryItems = [
-            .init(name: "action", value: "start"),
-            .init(name: "uid", value: staffId),
-        ]
-        guard let startURL = components.url else { return false }
+              let requestURL = URL(string: "\(base)?action=start") else { return false }
+
+        var request = URLRequest(url: requestURL)
+        request.httpMethod = "POST"
+        await applyHeaders(&request)
+
+        guard let startURL: URL = await {
+            do {
+                let (data, response) = try await URLSession.shared.data(for: request)
+                guard (response as? HTTPURLResponse)?.statusCode == 200,
+                      let parsed = (try? JSONSerialization.jsonObject(with: data)) as? [String: Any],
+                      let urlString = parsed["url"] as? String else { return nil }
+                return URL(string: urlString)
+            } catch {
+                print("[MicrosoftMailService] start request error: \(error)")
+                return nil
+            }
+        }() else { return false }
 
         return await withCheckedContinuation { continuation in
             var didResume = false
@@ -83,7 +98,7 @@ final class MicrosoftMailService: NSObject {
         guard let base = functionBaseURL, let url = URL(string: "\(base)?action=disconnect") else { return false }
         var request = URLRequest(url: url)
         request.httpMethod = "POST"
-        applyHeaders(&request)
+        await applyHeaders(&request)
         request.httpBody = try? JSONSerialization.data(withJSONObject: ["uid": staffId])
         do {
             let (_, response) = try await URLSession.shared.data(for: request)
@@ -117,7 +132,7 @@ final class MicrosoftMailService: NSObject {
         }
         var request = URLRequest(url: url)
         request.httpMethod = "POST"
-        applyHeaders(&request)
+        await applyHeaders(&request)
         var payload: [String: Any] = [
             "staff_id": staffId,
             "client_id": clientId,
@@ -145,10 +160,16 @@ final class MicrosoftMailService: NSObject {
         }
     }
 
-    private func applyHeaders(_ request: inout URLRequest) {
+    /// Authenticates requests with the signed-in user's JWT — the edge function
+    /// rejects anon-key calls now that it verifies the caller's identity & role.
+    private func applyHeaders(_ request: inout URLRequest) async {
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
         if !anonKey.isEmpty {
             request.setValue(anonKey, forHTTPHeaderField: "apikey")
+        }
+        if let accessToken = try? await SupabaseService.shared.client.auth.session.accessToken {
+            request.setValue("Bearer \(accessToken)", forHTTPHeaderField: "Authorization")
+        } else if !anonKey.isEmpty {
             request.setValue("Bearer \(anonKey)", forHTTPHeaderField: "Authorization")
         }
     }

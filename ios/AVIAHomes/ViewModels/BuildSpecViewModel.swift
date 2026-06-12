@@ -1062,11 +1062,18 @@ class BuildSpecViewModel {
         let fileName = "spec_summary_v\(nextVersion).pdf"
         let storagePath = "builds/\(buildId)/\(fileName)"
 
+        // Upload the rendered PDF BEFORE recording it — previously the file
+        // was discarded and every stored document 404'd on download.
+        guard let publicURL = await PDFUploadService.shared.uploadPDF(data, atExactPath: storagePath) else {
+            errorMessage = "Failed to upload the generated PDF"
+            return
+        }
+
         let doc = BuildSpecDocument(
             id: UUID().uuidString,
             buildId: buildId,
             storagePath: storagePath,
-            publicURL: nil,
+            publicURL: publicURL,
             version: nextVersion,
             generatedAt: .now,
             generatedBy: "system"
@@ -1075,6 +1082,8 @@ class BuildSpecViewModel {
         if success {
             documents.insert(doc, at: 0)
             successMessage = "PDF generated (v\(nextVersion))"
+        } else {
+            errorMessage = "Failed to save the generated PDF record"
         }
     }
 
@@ -1196,11 +1205,15 @@ class BuildSpecViewModel {
         let nextVersion = (existingDocs.map(\.version).max() ?? 0) + 1
         let fileName = "colour_summary_v\(nextVersion).pdf"
         let storagePath = "builds/\(buildId)/\(fileName)"
+        guard let publicURL = await PDFUploadService.shared.uploadPDF(data, atExactPath: storagePath) else {
+            errorMessage = "Failed to upload the colour summary PDF"
+            return
+        }
         let doc = BuildSpecDocument(
             id: UUID().uuidString,
             buildId: buildId,
             storagePath: storagePath,
-            publicURL: nil,
+            publicURL: publicURL,
             version: nextVersion,
             generatedAt: .now,
             generatedBy: "system"
@@ -1209,6 +1222,8 @@ class BuildSpecViewModel {
         if success {
             documents.insert(doc, at: 0)
             successMessage = "Colour PDF generated (v\(nextVersion))"
+        } else {
+            errorMessage = "Failed to save the colour summary record"
         }
     }
 

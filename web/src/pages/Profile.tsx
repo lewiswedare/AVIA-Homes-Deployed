@@ -16,6 +16,28 @@ export default function Profile() {
   const [lastName, setLastName] = useState<string>(profile?.last_name ?? "");
   const [phone, setPhone] = useState<string>(profile?.phone ?? "");
   const [saving, setSaving] = useState<boolean>(false);
+  const [confirmingDelete, setConfirmingDelete] = useState<boolean>(false);
+  const [deleting, setDeleting] = useState<boolean>(false);
+
+  const deleteAccount = async () => {
+    setDeleting(true);
+    try {
+      const { error } = await supabase.functions.invoke("delete-account");
+      if (error) {
+        console.error(`[Profile] delete account failed: ${error.message}`);
+        toast.error("Couldn't delete your account. Please try again.");
+        return;
+      }
+      await signOut();
+      navigate("/login", { replace: true });
+    } catch (e) {
+      console.error(`[Profile] delete account threw: ${e instanceof Error ? e.message : String(e)}`);
+      toast.error("Network error. Please check your connection.");
+    } finally {
+      setDeleting(false);
+      setConfirmingDelete(false);
+    }
+  };
 
   const save = async () => {
     if (!userId) return;
@@ -99,6 +121,40 @@ export default function Profile() {
       >
         <LogOut className="h-4 w-4" /> Sign Out
       </button>
+
+      {confirmingDelete ? (
+        <div className="space-y-3 rounded-[13px] border border-red-200 bg-red-50 p-4">
+          <p className="text-[13px] text-red-900">
+            This permanently deletes your account and personal data. This cannot be undone.
+          </p>
+          <div className="flex gap-2">
+            <button
+              type="button"
+              disabled={deleting}
+              onClick={() => void deleteAccount()}
+              className="h-10 flex-1 rounded-[10px] bg-red-600 text-[13px] font-medium text-white transition-colors hover:bg-red-700 disabled:opacity-60"
+            >
+              {deleting ? "Deleting…" : "Delete Permanently"}
+            </button>
+            <button
+              type="button"
+              disabled={deleting}
+              onClick={() => setConfirmingDelete(false)}
+              className="h-10 flex-1 rounded-[10px] border border-avia-black/15 text-[13px] font-medium text-avia-black/70"
+            >
+              Cancel
+            </button>
+          </div>
+        </div>
+      ) : (
+        <button
+          type="button"
+          onClick={() => setConfirmingDelete(true)}
+          className="w-full py-2 text-center text-[13px] text-avia-black/40 transition-colors hover:text-red-600"
+        >
+          Delete Account
+        </button>
+      )}
 
       <div className="flex justify-center pb-4 pt-2">
         <img src="/brand/avia-logo.png" alt="AVIA Homes" className="h-6 w-auto opacity-40" />

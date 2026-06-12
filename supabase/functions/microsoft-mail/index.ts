@@ -5,14 +5,18 @@
 // when clients open those emails via a 1x1 pixel.
 //
 // Routes (single function, dispatched by path / `action` query):
-//   GET  ...?action=start&uid=<staffId>         → 302 to Microsoft consent screen
-//   GET  .../callback?code=..&state=..           → token exchange, stores connection,
+//   POST ...?action=start                        → { url } Microsoft consent URL (signed state)
+//   GET  .../callback?code=..&state=..           → verifies signed state, token exchange,
 //                                                   bounces back to app (aviahomes://ms-connected)
 //   GET  ...?action=status&uid=<staffId>         → { connected, email, display_name }
 //   POST ...?action=send  { staff_id, client_id, to, subject, body, document_url?,
 //                           document_name?, document_id? }  → sends + records email_sends row
 //   POST ...?action=disconnect { uid }           → removes the stored connection
 //   GET  .../track/<sendId>                       → 1x1 gif, records the open
+//
+// SECURITY: start/status/send/disconnect REQUIRE a valid Supabase user JWT in the
+// Authorization header, and the user must hold a staff-tier role. The OAuth state
+// is HMAC-signed so the callback cannot be forged for an arbitrary uid.
 //
 // Required Supabase Edge Function secrets (set in the Supabase dashboard):
 //   MS_CLIENT_ID       — Azure app (client) ID
@@ -57,6 +61,86 @@ const CORS = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
   "Access-Control-Allow-Methods": "POST, GET, OPTIONS",
 };
+
+// ── Auth helpers ──────────────────────────────────────────────────────────────────
+
+const STAFF_ROLES = new Set([
+  "admin", "superadmin", "super_admin", "super admin",
+  "salesadmin", "sales_admin", "sales admin",
+  "staff", "preconstruction", "pre_construction",
+  "buildingsupport", "building_support",
+  "partner", "salespartner", "sales_partner",
+]);
+
+const ADMIN_ROLES = new Set([
+  "admin", "superadmin", "super_admin", "super admin",
+  "salesadmin", "sales_admin", "sales admin",
+]);
+
+interface AuthedUser {
+  uid: string;
+  role: string;
+  isStaff: boolean;
+  isAdmin: boolean;
+}
+
+/// Verifies the caller's Supabase JWT and loads their profile role.
+/// Returns null when the token is missing, invalid, or the anon key itself.
+async function requireUser(req: Request): Promise<AuthedUser | null> {
+  const header = req.headers.get("Authorization") ?? "";
+  const token = header.startsWith("Bearer ") ? header.slice(7).trim() : "";
+  const anonKey = Deno.env.get("SUPABASE_ANON_KEY") ?? "";
+  if (!token || token === anonKey) return null;
+
+  const { data, error } = await supabase.auth.getUser(token);
+  if (error || !data?.user?.id) return null;
+
+  const uid = data.user.id.toLowerCase();
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("role")
+    .eq("id", uid)
+    .maybeSingle();
+
+  const role = (profile?.role ?? "").toLowerCase();
+  return {
+    uid,
+    role,
+    isStaff: STAFF_ROLES.has(role),
+    isAdmin: ADMIN_ROLES.has(role),
+  };
+}
+
+// ── Signed OAuth state (HMAC-SHA256 keyed with MS_CLIENT_SECRET) ─────────────
+
+async function hmacHex(message: string): Promise<string> {
+  const key = await crypto.subtle.importKey(
+    "raw",
+    new TextEncoder().encode(MS_CLIENT_SECRET),
+    { name: "HMAC", hash: "SHA-256" },
+    false,
+    ["sign"],
+  );
+  const sig = await crypto.subtle.sign("HMAC", key, new TextEncoder().encode(message));
+  return Array.from(new Uint8Array(sig)).map((b) => b.toString(16).padStart(2, "0")).join("");
+}
+
+async function signState(uid: string): Promise<string> {
+  const exp = Date.now() + 15 * 60 * 1000; // 15 minute window
+  const sig = await hmacHex(`${uid}.${exp}`);
+  return `${uid}.${exp}.${sig}`;
+}
+
+/// Returns the uid when the state is authentic and unexpired, else null.
+async function verifyState(state: string): Promise<string | null> {
+  const parts = state.split(".");
+  if (parts.length !== 3) return null;
+  const [uid, expStr, sig] = parts;
+  const exp = Number(expStr);
+  if (!uid || !Number.isFinite(exp) || Date.now() > exp) return null;
+  const expected = await hmacHex(`${uid}.${exp}`);
+  return sig === expected ? uid : null;
+}
 
 function json(body: unknown, status = 200): Response {
   return new Response(JSON.stringify(body), {
@@ -108,11 +192,14 @@ async function refreshAccessToken(refreshToken: string, redirectUri: string) {
 // ── Handlers ───────────────────────────────────────────────────────────────────
 
 async function handleStart(req: Request): Promise<Response> {
-  const url = new URL(req.url);
-  const uid = url.searchParams.get("uid") ?? "";
-  if (!uid) return json({ error: "missing uid" }, 400);
+  const user = await requireUser(req);
+  if (!user) return json({ error: "unauthorized" }, 401);
+  if (!user.isStaff) return json({ error: "forbidden" }, 403);
   if (!MS_CLIENT_ID) return json({ error: "MS_CLIENT_ID not configured" }, 500);
 
+  // The mailbox always connects to the AUTHENTICATED user — never a caller-
+  // supplied uid — and the state is signed so the callback can't be forged.
+  const state = await signState(user.uid);
   const redirectUri = `${functionBaseURL(req)}/callback`;
   const authUrl = new URL(authorizeEndpoint());
   authUrl.searchParams.set("client_id", MS_CLIENT_ID);
@@ -120,10 +207,10 @@ async function handleStart(req: Request): Promise<Response> {
   authUrl.searchParams.set("redirect_uri", redirectUri);
   authUrl.searchParams.set("response_mode", "query");
   authUrl.searchParams.set("scope", SCOPES);
-  authUrl.searchParams.set("state", uid);
+  authUrl.searchParams.set("state", state);
   authUrl.searchParams.set("prompt", "select_account");
 
-  return new Response(null, { status: 302, headers: { Location: authUrl.toString() } });
+  return json({ url: authUrl.toString() });
 }
 
 function htmlBounce(message: string, success: boolean): Response {
@@ -144,12 +231,13 @@ display:flex;align-items:center;justify-content:center;height:100vh;margin:0;tex
 async function handleCallback(req: Request): Promise<Response> {
   const url = new URL(req.url);
   const code = url.searchParams.get("code");
-  const uid = url.searchParams.get("state") ?? "";
+  const state = url.searchParams.get("state") ?? "";
   const err = url.searchParams.get("error_description") ?? url.searchParams.get("error");
   if (err) {
     console.error("[microsoft-mail] callback error:", err);
     return htmlBounce("Couldn't connect Microsoft", false);
   }
+  const uid = state ? await verifyState(state) : null;
   if (!code || !uid) return htmlBounce("Couldn't connect Microsoft", false);
 
   const redirectUri = `${functionBaseURL(req)}/callback`;
@@ -210,9 +298,11 @@ async function handleCallback(req: Request): Promise<Response> {
 }
 
 async function handleStatus(req: Request): Promise<Response> {
+  const user = await requireUser(req);
+  if (!user) return json({ error: "unauthorized" }, 401);
+  if (!user.isStaff) return json({ error: "forbidden" }, 403);
   const url = new URL(req.url);
-  const uid = url.searchParams.get("uid") ?? "";
-  if (!uid) return json({ error: "missing uid" }, 400);
+  const uid = (url.searchParams.get("uid") ?? user.uid).toLowerCase();
   const { data } = await supabase
     .from("microsoft_accounts")
     .select("email, display_name, connected_at")
@@ -227,12 +317,15 @@ async function handleStatus(req: Request): Promise<Response> {
 }
 
 async function handleDisconnect(req: Request): Promise<Response> {
+  const user = await requireUser(req);
+  if (!user) return json({ error: "unauthorized" }, 401);
   let body: { uid?: string } = {};
   try {
     body = await req.json();
   } catch { /* ignore */ }
-  const uid = body.uid ?? "";
-  if (!uid) return json({ error: "missing uid" }, 400);
+  const uid = (body.uid ?? user.uid).toLowerCase();
+  // Staff can only disconnect their own mailbox; admins may disconnect anyone's.
+  if (uid !== user.uid && !user.isAdmin) return json({ error: "forbidden" }, 403);
   await supabase.from("microsoft_connections").delete().eq("user_id", uid);
   await supabase.from("microsoft_accounts").delete().eq("user_id", uid);
   return json({ disconnected: true });
@@ -246,6 +339,10 @@ function escapeHtml(s: string): string {
 }
 
 async function handleSend(req: Request): Promise<Response> {
+  const user = await requireUser(req);
+  if (!user) return json({ error: "unauthorized" }, 401);
+  if (!user.isStaff) return json({ error: "forbidden" }, 403);
+
   let body: {
     staff_id?: string;
     client_id?: string;
@@ -262,7 +359,7 @@ async function handleSend(req: Request): Promise<Response> {
     return json({ error: "invalid json" }, 400);
   }
 
-  const staffId = body.staff_id ?? "";
+  const staffId = (body.staff_id ?? user.uid).toLowerCase();
   const clientId = body.client_id ?? "";
   const to = (body.to ?? "").trim();
   const subject = (body.subject ?? "").trim();
@@ -270,6 +367,11 @@ async function handleSend(req: Request): Promise<Response> {
 
   if (!staffId || !clientId || !to || !subject) {
     return json({ error: "missing required fields" }, 400);
+  }
+
+  // Emails only go out from the caller's own connected mailbox.
+  if (staffId !== user.uid) {
+    return json({ error: "forbidden", message: "You can only send from your own mailbox." }, 403);
   }
 
   // Load the sender's Microsoft connection.

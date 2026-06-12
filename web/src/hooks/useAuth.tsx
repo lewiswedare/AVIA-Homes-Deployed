@@ -13,6 +13,9 @@ interface AuthContextValue {
   restoring: boolean;
   /** True while the profile row is being fetched after sign-in. */
   profileLoading: boolean;
+  /** True when the last profile fetch FAILED (network/server error) — distinct
+   * from a missing row. Gates must not treat this as "needs profile setup". */
+  profileError: boolean;
   refreshProfile: () => Promise<void>;
   signOut: () => Promise<void>;
 }
@@ -24,6 +27,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [restoring, setRestoring] = useState<boolean>(true);
   const [profile, setProfile] = useState<ProfileRow | null>(null);
   const [profileLoading, setProfileLoading] = useState<boolean>(false);
+  const [profileError, setProfileError] = useState<boolean>(false);
 
   useEffect(() => {
     let mounted = true;
@@ -62,14 +66,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         .eq("id", userId)
         .maybeSingle();
       if (error) {
+        // Transient failure: KEEP any profile we already have — overwriting it
+        // with null previously routed existing users into ProfileSetup, which
+        // could then clobber their real profile row.
         console.error(`[Auth] fetch profile failed: ${error.message}`);
-        setProfile(null);
+        setProfileError(true);
       } else {
         setProfile((data as ProfileRow | null) ?? null);
+        setProfileError(false);
       }
     } catch (e) {
       console.error(`[Auth] fetch profile threw: ${e instanceof Error ? e.message : String(e)}`);
-      setProfile(null);
+      setProfileError(true);
     } finally {
       setProfileLoading(false);
     }
@@ -81,6 +89,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       void refreshProfile();
     } else {
       setProfile(null);
+      setProfileError(false);
     }
   }, [userId, refreshProfile]);
 
@@ -96,8 +105,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const role: UserRole = (profile?.role as UserRole | undefined) ?? "Client";
 
   const value = useMemo<AuthContextValue>(
-    () => ({ session, userId, profile, role, restoring, profileLoading, refreshProfile, signOut }),
-    [session, userId, profile, role, restoring, profileLoading, refreshProfile, signOut],
+    () => ({ session, userId, profile, role, restoring, profileLoading, profileError, refreshProfile, signOut }),
+    [session, userId, profile, role, restoring, profileLoading, profileError, refreshProfile, signOut],
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

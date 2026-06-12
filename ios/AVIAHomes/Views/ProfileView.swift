@@ -7,6 +7,9 @@ struct ProfileView: View {
     @State private var documentAlerts = true
     @State private var showSignOutAlert = false
     @State private var showEditProfile = false
+    @State private var showDeleteAccountAlert = false
+    @State private var isDeletingAccount = false
+    @State private var deleteAccountFailed = false
 
     private var isClient: Bool { viewModel.currentRole == .client }
 
@@ -76,6 +79,24 @@ struct ProfileView: View {
                 }
                 .padding(.horizontal, 16)
 
+                Button {
+                    showDeleteAccountAlert = true
+                } label: {
+                    if isDeletingAccount {
+                        ProgressView()
+                            .frame(maxWidth: .infinity)
+                            .frame(height: 44)
+                    } else {
+                        Text("Delete Account")
+                            .font(.neueCaptionMedium)
+                            .frame(maxWidth: .infinity)
+                            .frame(height: 44)
+                            .foregroundStyle(AVIATheme.textTertiary)
+                    }
+                }
+                .disabled(isDeletingAccount)
+                .padding(.horizontal, 16)
+
                 Image("AVIALogo")
                     .resizable()
                     .aspectRatio(contentMode: .fit)
@@ -97,6 +118,24 @@ struct ProfileView: View {
             }
         } message: {
             Text("You'll need to sign in again to access your account.")
+        }
+        .alert("Delete Account?", isPresented: $showDeleteAccountAlert) {
+            Button("Cancel", role: .cancel) {}
+            Button("Delete Permanently", role: .destructive) {
+                isDeletingAccount = true
+                Task {
+                    let deleted = await viewModel.deleteAccount()
+                    isDeletingAccount = false
+                    if !deleted { deleteAccountFailed = true }
+                }
+            }
+        } message: {
+            Text("This permanently deletes your account and personal data. This cannot be undone.")
+        }
+        .alert("Couldn't Delete Account", isPresented: $deleteAccountFailed) {
+            Button("OK", role: .cancel) {}
+        } message: {
+            Text("Something went wrong. Please check your connection and try again, or contact AVIA Homes.")
         }
         .sheet(isPresented: $showEditProfile) {
             EditProfileView(user: viewModel.currentUser)

@@ -110,16 +110,6 @@ class AppViewModel {
             }
             authService.finishRestoring()
             await loadUserData()
-
-            // One-time demo data cleanup — runs only once
-            let demoCleanedKey = "avia_demo_docs_cleared_v1"
-            if !UserDefaults.standard.bool(forKey: demoCleanedKey) && currentRole.isAnyStaffRole {
-                let cleared = await SupabaseService.shared.deleteAllDocuments()
-                if cleared {
-                    UserDefaults.standard.set(true, forKey: demoCleanedKey)
-                    print("[AppViewModel] Demo documents cleared")
-                }
-            }
         } else {
             authService.finishRestoring()
         }
@@ -888,6 +878,17 @@ class AppViewModel {
                 referenceType: "profile"
             )
         }
+    }
+
+    /// Deletes the user's account on the server, then clears all local state.
+    /// Returns false (leaving the session intact) when the server call fails.
+    func deleteAccount() async -> Bool {
+        await pushManager.removeToken(userId: currentUser.id)
+        let deleted = await authService.deleteAccount()
+        if deleted {
+            signOut()
+        }
+        return deleted
     }
 
     func signOut() {

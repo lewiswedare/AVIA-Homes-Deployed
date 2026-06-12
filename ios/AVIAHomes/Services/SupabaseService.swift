@@ -971,17 +971,6 @@ class SupabaseService {
         }
     }
 
-    func deleteAllDocuments() async -> Bool {
-        guard isConfigured else { return false }
-        do {
-            _ = try await client.from("documents").delete().neq("id", value: "").execute()
-            return true
-        } catch {
-            print("[SupabaseService] deleteAllDocuments FAILED: \(error)")
-            return false
-        }
-    }
-
     // MARK: - Document library (shared stock files)
 
     func fetchLibraryDocuments() async -> [LibraryDocument] {
@@ -1912,7 +1901,7 @@ class SupabaseService {
         struct FacadeRow: Decodable { let facade_id: String? }
         do {
             let rows: [FacadeRow] = try await client
-                .from("client_builds")
+                .from("builds")
                 .select("facade_id")
                 .eq("id", value: buildId)
                 .limit(1)

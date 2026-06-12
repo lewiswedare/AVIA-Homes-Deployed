@@ -9,6 +9,13 @@
 verify_jwt = false
 
 # Called by the trg_notify_push database trigger via pg_net, which cannot
-# attach a user JWT. The function only reads device tokens and pushes to APNs.
+# attach a user JWT. The function authenticates callers itself with the shared
+# x-push-secret header (stored in private.app_secrets by the security_lockdown
+# migration) before touching device tokens or APNs.
 [functions.send-push-notification]
 verify_jwt = false
+
+# Account deletion (App Store 5.1.1). Callers must present a real user JWT;
+# the function re-verifies it and only ever deletes the CALLER's account.
+[functions.delete-account]
+verify_jwt = true

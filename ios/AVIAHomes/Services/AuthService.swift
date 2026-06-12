@@ -231,6 +231,23 @@ class AuthService {
         UserDefaults.standard.set(role.rawValue, forKey: roleKey)
     }
 
+    /// Permanently deletes the signed-in user's account via the `delete-account`
+    /// edge function (required by App Store Guideline 5.1.1). The function
+    /// verifies the caller's JWT, removes their data, and deletes the auth user.
+    func deleteAccount() async -> Bool {
+        guard supabase.isConfigured else { return false }
+        do {
+            try await supabase.client.functions.invoke(
+                "delete-account",
+                options: FunctionInvokeOptions(method: .post)
+            )
+            return true
+        } catch {
+            print("[AuthService] deleteAccount FAILED: \(error)")
+            return false
+        }
+    }
+
     func signOut() {
         isAuthenticated = false
         hasCompletedProfile = false
