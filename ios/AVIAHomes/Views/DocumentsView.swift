@@ -71,13 +71,25 @@ struct DocumentsView: View {
         ScrollView {
             VStack(spacing: 16) {
                 if filteredDocuments.isEmpty {
-                    ContentUnavailableView(
-                        "No Documents Found",
-                        systemImage: "doc.text.magnifyingglass",
-                        description: Text("Try adjusting your search.")
-                    )
-                    .foregroundStyle(AVIATheme.textSecondary)
-                    .padding(.top, 40)
+                    if viewModel.documents.isEmpty && viewModel.isInitialDataLoading {
+                        VStack(spacing: 14) {
+                            ProgressView()
+                                .tint(AVIATheme.timelessBrown)
+                            Text("Loading documents…")
+                                .font(.neueSubheadline)
+                                .foregroundStyle(AVIATheme.textSecondary)
+                        }
+                        .frame(maxWidth: .infinity)
+                        .padding(.top, 60)
+                    } else {
+                        ContentUnavailableView(
+                            "No Documents Found",
+                            systemImage: "doc.text.magnifyingglass",
+                            description: Text("Try adjusting your search.")
+                        )
+                        .foregroundStyle(AVIATheme.textSecondary)
+                        .padding(.top, 40)
+                    }
                 } else {
                     BentoCard(cornerRadius: 11) {
                         VStack(spacing: 0) {

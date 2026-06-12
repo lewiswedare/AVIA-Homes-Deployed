@@ -1,6 +1,7 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { MessageSquare, Send } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
+import { useSearchParams } from "react-router-dom";
 import { toast } from "sonner";
 
 import { BentoCard, EmptyState, InitialsAvatar, Spinner } from "@/components/avia/ui";
@@ -15,9 +16,21 @@ export default function Messages() {
   const { userId } = useAuth();
   const { data: conversations, isLoading } = useConversations(userId);
   const { data: profiles } = useProfiles();
+  const [searchParams, setSearchParams] = useSearchParams();
   const [selectedId, setSelectedId] = useState<string | null>(null);
 
   const list = conversations ?? [];
+
+  // Deep link from a notification: /messages?conversation=<id> opens that
+  // thread once conversations have loaded, then clears the param.
+  const deepLinkId = searchParams.get("conversation");
+  useEffect(() => {
+    if (!deepLinkId) return;
+    if (list.some((c) => c.id === deepLinkId)) {
+      setSelectedId(deepLinkId);
+      setSearchParams({}, { replace: true });
+    }
+  }, [deepLinkId, list, setSearchParams]);
   const selected = list.find((c) => c.id === selectedId) ?? null;
 
   const nameForConversation = (c: ConversationRow): string => {

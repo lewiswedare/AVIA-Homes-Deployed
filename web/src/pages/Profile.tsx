@@ -1,6 +1,6 @@
-import { Globe, LogOut, Phone } from "lucide-react";
+import { FileText, Globe, LogOut, Phone, ShieldCheck } from "lucide-react";
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 
 import { BentoCard, FieldLabel, InitialsAvatar, PrimaryButton, StatusPill, inputClass } from "@/components/avia/ui";
@@ -110,6 +110,18 @@ export default function Profile() {
           </span>
           Website
         </a>
+        <Link to="/terms" className="flex items-center gap-3.5 px-4 py-3.5 text-[14px] font-medium text-avia-black hover:bg-avia-black/5">
+          <span className="flex h-9 w-9 items-center justify-center rounded-full bg-avia-black/5 text-avia-black/60">
+            <FileText className="h-4 w-4" />
+          </span>
+          Terms of Service
+        </Link>
+        <Link to="/privacy" className="flex items-center gap-3.5 px-4 py-3.5 text-[14px] font-medium text-avia-black hover:bg-avia-black/5">
+          <span className="flex h-9 w-9 items-center justify-center rounded-full bg-avia-black/5 text-avia-black/60">
+            <ShieldCheck className="h-4 w-4" />
+          </span>
+          Privacy Policy
+        </Link>
       </BentoCard>
 
       <button

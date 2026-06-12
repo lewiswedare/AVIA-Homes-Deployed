@@ -1,25 +1,26 @@
 import { useState, type FormEvent } from "react";
 import { Link } from "react-router-dom";
 
-import { FieldLabel, PrimaryButton, inputClass } from "@/components/avia/ui";
+import { FieldError, FieldLabel, PrimaryButton, inputClass } from "@/components/avia/ui";
 import { supabase } from "@/lib/supabase";
+import { forgotPasswordSchema, validate, type FieldErrors } from "@/lib/validation";
 
 export default function ForgotPassword() {
   const [email, setEmail] = useState<string>("");
   const [sent, setSent] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
+  const [fieldErrors, setFieldErrors] = useState<FieldErrors>({});
   const [loading, setLoading] = useState<boolean>(false);
 
   const submit = async (e: FormEvent) => {
     e.preventDefault();
     setError(null);
-    if (!email.includes("@")) {
-      setError("Please enter a valid email address.");
-      return;
-    }
+    const checked = validate(forgotPasswordSchema, { email });
+    setFieldErrors(checked.errors ?? {});
+    if (!checked.data) return;
     setLoading(true);
     try {
-      const { error: authError } = await supabase.auth.resetPasswordForEmail(email, {
+      const { error: authError } = await supabase.auth.resetPasswordForEmail(checked.data.email, {
         redirectTo: `${window.location.origin}/reset-password`,
       });
       if (authError) {
@@ -59,6 +60,7 @@ export default function ForgotPassword() {
                 className={inputClass}
                 placeholder="Email"
               />
+              <FieldError message={fieldErrors.email} />
             </div>
             {error && (
               <div className="rounded-[10px] bg-avia-black/5 px-4 py-3 text-[13px] text-avia-black/80">{error}</div>

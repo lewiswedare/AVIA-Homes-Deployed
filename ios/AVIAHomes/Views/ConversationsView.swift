@@ -12,7 +12,11 @@ struct ConversationsView: View {
     var body: some View {
         ScrollView {
             if sortedConversations.isEmpty {
-                emptyState
+                if viewModel.messagingService.isLoading || viewModel.isInitialDataLoading {
+                    loadingState
+                } else {
+                    emptyState
+                }
             } else {
                 LazyVStack(spacing: 0) {
                     ForEach(sortedConversations) { conversation in
@@ -136,6 +140,18 @@ struct ConversationsView: View {
         .padding(.horizontal, 20)
         .padding(.vertical, 12)
         .background(hasUnread ? AVIATheme.timelessBrown.opacity(0.03) : Color.clear)
+    }
+
+    private var loadingState: some View {
+        VStack(spacing: 14) {
+            ProgressView()
+                .tint(AVIATheme.timelessBrown)
+            Text("Loading messages…")
+                .font(.neueSubheadline)
+                .foregroundStyle(AVIATheme.textSecondary)
+        }
+        .frame(maxWidth: .infinity)
+        .padding(.top, 100)
     }
 
     private var emptyState: some View {

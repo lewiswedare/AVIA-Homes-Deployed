@@ -19,10 +19,12 @@ const ForgotPassword = lazy(() => import("./pages/ForgotPassword"));
 const Messages = lazy(() => import("./pages/Messages"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 const Notifications = lazy(() => import("./pages/Notifications"));
+const Privacy = lazy(() => import("./pages/Privacy"));
 const Profile = lazy(() => import("./pages/Profile"));
 const ProfileSetup = lazy(() => import("./pages/ProfileSetup"));
 const ResetPassword = lazy(() => import("./pages/ResetPassword"));
 const SignUp = lazy(() => import("./pages/SignUp"));
+const Terms = lazy(() => import("./pages/Terms"));
 const Workspace = lazy(() => import("./pages/Workspace"));
 const ClientDashboard = lazy(() => import("./pages/client/ClientDashboard"));
 const ClientDocuments = lazy(() => import("./pages/client/ClientDocuments"));
@@ -99,6 +101,8 @@ const PAGE_TITLES: Record<string, string> = {
   "/signup": "Create Account",
   "/forgot-password": "Reset Password",
   "/reset-password": "Set New Password",
+  "/terms": "Terms of Service",
+  "/privacy": "Privacy Policy",
 };
 
 /** Syncs the document title with the route and scrolls to top on navigation. */
@@ -127,6 +131,8 @@ const App = () => (
               <Route path="/signup" element={<SignUp />} />
               <Route path="/forgot-password" element={<ForgotPassword />} />
               <Route path="/reset-password" element={<ResetPassword />} />
+              <Route path="/terms" element={<Terms />} />
+              <Route path="/privacy" element={<Privacy />} />
               <Route element={<Protected />}>
                 <Route element={<AppShell />}>
                   <Route path="/" element={<RoleHome />} />

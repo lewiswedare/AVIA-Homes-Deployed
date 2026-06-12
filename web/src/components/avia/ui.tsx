@@ -1,3 +1,4 @@
+import * as DialogPrimitive from "@radix-ui/react-dialog";
 import type { LucideIcon } from "lucide-react";
 import { Loader2 } from "lucide-react";
 import type { ReactNode } from "react";
@@ -242,6 +243,12 @@ export function FieldLabel({ children }: { children: ReactNode }) {
   return <label className="text-[12px] font-medium text-avia-black/55">{children}</label>;
 }
 
+/** Inline validation message shown directly under a form field. */
+export function FieldError({ message }: { message?: string }) {
+  if (!message) return null;
+  return <p className="text-[12px] text-red-600">{message}</p>;
+}
+
 export const inputClass =
   "w-full rounded-[10px] border border-avia-line bg-avia-card px-4 py-3 text-[15px] text-avia-black outline-none transition-colors placeholder:text-avia-black/35 focus:border-avia-brown";
 
@@ -253,7 +260,11 @@ export function Spinner({ className }: { className?: string }) {
   );
 }
 
-/** Simple centered modal overlay used for quick add/edit sheets. */
+/**
+ * Centered modal overlay used for quick add/edit sheets. Built on Radix
+ * Dialog so it gets a real focus trap, Escape-to-close, scroll locking and
+ * `aria-modal` semantics for free.
+ */
 export function Modal({
   open,
   onClose,
@@ -267,29 +278,30 @@ export function Modal({
   children: ReactNode;
   footer?: ReactNode;
 }) {
-  if (!open) return null;
   return (
-    <div className="fixed inset-0 z-50 flex items-end justify-center sm:items-center">
-      <button
-        type="button"
-        aria-label="Close"
-        className="absolute inset-0 bg-avia-black/40 backdrop-blur-[2px]"
-        onClick={onClose}
-      />
-      <div className="relative z-10 max-h-[88vh] w-full max-w-lg animate-fade-in overflow-y-auto rounded-t-[18px] bg-avia-cardAlt p-5 shadow-2xl sm:rounded-[18px]">
-        <div className="mb-4 flex items-center justify-between">
-          <h2 className="text-[18px] font-medium text-avia-black">{title}</h2>
-          <button
-            type="button"
-            onClick={onClose}
-            className="rounded-full px-3 py-1 text-[13px] font-medium text-avia-black/55 hover:bg-avia-black/5"
+    <DialogPrimitive.Root open={open} onOpenChange={(next) => { if (!next) onClose(); }}>
+      <DialogPrimitive.Portal>
+        <DialogPrimitive.Overlay className="fixed inset-0 z-50 bg-avia-black/40 backdrop-blur-[2px]" />
+        <div className="fixed inset-0 z-50 flex items-end justify-center sm:items-center">
+          <DialogPrimitive.Content
+            className="max-h-[88vh] w-full max-w-lg animate-fade-in overflow-y-auto rounded-t-[18px] bg-avia-cardAlt p-5 shadow-2xl outline-none sm:rounded-[18px]"
+            onPointerDownOutside={onClose}
           >
-            Close
-          </button>
+            <div className="mb-4 flex items-center justify-between">
+              <DialogPrimitive.Title className="text-[18px] font-medium text-avia-black">
+                {title}
+              </DialogPrimitive.Title>
+              <DialogPrimitive.Close
+                className="rounded-full px-3 py-1 text-[13px] font-medium text-avia-black/55 hover:bg-avia-black/5"
+              >
+                Close
+              </DialogPrimitive.Close>
+            </div>
+            <div className="space-y-4">{children}</div>
+            {footer && <div className="mt-5">{footer}</div>}
+          </DialogPrimitive.Content>
         </div>
-        <div className="space-y-4">{children}</div>
-        {footer && <div className="mt-5">{footer}</div>}
-      </div>
-    </div>
+      </DialogPrimitive.Portal>
+    </DialogPrimitive.Root>
   );
 }

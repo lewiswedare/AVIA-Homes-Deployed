@@ -1,8 +1,9 @@
 import { useState, type FormEvent } from "react";
 
-import { FieldLabel, PrimaryButton, inputClass } from "@/components/avia/ui";
+import { FieldError, FieldLabel, PrimaryButton, inputClass } from "@/components/avia/ui";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/lib/supabase";
+import { profileSchema, validate, type FieldErrors } from "@/lib/validation";
 
 /** Shown after sign-up until the profile row is completed (mirrors iOS ProfileSetupView). */
 export default function ProfileSetup() {
@@ -12,12 +13,16 @@ export default function ProfileSetup() {
   const [phone, setPhone] = useState<string>(profile?.phone ?? "");
   const [address, setAddress] = useState<string>(profile?.address ?? "");
   const [error, setError] = useState<string | null>(null);
+  const [fieldErrors, setFieldErrors] = useState<FieldErrors>({});
   const [loading, setLoading] = useState<boolean>(false);
 
   const submit = async (e: FormEvent) => {
     e.preventDefault();
     if (!userId) return;
     setError(null);
+    const checked = validate(profileSchema, { firstName, lastName, phone, address });
+    setFieldErrors(checked.errors ?? {});
+    if (!checked.data) return;
     setLoading(true);
     const email = session?.user?.email ?? profile?.email ?? "";
     // Only the columns this screen actually owns — never role, assignments,
@@ -25,11 +30,11 @@ export default function ProfileSetup() {
     // so an existing profile row can no longer be clobbered with defaults.
     const payload = {
       id: userId,
-      first_name: firstName.trim(),
-      last_name: lastName.trim(),
+      first_name: checked.data.firstName,
+      last_name: checked.data.lastName,
       email,
-      phone: phone.trim(),
-      address: address.trim(),
+      phone: checked.data.phone,
+      address: checked.data.address,
       profile_completed: true,
     };
     try {
@@ -62,15 +67,18 @@ export default function ProfileSetup() {
             <div className="space-y-1.5">
               <FieldLabel>First name</FieldLabel>
               <input value={firstName} onChange={(e) => setFirstName(e.target.value)} className={inputClass} placeholder="First name" />
+              <FieldError message={fieldErrors.firstName} />
             </div>
             <div className="space-y-1.5">
               <FieldLabel>Last name</FieldLabel>
               <input value={lastName} onChange={(e) => setLastName(e.target.value)} className={inputClass} placeholder="Last name" />
+              <FieldError message={fieldErrors.lastName} />
             </div>
           </div>
           <div className="space-y-1.5">
             <FieldLabel>Phone</FieldLabel>
             <input type="tel" value={phone} onChange={(e) => setPhone(e.target.value)} className={inputClass} placeholder="Phone" />
+            <FieldError message={fieldErrors.phone} />
           </div>
           <div className="space-y-1.5">
             <FieldLabel>Address</FieldLabel>

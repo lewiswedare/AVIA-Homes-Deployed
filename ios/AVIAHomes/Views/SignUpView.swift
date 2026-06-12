@@ -181,12 +181,12 @@ struct SignUpView: View {
             Text("We've sent a confirmation link to \(email). Open it to activate your account, then sign in.")
         }
         .sheet(isPresented: $showTermsSheet) {
-            LegalSheetView(title: "Terms of Service", content: Self.demoTermsOfService)
+            LegalSheetView(title: "Terms of Service", content: LegalContent.termsOfService)
                 .presentationDetents([.large])
                 .presentationDragIndicator(.visible)
         }
         .sheet(isPresented: $showPrivacySheet) {
-            LegalSheetView(title: "Privacy Policy", content: Self.demoPrivacyPolicy)
+            LegalSheetView(title: "Privacy Policy", content: LegalContent.privacyPolicy)
                 .presentationDetents([.large])
                 .presentationDragIndicator(.visible)
         }

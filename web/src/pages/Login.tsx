@@ -1,8 +1,9 @@
 import { useState, type FormEvent } from "react";
 import { Link, useNavigate } from "react-router-dom";
 
-import { FieldLabel, PrimaryButton, SecondaryButton, inputClass } from "@/components/avia/ui";
+import { FieldError, FieldLabel, PrimaryButton, SecondaryButton, inputClass } from "@/components/avia/ui";
 import { supabase } from "@/lib/supabase";
+import { loginSchema, validate, type FieldErrors } from "@/lib/validation";
 
 function parseAuthError(message: string): string {
   const m = message.toLowerCase();
@@ -17,18 +18,21 @@ export default function Login() {
   const [email, setEmail] = useState<string>("");
   const [password, setPassword] = useState<string>("");
   const [error, setError] = useState<string | null>(null);
+  const [fieldErrors, setFieldErrors] = useState<FieldErrors>({});
   const [loading, setLoading] = useState<boolean>(false);
 
   const submit = async (e: FormEvent) => {
     e.preventDefault();
     setError(null);
-    if (!password) {
-      setError("Please enter your password.");
-      return;
-    }
+    const checked = validate(loginSchema, { email, password });
+    setFieldErrors(checked.errors ?? {});
+    if (!checked.data) return;
     setLoading(true);
     try {
-      const { error: authError } = await supabase.auth.signInWithPassword({ email, password });
+      const { error: authError } = await supabase.auth.signInWithPassword({
+        email: checked.data.email,
+        password: checked.data.password,
+      });
       if (authError) {
         setError(parseAuthError(authError.message));
         return;
@@ -88,6 +92,7 @@ export default function Login() {
                 placeholder="Email"
                 className={inputClass}
               />
+              <FieldError message={fieldErrors.email} />
             </div>
             <div className="space-y-1.5">
               <FieldLabel>Password</FieldLabel>
@@ -99,6 +104,7 @@ export default function Login() {
                 placeholder="Enter your password"
                 className={inputClass}
               />
+              <FieldError message={fieldErrors.password} />
             </div>
 
             {error && (

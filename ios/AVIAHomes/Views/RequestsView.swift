@@ -21,13 +21,25 @@ struct RequestsView: View {
                 filterSection
 
                 if viewModel.requests.isEmpty {
-                    ContentUnavailableView(
-                        "No Requests",
-                        systemImage: "bubble.left.and.bubble.right",
-                        description: Text("Submit a request and we'll get back to you.")
-                    )
-                    .foregroundStyle(AVIATheme.textSecondary)
-                    .padding(.top, 40)
+                    if viewModel.isInitialDataLoading {
+                        VStack(spacing: 14) {
+                            ProgressView()
+                                .tint(AVIATheme.timelessBrown)
+                            Text("Loading requests…")
+                                .font(.neueSubheadline)
+                                .foregroundStyle(AVIATheme.textSecondary)
+                        }
+                        .frame(maxWidth: .infinity)
+                        .padding(.top, 60)
+                    } else {
+                        ContentUnavailableView(
+                            "No Requests",
+                            systemImage: "bubble.left.and.bubble.right",
+                            description: Text("Submit a request and we'll get back to you.")
+                        )
+                        .foregroundStyle(AVIATheme.textSecondary)
+                        .padding(.top, 40)
+                    }
                 } else {
                     BentoCard(cornerRadius: 13) {
                         VStack(spacing: 0) {

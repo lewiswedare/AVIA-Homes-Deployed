@@ -10,6 +10,8 @@ struct ProfileView: View {
     @State private var showDeleteAccountAlert = false
     @State private var isDeletingAccount = false
     @State private var deleteAccountFailed = false
+    @State private var showTermsSheet = false
+    @State private var showPrivacySheet = false
 
     private var isClient: Bool { viewModel.currentRole == .client }
 
@@ -64,6 +66,16 @@ struct ProfileView: View {
                     LinkRow(icon: "envelope.fill", title: "Email Support", url: "mailto:info@aviahomes.com.au")
                     Rectangle().fill(AVIATheme.surfaceBorder).frame(height: 1).padding(.leading, 48)
                     LinkRow(icon: "safari.fill", title: "Visit Website", url: "https://www.aviahomes.com.au")
+                }
+
+                settingsSection(title: "Legal") {
+                    SheetRow(icon: "doc.plaintext.fill", title: "Terms of Service") {
+                        showTermsSheet = true
+                    }
+                    Rectangle().fill(AVIATheme.surfaceBorder).frame(height: 1).padding(.leading, 48)
+                    SheetRow(icon: "hand.raised.fill", title: "Privacy Policy") {
+                        showPrivacySheet = true
+                    }
                 }
 
                 Button {
@@ -136,6 +148,16 @@ struct ProfileView: View {
             Button("OK", role: .cancel) {}
         } message: {
             Text("Something went wrong. Please check your connection and try again, or contact AVIA Homes.")
+        }
+        .sheet(isPresented: $showTermsSheet) {
+            LegalSheetView(title: "Terms of Service", content: LegalContent.termsOfService)
+                .presentationDetents([.large])
+                .presentationDragIndicator(.visible)
+        }
+        .sheet(isPresented: $showPrivacySheet) {
+            LegalSheetView(title: "Privacy Policy", content: LegalContent.privacyPolicy)
+                .presentationDetents([.large])
+                .presentationDragIndicator(.visible)
         }
         .sheet(isPresented: $showEditProfile) {
             EditProfileView(user: viewModel.currentUser)
@@ -276,6 +298,33 @@ struct ToggleRow: View {
         .tint(AVIATheme.timelessBrown)
         .padding(.horizontal, 16)
         .padding(.vertical, 10)
+    }
+}
+
+/// Tappable settings row that opens an in-app sheet (no external link arrow).
+struct SheetRow: View {
+    let icon: String
+    let title: String
+    let action: () -> Void
+
+    var body: some View {
+        Button(action: action) {
+            HStack(spacing: 14) {
+                Image(systemName: icon)
+                    .font(.neueSubheadline)
+                    .foregroundStyle(AVIATheme.timelessBrown)
+                    .frame(width: 28)
+                Text(title)
+                    .font(.neueSubheadline)
+                    .foregroundStyle(AVIATheme.textPrimary)
+                Spacer()
+                Image(systemName: "chevron.right")
+                    .font(.neueCaption2)
+                    .foregroundStyle(AVIATheme.textTertiary)
+            }
+            .padding(.horizontal, 16)
+            .padding(.vertical, 12)
+        }
     }
 }
 

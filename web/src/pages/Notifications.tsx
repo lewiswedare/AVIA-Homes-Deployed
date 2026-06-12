@@ -11,12 +11,14 @@ import {
   UserCheck,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 import { BentoCard, EmptyState, Spinner } from "@/components/avia/ui";
 import { useAuth } from "@/hooks/useAuth";
 import { relativeTime } from "@/lib/format";
 import { useNotifications } from "@/lib/queries";
 import { supabase } from "@/lib/supabase";
+import { isClientRole } from "@/lib/types";
 import type { NotificationRow } from "@/lib/types";
 import { cn } from "@/lib/utils";
 
@@ -35,10 +37,55 @@ const typeIcon: Record<string, LucideIcon> = {
   request_response: Mail,
 };
 
+/**
+ * Where tapping a notification should land, mirroring the iOS app's
+ * notification routing. Staff land on the workspace (its Action Required
+ * panel covers EOIs, packages, contracts and requests); clients land on the
+ * screen that owns the update. Returns null when there is no destination.
+ */
+function destinationFor(n: NotificationRow, client: boolean): string | null {
+  switch (n.type) {
+    case "new_message":
+      return n.reference_id ? `/messages?conversation=${n.reference_id}` : "/messages";
+    case "build_update":
+    case "handover_triggered":
+      return client ? "/progress" : "/workspace";
+    case "document_added":
+    case "contract_uploaded":
+    case "contract_signed":
+    case "contract_raised":
+      return client ? "/documents" : "/workspace";
+    case "spec_tier_changed":
+    case "upgrade_quoted":
+    case "colour_selection_submitted":
+      return client ? "/selections" : "/workspace";
+    case "request_submitted":
+    case "request_response":
+    case "package_shared":
+    case "package_approved":
+    case "package_declined":
+    case "package_accepted":
+    case "deposit_invoice":
+    case "deposit_received":
+    case "eoi_submitted":
+    case "eoi_approved":
+    case "eoi_changes_requested":
+    case "invoice_raised":
+    case "invoice_paid":
+      return client ? "/home" : "/workspace";
+    case "design_enquiry":
+      return client ? null : "/workspace";
+    default:
+      return null;
+  }
+}
+
 export default function Notifications() {
-  const { userId } = useAuth();
+  const { userId, role } = useAuth();
+  const navigate = useNavigate();
   const qc = useQueryClient();
   const { data: notifications, isLoading } = useNotifications(userId);
+  const client = isClientRole(role);
 
   const list = notifications ?? [];
   const unread = list.filter((n) => !n.is_read);
@@ -90,12 +137,14 @@ export default function Notifications() {
         <div className="space-y-2">
           {list.map((n: NotificationRow) => {
             const Icon = typeIcon[n.type] ?? Bell;
+            const destination = destinationFor(n, client);
             return (
               <button
                 key={n.id}
                 type="button"
                 onClick={() => {
                   if (!n.is_read) markRead.mutate(n.id);
+                  if (destination) navigate(destination);
                 }}
                 className="block w-full text-left"
               >

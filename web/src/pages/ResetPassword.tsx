@@ -1,8 +1,9 @@
 import { useEffect, useState, type FormEvent } from "react";
 import { Link, useNavigate } from "react-router-dom";
 
-import { FieldLabel, PrimaryButton, inputClass } from "@/components/avia/ui";
+import { FieldError, FieldLabel, PrimaryButton, inputClass } from "@/components/avia/ui";
 import { supabase } from "@/lib/supabase";
+import { resetPasswordSchema, validate, type FieldErrors } from "@/lib/validation";
 
 /**
  * Landing page for the password-recovery email link. Supabase puts a recovery
@@ -14,6 +15,7 @@ export default function ResetPassword() {
   const [password, setPassword] = useState<string>("");
   const [confirm, setConfirm] = useState<string>("");
   const [error, setError] = useState<string | null>(null);
+  const [fieldErrors, setFieldErrors] = useState<FieldErrors>({});
   const [loading, setLoading] = useState<boolean>(false);
   const [done, setDone] = useState<boolean>(false);
 
@@ -42,14 +44,9 @@ export default function ResetPassword() {
   const submit = async (e: FormEvent) => {
     e.preventDefault();
     setError(null);
-    if (password.length < 8) {
-      setError("Password must be at least 8 characters.");
-      return;
-    }
-    if (password !== confirm) {
-      setError("Passwords don't match.");
-      return;
-    }
+    const checked = validate(resetPasswordSchema, { password, confirm });
+    setFieldErrors(checked.errors ?? {});
+    if (!checked.data) return;
     setLoading(true);
     try {
       const { error: updateError } = await supabase.auth.updateUser({ password });
@@ -103,6 +100,7 @@ export default function ResetPassword() {
                   placeholder="At least 8 characters"
                   autoComplete="new-password"
                 />
+                <FieldError message={fieldErrors.password} />
               </div>
               <div className="space-y-1.5">
                 <FieldLabel>Confirm password</FieldLabel>
@@ -114,6 +112,7 @@ export default function ResetPassword() {
                   placeholder="Repeat the new password"
                   autoComplete="new-password"
                 />
+                <FieldError message={fieldErrors.confirm} />
               </div>
               {error && (
                 <div className="rounded-[10px] bg-avia-black/5 px-4 py-3 text-[13px] text-avia-black/80">{error}</div>

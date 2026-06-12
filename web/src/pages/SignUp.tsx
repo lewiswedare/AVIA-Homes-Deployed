@@ -2,8 +2,9 @@ import { MailCheck } from "lucide-react";
 import { useState, type FormEvent } from "react";
 import { Link, useNavigate } from "react-router-dom";
 
-import { FieldLabel, PrimaryButton, inputClass } from "@/components/avia/ui";
+import { FieldError, FieldLabel, PrimaryButton, inputClass } from "@/components/avia/ui";
 import { supabase } from "@/lib/supabase";
+import { signUpSchema, validate, type FieldErrors } from "@/lib/validation";
 
 export default function SignUp() {
   const navigate = useNavigate();
@@ -14,34 +15,26 @@ export default function SignUp() {
   const [password, setPassword] = useState<string>("");
   const [confirm, setConfirm] = useState<string>("");
   const [error, setError] = useState<string | null>(null);
+  const [fieldErrors, setFieldErrors] = useState<FieldErrors>({});
   const [loading, setLoading] = useState<boolean>(false);
   const [awaitingConfirmation, setAwaitingConfirmation] = useState<boolean>(false);
 
   const submit = async (e: FormEvent) => {
     e.preventDefault();
     setError(null);
-    if (!email.includes("@") || !email.includes(".")) {
-      setError("Please enter a valid email address.");
-      return;
-    }
-    if (password.length < 8) {
-      setError("Password must be at least 8 characters.");
-      return;
-    }
-    if (password !== confirm) {
-      setError("Passwords do not match.");
-      return;
-    }
+    const checked = validate(signUpSchema, { firstName, lastName, phone, email, password, confirm });
+    setFieldErrors(checked.errors ?? {});
+    if (!checked.data) return;
     setLoading(true);
     try {
       const { data, error: authError } = await supabase.auth.signUp({
-        email,
-        password,
+        email: checked.data.email,
+        password: checked.data.password,
         options: {
           data: {
-            first_name: firstName,
-            last_name: lastName,
-            phone,
+            first_name: checked.data.firstName,
+            last_name: checked.data.lastName,
+            phone: checked.data.phone,
           },
         },
       });
@@ -107,32 +100,45 @@ export default function SignUp() {
             <div className="space-y-1.5">
               <FieldLabel>First name</FieldLabel>
               <input value={firstName} onChange={(e) => setFirstName(e.target.value)} className={inputClass} placeholder="First name" />
+              <FieldError message={fieldErrors.firstName} />
             </div>
             <div className="space-y-1.5">
               <FieldLabel>Last name</FieldLabel>
               <input value={lastName} onChange={(e) => setLastName(e.target.value)} className={inputClass} placeholder="Last name" />
+              <FieldError message={fieldErrors.lastName} />
             </div>
           </div>
           <div className="space-y-1.5">
             <FieldLabel>Phone</FieldLabel>
             <input type="tel" value={phone} onChange={(e) => setPhone(e.target.value)} className={inputClass} placeholder="Phone (optional)" />
+            <FieldError message={fieldErrors.phone} />
           </div>
           <div className="space-y-1.5">
             <FieldLabel>Email</FieldLabel>
             <input type="email" autoComplete="email" value={email} onChange={(e) => setEmail(e.target.value)} className={inputClass} placeholder="Email" />
+            <FieldError message={fieldErrors.email} />
           </div>
           <div className="space-y-1.5">
             <FieldLabel>Password</FieldLabel>
-            <input type="password" autoComplete="new-password" value={password} onChange={(e) => setPassword(e.target.value)} className={inputClass} placeholder="At least 6 characters" />
+            <input type="password" autoComplete="new-password" value={password} onChange={(e) => setPassword(e.target.value)} className={inputClass} placeholder="At least 8 characters" />
+            <FieldError message={fieldErrors.password} />
           </div>
           <div className="space-y-1.5">
             <FieldLabel>Confirm password</FieldLabel>
             <input type="password" autoComplete="new-password" value={confirm} onChange={(e) => setConfirm(e.target.value)} className={inputClass} placeholder="Re-enter your password" />
+            <FieldError message={fieldErrors.confirm} />
           </div>
 
           {error && (
             <div className="rounded-[10px] bg-avia-black/5 px-4 py-3 text-[13px] text-avia-black/80">{error}</div>
           )}
+
+          <p className="text-[12px] leading-relaxed text-avia-black/45">
+            By creating an account you agree to the{" "}
+            <Link to="/terms" className="font-medium text-avia-brown hover:underline">Terms of Service</Link>{" "}
+            and{" "}
+            <Link to="/privacy" className="font-medium text-avia-brown hover:underline">Privacy Policy</Link>.
+          </p>
 
           <PrimaryButton type="submit" disabled={!email || !password || !confirm} loading={loading}>
             Create Account

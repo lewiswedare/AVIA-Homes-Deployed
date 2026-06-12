@@ -212,6 +212,13 @@ class AppViewModel {
         }
     }
 
+    /// True while the first full user-data load of this session is still in
+    /// flight. List screens use it to show a loading state instead of a false
+    /// "empty" state (e.g. "No Documents" flashing before data arrives).
+    var isInitialDataLoading: Bool {
+        userDataLoadTask != nil && userDataLoadedForUserId == nil
+    }
+
     func loadUserData() async {
         let uid = currentUser.id.lowercased()
         guard !uid.isEmpty else { return }

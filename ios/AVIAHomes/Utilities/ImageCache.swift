@@ -151,6 +151,7 @@ struct CachedAsyncImage<Content: View, Placeholder: View>: View {
     @ViewBuilder var placeholder: () -> Placeholder
 
     @State private var loadedImage: UIImage?
+    @State private var loadFailed = false
 
     init(
         url: URL?,
@@ -172,10 +173,32 @@ struct CachedAsyncImage<Content: View, Placeholder: View>: View {
         Group {
             if let image = loadedImage {
                 content(Image(uiImage: image))
+            } else if loadFailed {
+                // A failed download must not leave the shimmer placeholder
+                // running forever — show a calm fallback that retries on tap.
+                Button {
+                    loadFailed = false
+                } label: {
+                    Color(.secondarySystemBackground)
+                        .overlay {
+                            VStack(spacing: 6) {
+                                Image(systemName: "photo")
+                                    .font(.system(size: 22))
+                                Image(systemName: "arrow.clockwise")
+                                    .font(.system(size: 12, weight: .semibold))
+                            }
+                            .foregroundStyle(.tertiary)
+                        }
+                }
+                .buttonStyle(.plain)
+                .accessibilityLabel("Image failed to load. Tap to retry.")
             } else {
                 placeholder()
                     .task(id: url) { await load() }
             }
+        }
+        .onChange(of: url) { _, _ in
+            loadFailed = false
         }
     }
 
@@ -189,13 +212,20 @@ struct CachedAsyncImage<Content: View, Placeholder: View>: View {
         request.cachePolicy = .returnCacheDataElseLoad
         do {
             let (data, _) = try await URLSession.shared.data(for: request)
-            guard let image = UIImage(data: data) else { return }
+            guard let image = UIImage(data: data) else {
+                loadFailed = true
+                return
+            }
             ImageCache.store(image, for: url)
             await MainActor.run {
                 withTransaction(transaction) { loadedImage = image }
             }
+        } catch is CancellationError {
+            // View went away mid-download — not a failure.
         } catch {
-            // Silent fail — placeholder stays visible.
+            if !Task.isCancelled {
+                loadFailed = true
+            }
         }
     }
 }

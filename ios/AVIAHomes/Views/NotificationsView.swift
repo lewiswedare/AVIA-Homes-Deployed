@@ -24,7 +24,11 @@ struct NotificationsView: View {
     var body: some View {
         ScrollView {
             if viewModel.notificationService.notifications.isEmpty {
-                emptyState
+                if viewModel.notificationService.isLoading || viewModel.isInitialDataLoading {
+                    loadingState
+                } else {
+                    emptyState
+                }
             } else {
                 LazyVStack(spacing: 0) {
                     ForEach(groupedNotifications, id: \.0) { section, items in
@@ -255,6 +259,18 @@ struct NotificationsView: View {
         .padding(.horizontal, 20)
         .padding(.vertical, 12)
         .background(notification.isRead ? Color.clear : AVIATheme.timelessBrown.opacity(0.03))
+    }
+
+    private var loadingState: some View {
+        VStack(spacing: 14) {
+            ProgressView()
+                .tint(AVIATheme.timelessBrown)
+            Text("Loading notifications…")
+                .font(.neueSubheadline)
+                .foregroundStyle(AVIATheme.textSecondary)
+        }
+        .frame(maxWidth: .infinity)
+        .padding(.top, 100)
     }
 
     private var emptyState: some View {
