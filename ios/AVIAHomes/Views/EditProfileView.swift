@@ -188,7 +188,7 @@ struct EditProfileView: View {
         }
 
         let userId = appViewModel.currentUser.id.isEmpty ? "user" : appViewModel.currentUser.id
-        let fileName = "\(userId)_\(Int(Date().timeIntervalSince1970)).png"
+        let fileName = "\(userId)_\(Int(Date().timeIntervalSince1970)).jpg"
         if let url = await ImageUploadService.shared.uploadImage(data, folder: "avatars", fileName: fileName) {
             avatarUrl = url
         } else {

@@ -231,7 +231,16 @@ class BuildSpecViewModel {
         if isInitialLoad { isLoading = false }
         if !isSubscribedToRealtime {
             isSubscribedToRealtime = true
-            SupabaseService.shared.subscribeToSpecSelectionChanges { [weak self] in
+            // Observe the app-wide fan-out instead of opening a second realtime
+            // channel: channel topics are deduped, so this view model's own
+            // subscription was silently dropped and stopped updating after the
+            // app was backgrounded. The AppViewModel rebuilds the real channel
+            // on every foreground and reposts this notification.
+            NotificationCenter.default.addObserver(
+                forName: .aviaSpecSelectionsChanged,
+                object: nil,
+                queue: .main
+            ) { [weak self] _ in
                 guard let self else { return }
                 Task { @MainActor in
                     await self.load(buildId: self.buildId)

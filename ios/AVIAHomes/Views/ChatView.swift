@@ -432,11 +432,17 @@ struct ChatView: View {
         messageText = ""
 
         Task {
-            await viewModel.messagingService.sendMessage(
+            let sent = await viewModel.messagingService.sendMessage(
                 conversationId: conversation.id,
                 senderId: viewModel.currentUser.id,
                 content: text
             )
+            guard sent else {
+                // Give the text back so nothing is lost and surface the failure.
+                messageText = text
+                uploadError = "Your message didn't send. Check your connection and try again."
+                return
+            }
             await notifyRecipient(preview: text)
             scrollToBottom()
         }
@@ -482,13 +488,17 @@ struct ChatView: View {
             return
         }
         let isImage = mimeType.hasPrefix("image")
-        await viewModel.messagingService.sendMessage(
+        let sent = await viewModel.messagingService.sendMessage(
             conversationId: conversation.id,
             senderId: viewModel.currentUser.id,
             content: isImage ? "" : fileName,
             attachmentUrl: url,
             attachmentType: mimeType
         )
+        guard sent else {
+            uploadError = "The attachment didn't send. Please try again."
+            return
+        }
         await notifyRecipient(preview: isImage ? "\u{1F4F7} Photo" : "\u{1F4CE} \(fileName)")
         scrollToBottom()
     }
@@ -513,13 +523,17 @@ struct ChatView: View {
             uploadError = "Upload failed. Please try again."
             return
         }
-        await viewModel.messagingService.sendMessage(
+        let sent = await viewModel.messagingService.sendMessage(
             conversationId: conversation.id,
             senderId: viewModel.currentUser.id,
             content: "",
             attachmentUrl: url,
             attachmentType: "image/jpeg"
         )
+        guard sent else {
+            uploadError = "The photo didn't send. Please try again."
+            return
+        }
         await notifyRecipient(preview: "\u{1F4F7} Photo")
         scrollToBottom()
     }

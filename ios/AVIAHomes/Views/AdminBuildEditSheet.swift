@@ -813,8 +813,8 @@ struct AdminBuildEditSheet: View {
 
     private func buildDocumentRow(_ doc: ClientDocument) -> some View {
         Group {
-            if let urlStr = doc.fileURL, let url = URL(string: urlStr) {
-                Link(destination: url) {
+            if doc.fileURL != nil {
+                StorageFileLink(urlString: doc.fileURL) {
                     buildDocumentRowContent(doc)
                 }
             } else {

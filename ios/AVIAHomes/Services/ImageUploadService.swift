@@ -1,4 +1,5 @@
 import SwiftUI
+import UIKit
 import PhotosUI
 import Supabase
 
@@ -12,7 +13,7 @@ class ImageUploadService {
     var isUploading = false
 
     func uploadImage(_ data: Data, folder: String, fileName: String) async -> String? {
-        await uploadFile(data, folder: folder, fileName: fileName, contentType: "image/png")
+        await uploadFile(data, folder: folder, fileName: fileName, contentType: "image/jpeg")
     }
 
     func uploadFile(_ data: Data, folder: String, fileName: String, contentType: String) async -> String? {
@@ -50,6 +51,26 @@ class ImageUploadService {
             return nil
         }
         guard let uiImage = UIImage(data: data) else { return nil }
-        return uiImage.pngData()
+        return Self.downscaledJPEG(uiImage)
+    }
+
+    /// Downscales to a sensible upload size and re-encodes as JPEG.
+    /// Photos were previously re-encoded as full-resolution PNGs, ballooning
+    /// uploads 5–10× and slowing every image-heavy screen that fetched them.
+    static func downscaledJPEG(_ image: UIImage, maxDimension: CGFloat = 1600, quality: CGFloat = 0.82) -> Data? {
+        let size = image.size
+        let largestSide = max(size.width, size.height)
+        guard largestSide > maxDimension, largestSide > 0 else {
+            return image.jpegData(compressionQuality: quality)
+        }
+        let scale = maxDimension / largestSide
+        let newSize = CGSize(width: size.width * scale, height: size.height * scale)
+        let format = UIGraphicsImageRendererFormat.default()
+        format.scale = 1
+        let renderer = UIGraphicsImageRenderer(size: newSize, format: format)
+        let resized = renderer.image { _ in
+            image.draw(in: CGRect(origin: .zero, size: newSize))
+        }
+        return resized.jpegData(compressionQuality: quality)
     }
 }

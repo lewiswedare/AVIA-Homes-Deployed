@@ -38,6 +38,7 @@ import {
   useScheduleForClient,
   useTasksForClient,
 } from "@/lib/queries";
+import { openStorageUrl } from "@/lib/storage";
 import { supabase } from "@/lib/supabase";
 import { LEAD_STATUSES, leadStatusLabel, type ClientNoteRow } from "@/lib/types";
 import { cn } from "@/lib/utils";
@@ -374,15 +375,14 @@ function DocumentsTab({ clientId }: { clientId: string }) {
               </div>
             </div>
             {doc.file_url && (
-              <a
-                href={doc.file_url}
-                target="_blank"
-                rel="noreferrer"
+              <button
+                type="button"
+                onClick={() => openStorageUrl(doc.file_url)}
                 className="rounded-full p-2 text-avia-brown hover:bg-avia-brown/10"
                 aria-label={`Open ${doc.name}`}
               >
                 <ExternalLink className="h-4 w-4" />
-              </a>
+              </button>
             )}
           </BentoCard>
         ))

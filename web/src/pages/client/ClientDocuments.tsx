@@ -5,6 +5,7 @@ import { BentoCard, EmptyState, Spinner, StatusPill } from "@/components/avia/ui
 import { useAuth } from "@/hooks/useAuth";
 import { fmtDate } from "@/lib/format";
 import { useClientDocuments } from "@/lib/queries";
+import { openStorageUrl } from "@/lib/storage";
 import { cn } from "@/lib/utils";
 
 export default function ClientDocuments() {
@@ -61,15 +62,14 @@ export default function ClientDocuments() {
             </div>
             {doc.is_new && <StatusPill label="NEW" tone="blue" />}
             {doc.file_url && (
-              <a
-                href={doc.file_url}
-                target="_blank"
-                rel="noreferrer"
+              <button
+                type="button"
+                onClick={() => openStorageUrl(doc.file_url)}
                 className="rounded-full p-2 text-avia-brown transition-colors hover:bg-avia-brown/10"
                 aria-label={`Open ${doc.name}`}
               >
                 <ExternalLink className="h-4 w-4" />
-              </a>
+              </button>
             )}
           </BentoCard>
         ))}

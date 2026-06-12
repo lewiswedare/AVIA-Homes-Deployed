@@ -106,10 +106,12 @@ struct ContractUploadView: View {
                     Spacer()
                 }
 
-                if let contract = contract, let urlString = contract.original_contract_url, let url = URL(string: urlString) {
-                    PDFThumbnailView(url: url)
-                        .frame(height: 200)
-                        .clipShape(RoundedRectangle(cornerRadius: 8))
+                if let contract = contract, let urlString = contract.original_contract_url, !urlString.isEmpty {
+                    ResolvedStorageURL(urlString: urlString) { url in
+                        PDFThumbnailView(url: url)
+                    }
+                    .frame(height: 200)
+                    .clipShape(RoundedRectangle(cornerRadius: 8))
                     HStack(spacing: 8) {
                         if let uploadedAt = contract.original_contract_uploaded_at {
                             Label("Uploaded \(formatDate(uploadedAt))", systemImage: "checkmark.circle.fill")
@@ -119,7 +121,7 @@ struct ContractUploadView: View {
                         Spacer()
                     }
                     HStack(spacing: 10) {
-                        Link(destination: url) {
+                        StorageFileLink(urlString: urlString) {
                             HStack(spacing: 6) {
                                 Image(systemName: "arrow.down.doc.fill")
                                     .font(.neueSubheadlineMedium)
@@ -205,10 +207,12 @@ struct ContractUploadView: View {
                     Spacer()
                 }
 
-                if let contract = contract, let urlString = contract.contract_document_url, let url = URL(string: urlString) {
-                    PDFThumbnailView(url: url)
-                        .frame(height: 220)
-                        .clipShape(RoundedRectangle(cornerRadius: 8))
+                if let contract = contract, let urlString = contract.contract_document_url, !urlString.isEmpty {
+                    ResolvedStorageURL(urlString: urlString) { url in
+                        PDFThumbnailView(url: url)
+                    }
+                    .frame(height: 220)
+                    .clipShape(RoundedRectangle(cornerRadius: 8))
                     HStack(spacing: 8) {
                         if let uploadedAt = contract.contract_uploaded_at {
                             Label("Uploaded \(formatDate(uploadedAt))", systemImage: "checkmark.circle.fill")
@@ -216,7 +220,7 @@ struct ContractUploadView: View {
                                 .foregroundStyle(AVIATheme.success)
                         }
                         Spacer()
-                        Link(destination: url) {
+                        StorageFileLink(urlString: urlString) {
                             Label("Open", systemImage: "arrow.up.right.square")
                                 .font(.neueCaption)
                         }

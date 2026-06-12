@@ -26,6 +26,7 @@ import {
 import { useAuth } from "@/hooks/useAuth";
 import { initialsOf, nowISO, uuid } from "@/lib/format";
 import { useDocumentLibrary, useProfiles } from "@/lib/queries";
+import { openStorageUrl } from "@/lib/storage";
 import { supabase } from "@/lib/supabase";
 import { DOCUMENT_CATEGORIES, isAdminRole, type LibraryDocumentRow } from "@/lib/types";
 import { cn } from "@/lib/utils";
@@ -132,15 +133,14 @@ export default function SendingLane({ search }: { search: string }) {
                     <Pencil className="h-3.5 w-3.5" />
                   </button>
                 )}
-                <a
-                  href={doc.file_url}
-                  target="_blank"
-                  rel="noreferrer"
+                <button
+                  type="button"
+                  onClick={() => openStorageUrl(doc.file_url)}
                   className="rounded-full p-2 text-avia-brown hover:bg-avia-brown/10"
                   aria-label={`Open ${doc.name}`}
                 >
                   <ExternalLink className="h-4 w-4" />
-                </a>
+                </button>
               </BentoCard>
             ))}
           </div>

@@ -1173,8 +1173,8 @@ struct AdminBuildSpecReviewView: View {
 
                     Spacer()
 
-                    if let urlStr = doc.publicURL, let url = URL(string: urlStr) {
-                        Link(destination: url) {
+                    if doc.publicURL != nil {
+                        StorageFileLink(urlString: doc.publicURL) {
                             Image(systemName: "arrow.down.circle.fill")
                                 .font(.system(size: 22))
                                 .foregroundStyle(AVIATheme.timelessBrown)

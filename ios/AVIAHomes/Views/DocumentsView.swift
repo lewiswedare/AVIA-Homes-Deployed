@@ -135,8 +135,8 @@ struct DocumentRow: View {
 
     var body: some View {
         Group {
-            if let urlStr = document.fileURL, let url = URL(string: urlStr) {
-                Link(destination: url) {
+            if document.fileURL != nil {
+                StorageFileLink(urlString: document.fileURL) {
                     rowContent
                 }
             } else {

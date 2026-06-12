@@ -7,6 +7,11 @@ extension Notification.Name {
     static let aviaBuildNeedsRefresh = Notification.Name("aviaBuildNeedsRefresh")
     /// Posted when incoming pushes tell us the open colour picker should reload.
     static let aviaColoursNeedRefresh = Notification.Name("aviaColoursNeedRefresh")
+    /// Posted whenever spec selections change on the server (realtime).
+    /// View models listen to this instead of opening their own realtime
+    /// channel — channel topics are deduped, so a second subscriber would
+    /// silently get nothing and stop updating after backgrounding.
+    static let aviaSpecSelectionsChanged = Notification.Name("aviaSpecSelectionsChanged")
 }
 
 @Observable
@@ -318,6 +323,9 @@ class AppViewModel {
         realtimeInstalled = false
         setupRealtimeSubscriptions()
         notificationService.subscribeToNotifications(for: currentUser.id)
+        // An open chat's per-conversation channel was torn down with the rest;
+        // rebuild it so the conversation keeps receiving live messages.
+        messagingService.resubscribeActiveConversation()
         await refreshAllData()
     }
 
@@ -337,13 +345,21 @@ class AppViewModel {
 
     func loadBuildsFromSupabase() async {
         let builds = await SupabaseService.shared.fetchBuilds()
-        allClientBuilds = builds
+        // Fetchers return [] for network failures as well as "truly empty",
+        // so an empty result never overwrites data we already have — a flaky
+        // connection used to blank the dashboard until the next refresh.
+        // Genuine removals still land via realtime + later non-empty fetches.
+        if !builds.isEmpty || allClientBuilds.isEmpty {
+            allClientBuilds = builds
+        }
         syncBuildStagesForCurrentUser()
     }
 
     func loadAssignmentsFromSupabase() async {
         let assignments = await SupabaseService.shared.fetchPackageAssignments()
-        packageAssignments = assignments
+        if !assignments.isEmpty || packageAssignments.isEmpty {
+            packageAssignments = assignments
+        }
     }
 
     func refreshBuildsAndAssignments() async {
@@ -358,7 +374,9 @@ class AppViewModel {
         } else {
             reqs = await SupabaseService.shared.fetchServiceRequests()
         }
-        requests = reqs
+        if !reqs.isEmpty || requests.isEmpty {
+            requests = reqs
+        }
     }
 
     func loadContentFromSupabase() async {
@@ -398,11 +416,13 @@ class AppViewModel {
 
     func loadDocumentsFromSupabase() async {
         guard !currentUser.id.isEmpty else { return }
+        let docs: [ClientDocument]
         if currentRole.isAnyStaffRole {
-            let docs = await SupabaseService.shared.fetchAllDocuments()
-            documents = docs
+            docs = await SupabaseService.shared.fetchAllDocuments()
         } else {
-            let docs = await SupabaseService.shared.fetchDocuments(clientId: currentUser.id)
+            docs = await SupabaseService.shared.fetchDocuments(clientId: currentUser.id)
+        }
+        if !docs.isEmpty || documents.isEmpty {
             documents = docs
         }
     }
@@ -418,7 +438,9 @@ class AppViewModel {
     func loadScheduleItemsFromSupabase() async {
         guard !currentUser.id.isEmpty else { return }
         let items = await SupabaseService.shared.fetchScheduleItems(clientId: currentUser.id)
-        scheduleItems = items
+        if !items.isEmpty || scheduleItems.isEmpty {
+            scheduleItems = items
+        }
     }
 
     func loadDisplayHomeVisitsFromSupabase() async {
@@ -624,6 +646,9 @@ class AppViewModel {
             guard let self else { return }
             Task {
                 await self.loadPendingSpecReviews()
+                // Fan out to any open spec views — they observe this instead of
+                // holding their own (deduped, never-delivered) channel.
+                NotificationCenter.default.post(name: .aviaSpecSelectionsChanged, object: nil)
                 // Also refresh the active build so the Stage-1 view updates live.
                 if let active = self.activeBuildId {
                     NotificationCenter.default.post(
@@ -892,11 +917,17 @@ class AppViewModel {
     }
 
     func signOut() {
+        // Capture the id NOW — the Task below runs after local state is cleared.
+        let userId = currentUser.id
         Task {
-            await pushManager.removeToken(userId: currentUser.id)
+            // Order matters: deleting the device token requires a live session,
+            // so the server-side sign-out must come LAST. Previously these
+            // raced and signed-out devices kept receiving push notifications.
+            await pushManager.removeToken(userId: userId)
             await SupabaseService.shared.removeAllChannels()
+            await authService.revokeServerSession()
         }
-        authService.signOut()
+        authService.clearLocalSession()
         biometricAuth.setEnabled(false)
         biometricUnlocked = false
         shouldPromptEnableBiometrics = false

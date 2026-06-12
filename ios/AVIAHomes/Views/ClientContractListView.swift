@@ -157,7 +157,7 @@ struct ClientContractDetailSheet: View {
                     }
 
                     // PDF viewer link
-                    if let url = contract.contract_url, let pdfURL = URL(string: url) {
+                    if let url = contract.contract_url, !url.isEmpty {
                         BentoCard(cornerRadius: 11) {
                             VStack(alignment: .leading, spacing: 10) {
                                 HStack(spacing: 8) {
@@ -169,7 +169,7 @@ struct ClientContractDetailSheet: View {
                                         .foregroundStyle(AVIATheme.timelessBrown)
                                 }
 
-                                Link(destination: pdfURL) {
+                                StorageFileLink(urlString: url) {
                                     HStack(spacing: 8) {
                                         Image(systemName: "arrow.up.right.square")
                                             .font(.neueCaption)

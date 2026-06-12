@@ -93,7 +93,11 @@ class MessagingService {
         }
     }
 
-    func sendMessage(conversationId: String, senderId: String, content: String, attachmentUrl: String? = nil, attachmentType: String? = nil) async {
+    /// Sends a message with optimistic UI. Returns false when the server
+    /// insert fails — the optimistic message is rolled back so the user sees
+    /// the failure instead of a phantom message that silently never sent.
+    @discardableResult
+    func sendMessage(conversationId: String, senderId: String, content: String, attachmentUrl: String? = nil, attachmentType: String? = nil) async -> Bool {
         let msg = ChatMessage(
             id: UUID().uuidString,
             conversationId: conversationId,
@@ -128,7 +132,7 @@ class MessagingService {
             conversations.sort { $0.lastMessageDate > $1.lastMessageDate }
         }
 
-        guard supabase.isConfigured else { return }
+        guard supabase.isConfigured else { return false }
         let row = ChatMessageRow(from: msg)
         do {
             try await supabase.client
@@ -137,6 +141,10 @@ class MessagingService {
                 .execute()
         } catch {
             print("[MessagingService] sendMessage insert FAILED: \(error)")
+            // Roll back the optimistic append so the UI doesn't show a
+            // message that never reached the server.
+            currentMessages.removeAll { $0.id == msg.id }
+            return false
         }
 
         do {
@@ -146,8 +154,11 @@ class MessagingService {
                 .eq("id", value: conversationId)
                 .execute()
         } catch {
+            // The message itself was stored; a stale conversation preview is
+            // self-healing on the next send or reload.
             print("[MessagingService] sendMessage conversation update FAILED: \(error)")
         }
+        return true
     }
 
     func getOrCreateConversation(currentUserId: String, otherUserId: String) async -> String {
@@ -247,7 +258,19 @@ class MessagingService {
             .execute()
     }
 
+    /// The conversation the user currently has open. Foreground handling
+    /// resubscribes it after the OS tears realtime down in the background.
+    private(set) var activeConversationId: String?
+
+    /// Rebuilds the per-conversation channel for the open chat after all
+    /// realtime channels were removed (background → foreground cycle).
+    func resubscribeActiveConversation() {
+        guard let id = activeConversationId else { return }
+        subscribeToMessages(conversationId: id)
+    }
+
     func subscribeToMessages(conversationId: String) {
+        activeConversationId = conversationId
         guard supabase.isConfigured else { return }
         // makeChannel() dedupes by topic — re-opening the same chat no longer
         // stacks an extra realtime channel each time.

@@ -249,6 +249,16 @@ class AuthService {
     }
 
     func signOut() {
+        clearLocalSession()
+        Task {
+            await revokeServerSession()
+        }
+    }
+
+    /// Clears all locally-stored auth state without touching the server
+    /// session. Use together with `revokeServerSession()` when other cleanup
+    /// (e.g. removing the push device token) still needs a live session.
+    func clearLocalSession() {
         isAuthenticated = false
         hasCompletedProfile = false
         currentRole = .client
@@ -259,12 +269,13 @@ class AuthService {
         UserDefaults.standard.removeObject(forKey: roleKey)
         UserDefaults.standard.removeObject(forKey: userIdKey)
         UserDefaults.standard.removeObject(forKey: "avia_all_users")
+    }
 
-        if supabase.isConfigured {
-            Task {
-                try? await supabase.client.auth.signOut()
-            }
-        }
+    /// Revokes the Supabase session on the server. Call AFTER any cleanup
+    /// that requires authentication has finished.
+    func revokeServerSession() async {
+        guard supabase.isConfigured else { return }
+        try? await supabase.client.auth.signOut()
     }
 
     func saveUserProfile(_ user: ClientUser) {

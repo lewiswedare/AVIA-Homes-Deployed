@@ -769,8 +769,8 @@ struct ClientSpecConfirmationView: View {
                             .foregroundStyle(AVIATheme.textTertiary)
                     }
 
-                    if let urlString = latestDoc.publicURL, let url = URL(string: urlString) {
-                        Link(destination: url) {
+                    if latestDoc.publicURL != nil {
+                        StorageFileLink(urlString: latestDoc.publicURL) {
                             HStack(spacing: 6) {
                                 Image(systemName: "arrow.down.doc.fill")
                                 Text("View PDF")

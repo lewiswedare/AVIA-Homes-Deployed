@@ -119,7 +119,7 @@ struct AdminImagePickerField: View {
 
         guard let rawData = try? Data(contentsOf: url),
               let uiImg = UIImage(data: rawData),
-              let pngData = uiImg.pngData() else {
+              let imageData = ImageUploadService.downscaledJPEG(uiImg) else {
             uploadError = "Failed to load file"
             return
         }
@@ -128,9 +128,9 @@ struct AdminImagePickerField: View {
 
         let timestamp = Int(Date().timeIntervalSince1970)
         let safeName = itemId.isEmpty ? "image" : itemId.replacingOccurrences(of: " ", with: "_").lowercased()
-        let fileName = "\(safeName)_\(timestamp).png"
+        let fileName = "\(safeName)_\(timestamp).jpg"
 
-        if let publicURL = await ImageUploadService.shared.uploadImage(pngData, folder: folder, fileName: fileName) {
+        if let publicURL = await ImageUploadService.shared.uploadImage(imageData, folder: folder, fileName: fileName) {
             imageURL = publicURL
         } else {
             uploadError = "Upload failed. Check storage bucket setup."
@@ -188,7 +188,7 @@ struct AdminImagePickerField: View {
 
         let timestamp = Int(Date().timeIntervalSince1970)
         let safeName = itemId.isEmpty ? "image" : itemId.replacingOccurrences(of: " ", with: "_").lowercased()
-        let fileName = "\(safeName)_\(timestamp).png"
+        let fileName = "\(safeName)_\(timestamp).jpg"
 
         if let url = await ImageUploadService.shared.uploadImage(data, folder: folder, fileName: fileName) {
             imageURL = url
@@ -276,13 +276,13 @@ struct AdminCompactImagePicker: View {
 
         guard let rawData = try? Data(contentsOf: url),
               let uiImg = UIImage(data: rawData),
-              let pngData = uiImg.pngData() else { return }
+              let imageData = ImageUploadService.downscaledJPEG(uiImg) else { return }
 
         let timestamp = Int(Date().timeIntervalSince1970)
         let safeName = itemId.isEmpty ? "image" : itemId.replacingOccurrences(of: " ", with: "_").lowercased()
-        let fileName = "\(safeName)_\(timestamp).png"
+        let fileName = "\(safeName)_\(timestamp).jpg"
 
-        if let publicURL = await ImageUploadService.shared.uploadImage(pngData, folder: folder, fileName: fileName) {
+        if let publicURL = await ImageUploadService.shared.uploadImage(imageData, folder: folder, fileName: fileName) {
             imageURL = publicURL
         }
     }
@@ -297,7 +297,7 @@ struct AdminCompactImagePicker: View {
 
         let timestamp = Int(Date().timeIntervalSince1970)
         let safeName = itemId.isEmpty ? "image" : itemId.replacingOccurrences(of: " ", with: "_").lowercased()
-        let fileName = "\(safeName)_\(timestamp).png"
+        let fileName = "\(safeName)_\(timestamp).jpg"
 
         if let url = await ImageUploadService.shared.uploadImage(data, folder: folder, fileName: fileName) {
             imageURL = url

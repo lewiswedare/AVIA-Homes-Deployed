@@ -141,7 +141,7 @@ struct AdminPipelineView: View {
                 StatusBadge(title: contract.displayStatus, color: statusColor(for: contract.statusEnum))
                 Spacer()
                 if let url = contract.contract_url, !url.isEmpty {
-                    Link(destination: URL(string: url)!) {
+                    StorageFileLink(urlString: url) {
                         HStack(spacing: 4) {
                             Image(systemName: "doc.text.fill")
                                 .font(.neueCaption2)

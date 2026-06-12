@@ -232,13 +232,19 @@ struct ComposeEmailSheet: View {
     private func send() async {
         errorMessage = nil
         isSending = true
+        // Private storage: the mail function downloads the attachment by URL,
+        // so pass a short-lived signed URL instead of the stored public one.
+        var attachmentURL: String? = nil
+        if let rawURL = selectedDoc?.fileURL {
+            attachmentURL = (await StorageURLResolver.resolve(rawURL))?.absoluteString ?? rawURL
+        }
         let result = await MicrosoftMailService.shared.sendEmail(
             staffId: viewModel.currentUser.id,
             clientId: client.id,
             to: client.email,
             subject: subject.trimmingCharacters(in: .whitespaces),
             body: messageBody,
-            documentURL: selectedDoc?.fileURL,
+            documentURL: attachmentURL,
             documentName: selectedDoc?.name,
             documentId: selectedDoc?.id
         )
