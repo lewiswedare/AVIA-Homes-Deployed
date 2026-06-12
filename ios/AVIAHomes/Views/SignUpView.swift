@@ -8,6 +8,7 @@ struct SignUpView: View {
     @State private var confirmPassword = ""
     @State private var showError = false
     @State private var errorMessage = ""
+    @State private var showConfirmationNotice = false
     @State private var acceptedTerms = false
     @State private var showTermsSheet = false
     @State private var showPrivacySheet = false
@@ -170,6 +171,14 @@ struct SignUpView: View {
             Button("OK", role: .cancel) {}
         } message: {
             Text(errorMessage)
+        }
+        .alert("Confirm Your Email", isPresented: $showConfirmationNotice) {
+            Button("OK") {
+                appViewModel.authService.needsEmailConfirmation = false
+                dismiss()
+            }
+        } message: {
+            Text("We've sent a confirmation link to \(email). Open it to activate your account, then sign in.")
         }
         .sheet(isPresented: $showTermsSheet) {
             LegalSheetView(title: "Terms of Service", content: Self.demoTermsOfService)
@@ -417,7 +426,14 @@ This policy is compliant with the Australian Privacy Principles (APPs) under the
                 confirmPassword: confirmPassword
             )
             if success {
-                await appViewModel.handleSignUp(email: email)
+                if appViewModel.authService.needsEmailConfirmation {
+                    // No session yet — the user must confirm their email first.
+                    // Creating the profile now would fail RLS; it is created on
+                    // first sign-in via Profile Setup instead.
+                    showConfirmationNotice = true
+                } else {
+                    await appViewModel.handleSignUp(email: email)
+                }
             } else {
                 errorMessage = appViewModel.authService.errorMessage ?? "Something went wrong."
                 showError = true

@@ -11,8 +11,6 @@ struct DashboardView: View {
     @State private var calendarService = CalendarService()
     @State private var showScheduleSheet = false
     @State private var selectedScheduleItem: ScheduleItem?
-    @State private var countdownTimer = Timer.publish(every: 1, on: .main, in: .common).autoconnect()
-    @State private var countdownTick: Int = 0
     @State private var showDesignDirectory: Bool = false
     @State private var showJourneyDetail: Bool = false
     @State private var showMyDesignPlan: Bool = false
@@ -67,9 +65,6 @@ struct DashboardView: View {
             }
             .hapticRefresh {
                 await viewModel.refreshAllData()
-            }
-            .onReceive(countdownTimer) { _ in
-                countdownTick += 1
             }
             .fullScreenCover(isPresented: $showDesignDirectory) {
                 HomeDesignDirectoryView()
@@ -437,8 +432,6 @@ struct DashboardView: View {
     private var nextUpCountdownCard: some View {
         Group {
             if let next = viewModel.nextScheduleItem {
-                let _ = countdownTick
-                let remaining = next.timeUntil
                 BentoCard(cornerRadius: 13) {
                     VStack(spacing: 14) {
                         HStack {
@@ -463,20 +456,25 @@ struct DashboardView: View {
                                 .clipShape(Circle())
                         }
 
-                        if let r = remaining {
-                            HStack(spacing: 6) {
-                                CountdownUnit(value: r.days, label: "DAYS")
-                                CountdownSeparator()
-                                CountdownUnit(value: r.hours, label: "HRS")
-                                CountdownSeparator()
-                                CountdownUnit(value: r.minutes, label: "MIN")
-                                CountdownSeparator()
-                                CountdownUnit(value: r.seconds, label: "SEC")
+                        // Per-second updates are confined to this TimelineView —
+                        // a view-wide timer used to invalidate the entire dashboard
+                        // every second just to advance these digits.
+                        TimelineView(.periodic(from: .now, by: 1)) { _ in
+                            if let r = next.timeUntil {
+                                HStack(spacing: 6) {
+                                    CountdownUnit(value: r.days, label: "DAYS")
+                                    CountdownSeparator()
+                                    CountdownUnit(value: r.hours, label: "HRS")
+                                    CountdownSeparator()
+                                    CountdownUnit(value: r.minutes, label: "MIN")
+                                    CountdownSeparator()
+                                    CountdownUnit(value: r.seconds, label: "SEC")
+                                }
+                                .padding(.vertical, 10)
+                                .padding(.horizontal, 8)
+                                .background(AVIATheme.surfaceElevated)
+                                .clipShape(.rect(cornerRadius: 10))
                             }
-                            .padding(.vertical, 10)
-                            .padding(.horizontal, 8)
-                            .background(AVIATheme.surfaceElevated)
-                            .clipShape(.rect(cornerRadius: 10))
                         }
 
                         HStack(spacing: 10) {
@@ -854,7 +852,6 @@ struct DashboardView: View {
             }
 
             ForEach(viewModel.upcomingScheduleItems) { item in
-                let _ = countdownTick
                 scheduleItemRow(item: item)
             }
         }
@@ -883,15 +880,17 @@ struct DashboardView: View {
 
                     Spacer(minLength: 0)
 
-                    if let r = item.timeUntil {
-                        VStack(alignment: .trailing, spacing: 2) {
-                            Text(compactCountdown(r))
-                                .font(.neueCaptionMedium)
-                                .foregroundStyle(AVIATheme.textPrimary)
-                                .monospacedDigit()
-                            Text(daysAwayLabel(item.date))
-                                .font(.neueCaption2)
-                                .foregroundStyle(AVIATheme.textTertiary)
+                    TimelineView(.periodic(from: .now, by: 1)) { _ in
+                        if let r = item.timeUntil {
+                            VStack(alignment: .trailing, spacing: 2) {
+                                Text(compactCountdown(r))
+                                    .font(.neueCaptionMedium)
+                                    .foregroundStyle(AVIATheme.textPrimary)
+                                    .monospacedDigit()
+                                Text(daysAwayLabel(item.date))
+                                    .font(.neueCaption2)
+                                    .foregroundStyle(AVIATheme.textTertiary)
+                            }
                         }
                     }
                 }

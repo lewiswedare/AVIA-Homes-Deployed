@@ -217,7 +217,9 @@ struct AdminTasksInboxView: View {
         )
         tasks.insert(task, at: 0)
         showAddTask = false
-        Task { await SupabaseService.shared.upsertClientTask(task) }
+        backgroundSave("Couldn't save the task — check your connection and try again.") {
+            await SupabaseService.shared.upsertClientTask(task)
+        }
     }
 
     private var summaryStrip: some View {
@@ -290,7 +292,9 @@ struct AdminTasksInboxView: View {
                 tasks[idx] = updated
             }
         }
-        Task { await SupabaseService.shared.upsertClientTask(updated) }
+        backgroundSave("Couldn't update the task — check your connection and try again.") {
+            await SupabaseService.shared.upsertClientTask(updated)
+        }
     }
 
     private func load() async {

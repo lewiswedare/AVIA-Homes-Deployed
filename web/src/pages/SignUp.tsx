@@ -1,3 +1,4 @@
+import { MailCheck } from "lucide-react";
 import { useState, type FormEvent } from "react";
 import { Link, useNavigate } from "react-router-dom";
 
@@ -14,6 +15,7 @@ export default function SignUp() {
   const [confirm, setConfirm] = useState<string>("");
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
+  const [awaitingConfirmation, setAwaitingConfirmation] = useState<boolean>(false);
 
   const submit = async (e: FormEvent) => {
     e.preventDefault();
@@ -32,7 +34,7 @@ export default function SignUp() {
     }
     setLoading(true);
     try {
-      const { error: authError } = await supabase.auth.signUp({
+      const { data, error: authError } = await supabase.auth.signUp({
         email,
         password,
         options: {
@@ -52,6 +54,12 @@ export default function SignUp() {
         );
         return;
       }
+      if (!data.session) {
+        // Email confirmation is enabled — no session yet. Navigating into the
+        // app now would bounce straight back to /login with no explanation.
+        setAwaitingConfirmation(true);
+        return;
+      }
       navigate("/", { replace: true });
     } catch (e) {
       console.error(`[SignUp] sign up threw: ${e instanceof Error ? e.message : String(e)}`);
@@ -60,6 +68,30 @@ export default function SignUp() {
       setLoading(false);
     }
   };
+
+  if (awaitingConfirmation) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-avia-white px-6 py-10">
+        <div className="w-full max-w-md text-center">
+          <img src="/brand/avia-logo.png" alt="AVIA Homes" className="mx-auto mb-10 h-8 w-auto" />
+          <div className="mx-auto mb-6 flex h-14 w-14 items-center justify-center rounded-full bg-avia-brown/10">
+            <MailCheck className="h-7 w-7 text-avia-brown" />
+          </div>
+          <h1 className="mb-2 text-[24px] font-medium text-avia-black">Confirm your email</h1>
+          <p className="mb-8 text-[14px] leading-relaxed text-avia-black/55">
+            We&apos;ve sent a confirmation link to <span className="font-medium text-avia-black">{email}</span>.
+            Open it to activate your account, then sign in.
+          </p>
+          <Link
+            to="/login"
+            className="inline-block rounded-full bg-avia-black px-8 py-3 text-[14px] font-medium text-white"
+          >
+            Go to Sign In
+          </Link>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-avia-white px-6 py-10">

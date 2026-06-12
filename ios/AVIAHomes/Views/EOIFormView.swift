@@ -10,6 +10,7 @@ struct EOIFormView: View {
     @State private var isSubmitting = false
     @State private var showValidationError = false
     @State private var validationMessage = ""
+    @State private var showSubmitError = false
 
     // Step 1 — Property Details
     @State private var streetSuburb = ""
@@ -68,6 +69,14 @@ struct EOIFormView: View {
                 Button("OK", role: .cancel) {}
             } message: {
                 Text(validationMessage)
+            }
+            .alert("Submission Failed", isPresented: $showSubmitError) {
+                Button("Try Again") {
+                    Task { await submitEOI() }
+                }
+                Button("Cancel", role: .cancel) {}
+            } message: {
+                Text("We couldn't submit your Expression of Interest. Please check your connection and try again — your details have been kept.")
             }
             .onAppear { prefillFromProfile() }
         }
@@ -420,7 +429,10 @@ struct EOIFormView: View {
         )
 
         let success = await SupabaseService.shared.submitEOI(row)
-        guard success else { return }
+        guard success else {
+            showSubmitError = true
+            return
+        }
 
         viewModel.respondToPackage(packageId: package.id, status: .accepted)
 

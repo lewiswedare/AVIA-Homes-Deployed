@@ -197,7 +197,9 @@ struct AdminClientCRMView: View {
 
     private func saveProfile() {
         let snapshot = crmProfile
-        Task { await SupabaseService.shared.upsertCRMProfile(snapshot) }
+        backgroundSave("Couldn't save CRM changes — check your connection and try again.") {
+            await SupabaseService.shared.upsertCRMProfile(snapshot)
+        }
     }
 
     // MARK: - Sections
@@ -983,7 +985,9 @@ struct AdminClientCRMView: View {
         tasks.insert(task, at: 0)
         showAddTask = false
         Task {
-            await SupabaseService.shared.upsertClientTask(task)
+            if !(await SupabaseService.shared.upsertClientTask(task)) {
+                SaveErrorCenter.shared.report("Couldn't save the task — check your connection and try again.")
+            }
             await loadCRM()
         }
     }
@@ -994,12 +998,16 @@ struct AdminClientCRMView: View {
         if let idx = tasks.firstIndex(where: { $0.id == task.id }) {
             tasks[idx] = updated
         }
-        Task { await SupabaseService.shared.upsertClientTask(updated) }
+        backgroundSave("Couldn't update the task — check your connection and try again.") {
+            await SupabaseService.shared.upsertClientTask(updated)
+        }
     }
 
     private func deleteTask(_ task: ClientTask) {
         tasks.removeAll { $0.id == task.id }
-        Task { await SupabaseService.shared.deleteClientTask(id: task.id) }
+        backgroundSave("Couldn't delete the task — check your connection and try again.") {
+            await SupabaseService.shared.deleteClientTask(id: task.id)
+        }
     }
 
     // MARK: - Communications
@@ -1171,15 +1179,21 @@ struct AdminClientCRMView: View {
         communications.insert(comm, at: 0)
         crmProfile.lastContactedAt = newCommDate
         showLogComm = false
+        let profileSnapshot = crmProfile
         Task {
-            await SupabaseService.shared.upsertClientCommunication(comm)
-            await SupabaseService.shared.upsertCRMProfile(crmProfile)
+            let commOk = await SupabaseService.shared.upsertClientCommunication(comm)
+            let profileOk = await SupabaseService.shared.upsertCRMProfile(profileSnapshot)
+            if !commOk || !profileOk {
+                SaveErrorCenter.shared.report("Couldn't save the communication log — check your connection and try again.")
+            }
         }
     }
 
     private func deleteComm(_ comm: ClientCommunication) {
         communications.removeAll { $0.id == comm.id }
-        Task { await SupabaseService.shared.deleteClientCommunication(id: comm.id) }
+        backgroundSave("Couldn't delete the log entry — check your connection and try again.") {
+            await SupabaseService.shared.deleteClientCommunication(id: comm.id)
+        }
     }
 
     // MARK: - Notes
@@ -1307,7 +1321,9 @@ struct AdminClientCRMView: View {
                 notes[idx] = updated
             }
             editingNote = nil
-            Task { await SupabaseService.shared.upsertClientNote(updated) }
+            backgroundSave("Couldn't save the note — check your connection and try again.") {
+                await SupabaseService.shared.upsertClientNote(updated)
+            }
         } onCancel: {
             editingNote = nil
         }
@@ -1329,7 +1345,9 @@ struct AdminClientCRMView: View {
         showAddNote = false
         newNoteBody = ""
         Task {
-            await SupabaseService.shared.upsertClientNote(note)
+            if !(await SupabaseService.shared.upsertClientNote(note)) {
+                SaveErrorCenter.shared.report("Couldn't save the note — check your connection and try again.")
+            }
             await loadCRM()
         }
     }
@@ -1344,12 +1362,16 @@ struct AdminClientCRMView: View {
             if lhs.pinned != rhs.pinned { return lhs.pinned }
             return lhs.createdAt > rhs.createdAt
         }
-        Task { await SupabaseService.shared.upsertClientNote(updated) }
+        backgroundSave("Couldn't update the note — check your connection and try again.") {
+            await SupabaseService.shared.upsertClientNote(updated)
+        }
     }
 
     private func deleteNote(_ note: ClientNote) {
         notes.removeAll { $0.id == note.id }
-        Task { await SupabaseService.shared.deleteClientNote(id: note.id) }
+        backgroundSave("Couldn't delete the note — check your connection and try again.") {
+            await SupabaseService.shared.deleteClientNote(id: note.id)
+        }
     }
 
     // MARK: - Existing sections

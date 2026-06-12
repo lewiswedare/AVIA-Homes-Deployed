@@ -10,6 +10,10 @@ class AuthService {
     var errorMessage: String?
     var currentRole: UserRole = .client
     var supabaseUserId: String?
+    /// True when sign-up succeeded but Supabase requires the user to confirm
+    /// their email before a session is issued. The UI must NOT treat the user
+    /// as signed in — show a "check your inbox" message and return to login.
+    var needsEmailConfirmation: Bool = false
 
     private let supabase = SupabaseService.shared
     private let authKey = "avia_auth_state"
@@ -158,14 +162,21 @@ class AuthService {
             print("[AuthService] signUp success: userId=\(userId), email=\(email), metadata=\(metadata)")
             if authResponse.session != nil {
                 isAuthenticated = true
+            } else if let session = try? await supabase.client.auth.session {
+                supabaseUserId = session.user.id.uuidString.lowercased()
+                UserDefaults.standard.set(supabaseUserId, forKey: userIdKey)
+                isAuthenticated = true
             } else {
-                if let session = try? await supabase.client.auth.session {
-                    supabaseUserId = session.user.id.uuidString.lowercased()
-                    UserDefaults.standard.set(supabaseUserId, forKey: userIdKey)
-                    isAuthenticated = true
-                } else {
-                    isAuthenticated = true
-                }
+                // Email confirmation is required — there is no session yet.
+                // Entering the app now would produce a broken half-session
+                // (every RLS-guarded call fails). Surface the confirmation
+                // step instead and keep the user on the auth screens.
+                needsEmailConfirmation = true
+                isAuthenticated = false
+                currentRole = .client
+                hasCompletedProfile = false
+                isLoading = false
+                return true
             }
             currentRole = .client
             hasCompletedProfile = false

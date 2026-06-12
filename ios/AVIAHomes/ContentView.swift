@@ -4,34 +4,37 @@ struct ContentView: View {
     @Environment(AppViewModel.self) private var appViewModel
 
     var body: some View {
-        if appViewModel.authService.isRestoringSession {
-            launchScreen
-        } else if appViewModel.isAuthenticated {
-            if appViewModel.biometricAuth.isEnabled && !appViewModel.biometricUnlocked {
-                BiometricLockView()
-            } else if appViewModel.hasCompletedProfile {
-                switch appViewModel.currentRole {
-                case .pending, .client:
-                    if appViewModel.clientHasBuild {
-                        ClientTabView()
-                    } else {
-                        ClientDiscoverTabView()
+        Group {
+            if appViewModel.authService.isRestoringSession {
+                launchScreen
+            } else if appViewModel.isAuthenticated {
+                if appViewModel.biometricAuth.isEnabled && !appViewModel.biometricUnlocked {
+                    BiometricLockView()
+                } else if appViewModel.hasCompletedProfile {
+                    switch appViewModel.currentRole {
+                    case .pending, .client:
+                        if appViewModel.clientHasBuild {
+                            ClientTabView()
+                        } else {
+                            ClientDiscoverTabView()
+                        }
+                    case .staff, .preConstruction, .buildingSupport:
+                        StaffTabView()
+                    case .superAdmin:
+                        SuperAdminTabView()
+                    case .admin, .salesAdmin:
+                        AdminTabView()
+                    case .partner, .salesPartner:
+                        PartnerTabView()
                     }
-                case .staff, .preConstruction, .buildingSupport:
-                    StaffTabView()
-                case .superAdmin:
-                    SuperAdminTabView()
-                case .admin, .salesAdmin:
-                    AdminTabView()
-                case .partner, .salesPartner:
-                    PartnerTabView()
+                } else {
+                    ProfileSetupView()
                 }
             } else {
-                ProfileSetupView()
+                LoginView()
             }
-        } else {
-            LoginView()
         }
+        .saveErrorBanner()
     }
 
     private var launchScreen: some View {

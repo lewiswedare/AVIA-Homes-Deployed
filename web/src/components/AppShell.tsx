@@ -12,6 +12,7 @@ import {
 import { NavLink, Outlet, useNavigate } from "react-router-dom";
 
 import { useAuth } from "@/hooks/useAuth";
+import { useRealtimeSync } from "@/hooks/useRealtimeSync";
 import { initialsOf } from "@/lib/format";
 import { useNotifications } from "@/lib/queries";
 import { isClientRole } from "@/lib/types";
@@ -26,6 +27,7 @@ interface NavItem {
 export default function AppShell() {
   const { role, profile, userId, signOut } = useAuth();
   const navigate = useNavigate();
+  useRealtimeSync(userId);
   const { data: notifications } = useNotifications(userId);
   const unread = (notifications ?? []).filter((n) => !n.is_read).length;
 

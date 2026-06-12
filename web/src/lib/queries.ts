@@ -203,7 +203,8 @@ export function useNotifications(userId: string | null): UseQueryResult<Notifica
   return useQuery({
     queryKey: ["notifications", userId],
     enabled: Boolean(userId),
-    refetchInterval: 30000,
+    // Realtime invalidation handles immediacy; this is only a fallback.
+    refetchInterval: 90000,
     queryFn: async (): Promise<NotificationRow[]> => {
       const { data, error } = await supabase
         .from("notifications")
@@ -256,7 +257,8 @@ export function useEmailSends(clientId: string | null): UseQueryResult<EmailSend
         .from("email_sends")
         .select("*")
         .eq("client_id", clientId ?? "")
-        .order("created_at", { ascending: false });
+        .order("created_at", { ascending: false })
+        .limit(100);
       if (error) throw error;
       return (data ?? []) as EmailSendRow[];
     },
@@ -272,7 +274,8 @@ export function useClientNotes(clientId: string | null): UseQueryResult<ClientNo
         .from("client_notes")
         .select("*")
         .eq("client_id", clientId ?? "")
-        .order("created_at", { ascending: false });
+        .order("created_at", { ascending: false })
+        .limit(200);
       if (error) throw error;
       return (data ?? []) as ClientNoteRow[];
     },
@@ -283,7 +286,8 @@ export function useConversations(userId: string | null): UseQueryResult<Conversa
   return useQuery({
     queryKey: ["conversations", userId],
     enabled: Boolean(userId),
-    refetchInterval: 20000,
+    // Realtime invalidation handles immediacy; this is only a fallback.
+    refetchInterval: 90000,
     queryFn: async (): Promise<ConversationRow[]> => {
       const { data, error } = await supabase
         .from("conversations")
@@ -300,15 +304,18 @@ export function useMessages(conversationId: string | null): UseQueryResult<ChatM
   return useQuery({
     queryKey: ["messages", conversationId],
     enabled: Boolean(conversationId),
-    refetchInterval: 8000,
+    // Realtime invalidation handles immediacy; this is only a fallback.
+    refetchInterval: 60000,
     queryFn: async (): Promise<ChatMessageRow[]> => {
+      // Newest 300 — long threads previously loaded every message ever sent.
       const { data, error } = await supabase
         .from("messages")
         .select("*")
         .eq("conversation_id", conversationId ?? "")
-        .order("created_at", { ascending: true });
+        .order("created_at", { ascending: false })
+        .limit(300);
       if (error) throw error;
-      return (data ?? []) as ChatMessageRow[];
+      return ((data ?? []) as ChatMessageRow[]).reverse();
     },
   });
 }

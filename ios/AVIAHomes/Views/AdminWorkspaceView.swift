@@ -871,7 +871,9 @@ struct AdminWorkspaceView: View {
         )
         tasks.insert(task, at: 0)
         showAddTask = false
-        Task { await SupabaseService.shared.upsertClientTask(task) }
+        backgroundSave("Couldn't save the task — check your connection and try again.") {
+            await SupabaseService.shared.upsertClientTask(task)
+        }
     }
 
     private func toggleComplete(_ task: ClientTask) {
@@ -884,7 +886,9 @@ struct AdminWorkspaceView: View {
                 tasks[idx] = updated
             }
         }
-        Task { await SupabaseService.shared.upsertClientTask(updated) }
+        backgroundSave("Couldn't update the task — check your connection and try again.") {
+            await SupabaseService.shared.upsertClientTask(updated)
+        }
     }
 
     // MARK: - Loading

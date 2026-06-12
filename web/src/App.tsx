@@ -1,6 +1,6 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Loader2 } from "lucide-react";
-import { useEffect } from "react";
+import { Suspense, lazy, useEffect } from "react";
 import { BrowserRouter, Navigate, Outlet, Route, Routes, useLocation } from "react-router-dom";
 
 import AppShell from "@/components/AppShell";
@@ -9,21 +9,25 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { AuthProvider, useAuth } from "@/hooks/useAuth";
 import { isClientRole } from "@/lib/types";
 
-import ClientRecord from "./pages/ClientRecord";
-import ForgotPassword from "./pages/ForgotPassword";
 import Login from "./pages/Login";
-import Messages from "./pages/Messages";
-import NotFound from "./pages/NotFound";
-import Notifications from "./pages/Notifications";
-import Profile from "./pages/Profile";
-import ProfileSetup from "./pages/ProfileSetup";
-import ResetPassword from "./pages/ResetPassword";
-import SignUp from "./pages/SignUp";
-import Workspace from "./pages/Workspace";
-import ClientDashboard from "./pages/client/ClientDashboard";
-import ClientDocuments from "./pages/client/ClientDocuments";
-import ClientProgress from "./pages/client/ClientProgress";
-import ClientSelections from "./pages/client/ClientSelections";
+
+// Route-level code splitting: the admin workspace (the heaviest chunk by far),
+// client record and the rest of the pages only download when visited — a login
+// visitor no longer pulls the whole admin panel in one 639 KB bundle.
+const ClientRecord = lazy(() => import("./pages/ClientRecord"));
+const ForgotPassword = lazy(() => import("./pages/ForgotPassword"));
+const Messages = lazy(() => import("./pages/Messages"));
+const NotFound = lazy(() => import("./pages/NotFound"));
+const Notifications = lazy(() => import("./pages/Notifications"));
+const Profile = lazy(() => import("./pages/Profile"));
+const ProfileSetup = lazy(() => import("./pages/ProfileSetup"));
+const ResetPassword = lazy(() => import("./pages/ResetPassword"));
+const SignUp = lazy(() => import("./pages/SignUp"));
+const Workspace = lazy(() => import("./pages/Workspace"));
+const ClientDashboard = lazy(() => import("./pages/client/ClientDashboard"));
+const ClientDocuments = lazy(() => import("./pages/client/ClientDocuments"));
+const ClientProgress = lazy(() => import("./pages/client/ClientProgress"));
+const ClientSelections = lazy(() => import("./pages/client/ClientSelections"));
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -66,7 +70,13 @@ function Protected() {
       </div>
     );
   }
-  if (!profile || !profile.profile_completed) return <ProfileSetup />;
+  if (!profile || !profile.profile_completed) {
+    return (
+      <Suspense fallback={<Splash />}>
+        <ProfileSetup />
+      </Suspense>
+    );
+  }
   return <Outlet />;
 }
 
@@ -111,27 +121,29 @@ const App = () => (
       <AuthProvider>
         <BrowserRouter>
           <RouteEffects />
-          <Routes>
-            <Route path="/login" element={<Login />} />
-            <Route path="/signup" element={<SignUp />} />
-            <Route path="/forgot-password" element={<ForgotPassword />} />
-            <Route path="/reset-password" element={<ResetPassword />} />
-            <Route element={<Protected />}>
-              <Route element={<AppShell />}>
-                <Route path="/" element={<RoleHome />} />
-                <Route path="/home" element={<ClientDashboard />} />
-                <Route path="/selections" element={<ClientSelections />} />
-                <Route path="/progress" element={<ClientProgress />} />
-                <Route path="/documents" element={<ClientDocuments />} />
-                <Route path="/workspace" element={<Workspace />} />
-                <Route path="/clients/:clientId" element={<ClientRecord />} />
-                <Route path="/messages" element={<Messages />} />
-                <Route path="/alerts" element={<Notifications />} />
-                <Route path="/profile" element={<Profile />} />
+          <Suspense fallback={<Splash />}>
+            <Routes>
+              <Route path="/login" element={<Login />} />
+              <Route path="/signup" element={<SignUp />} />
+              <Route path="/forgot-password" element={<ForgotPassword />} />
+              <Route path="/reset-password" element={<ResetPassword />} />
+              <Route element={<Protected />}>
+                <Route element={<AppShell />}>
+                  <Route path="/" element={<RoleHome />} />
+                  <Route path="/home" element={<ClientDashboard />} />
+                  <Route path="/selections" element={<ClientSelections />} />
+                  <Route path="/progress" element={<ClientProgress />} />
+                  <Route path="/documents" element={<ClientDocuments />} />
+                  <Route path="/workspace" element={<Workspace />} />
+                  <Route path="/clients/:clientId" element={<ClientRecord />} />
+                  <Route path="/messages" element={<Messages />} />
+                  <Route path="/alerts" element={<Notifications />} />
+                  <Route path="/profile" element={<Profile />} />
+                </Route>
               </Route>
-            </Route>
-            <Route path="*" element={<NotFound />} />
-          </Routes>
+              <Route path="*" element={<NotFound />} />
+            </Routes>
+          </Suspense>
         </BrowserRouter>
       </AuthProvider>
     </TooltipProvider>
