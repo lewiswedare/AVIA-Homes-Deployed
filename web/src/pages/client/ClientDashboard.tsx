@@ -15,10 +15,11 @@ import {
 import type { LucideIcon } from "lucide-react";
 import { Link } from "react-router-dom";
 
-import { BentoCard, EmptyState, Spinner, StatusPill } from "@/components/avia/ui";
+import { BentoCard, Spinner, StatusPill } from "@/components/avia/ui";
 import { useAuth } from "@/hooks/useAuth";
 import { fmtDate, fmtDateTime, parseDate } from "@/lib/format";
 import { useClientDocuments, useMyBuild, useScheduleForClient, useStages } from "@/lib/queries";
+import DiscoverDashboard from "./Discover";
 
 export const scheduleTypeIcon: Record<string, LucideIcon> = {
   "Site Visit": Wrench,
@@ -59,6 +60,9 @@ export default function ClientDashboard() {
 
   if (buildLoading) return <Spinner />;
 
+  // No build yet → the Discover experience (iOS ClientDiscoverDashboardView parity).
+  if (!build) return <DiscoverDashboard />;
+
   return (
     <div className="space-y-5">
       {/* Greeting header */}
@@ -71,9 +75,9 @@ export default function ClientDashboard() {
         </h1>
       </div>
 
-      {build ? (
+      {/* Build hero */}
+      {build && (
         <>
-          {/* Build hero */}
           <BentoCard className="overflow-hidden">
             <div className="relative bg-gradient-to-br from-avia-black to-avia-brown p-6 text-avia-white">
               <div className="flex items-start justify-between gap-4">
@@ -142,14 +146,6 @@ export default function ClientDashboard() {
             ))}
           </div>
         </>
-      ) : (
-        <BentoCard className="p-6">
-          <EmptyState
-            icon={Home}
-            title="Your build journey starts soon"
-            subtitle="Once your contract is allocated, your build dashboard, selections and progress will appear here."
-          />
-        </BentoCard>
       )}
 
       {/* Upcoming schedule */}

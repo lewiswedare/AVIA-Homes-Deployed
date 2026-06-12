@@ -4,6 +4,8 @@ _Status: ✅ Implemented — `AdminWorkspaceView` is the admin landing tab (Toda
 
 _Web parity: ✅ The web Workspace now matches the iOS admin panel — lane badges, full Action Required panel (pending users with role assignment, open requests, EOIs, spec reviews, upgrades to price), task inbox filters, full lead/opportunity record with the sales workflow & contract gate, job spec-review badges, and admin-managed stock library uploads._
 
+_Full-app web parity: ✅ The web app now mirrors the entire iOS surface — role-scoped Packages catalog (+ detail pages for packages, designs, estates, facades, spec ranges), admin Package Management (create/edit/delete, client sharing, partner assignment & exclusivity, EOI review), client Discover mode for no-build clients (news, designs, spec ranges, facades, shared-package banner), My Package review with the 4-step EOI wizard, Stocklist with admin estate/lot editing, Display Homes with visit booking & My Visits, Requests & Support (client submit + staff respond/status flow), SuperAdmin Overview, and role-matched navigation for every role._
+
 Right now admins jump between separate menus for tasks, clients, builds, scheduling and sending. I'll bring it all together into one workflow-driven home screen that acts as their daily operating system.
 
 ## What admins will be able to do

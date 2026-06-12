@@ -2,6 +2,7 @@ import { useQuery, type UseQueryResult } from "@tanstack/react-query";
 
 import { supabase } from "./supabase";
 import type {
+  BlogPostRow,
   BuildRow,
   BuildSpecSelectionRow,
   BuildStageRow,
@@ -11,14 +12,25 @@ import type {
   ClientNoteRow,
   ClientTaskRow,
   ConversationRow,
+  DisplayHomeRow,
+  DisplayHomeVisitRow,
   EmailSendRow,
+  EOISubmissionRow,
+  FacadeRow,
+  HomeDesignRow,
+  HouseLandPackageRow,
+  LandEstateRow,
   LeadRow,
   LibraryDocumentRow,
   NotificationRow,
   PackageAssignmentEOIRow,
+  PackageAssignmentRow,
   ProfileRow,
   ScheduleItemRow,
   ServiceRequestRow,
+  SpecRangeTierRow,
+  StocklistEstateRow,
+  StocklistItemRow,
 } from "./types";
 
 async function selectAll<T>(table: string): Promise<T[]> {
@@ -379,6 +391,180 @@ export function useEOIAssignments(enabled: boolean = true): UseQueryResult<Packa
         .select("id,package_id,eoi_status");
       if (error) throw error;
       return (data ?? []) as PackageAssignmentEOIRow[];
+    },
+  });
+}
+
+// ---------------------------------------------------------------------------
+// Catalog & discover — mirrors the iOS content loaders.
+// ---------------------------------------------------------------------------
+
+export function usePackages(enabled: boolean = true): UseQueryResult<HouseLandPackageRow[]> {
+  return useQuery({
+    queryKey: ["house_land_packages"],
+    enabled,
+    queryFn: async (): Promise<HouseLandPackageRow[]> => {
+      const { data, error } = await supabase
+        .from("house_land_packages")
+        .select("*")
+        .order("id", { ascending: true });
+      if (error) throw error;
+      return (data ?? []) as HouseLandPackageRow[];
+    },
+  });
+}
+
+export function useHomeDesigns(): UseQueryResult<HomeDesignRow[]> {
+  return useQuery({
+    queryKey: ["home_designs"],
+    queryFn: async (): Promise<HomeDesignRow[]> => {
+      const { data, error } = await supabase.from("home_designs").select("*").order("name");
+      if (error) throw error;
+      return (data ?? []) as HomeDesignRow[];
+    },
+  });
+}
+
+export function useEstates(): UseQueryResult<LandEstateRow[]> {
+  return useQuery({
+    queryKey: ["land_estates"],
+    queryFn: async (): Promise<LandEstateRow[]> => {
+      const { data, error } = await supabase.from("land_estates").select("*").order("name");
+      if (error) throw error;
+      return (data ?? []) as LandEstateRow[];
+    },
+  });
+}
+
+export function useFacades(): UseQueryResult<FacadeRow[]> {
+  return useQuery({
+    queryKey: ["facades"],
+    queryFn: async (): Promise<FacadeRow[]> => {
+      const { data, error } = await supabase.from("facades").select("*").order("name");
+      if (error) throw error;
+      return (data ?? []) as FacadeRow[];
+    },
+  });
+}
+
+export function useSpecRangeTiers(): UseQueryResult<SpecRangeTierRow[]> {
+  return useQuery({
+    queryKey: ["spec_range_tiers"],
+    queryFn: async (): Promise<SpecRangeTierRow[]> => selectAll<SpecRangeTierRow>("spec_range_tiers"),
+  });
+}
+
+/** Full assignment rows — RLS scopes what each role can see (same as iOS). */
+export function usePackageAssignments(enabled: boolean = true): UseQueryResult<PackageAssignmentRow[]> {
+  return useQuery({
+    queryKey: ["package_assignments", "full"],
+    enabled,
+    queryFn: async (): Promise<PackageAssignmentRow[]> => selectAll<PackageAssignmentRow>("package_assignments"),
+  });
+}
+
+export function useEOISubmissions(enabled: boolean = true): UseQueryResult<EOISubmissionRow[]> {
+  return useQuery({
+    queryKey: ["eoi_submissions"],
+    enabled,
+    queryFn: async (): Promise<EOISubmissionRow[]> => {
+      const { data, error } = await supabase
+        .from("eoi_submissions")
+        .select("*")
+        .order("created_at", { ascending: false });
+      if (error) throw error;
+      return (data ?? []) as EOISubmissionRow[];
+    },
+  });
+}
+
+export function useStocklistEstates(enabled: boolean = true): UseQueryResult<StocklistEstateRow[]> {
+  return useQuery({
+    queryKey: ["stocklist_estates"],
+    enabled,
+    queryFn: async (): Promise<StocklistEstateRow[]> => {
+      const { data, error } = await supabase
+        .from("stocklist_estates")
+        .select("*")
+        .eq("is_active", true)
+        .order("sort_order", { ascending: true });
+      if (error) throw error;
+      return (data ?? []) as StocklistEstateRow[];
+    },
+  });
+}
+
+export function useStocklistItems(enabled: boolean = true): UseQueryResult<StocklistItemRow[]> {
+  return useQuery({
+    queryKey: ["stocklist_items"],
+    enabled,
+    queryFn: async (): Promise<StocklistItemRow[]> => {
+      const { data, error } = await supabase
+        .from("stocklist_items")
+        .select("*")
+        .order("sort_order", { ascending: true });
+      if (error) throw error;
+      return (data ?? []) as StocklistItemRow[];
+    },
+  });
+}
+
+export function useDisplayHomes(includeInactive: boolean = false): UseQueryResult<DisplayHomeRow[]> {
+  return useQuery({
+    queryKey: ["display_homes", includeInactive],
+    queryFn: async (): Promise<DisplayHomeRow[]> => {
+      let query = supabase.from("display_homes").select("*");
+      if (!includeInactive) query = query.eq("is_active", true);
+      const { data, error } = await query
+        .order("sort_order", { ascending: true })
+        .order("name", { ascending: true });
+      if (error) throw error;
+      return (data ?? []) as DisplayHomeRow[];
+    },
+  });
+}
+
+export function useMyVisits(userId: string | null): UseQueryResult<DisplayHomeVisitRow[]> {
+  return useQuery({
+    queryKey: ["display_home_visits", userId],
+    enabled: Boolean(userId),
+    queryFn: async (): Promise<DisplayHomeVisitRow[]> => {
+      const { data, error } = await supabase
+        .from("display_home_visits")
+        .select("*")
+        .eq("client_id", userId ?? "")
+        .order("requested_at", { ascending: false });
+      if (error) throw error;
+      return (data ?? []) as DisplayHomeVisitRow[];
+    },
+  });
+}
+
+/** Client view: own requests. Staff view: all requests (pass null clientId). */
+export function useServiceRequests(clientId: string | null, all: boolean = false): UseQueryResult<ServiceRequestRow[]> {
+  return useQuery({
+    queryKey: ["service_requests", all ? "all" : clientId],
+    enabled: all || Boolean(clientId),
+    queryFn: async (): Promise<ServiceRequestRow[]> => {
+      let query = supabase.from("service_requests").select("*");
+      if (!all) query = query.eq("client_id", clientId ?? "");
+      const { data, error } = await query.order("date_created", { ascending: false });
+      if (error) throw error;
+      return (data ?? []) as ServiceRequestRow[];
+    },
+  });
+}
+
+export function useBlogPosts(): UseQueryResult<BlogPostRow[]> {
+  return useQuery({
+    queryKey: ["blog_posts"],
+    queryFn: async (): Promise<BlogPostRow[]> => {
+      const { data, error } = await supabase
+        .from("blog_posts")
+        .select("*")
+        .order("date", { ascending: false });
+      if (error) throw error;
+      return (data ?? []) as BlogPostRow[];
     },
   });
 }

@@ -344,6 +344,12 @@ export interface ServiceRequestRow {
   client_id: string;
   title: string;
   status: string;
+  description?: string | null;
+  category?: string | null;
+  build_id?: string | null;
+  date_created?: string | null;
+  last_updated?: string | null;
+  responses?: ServiceRequestResponse[] | null;
 }
 
 /** Minimal slice of package_assignments used for EOI review counts. */
@@ -382,3 +388,358 @@ export const ASSIGNABLE_ROLES: UserRole[] = [
   "Admin",
   "SalesAdmin",
 ];
+
+// ---------------------------------------------------------------------------
+// Catalog & discover domain — mirrors the iOS package/stocklist/display-home
+// models. Prices are display strings in the DB (e.g. "$675,000"), not numbers.
+// ---------------------------------------------------------------------------
+
+export type SpecTierKey = "volos" | "messina" | "portobello";
+
+export const SPEC_TIERS: SpecTierKey[] = ["volos", "messina", "portobello"];
+
+export const specTierLabel: Record<SpecTierKey, string> = {
+  volos: "Volos",
+  messina: "Messina",
+  portobello: "Portobello",
+};
+
+export const specTierTagline: Record<SpecTierKey, string> = {
+  volos: "Essential Living",
+  messina: "Elevated Comfort",
+  portobello: "Premium Collection",
+};
+
+export function asSpecTier(value: string | null | undefined): SpecTierKey {
+  return value === "volos" || value === "portobello" ? value : "messina";
+}
+
+export interface HouseLandPackageRow {
+  id: string;
+  title: string;
+  location: string;
+  lot_size: string;
+  home_design: string;
+  price: string;
+  image_url: string;
+  is_new: boolean;
+  lot_number: string;
+  lot_frontage: string;
+  lot_depth: string;
+  land_price: string;
+  house_price: string;
+  spec_tier: string;
+  title_date: string;
+  council: string;
+  zoning: string;
+  build_time_estimate: string;
+  inclusions: string[] | null;
+  is_custom: boolean | null;
+  custom_bedrooms: number | null;
+  custom_bathrooms: number | null;
+  custom_garages: number | null;
+  custom_storeys: number | null;
+  custom_square_meters: number | null;
+  selected_facade_id: string | null;
+}
+
+export interface HomeDesignRow {
+  id: string;
+  name: string;
+  bedrooms: number;
+  bathrooms: number;
+  garages: number;
+  square_meters: number;
+  image_url: string;
+  price_from: string | null;
+  storeys: number;
+  lot_width: number | null;
+  slug: string | null;
+  description: string | null;
+  house_width: number | null;
+  house_length: number | null;
+  living_areas: number | null;
+  floorplan_image_url: string | null;
+  floorplan_pdf_url: string | null;
+  floorplan_pdf_image_url: string | null;
+  room_highlights: string[] | null;
+  inclusions: string[] | null;
+}
+
+export interface LandEstateRow {
+  id: string;
+  name: string;
+  location: string;
+  suburb: string | null;
+  status: string | null;
+  total_lots: number | null;
+  available_lots: number | null;
+  price_from: string | null;
+  image_url: string | null;
+  description: string | null;
+  features: string[] | null;
+  expected_completion: string | null;
+  logo_url: string | null;
+  brochure_url: string | null;
+  site_map_url: string | null;
+}
+
+export interface FacadeRow {
+  id: string;
+  name: string;
+  style: string | null;
+  description: string | null;
+  hero_image_url: string | null;
+  gallery_image_urls: string[] | null;
+  features: string[] | null;
+  pricing_type: string | null;
+  pricing_amount: string | null;
+  storeys: number | null;
+}
+
+export interface SpecRangeHighlight {
+  icon: string | null;
+  title: string;
+  subtitle: string | null;
+  icon_image_url?: string | null;
+  detail_image_url?: string | null;
+}
+
+export interface SpecRangeNamedImage {
+  name: string;
+  image_url: string;
+}
+
+export interface SpecRangeTierRow {
+  tier: string;
+  hero_image_url: string | null;
+  summary: string | null;
+  highlights: SpecRangeHighlight[] | null;
+  room_images: SpecRangeNamedImage[] | null;
+  partner_logos: SpecRangeNamedImage[] | null;
+  pdf_url: string | null;
+  pdf_preview_image_url: string | null;
+}
+
+/** client_responses JSON entry — status raw values are capitalized phrases. */
+export interface ClientPackageResponse {
+  client_id: string;
+  status: string;
+  responded_date?: string | null;
+  notes?: string | null;
+}
+
+export const RESPONSE_PENDING = "Pending Review";
+export const RESPONSE_ACCEPTED = "Accepted";
+export const RESPONSE_DECLINED = "Declined";
+
+export type EOIStatusKey =
+  | "none"
+  | "submitted"
+  | "resubmitted"
+  | "approved"
+  | "declined"
+  | "changes_requested";
+
+export type ContractStatusKey =
+  | "none"
+  | "awaiting_contract"
+  | "awaiting_signature"
+  | "awaiting_confirmation"
+  | "signed";
+
+export interface PackageAssignmentRow {
+  id: string;
+  package_id: string;
+  assigned_partner_ids: string[] | null;
+  shared_with_client_ids: string[] | null;
+  client_responses: ClientPackageResponse[] | null;
+  is_exclusive: boolean | null;
+  assigned_by: string | null;
+  deposit_status: string | null;
+  deposit_amount: number | null;
+  deposit_due_date: string | null;
+  admin_confirmed_by: string | null;
+  admin_confirmed_at: string | null;
+  eoi_status: string | null;
+  contract_status: string | null;
+  converted_to_build_id: string | null;
+  converted_at: string | null;
+  created_at: string | null;
+  updated_at: string | null;
+}
+
+export interface EOISubmissionRow {
+  id: string;
+  package_assignment_id: string;
+  package_id: string;
+  client_id: string;
+  lot_number: string | null;
+  estate_name: string | null;
+  street_suburb: string | null;
+  occupancy_type: string | null;
+  specification_tier: string | null;
+  facade_selection: string | null;
+  buyer1_name: string;
+  buyer1_email: string;
+  buyer1_address: string;
+  buyer1_phone: string;
+  buyer2_name: string | null;
+  buyer2_email: string | null;
+  buyer2_address: string | null;
+  buyer2_phone: string | null;
+  solicitor_company: string;
+  solicitor_name: string;
+  solicitor_email: string;
+  solicitor_address: string;
+  solicitor_phone: string;
+  status: string;
+  admin_notes: string | null;
+  reviewed_by: string | null;
+  reviewed_at: string | null;
+  created_at: string | null;
+  updated_at: string | null;
+}
+
+export const STOCKLIST_REGIONS = ["Brisbane", "Gold Coast", "Sunshine Coast", "Toowoomba"] as const;
+export const BRISBANE_SUB_REGIONS = ["North Brisbane", "West Brisbane", "South Brisbane"] as const;
+export const STOCKLIST_STATUSES = [
+  "Available",
+  "Available (Exclusive)",
+  "EOI",
+  "ON HOLD",
+  "COMING SOON",
+  "Sold",
+] as const;
+export const OWNER_OCC_OPTIONS = ["Owner Occ & Investor", "Owner Occ Only", "Investor Only"] as const;
+
+export interface StocklistEstateRow {
+  id: string;
+  name: string;
+  region: string;
+  sub_region: string | null;
+  deposit_terms: string | null;
+  estate_brochure_url: string | null;
+  rental_appraisal_url: string | null;
+  eoi_form_url: string | null;
+  sort_order: number | null;
+  is_active: boolean;
+}
+
+export interface StocklistItemRow {
+  id: string;
+  estate_id: string;
+  lot_number: string;
+  stage: string | null;
+  street: string | null;
+  land_size: string | null;
+  land_price: string | null;
+  registered: string | null;
+  design_facade: string | null;
+  build_size: string | null;
+  bedrooms: string | null;
+  bathrooms: string | null;
+  garages: string | null;
+  theatre: string | null;
+  build_price: string | null;
+  package_price: string | null;
+  specification: string | null;
+  status: string;
+  owner_occ_investor: string | null;
+  availability: string | null;
+  sales_package_link: string | null;
+  is_coming_soon: boolean | null;
+  sort_order: number | null;
+}
+
+export interface DisplayHomeRow {
+  id: string;
+  name: string;
+  estate: string | null;
+  address: string | null;
+  suburb: string | null;
+  description: string | null;
+  bedrooms: number | null;
+  bathrooms: number | null;
+  garages: number | null;
+  square_meters: number | null;
+  home_design_id: string | null;
+  image_urls: string[] | null;
+  features: string[] | null;
+  opening_hours: string | null;
+  contact_phone: string | null;
+  is_active: boolean;
+  sort_order: number | null;
+}
+
+export type VisitStatusKey = "pending" | "confirmed" | "completed" | "cancelled" | "no_show" | "rescheduled";
+
+export const visitStatusLabel: Record<VisitStatusKey, string> = {
+  pending: "Requested",
+  confirmed: "Confirmed",
+  completed: "Completed",
+  cancelled: "Cancelled",
+  no_show: "No Show",
+  rescheduled: "Rescheduled",
+};
+
+export interface DisplayHomeVisitRow {
+  id: string;
+  display_home_id: string;
+  client_id: string | null;
+  requested_at: string;
+  duration_minutes: number | null;
+  status: string;
+  attendee_name: string | null;
+  attendee_email: string | null;
+  attendee_phone: string | null;
+  party_size: number | null;
+  notes: string | null;
+  admin_notes: string | null;
+  confirmed_at: string | null;
+  completed_at: string | null;
+  cancelled_at: string | null;
+  created_at: string | null;
+}
+
+export interface BlogPostRow {
+  id: string;
+  title: string;
+  subtitle: string;
+  category: string;
+  image_url: string;
+  date: string;
+  read_time: string;
+  content: string;
+}
+
+export interface ServiceRequestResponse {
+  id: string;
+  author: string;
+  message: string;
+  date: string;
+  is_from_client: boolean;
+}
+
+export const REQUEST_CATEGORIES = ["General", "Defect", "Variation", "Maintenance"] as const;
+export const REQUEST_STATUSES = ["Open", "In Progress", "Resolved"] as const;
+
+// --------------------------------------------------------------------------
+// Role capability helpers — mirror iOS UserRole capability flags.
+// --------------------------------------------------------------------------
+
+export function canViewPackages(role: UserRole): boolean {
+  return ["Staff", "Admin", "Partner", "SalesAdmin", "SalesPartner", "SuperAdmin"].includes(role);
+}
+export function canManagePackages(role: UserRole): boolean {
+  return ADMIN_ROLES.includes(role);
+}
+export function canAllocatePackages(role: UserRole): boolean {
+  return ["Admin", "Partner", "SalesAdmin", "SalesPartner", "SuperAdmin"].includes(role);
+}
+export function canViewStocklist(role: UserRole): boolean {
+  return ["Admin", "SalesAdmin", "SuperAdmin", "Partner", "SalesPartner"].includes(role);
+}
+export function canEditStocklist(role: UserRole): boolean {
+  return ADMIN_ROLES.includes(role);
+}

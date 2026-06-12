@@ -30,6 +30,19 @@ const ClientDashboard = lazy(() => import("./pages/client/ClientDashboard"));
 const ClientDocuments = lazy(() => import("./pages/client/ClientDocuments"));
 const ClientProgress = lazy(() => import("./pages/client/ClientProgress"));
 const ClientSelections = lazy(() => import("./pages/client/ClientSelections"));
+const MyPackage = lazy(() => import("./pages/client/MyPackage"));
+const Packages = lazy(() => import("./pages/catalog/Packages"));
+const PackageDetail = lazy(() => import("./pages/catalog/PackageDetail"));
+const PackageManage = lazy(() => import("./pages/catalog/PackageManage"));
+const DesignDetail = lazy(() => import("./pages/catalog/DesignDetail"));
+const EstateDetail = lazy(() => import("./pages/catalog/EstateDetail"));
+const FacadeDetail = lazy(() => import("./pages/catalog/FacadeDetail"));
+const SpecRange = lazy(() => import("./pages/catalog/SpecRange"));
+const Stocklist = lazy(() => import("./pages/catalog/Stocklist"));
+const DisplayHomes = lazy(() => import("./pages/DisplayHomes"));
+const Requests = lazy(() => import("./pages/Requests"));
+const Overview = lazy(() => import("./pages/Overview"));
+const News = lazy(() => import("./pages/News"));
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -93,10 +106,22 @@ const PAGE_TITLES: Record<string, string> = {
   "/progress": "Progress",
   "/documents": "Documents",
   "/workspace": "Workspace",
+  "/overview": "Overview",
   "/clients": "Client Record",
   "/messages": "Messages",
   "/alerts": "Alerts",
   "/profile": "Profile",
+  "/packages/manage": "Package Management",
+  "/packages": "Packages",
+  "/my-package": "My Package",
+  "/designs": "Home Design",
+  "/estates": "Estate",
+  "/facades": "Facade",
+  "/spec-ranges": "Spec Ranges",
+  "/stocklist": "Stocklist",
+  "/display-homes": "Display Homes",
+  "/requests": "Requests & Support",
+  "/news": "News",
   "/login": "Sign In",
   "/signup": "Create Account",
   "/forgot-password": "Reset Password",
@@ -141,10 +166,26 @@ const App = () => (
                   <Route path="/progress" element={<ClientProgress />} />
                   <Route path="/documents" element={<ClientDocuments />} />
                   <Route path="/workspace" element={<Workspace />} />
+                  <Route path="/overview" element={<Overview />} />
                   <Route path="/clients/:clientId" element={<ClientRecord />} />
                   <Route path="/messages" element={<Messages />} />
                   <Route path="/alerts" element={<Notifications />} />
                   <Route path="/profile" element={<Profile />} />
+                  <Route path="/packages" element={<Packages />} />
+                  <Route path="/packages/manage" element={<PackageManage />} />
+                  <Route path="/packages/:id" element={<PackageDetail />} />
+                  <Route path="/my-package" element={<MyPackage />} />
+                  <Route path="/designs/:id" element={<DesignDetail />} />
+                  <Route path="/estates/:id" element={<EstateDetail />} />
+                  <Route path="/facades/:id" element={<FacadeDetail />} />
+                  <Route path="/spec-ranges" element={<SpecRange />} />
+                  <Route path="/spec-ranges/:tier" element={<SpecRange />} />
+                  <Route path="/stocklist" element={<Stocklist />} />
+                  <Route path="/display-homes" element={<DisplayHomes />} />
+                  <Route path="/display-homes/:id" element={<DisplayHomes />} />
+                  <Route path="/requests" element={<Requests />} />
+                  <Route path="/news" element={<News />} />
+                  <Route path="/news/:id" element={<News />} />
                 </Route>
               </Route>
               <Route path="*" element={<NotFound />} />
