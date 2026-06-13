@@ -26,7 +26,7 @@ struct AVIAHomesApp: App {
                 .environment(journeyViewModel)
                 .environment(macZoom)
                 .preferredColorScheme(.light)
-                .macCatalystMinFrame()
+                .macCatalystWindowSizing()
                 .onAppear {
                     colourViewModel.specTier = specViewModel.currentTier
                     appDelegate.appViewModel = appViewModel
@@ -92,15 +92,41 @@ struct AVIAHomesApp: App {
 }
 
 private extension View {
+    /// On Mac Catalyst, keep the window within a comfortable, iPad-like width so
+    /// the single-column content fills the frame instead of floating inside a sea
+    /// of empty margins on a large display. The window stays freely resizable
+    /// between the min and max. No effect on iPhone or iPad.
     @ViewBuilder
-    func macCatalystMinFrame() -> some View {
+    func macCatalystWindowSizing() -> some View {
         #if targetEnvironment(macCatalyst)
-        self.frame(minWidth: 900, minHeight: 600)
+        self
+            .frame(minWidth: MacWindowSizing.minSize.width, minHeight: MacWindowSizing.minSize.height)
+            .onAppear { MacWindowSizing.apply() }
         #else
         self
         #endif
     }
 }
+
+#if targetEnvironment(macCatalyst)
+/// Constrains the Mac Catalyst window to a sensible range. Capping the maximum
+/// width keeps the app from sprawling across a wide display, which is what makes
+/// the centered content look intentional rather than lost. Users can still scale
+/// the UI up with the View ▸ Zoom commands.
+enum MacWindowSizing {
+    static let minSize = CGSize(width: 900, height: 600)
+    static let maxSize = CGSize(width: 1280, height: .greatestFiniteMagnitude)
+
+    static func apply() {
+        for scene in UIApplication.shared.connectedScenes {
+            guard let windowScene = scene as? UIWindowScene,
+                  let restrictions = windowScene.sizeRestrictions else { continue }
+            restrictions.minimumSize = minSize
+            restrictions.maximumSize = maxSize
+        }
+    }
+}
+#endif
 
 class AppDelegate: NSObject, UIApplicationDelegate, UNUserNotificationCenterDelegate {
     var appViewModel: AppViewModel?
