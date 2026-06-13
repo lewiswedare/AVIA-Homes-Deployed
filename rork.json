@@ -10,9 +10,12 @@
       }
     },
     {
-      "name": "AVIA Homes Web",
+      "name": "AVIA Homes",
       "path": "web",
-      "framework": "web"
+      "framework": "web",
+      "settings": {
+        "webSlug": "aviahomes"
+      }
     }
   ]
 }
