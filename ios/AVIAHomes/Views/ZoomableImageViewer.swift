@@ -90,9 +90,10 @@ struct ZoomableImageViewer: View {
                         Image(systemName: "xmark")
                             .font(.system(size: 16, weight: .semibold))
                             .foregroundStyle(.white)
-                            .frame(width: 36, height: 36)
+                            .frame(width: 44, height: 44)
                             .background(.ultraThinMaterial, in: Circle())
                     }
+                    .accessibilityLabel("Close")
                     .padding(.trailing, 16)
                     .padding(.top, 8)
                 }

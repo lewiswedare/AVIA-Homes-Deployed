@@ -59,9 +59,13 @@ struct ClientSpecConfirmationView: View {
         }
         .sheet(item: $upgradeSelectionId) { selId in
             UpgradeRequestSheet(notes: $upgradeNotes) {
-                viewModel.requestUpgrade(selectionId: selId, notes: upgradeNotes.isEmpty ? nil : upgradeNotes)
+                let notes = upgradeNotes.isEmpty ? nil : upgradeNotes
                 upgradeNotes = ""
                 upgradeSelectionId = nil
+                Task {
+                    let ok = await viewModel.requestUpgrade(selectionId: selId, notes: notes)
+                    (ok ? AVIAHaptic.success : AVIAHaptic.error).trigger()
+                }
             }
         }
         .overlay(alignment: .bottom) { toastOverlay }

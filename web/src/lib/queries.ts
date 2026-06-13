@@ -332,6 +332,39 @@ export function useMessages(conversationId: string | null): UseQueryResult<ChatM
   });
 }
 
+/**
+ * Per-conversation unread counts for the current user. Mirrors the iOS
+ * MessagingService.fetchUnreadCounts — the `conversations.unread_count` column
+ * isn't maintained server-side, so the real count is derived from message rows
+ * (unread, not sent by me) across the user's conversations.
+ */
+export function useUnreadCounts(
+  userId: string | null,
+  conversationIds: string[],
+): UseQueryResult<Record<string, number>> {
+  const key = [...conversationIds].sort().join(",");
+  return useQuery({
+    queryKey: ["messages", "unread", userId, key],
+    enabled: Boolean(userId) && conversationIds.length > 0,
+    // Realtime invalidation handles immediacy; this is only a fallback.
+    refetchInterval: 90000,
+    queryFn: async (): Promise<Record<string, number>> => {
+      const { data, error } = await supabase
+        .from("messages")
+        .select("conversation_id")
+        .in("conversation_id", conversationIds)
+        .eq("is_read", false)
+        .neq("sender_id", userId ?? "");
+      if (error) throw error;
+      const counts: Record<string, number> = {};
+      for (const row of (data ?? []) as { conversation_id: string }[]) {
+        counts[row.conversation_id] = (counts[row.conversation_id] ?? 0) + 1;
+      }
+      return counts;
+    },
+  });
+}
+
 export function useSpecSelections(buildId: string | null): UseQueryResult<BuildSpecSelectionRow[]> {
   return useQuery({
     queryKey: ["build_spec_selections", buildId],

@@ -321,7 +321,7 @@ struct DiscoverFeedView: View {
     }
 
     private func designCard(design: HomeDesign) -> some View {
-        Color(hex: "f5f5f5")
+        AVIATheme.imagePlaceholder
             .frame(width: 260, height: 325)
             .overlay {
                 AsyncImage(url: URL(string: design.imageURL)) { phase in
@@ -362,7 +362,7 @@ struct DiscoverFeedView: View {
                 }
                 .padding(12)
                 .frame(maxWidth: .infinity, alignment: .leading)
-                .background(Color(hex: "f5f5f5"))
+                .background(AVIATheme.imagePlaceholder)
             }
             .clipShape(.rect(cornerRadius: 13))
     }

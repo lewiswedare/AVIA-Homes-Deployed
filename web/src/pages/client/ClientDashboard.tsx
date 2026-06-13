@@ -15,7 +15,7 @@ import {
 import type { LucideIcon } from "lucide-react";
 import { Link } from "react-router-dom";
 
-import { BentoCard, Spinner, StatusPill } from "@/components/avia/ui";
+import { BentoCard, ErrorState, Spinner, StatusPill } from "@/components/avia/ui";
 import { useAuth } from "@/hooks/useAuth";
 import { fmtDate, fmtDateTime, parseDate } from "@/lib/format";
 import { useClientDocuments, useMyBuild, useScheduleForClient, useStages } from "@/lib/queries";
@@ -32,7 +32,7 @@ export const scheduleTypeIcon: Record<string, LucideIcon> = {
 
 export default function ClientDashboard() {
   const { profile, userId } = useAuth();
-  const { data: build, isLoading: buildLoading } = useMyBuild(userId);
+  const { data: build, isLoading: buildLoading, isError: buildError, refetch: refetchBuild } = useMyBuild(userId);
   const { data: stages } = useStages(build?.id ?? null);
   const { data: schedule } = useScheduleForClient(userId);
   const { data: documents } = useClientDocuments(userId);
@@ -59,6 +59,10 @@ export default function ClientDashboard() {
   const recentDocs = (documents ?? []).slice(0, 3);
 
   if (buildLoading) return <Spinner />;
+
+  // A failed fetch must not masquerade as "no build" — that would wrongly drop a
+  // real client into the marketing Discover view. Offer a retry instead.
+  if (buildError && !build) return <ErrorState onRetry={() => void refetchBuild()} />;
 
   // No build yet → the Discover experience (iOS ClientDiscoverDashboardView parity).
   if (!build) return <DiscoverDashboard />;

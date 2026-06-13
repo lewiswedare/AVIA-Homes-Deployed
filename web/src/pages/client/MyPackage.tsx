@@ -2,7 +2,7 @@ import { CheckCircle2, ChevronRight, Clock, LayoutGrid, MapPin } from "lucide-re
 import { useMemo } from "react";
 import { Link } from "react-router-dom";
 
-import { BentoCard, EmptyState, Spinner, StatusPill } from "@/components/avia/ui";
+import { BentoCard, EmptyState, ErrorState, Spinner, StatusPill } from "@/components/avia/ui";
 import { CoverImage, findDesignByName } from "@/components/catalog/shared";
 import { useAuth } from "@/hooks/useAuth";
 import { assignmentForPackage, eoiStatusLabel, responseFor, visiblePackages } from "@/lib/catalog";
@@ -39,6 +39,16 @@ export default function MyPackage() {
   const accepted = shared.filter((p) => statusOf(p.id).status === RESPONSE_ACCEPTED).length;
 
   if (packagesQ.isLoading || assignmentsQ.isLoading) return <Spinner />;
+  if ((packagesQ.isError || assignmentsQ.isError) && shared.length === 0) {
+    return (
+      <ErrorState
+        onRetry={() => {
+          void packagesQ.refetch();
+          void assignmentsQ.refetch();
+        }}
+      />
+    );
+  }
 
   return (
     <div className="animate-fade-in space-y-5">

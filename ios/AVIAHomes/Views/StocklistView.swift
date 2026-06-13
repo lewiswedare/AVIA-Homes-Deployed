@@ -509,7 +509,7 @@ struct StocklistView: View {
                                     .foregroundStyle(AVIATheme.aviaWhite)
                                     .padding(.horizontal, 8)
                                     .padding(.vertical, 4)
-                                    .background(Color.blue)
+                                    .background(AVIATheme.heritageBlue)
                                     .clipShape(Capsule())
                             }
                         }
@@ -628,7 +628,7 @@ struct StocklistView: View {
         case "available (exclusive)": return .purple
         case "eoi": return .orange
         case "on hold": return .gray
-        case "coming soon": return .blue
+        case "coming soon": return AVIATheme.heritageBlue
         case "sold": return .red
         default: return AVIATheme.textSecondary
         }

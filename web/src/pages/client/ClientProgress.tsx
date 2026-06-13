@@ -1,6 +1,6 @@
 import { CheckCircle2, CircleDashed, Clock, TrendingUp } from "lucide-react";
 
-import { BentoCard, EmptyState, ProgressBar, Spinner, StatusPill } from "@/components/avia/ui";
+import { BentoCard, EmptyState, ErrorState, ProgressBar, Spinner, StatusPill } from "@/components/avia/ui";
 import { useAuth } from "@/hooks/useAuth";
 import { fmtDate } from "@/lib/format";
 import { useMyBuild, useStages } from "@/lib/queries";
@@ -8,10 +8,11 @@ import { cn } from "@/lib/utils";
 
 export default function ClientProgress() {
   const { userId } = useAuth();
-  const { data: build, isLoading } = useMyBuild(userId);
+  const { data: build, isLoading, isError, refetch } = useMyBuild(userId);
   const { data: stages, isLoading: stagesLoading } = useStages(build?.id ?? null);
 
   if (isLoading || stagesLoading) return <Spinner />;
+  if (isError && !build) return <ErrorState onRetry={() => void refetch()} />;
 
   const stageList = stages ?? [];
   const completed = stageList.filter((s) => s.status === "Completed").length;

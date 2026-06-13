@@ -1,6 +1,6 @@
 import * as DialogPrimitive from "@radix-ui/react-dialog";
 import type { LucideIcon } from "lucide-react";
-import { Loader2 } from "lucide-react";
+import { AlertTriangle, Loader2 } from "lucide-react";
 import type { ReactNode } from "react";
 
 import { cn } from "@/lib/utils";
@@ -148,6 +148,38 @@ export function EmptyState({
   );
 }
 
+/**
+ * Failed-query state with an optional retry. Use this instead of falling
+ * through to an EmptyState when a fetch errors — otherwise users are told they
+ * have nothing when the request actually failed.
+ */
+export function ErrorState({
+  title = "Couldn’t load this",
+  subtitle = "Check your connection and try again.",
+  onRetry,
+}: {
+  title?: string;
+  subtitle?: string;
+  onRetry?: () => void;
+}) {
+  return (
+    <div className="flex flex-col items-center gap-3 py-16 text-center">
+      <AlertTriangle className="h-9 w-9 text-avia-black/30" />
+      <div className="text-[15px] font-medium text-avia-black">{title}</div>
+      <div className="max-w-xs text-[13px] text-avia-black/55">{subtitle}</div>
+      {onRetry && (
+        <button
+          type="button"
+          onClick={onRetry}
+          className="mt-1 rounded-full bg-avia-black px-5 py-2 text-[13px] font-medium text-avia-white transition-opacity hover:opacity-90"
+        >
+          Try again
+        </button>
+      )}
+    </div>
+  );
+}
+
 export function InitialsAvatar({
   initials,
   className,
@@ -249,8 +281,10 @@ export function FieldError({ message }: { message?: string }) {
   return <p className="text-[12px] text-red-600">{message}</p>;
 }
 
+// Font is 16px on phones so iOS Safari doesn't auto-zoom the page on focus,
+// stepping back down to the designed 15px from the sm breakpoint up.
 export const inputClass =
-  "w-full rounded-[10px] border border-avia-line bg-avia-card px-4 py-3 text-[15px] text-avia-black outline-none transition-colors placeholder:text-avia-black/35 focus:border-avia-brown";
+  "w-full rounded-[10px] border border-avia-line bg-avia-card px-4 py-3 text-[16px] sm:text-[15px] text-avia-black outline-none transition-colors placeholder:text-avia-black/35 focus:border-avia-brown";
 
 export function Spinner({ className }: { className?: string }) {
   return (
@@ -284,7 +318,7 @@ export function Modal({
         <DialogPrimitive.Overlay className="fixed inset-0 z-50 bg-avia-black/40 backdrop-blur-[2px]" />
         <div className="fixed inset-0 z-50 flex items-end justify-center sm:items-center">
           <DialogPrimitive.Content
-            className="max-h-[88vh] w-full max-w-lg animate-fade-in overflow-y-auto rounded-t-[18px] bg-avia-cardAlt p-5 shadow-2xl outline-none sm:rounded-[18px]"
+            className="max-h-[88vh] w-full max-w-lg animate-fade-in overflow-y-auto rounded-t-[18px] bg-avia-cardAlt p-5 pb-[calc(env(safe-area-inset-bottom)+1.25rem)] shadow-2xl outline-none sm:rounded-[18px] sm:pb-5"
             onPointerDownOutside={onClose}
           >
             <div className="mb-4 flex items-center justify-between">

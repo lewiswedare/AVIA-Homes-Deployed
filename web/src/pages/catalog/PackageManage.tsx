@@ -169,6 +169,7 @@ export default function PackageManage() {
         <input
           className="w-full rounded-full border border-avia-line bg-avia-card py-2.5 pl-10 pr-4 text-[14px] outline-none placeholder:text-avia-black/35 focus:border-avia-brown"
           placeholder="Search packages…"
+          aria-label="Search packages"
           value={search}
           onChange={(e) => setSearch(e.target.value)}
         />

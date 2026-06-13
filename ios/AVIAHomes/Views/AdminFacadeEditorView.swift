@@ -242,6 +242,14 @@ struct AdminFacadeEditorView: View {
     }
 }
 
+/// Identifiable wrapper so gallery rows keep a stable identity across inserts
+/// and deletes — index-as-id made a deleted row hand its text/upload state to
+/// the wrong neighbour and broke the remove animation.
+private struct FacadeGalleryImage: Identifiable {
+    let id = UUID()
+    var url: String
+}
+
 struct FacadeEditSheet: View {
     @Environment(\.dismiss) private var dismiss
     let facade: Facade?
@@ -252,7 +260,7 @@ struct FacadeEditSheet: View {
     @State private var style: String = ""
     @State private var descriptionText: String = ""
     @State private var heroImageURL: String = ""
-    @State private var galleryURLs: [String] = []
+    @State private var galleryImages: [FacadeGalleryImage] = []
     @State private var featuresText: String = ""
     @State private var pricingType: String = "included"
     @State private var pricingAmount: String = ""
@@ -393,12 +401,12 @@ struct FacadeEditSheet: View {
                 .foregroundStyle(AVIATheme.textSecondary)
                 .padding(.horizontal, 14)
 
-            ForEach(galleryURLs.indices, id: \.self) { index in
-                galleryRow(at: index)
+            ForEach($galleryImages) { $image in
+                galleryRow(image: $image)
             }
 
             Button {
-                galleryURLs.append("")
+                galleryImages.append(FacadeGalleryImage(url: ""))
             } label: {
                 HStack(spacing: 4) {
                     Image(systemName: "plus.circle.fill")
@@ -412,16 +420,16 @@ struct FacadeEditSheet: View {
     }
 
     @ViewBuilder
-    private func galleryRow(at index: Int) -> some View {
-        let url = galleryURLs[index]
+    private func galleryRow(image: Binding<FacadeGalleryImage>) -> some View {
+        let url = image.wrappedValue.url
         HStack(spacing: 8) {
             if !url.isEmpty {
                 Color(.secondarySystemBackground)
                     .frame(width: 40, height: 40)
                     .overlay {
                         AsyncImage(url: URL(string: url)) { phase in
-                            if let image = phase.image {
-                                image.resizable().aspectRatio(contentMode: .fill)
+                            if let loaded = phase.image {
+                                loaded.resizable().aspectRatio(contentMode: .fill)
                             }
                         }
                         .allowsHitTesting(false)
@@ -430,18 +438,19 @@ struct FacadeEditSheet: View {
             }
 
             AdminCompactImagePicker(
-                imageURL: $galleryURLs[index],
+                imageURL: image.url,
                 folder: "facades/gallery",
-                itemId: "\(isNew ? facadeId : (facade?.id ?? facadeId))_\(index)"
+                itemId: "\(isNew ? facadeId : (facade?.id ?? facadeId))_\(image.wrappedValue.id.uuidString)"
             )
 
             Button {
-                let idx = index
-                withAnimation { galleryURLs.remove(at: idx) }
+                let id = image.wrappedValue.id
+                withAnimation { galleryImages.removeAll { $0.id == id } }
             } label: {
                 Image(systemName: "xmark.circle.fill")
                     .foregroundStyle(AVIATheme.destructive.opacity(0.6))
             }
+            .accessibilityLabel("Remove gallery image")
         }
         .padding(.horizontal, 14)
     }
@@ -475,7 +484,7 @@ struct FacadeEditSheet: View {
         style = facade.style
         descriptionText = facade.description
         heroImageURL = facade.heroImageURL
-        galleryURLs = facade.galleryImageURLs
+        galleryImages = facade.galleryImageURLs.map { FacadeGalleryImage(url: $0) }
         featuresText = facade.features.joined(separator: "\n")
         storeys = facade.storeys
         switch facade.pricing {
@@ -489,8 +498,8 @@ struct FacadeEditSheet: View {
     }
 
     private func save() {
-        let filteredGallery = galleryURLs
-            .map { $0.trimmingCharacters(in: .whitespaces) }
+        let filteredGallery = galleryImages
+            .map { $0.url.trimmingCharacters(in: .whitespaces) }
             .filter { !$0.isEmpty }
 
         let features = featuresText

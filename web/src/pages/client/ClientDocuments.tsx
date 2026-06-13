@@ -1,7 +1,7 @@
 import { ExternalLink, FileText } from "lucide-react";
 import { useMemo, useState } from "react";
 
-import { BentoCard, EmptyState, Spinner, StatusPill } from "@/components/avia/ui";
+import { BentoCard, EmptyState, ErrorState, Spinner, StatusPill } from "@/components/avia/ui";
 import { useAuth } from "@/hooks/useAuth";
 import { fmtDate } from "@/lib/format";
 import { useClientDocuments } from "@/lib/queries";
@@ -10,7 +10,7 @@ import { cn } from "@/lib/utils";
 
 export default function ClientDocuments() {
   const { userId } = useAuth();
-  const { data: documents, isLoading } = useClientDocuments(userId);
+  const { data: documents, isLoading, isError, refetch } = useClientDocuments(userId);
   const [category, setCategory] = useState<string>("All");
 
   const docs = useMemo(() => documents ?? [], [documents]);
@@ -22,6 +22,7 @@ export default function ClientDocuments() {
   const filtered = category === "All" ? docs : docs.filter((d) => d.category === category);
 
   if (isLoading) return <Spinner />;
+  if (isError && docs.length === 0) return <ErrorState onRetry={() => void refetch()} />;
 
   return (
     <div className="space-y-5">

@@ -2,7 +2,7 @@ import { Bath, BedDouble, Car, ChevronRight, Instagram, MapPin, Newspaper } from
 import { useMemo } from "react";
 import { Link } from "react-router-dom";
 
-import { BentoCard } from "@/components/avia/ui";
+import { BentoCard, Spinner } from "@/components/avia/ui";
 import { CoverImage } from "@/components/catalog/shared";
 import { useAuth } from "@/hooks/useAuth";
 import {
@@ -77,6 +77,17 @@ export function DiscoverFeed() {
   const featured = posts[0] ?? null;
   const designs = (designsQ.data ?? []).slice(0, 6);
   const facades = facadesQ.data ?? [];
+
+  // Hold the feed until the core content lands so sections fade in together
+  // instead of popping in one query at a time. (isLoading is first-load only.)
+  const loading =
+    packagesQ.isLoading ||
+    assignmentsQ.isLoading ||
+    postsQ.isLoading ||
+    designsQ.isLoading ||
+    facadesQ.isLoading ||
+    tiersQ.isLoading;
+  if (loading) return <Spinner className="py-20" />;
 
   return (
     <div className="space-y-7">

@@ -81,15 +81,7 @@ struct SelectionsRoomDetailView: View {
         return matching.contains { $0.inclusionValue == .included }
     }
 
-    private var includedItems: [BuildSpecSelection] {
-        items.filter { isItemIncluded($0) }
-    }
-
-    private var upgradeItems: [BuildSpecSelection] {
-        items.filter { !isItemIncluded($0) }
-    }
-
-    private var upgradeTotal: Double {
+    private func upgradeTotal(for items: [BuildSpecSelection]) -> Double {
         let specCost = items
             .filter { $0.upgradeCost != nil && ($0.selectionType == .upgradeCosted || $0.selectionType == .upgradeAccepted || $0.selectionType == .upgradeApproved) }
             .compactMap(\.upgradeCost).reduce(0, +)
@@ -111,29 +103,37 @@ struct SelectionsRoomDetailView: View {
     }
 
     var body: some View {
-        ScrollView {
+        // Compute the room's items once per render and derive the included /
+        // upgrade splits + total from that single pass — the getters used to
+        // re-run the (catalog-lookup heavy) filter 3–4× on every body update.
+        let allItems = items
+        let included = allItems.filter { isItemIncluded($0) }
+        let upgrades = allItems.filter { !isItemIncluded($0) }
+        let total = upgradeTotal(for: allItems)
+
+        return ScrollView {
             ScrollViewReader { proxy in
                 VStack(spacing: 14) {
-                    heroHeader
+                    heroHeader(itemCount: allItems.count, upgradeTotal: total)
                         .padding(.horizontal, 16)
 
-                    if !includedItems.isEmpty {
-                        sectionHeader("INCLUDED", count: includedItems.count, tint: AVIATheme.heritageBlue, icon: "checkmark.seal.fill")
+                    if !included.isEmpty {
+                        sectionHeader("INCLUDED", count: included.count, tint: AVIATheme.heritageBlue, icon: "checkmark.seal.fill")
                             .padding(.horizontal, 16)
                         LazyVStack(spacing: 12) {
-                            ForEach(includedItems) { item in
+                            ForEach(included) { item in
                                 card(for: item, proxy: proxy)
                             }
                         }
                         .padding(.horizontal, 16)
                     }
 
-                    if !upgradeItems.isEmpty {
-                        sectionHeader("UPGRADES", count: upgradeItems.count, tint: AVIATheme.timelessBrown, icon: "arrow.up.circle.fill")
+                    if !upgrades.isEmpty {
+                        sectionHeader("UPGRADES", count: upgrades.count, tint: AVIATheme.timelessBrown, icon: "arrow.up.circle.fill")
                             .padding(.horizontal, 16)
                             .padding(.top, 6)
                         LazyVStack(spacing: 12) {
-                            ForEach(upgradeItems) { item in
+                            ForEach(upgrades) { item in
                                 card(for: item, proxy: proxy)
                             }
                         }
@@ -149,14 +149,41 @@ struct SelectionsRoomDetailView: View {
         .background(AVIATheme.background)
         .navigationTitle(room.displayName)
         .navigationBarTitleDisplayMode(.inline)
+        .overlay(alignment: .bottom) { errorToast }
         .sheet(item: $pendingUpgradeItem) { item in
             UpgradeRequestSheet(notes: $upgradeNotes) {
-                viewModel.requestUpgrade(selectionId: item.id, notes: upgradeNotes.isEmpty ? nil : upgradeNotes)
-                AVIAHaptic.success.trigger()
+                let notes = upgradeNotes.isEmpty ? nil : upgradeNotes
+                Task {
+                    let ok = await viewModel.requestUpgrade(selectionId: item.id, notes: notes)
+                    (ok ? AVIAHaptic.success : AVIAHaptic.error).trigger()
+                }
             }
         }
         .fullScreenCover(item: $previewImageURL) { item in
             ZoomableImageViewer(urlString: item.urlString)
+        }
+    }
+
+    /// Surfaces a save failure (e.g. a dropped upgrade request) so the action
+    /// never fails silently. Auto-dismisses after a few seconds.
+    @ViewBuilder
+    private var errorToast: some View {
+        if let msg = viewModel.errorMessage {
+            Text(msg)
+                .font(.neueCaptionMedium)
+                .foregroundStyle(AVIATheme.aviaWhite)
+                .multilineTextAlignment(.center)
+                .padding(.horizontal, 20)
+                .padding(.vertical, 12)
+                .background(AVIATheme.destructive, in: Capsule())
+                .padding(.horizontal, 24)
+                .padding(.bottom, 20)
+                .transition(.move(edge: .bottom).combined(with: .opacity))
+                .onAppear {
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 3) {
+                        withAnimation { viewModel.errorMessage = nil }
+                    }
+                }
         }
     }
 
@@ -230,7 +257,7 @@ struct SelectionsRoomDetailView: View {
         }
     }
 
-    private var heroHeader: some View {
+    private func heroHeader(itemCount: Int, upgradeTotal: Double) -> some View {
         Color(.secondarySystemBackground)
             .frame(height: 180)
             .overlay {
@@ -261,7 +288,7 @@ struct SelectionsRoomDetailView: View {
                         .foregroundStyle(AVIATheme.aviaWhite.opacity(0.85))
 
                     HStack(spacing: 6) {
-                        Text("\(items.count) item\(items.count == 1 ? "" : "s")")
+                        Text("\(itemCount) item\(itemCount == 1 ? "" : "s")")
                             .font(.neueCorpMedium(10))
                             .foregroundStyle(AVIATheme.aviaWhite)
                             .padding(.horizontal, 8).padding(.vertical, 3)

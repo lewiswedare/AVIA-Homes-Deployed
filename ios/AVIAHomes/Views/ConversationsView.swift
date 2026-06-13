@@ -41,6 +41,7 @@ struct ConversationsView: View {
                         .font(.neueSubheadline)
                 }
                 .tint(AVIATheme.timelessBrown)
+                .accessibilityLabel("New message")
             }
         }
         .navigationDestination(for: Conversation.self) { conversation in

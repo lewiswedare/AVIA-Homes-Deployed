@@ -154,6 +154,7 @@ export default function Workspace() {
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Search clients & jobs"
+            aria-label="Search clients and jobs"
             className="w-full rounded-[11px] border border-avia-line bg-avia-card py-3 pl-10 pr-4 text-[14px] text-avia-black outline-none placeholder:text-avia-black/35 focus:border-avia-brown"
           />
         </div>

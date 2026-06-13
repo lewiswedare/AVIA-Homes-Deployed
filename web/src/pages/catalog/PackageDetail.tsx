@@ -382,8 +382,14 @@ export default function PackageDetail() {
         </div>
       </div>
 
-      {eoiOpen && assignment && (
-        <EOIFormModal open={eoiOpen} onClose={() => setEoiOpen(false)} pkg={pkg} assignment={assignment} resubmit={eoiResubmit} />
+      {eoiOpen && (
+        <EOIFormModal
+          open={eoiOpen}
+          onClose={() => setEoiOpen(false)}
+          pkg={pkg}
+          assignment={assignment ?? emptyAssignment(pkg.id)}
+          resubmit={eoiResubmit}
+        />
       )}
 
       <Modal open={declineOpen} onClose={() => setDeclineOpen(false)} title="Decline Package">
@@ -658,8 +664,9 @@ export function SharePackageModal({
   return (
     <Modal open={open} onClose={onClose} title="Share with Clients">
       <input
-        className="w-full rounded-[10px] border border-avia-line bg-avia-card px-4 py-2.5 text-[14px] outline-none placeholder:text-avia-black/35 focus:border-avia-brown"
+        className="w-full rounded-[10px] border border-avia-line bg-avia-card px-4 py-2.5 text-[16px] outline-none placeholder:text-avia-black/35 focus:border-avia-brown sm:text-[14px]"
         placeholder="Search clients…"
+        aria-label="Search clients"
         value={search}
         onChange={(e) => setSearch(e.target.value)}
       />

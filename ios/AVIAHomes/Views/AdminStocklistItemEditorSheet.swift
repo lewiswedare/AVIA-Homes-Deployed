@@ -230,7 +230,7 @@ struct AdminStocklistItemEditorSheet: View {
                         TextField("https://...", text: $salesPackageLink)
                             .font(.neueCaption)
                             .keyboardType(.URL)
-                            .autocapitalization(.none)
+                            .textInputAutocapitalization(.never)
                             .padding(12)
                             .background(AVIATheme.cardBackground, in: RoundedRectangle(cornerRadius: 8))
                     }

@@ -163,6 +163,8 @@ struct DashboardView: View {
                                 .offset(x: 2, y: -2)
                         }
                     }
+                    .accessibilityLabel("Notifications")
+                    .accessibilityValue(viewModel.notificationService.unreadCount > 0 ? "\(viewModel.notificationService.unreadCount) unread" : "No unread")
                 }
                 NavigationLink {
                     ConversationsView()

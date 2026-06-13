@@ -1,7 +1,7 @@
 import { LayoutGrid } from "lucide-react";
 import { useMemo } from "react";
 
-import { BentoCard, EmptyState, Spinner, StatusPill, type Tone } from "@/components/avia/ui";
+import { BentoCard, EmptyState, ErrorState, Spinner, StatusPill, type Tone } from "@/components/avia/ui";
 import { useAuth } from "@/hooks/useAuth";
 import { formatCost, humanize } from "@/lib/format";
 import { useMyBuild, useSpecSelections } from "@/lib/queries";
@@ -17,12 +17,15 @@ function statusTone(status: string | null | undefined): Tone {
 
 export default function ClientSelections() {
   const { userId } = useAuth();
-  const { data: build, isLoading } = useMyBuild(userId);
+  const { data: build, isLoading, isError, refetch } = useMyBuild(userId);
   const { data: selections, isLoading: selectionsLoading } = useSpecSelections(build?.id ?? null);
 
   const rooms = useMemo(() => {
     const map = new Map<string, BuildSpecSelectionRow[]>();
     for (const sel of selections ?? []) {
+      // Hide internal rows the iOS confirmed-selections list also omits:
+      // replaced/removed items and the client's not-yet-submitted upgrade drafts.
+      if (sel.selection_type === "removed" || sel.selection_type === "upgrade_draft") continue;
       const room = sel.snapshot_category_name || "Other";
       const list = map.get(room) ?? [];
       list.push(sel);
@@ -32,6 +35,7 @@ export default function ClientSelections() {
   }, [selections]);
 
   if (isLoading || selectionsLoading) return <Spinner />;
+  if (isError && !build) return <ErrorState onRetry={() => void refetch()} />;
 
   if (!build) {
     return (

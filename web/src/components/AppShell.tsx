@@ -10,18 +10,20 @@ import {
   LifeBuoy,
   LogOut,
   MessageSquare,
+  MoreHorizontal,
   Package,
   TrendingUp,
   User,
   Users,
 } from "lucide-react";
+import { useState } from "react";
 import { NavLink, Outlet, useNavigate } from "react-router-dom";
 
 import { useAuth } from "@/hooks/useAuth";
 import { useRealtimeSync } from "@/hooks/useRealtimeSync";
 import { initialsOf } from "@/lib/format";
 import { useMyBuild, useNotifications } from "@/lib/queries";
-import { canViewStocklist, isClientRole, isPartnerRole, isStaffRole } from "@/lib/types";
+import { canViewPackages, canViewStocklist, isClientRole, isPartnerRole, isStaffRole } from "@/lib/types";
 import { cn } from "@/lib/utils";
 
 interface NavItem {
@@ -42,19 +44,23 @@ interface NavItem {
 export default function AppShell() {
   const { role, profile, userId, signOut } = useAuth();
   const navigate = useNavigate();
+  const [moreOpen, setMoreOpen] = useState<boolean>(false);
   useRealtimeSync(userId);
   const { data: notifications } = useNotifications(userId);
   const unread = (notifications ?? []).filter((n) => !n.is_read).length;
 
   const client = isClientRole(role);
-  const { data: myBuild, isLoading: buildLoading } = useMyBuild(client ? userId : null);
-  const hasBuild = Boolean(myBuild);
+  const { data: myBuild, isLoading: buildLoading, isError: buildError } = useMyBuild(client ? userId : null);
+  // Treat an unresolved build (still loading OR a failed fetch) as "has build"
+  // for navigation, so a transient error never strips a real client of their
+  // Selections/Progress/Documents tabs. The pages themselves surface a retry.
+  const hasBuild = Boolean(myBuild) || buildLoading || buildError;
 
   let items: NavItem[];
   let sideItems: NavItem[];
 
   if (client) {
-    if (hasBuild || buildLoading) {
+    if (hasBuild) {
       items = [
         { to: "/home", label: "Home", icon: Home },
         { to: "/selections", label: "Selections", icon: LayoutGrid },
@@ -156,6 +162,12 @@ export default function AppShell() {
     items = items.filter((i) => i.to !== "/stocklist");
     sideItems = sideItems.filter((i) => i.to !== "/stocklist");
   }
+  // Packages dead-ends in a redirect for roles that can't view it (e.g.
+  // PreConstruction / BuildingSupport staff) — drop the tab for them.
+  if (!canViewPackages(role)) {
+    items = items.filter((i) => i.to !== "/packages");
+    sideItems = sideItems.filter((i) => i.to !== "/packages");
+  }
 
   const displayName = `${profile?.first_name ?? ""} ${profile?.last_name ?? ""}`.trim() || (profile?.email ?? "");
 
@@ -218,10 +230,10 @@ export default function AppShell() {
       <header className="sticky top-0 z-30 flex items-center justify-between border-b border-avia-line bg-avia-white/90 px-4 py-3 backdrop-blur md:hidden">
         <img src="/brand/avia-logo.png" alt="AVIA Homes" className="h-6 w-auto" />
         <div className="flex items-center gap-1">
-          <NavLink to="/messages" className="rounded-full p-2 text-avia-brown hover:bg-avia-brown/10">
+          <NavLink to="/messages" aria-label="Messages" className="rounded-full p-2 text-avia-brown hover:bg-avia-brown/10">
             <MessageSquare className="h-5 w-5" />
           </NavLink>
-          <NavLink to="/alerts" className="relative rounded-full p-2 text-avia-brown hover:bg-avia-brown/10">
+          <NavLink to="/alerts" aria-label="Alerts" className="relative rounded-full p-2 text-avia-brown hover:bg-avia-brown/10">
             <Bell className="h-5 w-5" />
             {unread > 0 && (
               <span className="absolute right-1 top-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-avia-brown px-1 text-[9px] font-medium text-avia-white">
@@ -239,29 +251,95 @@ export default function AppShell() {
         </div>
       </main>
 
-      {/* Mobile bottom tabs */}
+      {/* Mobile bottom tabs. The /profile tab becomes a "More" trigger so every
+          secondary destination stays reachable on a phone. */}
       <nav className="fixed inset-x-0 bottom-0 z-30 flex border-t border-avia-line bg-avia-card pb-[env(safe-area-inset-bottom)] md:hidden">
-        {items.map((item) => (
-          <NavLink
-            key={`${item.to}-${item.label}`}
-            to={item.to}
-            className={({ isActive }) =>
-              cn(
-                "relative flex flex-1 flex-col items-center gap-1 py-2.5 text-[10px] font-medium transition-colors",
-                isActive ? "text-avia-brown" : "text-avia-black/40",
-              )
-            }
-          >
-            <item.icon className="h-5 w-5" />
-            {item.label}
-            {item.to === "/alerts" && unread > 0 && (
-              <span className="absolute right-[calc(50%-16px)] top-1 flex h-3.5 min-w-3.5 items-center justify-center rounded-full bg-avia-brown px-1 text-[8px] font-medium text-avia-white">
-                {unread}
-              </span>
-            )}
-          </NavLink>
-        ))}
+        {items.map((item) =>
+          item.to === "/profile" ? (
+            <button
+              key="more-tab"
+              type="button"
+              onClick={() => setMoreOpen(true)}
+              aria-label="More"
+              className="relative flex flex-1 flex-col items-center gap-1 py-2.5 text-[10px] font-medium text-avia-black/40 transition-colors"
+            >
+              <MoreHorizontal className="h-5 w-5" />
+              More
+            </button>
+          ) : (
+            <NavLink
+              key={`${item.to}-${item.label}`}
+              to={item.to}
+              className={({ isActive }) =>
+                cn(
+                  "relative flex flex-1 flex-col items-center gap-1 py-2.5 text-[10px] font-medium transition-colors",
+                  isActive ? "text-avia-brown" : "text-avia-black/40",
+                )
+              }
+            >
+              <item.icon className="h-5 w-5" />
+              {item.label}
+              {item.to === "/alerts" && unread > 0 && (
+                <span className="absolute right-[calc(50%-16px)] top-1 flex h-3.5 min-w-3.5 items-center justify-center rounded-full bg-avia-brown px-1 text-[8px] font-medium text-avia-white">
+                  {unread}
+                </span>
+              )}
+            </NavLink>
+          ),
+        )}
       </nav>
+
+      {/* Mobile "More" sheet — surfaces every secondary destination (My Package,
+          Display Homes, Requests, Messages, Alerts, Profile…) that doesn't fit in
+          the bottom tab bar, so nothing is unreachable on a phone. */}
+      {moreOpen && (
+        <div className="fixed inset-0 z-40 md:hidden" role="dialog" aria-modal="true" aria-label="More menu">
+          <button
+            type="button"
+            aria-label="Close menu"
+            onClick={() => setMoreOpen(false)}
+            className="absolute inset-0 bg-avia-black/40 backdrop-blur-[2px]"
+          />
+          <div className="absolute inset-x-0 bottom-0 max-h-[80vh] overflow-y-auto rounded-t-[20px] bg-avia-card p-4 pb-[calc(env(safe-area-inset-bottom)+1rem)] shadow-2xl">
+            <div className="mx-auto mb-4 h-1 w-10 rounded-full bg-avia-black/15" />
+            <div className="grid grid-cols-1 gap-1">
+              {sideItems.map((item) => (
+                <NavLink
+                  key={`more-${item.to}-${item.label}`}
+                  to={item.to}
+                  end={item.to === "/home"}
+                  onClick={() => setMoreOpen(false)}
+                  className={({ isActive }) =>
+                    cn(
+                      "flex items-center gap-3 rounded-[12px] px-3 py-3 text-[15px] font-medium transition-colors",
+                      isActive ? "bg-avia-brown text-avia-white" : "text-avia-black/70 hover:bg-avia-black/5",
+                    )
+                  }
+                >
+                  <item.icon className="h-[18px] w-[18px]" />
+                  <span className="flex-1">{item.label}</span>
+                  {item.to === "/alerts" && unread > 0 && (
+                    <span className="rounded-full bg-avia-brown/80 px-1.5 py-px text-[10px] font-medium text-avia-white">
+                      {unread}
+                    </span>
+                  )}
+                </NavLink>
+              ))}
+              <button
+                type="button"
+                onClick={() => {
+                  setMoreOpen(false);
+                  void signOut().then(() => navigate("/login"));
+                }}
+                className="mt-1 flex items-center gap-3 rounded-[12px] px-3 py-3 text-left text-[15px] font-medium text-avia-black/70 transition-colors hover:bg-avia-black/5"
+              >
+                <LogOut className="h-[18px] w-[18px]" />
+                Sign out
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

@@ -58,7 +58,7 @@ export default function Overview() {
   }, [builds, stagesQ.data]);
 
   if (role !== "SuperAdmin") return <Navigate to="/workspace" replace />;
-  if (profilesQ.isLoading || buildsQ.isLoading) return <Spinner />;
+  if (profilesQ.isLoading || buildsQ.isLoading || stagesQ.isLoading) return <Spinner />;
 
   return (
     <div className="animate-fade-in space-y-6">

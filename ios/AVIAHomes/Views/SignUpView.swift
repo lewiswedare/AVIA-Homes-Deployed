@@ -20,7 +20,7 @@ struct SignUpView: View {
         GeometryReader { geo in
             ScrollView {
                 VStack(spacing: 0) {
-                    Color(hex: "E1DDDC")
+                    AVIATheme.background
                         .frame(height: geo.size.height * 0.32 + geo.safeAreaInsets.top)
                         .overlay {
                             Image("signin_background")

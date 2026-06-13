@@ -61,15 +61,23 @@ function destinationFor(n: NotificationRow, client: boolean): string | null {
       return client ? "/selections" : "/workspace";
     case "request_submitted":
     case "request_response":
+      return client ? "/requests" : "/workspace";
     case "package_shared":
     case "package_approved":
     case "package_declined":
     case "package_accepted":
-    case "deposit_invoice":
-    case "deposit_received":
     case "eoi_submitted":
     case "eoi_approved":
     case "eoi_changes_requested":
+      // Deep-link straight to the package so the shared/declined banner and its
+      // "Accept & Submit EOI" / change-response CTA are reachable.
+      return client
+        ? n.reference_id
+          ? `/packages/${encodeURIComponent(n.reference_id)}`
+          : "/my-package"
+        : "/workspace";
+    case "deposit_invoice":
+    case "deposit_received":
     case "invoice_raised":
     case "invoice_paid":
       return client ? "/home" : "/workspace";

@@ -352,7 +352,7 @@ struct HomeDesignDirectoryView: View {
     }
 
     private func designGridCard(design: HomeDesign) -> some View {
-        Color(hex: "f5f5f5")
+        AVIATheme.imagePlaceholder
             .aspectRatio(3/4, contentMode: .fit)
             .overlay {
                 AsyncImage(url: URL(string: design.imageURL)) { phase in
@@ -377,7 +377,7 @@ struct HomeDesignDirectoryView: View {
             .overlay(alignment: .bottom) {
                 ZStack(alignment: .bottom) {
                     LinearGradient(
-                        colors: [Color(hex: "f5f5f5").opacity(0), Color(hex: "f5f5f5")],
+                        colors: [AVIATheme.imagePlaceholder.opacity(0), AVIATheme.imagePlaceholder],
                         startPoint: .top,
                         endPoint: .bottom
                     )
@@ -400,7 +400,7 @@ struct HomeDesignDirectoryView: View {
                     .padding(.horizontal, 10)
                     .padding(.vertical, 8)
                     .frame(maxWidth: .infinity, alignment: .leading)
-                    .background(Color(hex: "f5f5f5"))
+                    .background(AVIATheme.imagePlaceholder)
                 }
             }
             .clipShape(.rect(cornerRadius: 11))

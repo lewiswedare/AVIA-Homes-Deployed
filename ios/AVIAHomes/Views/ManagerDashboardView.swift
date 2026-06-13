@@ -51,6 +51,7 @@ struct AdminDashboardView: View {
                     } label: {
                         Image(systemName: "ellipsis.circle.fill")
                             .foregroundStyle(AVIATheme.timelessBrown)
+                            .accessibilityLabel("More")
                     }
                 }
             }

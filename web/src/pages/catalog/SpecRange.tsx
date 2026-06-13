@@ -23,7 +23,9 @@ export default function SpecRange() {
 
   if (tiersQ.isLoading) return <Spinner />;
   if (!tierParam) return <SpecRangeOverview rows={tiersQ.data ?? []} />;
-  return <SpecRangeDetail tier={asSpecTier(tierParam)} rows={tiersQ.data ?? []} />;
+  // Key on the tier so local state (room carousel index, open highlight) resets
+  // when navigating straight from one range to another.
+  return <SpecRangeDetail key={asSpecTier(tierParam)} tier={asSpecTier(tierParam)} rows={tiersQ.data ?? []} />;
 }
 
 function SpecRangeOverview({ rows }: { rows: SpecRangeTierRow[] }) {

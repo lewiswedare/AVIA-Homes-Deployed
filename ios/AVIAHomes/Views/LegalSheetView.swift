@@ -26,6 +26,7 @@ struct LegalSheetView: View {
                             .font(.title3)
                             .foregroundStyle(AVIATheme.textTertiary)
                     }
+                    .accessibilityLabel("Close")
                 }
             }
         }

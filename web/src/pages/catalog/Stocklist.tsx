@@ -78,13 +78,7 @@ export default function Stocklist() {
 
   const canEdit = canEditStocklist(role);
 
-  const estates = useMemo(
-    () =>
-      (estatesQ.data ?? [])
-        .filter((e) => e.region === region)
-        .filter((e) => (region === "Brisbane" && subRegion ? e.sub_region === subRegion : true)),
-    [estatesQ.data, region, subRegion],
-  );
+  const searching = Boolean(search.trim()) || Boolean(statusFilter);
 
   const itemsByEstate = useMemo(() => {
     const map = new Map<string, StocklistItemRow[]>();
@@ -108,6 +102,21 @@ export default function Stocklist() {
     }
     return map;
   }, [itemsQ.data, search, statusFilter, sort]);
+
+  // While a search/status filter is active, span every region and surface any
+  // estate (anywhere) with a matching lot — otherwise results in other regions
+  // stay hidden behind the region tabs. With no query, stay region-scoped.
+  const estates = useMemo(() => {
+    const all = estatesQ.data ?? [];
+    if (searching) {
+      return all
+        .filter((e) => (itemsByEstate.get(e.id)?.length ?? 0) > 0)
+        .sort((a, b) => (a.sort_order ?? 0) - (b.sort_order ?? 0));
+    }
+    return all
+      .filter((e) => e.region === region)
+      .filter((e) => (region === "Brisbane" && subRegion ? e.sub_region === subRegion : true));
+  }, [estatesQ.data, region, subRegion, searching, itemsByEstate]);
 
   if (!canViewStocklist(role)) return <Navigate to="/" replace />;
   if (estatesQ.isLoading || itemsQ.isLoading) return <Spinner />;
@@ -186,6 +195,7 @@ export default function Stocklist() {
           <input
             className="w-full rounded-full border border-avia-line bg-avia-card py-2.5 pl-10 pr-4 text-[14px] outline-none placeholder:text-avia-black/35 focus:border-avia-brown"
             placeholder="Search lots, designs, streets…"
+            aria-label="Search lots, designs and streets"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
           />
@@ -213,7 +223,11 @@ export default function Stocklist() {
 
       {/* Estates */}
       {estates.length === 0 ? (
-        <EmptyState icon={ClipboardList} title="No estates in this region" subtitle="Check another region or add stock." />
+        <EmptyState
+          icon={ClipboardList}
+          title={searching ? "No matching lots" : "No estates in this region"}
+          subtitle={searching ? "Try a different search term or filter." : "Check another region or add stock."}
+        />
       ) : (
         <div className="space-y-3">
           {estates.map((estate) => {
@@ -230,7 +244,7 @@ export default function Stocklist() {
                     <div className="truncate text-[15px] font-medium text-white">{estate.name}</div>
                     <div className="text-[12px] text-white/65">
                       {lots.length} lot{lots.length === 1 ? "" : "s"}
-                      {estate.sub_region ? ` · ${estate.sub_region}` : ""}
+                      {` · ${estate.sub_region || estate.region}`}
                     </div>
                   </div>
                   {editMode ? (

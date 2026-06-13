@@ -35,8 +35,10 @@ export function useRealtimeSync(userId: string | null): void {
           if (row?.conversation_id) {
             void queryClient.invalidateQueries({ queryKey: ["messages", row.conversation_id] });
           }
-          // A new message also bumps the conversation list ordering/preview.
+          // A new message also bumps the conversation list ordering/preview
+          // and the per-conversation unread badges.
           void queryClient.invalidateQueries({ queryKey: ["conversations", userId] });
+          void queryClient.invalidateQueries({ queryKey: ["messages", "unread", userId] });
         },
       )
       .on(

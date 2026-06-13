@@ -22,6 +22,11 @@ enum AVIATheme {
     static let surfaceBorder = Color(uiColor: UIColor(
         red: 205/255, green: 201/255, blue: 199/255, alpha: 1
     ))
+    /// Neutral surface shown behind images while they load. Warm-toned to sit on
+    /// the AVIA palette instead of the cool #f5f5f5 grey it replaced.
+    static let imagePlaceholder = Color(uiColor: UIColor(
+        red: 238/255, green: 235/255, blue: 233/255, alpha: 1
+    ))
 
     static let textPrimary = aviaBlack
     static let textSecondary = aviaBlack.opacity(0.55)

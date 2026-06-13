@@ -236,7 +236,7 @@ class BuildSpecViewModel {
             // subscription was silently dropped and stopped updating after the
             // app was backgrounded. The AppViewModel rebuilds the real channel
             // on every foreground and reposts this notification.
-            NotificationCenter.default.addObserver(
+            realtimeObserver = NotificationCenter.default.addObserver(
                 forName: .aviaSpecSelectionsChanged,
                 object: nil,
                 queue: .main
@@ -250,19 +250,32 @@ class BuildSpecViewModel {
     }
 
     private var isSubscribedToRealtime = false
+    /// Token for the realtime fan-out observer so it can be torn down when this
+    /// view model is deallocated — otherwise every build-detail visit leaks one
+    /// observer block that fires for the rest of the app session.
+    private var realtimeObserver: NSObjectProtocol?
+
+    deinit {
+        if let realtimeObserver {
+            NotificationCenter.default.removeObserver(realtimeObserver)
+        }
+    }
 
     var hasSelections: Bool { !selections.isEmpty }
 
-    func requestUpgrade(selectionId: String, notes: String?) {
-        guard let idx = selections.firstIndex(where: { $0.id == selectionId }) else { return }
+    /// Adds a spec item to the client's upgrade draft basket. Returns whether
+    /// the save succeeded so the caller can give honest feedback (success vs.
+    /// error haptic + message) instead of always reporting success.
+    @discardableResult
+    func requestUpgrade(selectionId: String, notes: String?) async -> Bool {
+        guard let idx = selections.firstIndex(where: { $0.id == selectionId }) else { return false }
         // Add to client-side draft basket (not sent to admin until client submits all)
         selections[idx].selectionType = .upgradeDraft
         selections[idx].clientNotes = notes
-        Task {
-            let success = await SupabaseService.shared.upsertBuildSpecSelection(selections[idx])
-            if !success { errorMessage = "Failed to save upgrade draft" }
-            await load(buildId: buildId)
-        }
+        let success = await SupabaseService.shared.upsertBuildSpecSelection(selections[idx])
+        if !success { errorMessage = "Couldn't save your upgrade request. Please try again." }
+        await load(buildId: buildId)
+        return success
     }
 
     func removeUpgradeDraft(selectionId: String) {
