@@ -77,6 +77,37 @@ struct SelectionProductPickerView: View {
         return hasAnyAssignments ? [] : products
     }
 
+    /// A room-representative image for a product's *default* thumbnail — shown
+    /// before the client stages/saves a specific colour. Sourced from the
+    /// product's room-assigned variants so e.g. a Kitchen surfaces a kitchen
+    /// render instead of the product's generic catalog photo. Returns nil when
+    /// there's no room context or no room-scoped variant carries an image, so
+    /// the caller can fall back to `product.image_url`.
+    private func roomDefaultImageURL(for productId: String, colours: [SpecProductColourRow]) -> String? {
+        guard roomId != nil, !colours.isEmpty else { return nil }
+        // Prefer the product's default colour, then sort order, so the default
+        // thumbnail is stable and matches the "included" variant.
+        let ordered = colours.sorted { a, b in
+            let aDefault = a.is_default == true
+            let bDefault = b.is_default == true
+            if aDefault != bDefault { return aDefault }
+            return (a.sort_order ?? 0) < (b.sort_order ?? 0)
+        }
+        // A true in-room render (room-specific assignment image) wins.
+        for colour in ordered {
+            if let urlStr = assignment(for: colour.id)?.image_url, !urlStr.isEmpty {
+                return urlStr
+            }
+        }
+        // Otherwise the colour variant's own image.
+        for colour in ordered {
+            if let urlStr = colour.image_url, !urlStr.isEmpty {
+                return urlStr
+            }
+        }
+        return nil
+    }
+
     private var savedIsUpgrade: Bool {
         guard let pid = selection.productId,
               let m = catalog.rangeProductMemberships["\(selection.specTier.lowercased())|\(pid)"] else { return false }
@@ -176,7 +207,10 @@ struct SelectionProductPickerView: View {
                   let urlStr = colour.image_url, !urlStr.isEmpty else { return nil }
             return urlStr
         }()
-        let heroImageURL: String? = activeColourImageURL ?? product.image_url
+        // Before a colour is chosen, prefer a room-representative render so the
+        // thumbnail and large preview match the room (e.g. Kitchen shows a
+        // kitchen image, not the product's generic catalog photo).
+        let heroImageURL: String? = activeColourImageURL ?? roomDefaultImageURL(for: product.id, colours: colours) ?? product.image_url
         let isExpanded = isStaged
         let upgradeCost = membership.upgrade_price_override ?? 0
         let needsColour = !colours.isEmpty
