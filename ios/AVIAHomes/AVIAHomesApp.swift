@@ -9,6 +9,7 @@ struct AVIAHomesApp: App {
     @State private var colourViewModel = ColourSelectionViewModel()
     @State private var specViewModel = SpecificationViewModel()
     @State private var journeyViewModel = CustomerJourneyViewModel()
+    @State private var macZoom = MacZoom()
 
     init() {
         // Bump URLCache far above the iOS defaults so every AsyncImage call
@@ -23,6 +24,7 @@ struct AVIAHomesApp: App {
                 .environment(colourViewModel)
                 .environment(specViewModel)
                 .environment(journeyViewModel)
+                .environment(macZoom)
                 .preferredColorScheme(.light)
                 .macCatalystMinFrame()
                 .onAppear {
@@ -70,6 +72,19 @@ struct AVIAHomesApp: App {
                     Task { await appViewModel.refreshAllData() }
                 }
                 .keyboardShortcut("r", modifiers: .command)
+            }
+            CommandMenu("View") {
+                Button("Zoom In") { macZoom.zoomIn() }
+                    .keyboardShortcut("+", modifiers: .command)
+                    .disabled(!macZoom.canZoomIn)
+                Button("Zoom Out") { macZoom.zoomOut() }
+                    .keyboardShortcut("-", modifiers: .command)
+                    .disabled(!macZoom.canZoomOut)
+                Button("Actual Size") { macZoom.reset() }
+                    .keyboardShortcut("0", modifiers: .command)
+                    .disabled(macZoom.isActualSize)
+                Divider()
+                Text("Zoom: \(macZoom.percent)%")
             }
             #endif
         }

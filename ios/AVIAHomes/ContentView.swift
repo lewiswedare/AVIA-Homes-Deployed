@@ -83,16 +83,20 @@ struct ClientTabView: View {
         TabView(selection: $selectedTab) {
             Tab("Home", systemImage: "house.fill", value: 0) {
                 DashboardView(selectedTab: $selectedTab)
+                    .macZoomableContent()
             }
             Tab("Selections", systemImage: "square.grid.2x2.fill", value: 1) {
                 ClientSelectionsTabView()
+                    .macZoomableContent()
             }
             .badge(specVM.upgradeRequests.filter { $0.status == .pending }.count)
             Tab("Progress", systemImage: "chart.bar.fill", value: 2) {
                 BuildProgressView()
+                    .macZoomableContent()
             }
             Tab("More", systemImage: "ellipsis.circle.fill", value: 3) {
                 MoreView()
+                    .macZoomableContent()
             }
             .badge(viewModel.notificationService.unreadCount)
         }
@@ -119,6 +123,7 @@ struct StaffTabView: View {
         TabView(selection: $selectedTab) {
             Tab("Builds", systemImage: "building.2.fill", value: 0) {
                 StaffDashboardView()
+                    .macZoomableContent()
             }
             Tab("Packages", systemImage: "square.grid.2x2.fill", value: 1) {
                 NavigationStack {
@@ -147,21 +152,25 @@ struct StaffTabView: View {
                         FacadeDetailView(facade: facade)
                     }
                 }
+                .macZoomableContent()
             }
             Tab("Messages", systemImage: "message.fill", value: 2) {
                 NavigationStack {
                     ConversationsView()
                 }
+                .macZoomableContent()
             }
             .badge(viewModel.messagingService.totalUnreadCount)
             Tab("Alerts", systemImage: "bell.fill", value: 3) {
                 NavigationStack {
                     NotificationsView()
                 }
+                .macZoomableContent()
             }
             .badge(viewModel.notificationService.unreadCount)
             Tab("More", systemImage: "ellipsis.circle.fill", value: 4) {
                 MoreView()
+                    .macZoomableContent()
             }
         }
         .tabViewStyle(.sidebarAdaptable)
@@ -187,6 +196,7 @@ struct AdminTabView: View {
         TabView(selection: $selectedTab) {
             Tab("Workspace", systemImage: "square.grid.2x2.fill", value: 0) {
                 AdminWorkspaceView()
+                    .macZoomableContent()
             }
             Tab("Packages", systemImage: "house.and.flag.fill", value: 1) {
                 NavigationStack {
@@ -225,24 +235,29 @@ struct AdminTabView: View {
                         }
                     }
                 }
+                .macZoomableContent()
             }
             Tab("Stocklist", systemImage: "list.clipboard", value: 2) {
                 StocklistView()
+                    .macZoomableContent()
             }
             Tab("Messages", systemImage: "message.fill", value: 3) {
                 NavigationStack {
                     ConversationsView()
                 }
+                .macZoomableContent()
             }
             .badge(viewModel.messagingService.totalUnreadCount)
             Tab("Alerts", systemImage: "bell.fill", value: 4) {
                 NavigationStack {
                     NotificationsView()
                 }
+                .macZoomableContent()
             }
             .badge(viewModel.notificationService.unreadCount)
             Tab("More", systemImage: "ellipsis.circle.fill", value: 5) {
                 MoreView()
+                    .macZoomableContent()
             }
         }
         .tabViewStyle(.sidebarAdaptable)
@@ -268,27 +283,33 @@ struct PartnerTabView: View {
         TabView(selection: $selectedTab) {
             Tab("Clients", systemImage: "person.2.fill", value: 0) {
                 PartnerDashboardView()
+                    .macZoomableContent()
             }
             Tab("Packages", systemImage: "house.and.flag.fill", value: 1) {
                 PartnerPackagesTab()
+                    .macZoomableContent()
             }
             Tab("Stocklist", systemImage: "list.clipboard", value: 2) {
                 StocklistView()
+                    .macZoomableContent()
             }
             Tab("Messages", systemImage: "message.fill", value: 3) {
                 NavigationStack {
                     ConversationsView()
                 }
+                .macZoomableContent()
             }
             .badge(viewModel.messagingService.totalUnreadCount)
             Tab("Alerts", systemImage: "bell.fill", value: 4) {
                 NavigationStack {
                     NotificationsView()
                 }
+                .macZoomableContent()
             }
             .badge(viewModel.notificationService.unreadCount)
             Tab("More", systemImage: "ellipsis.circle.fill", value: 5) {
                 MoreView()
+                    .macZoomableContent()
             }
         }
         .tabViewStyle(.sidebarAdaptable)
@@ -314,6 +335,7 @@ struct ClientDiscoverTabView: View {
         TabView(selection: $selectedTab) {
             Tab("Discover", systemImage: "house.fill", value: 0) {
                 ClientDiscoverDashboardView()
+                    .macZoomableContent()
             }
             Tab("Packages", systemImage: "square.grid.2x2.fill", value: 1) {
                 NavigationStack {
@@ -334,21 +356,25 @@ struct ClientDiscoverTabView: View {
                             FacadeDetailView(facade: facade)
                         }
                 }
+                .macZoomableContent()
             }
             Tab("Messages", systemImage: "message.fill", value: 2) {
                 NavigationStack {
                     ConversationsView()
                 }
+                .macZoomableContent()
             }
             .badge(viewModel.messagingService.totalUnreadCount)
             Tab("Alerts", systemImage: "bell.fill", value: 3) {
                 NavigationStack {
                     NotificationsView()
                 }
+                .macZoomableContent()
             }
             .badge(viewModel.notificationService.unreadCount)
             Tab("More", systemImage: "ellipsis.circle.fill", value: 4) {
                 MoreView()
+                    .macZoomableContent()
             }
         }
         .tabViewStyle(.sidebarAdaptable)
@@ -374,9 +400,11 @@ struct SuperAdminTabView: View {
         TabView(selection: $selectedTab) {
             Tab("Overview", systemImage: "chart.bar.doc.horizontal.fill", value: 0) {
                 SuperAdminDashboard()
+                    .macZoomableContent()
             }
             Tab("Workspace", systemImage: "square.grid.2x2.fill", value: 1) {
                 AdminWorkspaceView()
+                    .macZoomableContent()
             }
             Tab("Packages", systemImage: "house.and.flag.fill", value: 2) {
                 NavigationStack {
@@ -415,18 +443,22 @@ struct SuperAdminTabView: View {
                         }
                     }
                 }
+                .macZoomableContent()
             }
             Tab("Stocklist", systemImage: "list.clipboard", value: 3) {
                 StocklistView()
+                    .macZoomableContent()
             }
             Tab("Messages", systemImage: "message.fill", value: 4) {
                 NavigationStack {
                     ConversationsView()
                 }
+                .macZoomableContent()
             }
             .badge(viewModel.messagingService.totalUnreadCount)
             Tab("More", systemImage: "ellipsis.circle.fill", value: 5) {
                 MoreView()
+                    .macZoomableContent()
             }
         }
         .tabViewStyle(.sidebarAdaptable)
