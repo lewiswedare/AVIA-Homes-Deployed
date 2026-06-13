@@ -28,6 +28,11 @@ import type {
   ProfileRow,
   ScheduleItemRow,
   ServiceRequestRow,
+  SpecCategoryRow,
+  SpecItemRow,
+  SpecProductColourRow,
+  SpecProductRow,
+  SpecRangeItemProductRow,
   SpecRangeTierRow,
   StocklistEstateRow,
   StocklistItemRow,
@@ -484,6 +489,79 @@ export function useSpecRangeTiers(): UseQueryResult<SpecRangeTierRow[]> {
   return useQuery({
     queryKey: ["spec_range_tiers"],
     queryFn: async (): Promise<SpecRangeTierRow[]> => selectAll<SpecRangeTierRow>("spec_range_tiers"),
+  });
+}
+
+// Spec product catalogue (fittings & fixtures). Cached aggressively — the
+// catalogue changes rarely and is shared across every spec-range view.
+const CATALOG_STALE_MS = 5 * 60 * 1000;
+
+export function useSpecCategories(): UseQueryResult<SpecCategoryRow[]> {
+  return useQuery({
+    queryKey: ["spec_categories"],
+    staleTime: CATALOG_STALE_MS,
+    queryFn: async (): Promise<SpecCategoryRow[]> => {
+      const { data, error } = await supabase
+        .from("spec_categories")
+        .select("id,name,icon,sort_order,image_url")
+        .order("sort_order", { ascending: true });
+      if (error) throw error;
+      return (data ?? []) as SpecCategoryRow[];
+    },
+  });
+}
+
+export function useSpecItems(): UseQueryResult<SpecItemRow[]> {
+  return useQuery({
+    queryKey: ["spec_items"],
+    staleTime: CATALOG_STALE_MS,
+    queryFn: async (): Promise<SpecItemRow[]> => {
+      const { data, error } = await supabase
+        .from("spec_items")
+        .select("id,category_id,name,sort_order")
+        .order("sort_order", { ascending: true });
+      if (error) throw error;
+      return (data ?? []) as SpecItemRow[];
+    },
+  });
+}
+
+export function useSpecProducts(): UseQueryResult<SpecProductRow[]> {
+  return useQuery({
+    queryKey: ["spec_products"],
+    staleTime: CATALOG_STALE_MS,
+    queryFn: async (): Promise<SpecProductRow[]> => {
+      const { data, error } = await supabase
+        .from("spec_products")
+        .select("*")
+        .order("sort_order", { ascending: true });
+      if (error) throw error;
+      return (data ?? []) as SpecProductRow[];
+    },
+  });
+}
+
+export function useSpecProductColours(): UseQueryResult<SpecProductColourRow[]> {
+  return useQuery({
+    queryKey: ["spec_product_colours"],
+    staleTime: CATALOG_STALE_MS,
+    queryFn: async (): Promise<SpecProductColourRow[]> => {
+      const { data, error } = await supabase
+        .from("spec_product_colours")
+        .select("*")
+        .order("sort_order", { ascending: true });
+      if (error) throw error;
+      return (data ?? []) as SpecProductColourRow[];
+    },
+  });
+}
+
+export function useSpecRangeItemProducts(): UseQueryResult<SpecRangeItemProductRow[]> {
+  return useQuery({
+    queryKey: ["spec_range_item_products"],
+    staleTime: CATALOG_STALE_MS,
+    queryFn: async (): Promise<SpecRangeItemProductRow[]> =>
+      selectAll<SpecRangeItemProductRow>("spec_range_item_products"),
   });
 }
 

@@ -521,6 +521,67 @@ export interface SpecRangeTierRow {
   pdf_preview_image_url: string | null;
 }
 
+// ---------------------------------------------------------------------------
+// Spec products — catalogue fittings & fixtures, shared with the iOS app.
+// product → spec_item → spec_category(room); per-range inclusion lives on
+// spec_range_item_products.
+// ---------------------------------------------------------------------------
+
+export type ProductRangeInclusion = "included" | "upgrade" | "unavailable";
+
+export interface SpecCategoryRow {
+  id: string;
+  name: string;
+  icon: string;
+  sort_order: number;
+  image_url: string | null;
+}
+
+export interface SpecItemRow {
+  id: string;
+  category_id: string;
+  name: string;
+  sort_order: number | null;
+}
+
+export interface SpecProductRow {
+  id: string;
+  spec_item_id: string;
+  brand: string | null;
+  model: string | null;
+  sku: string | null;
+  name: string;
+  description: string | null;
+  image_url: string | null;
+  dimensions: string | null;
+  is_active: boolean | null;
+  sort_order: number | null;
+}
+
+export interface SpecProductColourRow {
+  id: string;
+  product_id: string;
+  name: string;
+  hex: string | null;
+  image_url: string | null;
+  is_default: boolean | null;
+  is_active: boolean | null;
+  sort_order: number | null;
+  extra_cost: number | null;
+  sku: string | null;
+}
+
+export interface SpecRangeItemProductRow {
+  id: string | null;
+  range_id: string;
+  spec_item_id: string;
+  product_id: string;
+  is_default: boolean | null;
+  inclusion_override: string | null;
+  upgrade_price_override: number | null;
+  sort_order: number | null;
+}
+
 /** client_responses JSON entry — status raw values are capitalized phrases. */
 export interface ClientPackageResponse {
   client_id: string;

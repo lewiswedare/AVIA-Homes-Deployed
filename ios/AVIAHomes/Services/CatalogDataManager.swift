@@ -605,4 +605,61 @@ class CatalogDataManager {
         }
         return specProducts[colour.product_id]?.spec_item_id
     }
+
+    // MARK: - Fittings & Fixtures (range showcase)
+
+    /// Every catalogue product configured for `rangeId` (Included or Upgrade —
+    /// Unavailable and un-configured products are excluded), grouped by the room
+    /// (spec category) it belongs to. Powers the range "Fittings & Fixtures"
+    /// showcase. Empty rooms are omitted; items are ordered by membership sort
+    /// order, then product sort order, then name.
+    func fittingsAndFixtures(forRange rangeId: String) -> [RangeFittingGroup] {
+        let range = rangeId.lowercased()
+        var groups: [RangeFittingGroup] = []
+        for category in specCategories {
+            var items: [RangeFitting] = []
+            for item in category.items {
+                for pid in productsBySpecItem[item.id] ?? [] {
+                    guard let product = specProducts[pid] else { continue }
+                    guard product.is_active != false else { continue }
+                    guard let membership = rangeProductMemberships["\(range)|\(pid)"] else { continue }
+                    // Match the client-facing semantics in `products(for:rangeId:)`:
+                    // a missing inclusion_override is treated as Unavailable.
+                    let inclusion = ProductRangeInclusion(rawValue: membership.inclusion_override ?? "unavailable") ?? .unavailable
+                    guard inclusion != .unavailable else { continue }
+                    items.append(RangeFitting(product: product, membership: membership, categoryId: category.id, categoryName: category.name))
+                }
+            }
+            guard !items.isEmpty else { continue }
+            items.sort { a, b in
+                let sa = a.membership.sort_order ?? a.product.sort_order ?? 0
+                let sb = b.membership.sort_order ?? b.product.sort_order ?? 0
+                if sa != sb { return sa < sb }
+                return a.product.name.localizedCaseInsensitiveCompare(b.product.name) == .orderedAscending
+            }
+            groups.append(RangeFittingGroup(
+                categoryId: category.id,
+                categoryName: category.name,
+                categoryIcon: category.icon,
+                items: items
+            ))
+        }
+        return groups
+    }
+
+    /// Flattened fittings list for a range (every room).
+    func allFittings(forRange rangeId: String) -> [RangeFitting] {
+        fittingsAndFixtures(forRange: rangeId).flatMap { $0.items }
+    }
+
+    /// Best display image for a product — its own catalogue photo, else its
+    /// default (or first available) colour variant's image.
+    func displayImageURL(forProduct product: SpecProductRow) -> String? {
+        if let url = product.image_url, !url.isEmpty { return url }
+        let colours = productColours(for: product.id)
+        if let def = colours.first(where: { $0.is_default == true && !($0.image_url ?? "").isEmpty }) {
+            return def.image_url
+        }
+        return colours.first(where: { !($0.image_url ?? "").isEmpty })?.image_url
+    }
 }

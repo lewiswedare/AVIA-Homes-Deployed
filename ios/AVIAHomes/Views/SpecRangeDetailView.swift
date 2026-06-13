@@ -5,8 +5,10 @@ struct SpecRangeDetailView: View {
     @Environment(AppViewModel.self) private var appViewModel
     @State private var showingInclusions: Bool = false
     @State private var showCompareRanges: Bool = false
+    @State private var showFittings: Bool = false
     @State private var selectedRoomIndex: Int = 0
     @State private var highlightDetail: SpecRangeHighlight?
+    @State private var fittingDetail: RangeFitting?
 
     private var specData: SpecRangeData {
         CatalogDataManager.shared.specRangeData(for: tier)
@@ -24,6 +26,7 @@ struct SpecRangeDetailView: View {
                     summarySection
                     compareRangesButton
                     highlightsSection
+                    fittingsSection
                     roomGallerySection
                     brandPartnersSection
                     downloadSection
@@ -58,8 +61,14 @@ struct SpecRangeDetailView: View {
         .navigationDestination(isPresented: $showCompareRanges) {
             SpecRangeComparisonOverviewView()
         }
+        .navigationDestination(isPresented: $showFittings) {
+            SpecRangeFittingsView(tier: tier)
+        }
         .sheet(item: $highlightDetail) { highlight in
             SpecHighlightDetailSheet(tier: tier, highlight: highlight)
+        }
+        .sheet(item: $fittingDetail) { fitting in
+            SpecRangeFittingDetailSheet(tier: tier, fitting: fitting)
         }
     }
 
@@ -276,6 +285,124 @@ struct SpecRangeDetailView: View {
             .background(AVIATheme.cardBackground)
             .clipShape(.rect(cornerRadius: 13))
         }
+    }
+
+    // MARK: - Fittings & Fixtures
+
+    @ViewBuilder
+    private var fittingsSection: some View {
+        let preview = Array(CatalogDataManager.shared.allFittings(forRange: tier.rawValue).prefix(8))
+        if !preview.isEmpty {
+            VStack(alignment: .leading, spacing: 14) {
+                VStack(alignment: .leading, spacing: 2) {
+                    Text("Fittings & Fixtures")
+                        .font(.neueCorpMedium(20))
+                        .foregroundStyle(AVIATheme.textPrimary)
+                    Text("Key fittings & fixtures included in the \(tier.displayName) range")
+                        .font(.neueCaption2)
+                        .foregroundStyle(AVIATheme.textTertiary)
+                }
+
+                ScrollView(.horizontal, showsIndicators: false) {
+                    HStack(spacing: 12) {
+                        ForEach(preview) { fitting in
+                            Button {
+                                AVIAHaptic.lightTap.trigger()
+                                fittingDetail = fitting
+                            } label: {
+                                fittingPreviewCard(fitting)
+                            }
+                            .buttonStyle(.pressable(.subtle))
+                        }
+                    }
+                    .padding(.horizontal, 2)
+                }
+
+                Button {
+                    showFittings = true
+                } label: {
+                    HStack(spacing: 8) {
+                        Image(systemName: "square.grid.2x2")
+                            .font(.neueSubheadlineMedium)
+                        Text("View All Fittings & Fixtures")
+                            .font(.neueSubheadlineMedium)
+                    }
+                    .frame(maxWidth: .infinity)
+                    .frame(height: 48)
+                    .foregroundStyle(AVIATheme.aviaWhite)
+                    .background(AVIATheme.primaryGradient)
+                    .clipShape(.rect(cornerRadius: 11))
+                }
+                .buttonStyle(.pressable(.standard))
+            }
+        }
+    }
+
+    private func fittingPreviewCard(_ fitting: RangeFitting) -> some View {
+        let imageURL = CatalogDataManager.shared.displayImageURL(forProduct: fitting.product)
+        return VStack(alignment: .leading, spacing: 0) {
+            Color(AVIATheme.surfaceElevated)
+                .frame(width: 150, height: 130)
+                .overlay {
+                    if let urlStr = imageURL, let url = URL(string: urlStr) {
+                        AsyncImage(url: url) { phase in
+                            if let image = phase.image {
+                                image.resizable().aspectRatio(contentMode: .fill)
+                            } else if phase.error != nil {
+                                Image(systemName: "shippingbox")
+                                    .font(.system(size: 22))
+                                    .foregroundStyle(AVIATheme.textTertiary)
+                            } else {
+                                ProgressView().controlSize(.small)
+                            }
+                        }
+                        .allowsHitTesting(false)
+                    } else {
+                        Image(systemName: "shippingbox")
+                            .font(.system(size: 22))
+                            .foregroundStyle(AVIATheme.textTertiary)
+                    }
+                }
+                .overlay(alignment: .topLeading) {
+                    if fitting.inclusion == .upgrade {
+                        Text("UPGRADE")
+                            .font(.neueCorpMedium(8))
+                            .kerning(0.8)
+                            .foregroundStyle(AVIATheme.timelessBrown)
+                            .padding(.horizontal, 6).padding(.vertical, 3)
+                            .background(AVIATheme.timelessBrown.opacity(0.16), in: Capsule())
+                            .padding(8)
+                    } else {
+                        Text("INCLUDED")
+                            .font(.neueCorpMedium(8))
+                            .kerning(0.8)
+                            .foregroundStyle(AVIATheme.heritageBlue)
+                            .padding(.horizontal, 6).padding(.vertical, 3)
+                            .background(AVIATheme.heritageBlue.opacity(0.16), in: Capsule())
+                            .padding(8)
+                    }
+                }
+                .clipShape(.rect(cornerRadii: .init(topLeading: 12, topTrailing: 12)))
+
+            VStack(alignment: .leading, spacing: 3) {
+                Text(fitting.product.name)
+                    .font(.neueCaptionMedium)
+                    .foregroundStyle(AVIATheme.textPrimary)
+                    .lineLimit(2)
+                    .multilineTextAlignment(.leading)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                Text(fitting.categoryName)
+                    .font(.neueCaption2)
+                    .foregroundStyle(AVIATheme.textTertiary)
+                    .lineLimit(1)
+            }
+            .padding(10)
+            .frame(width: 150, alignment: .leading)
+        }
+        .frame(width: 150)
+        .background(AVIATheme.cardBackground)
+        .clipShape(.rect(cornerRadius: 12))
+        .overlay { RoundedRectangle(cornerRadius: 12).stroke(AVIATheme.surfaceBorder, lineWidth: 1) }
     }
 
     private var roomGallerySection: some View {

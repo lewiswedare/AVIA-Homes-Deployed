@@ -56,6 +56,36 @@ enum ProductRangeInclusion: String, Codable, Sendable, CaseIterable {
     }
 }
 
+// MARK: - Range Fittings & Fixtures (showcase)
+
+/// A single fitting/fixture entry shown in a spec range's showcase — a catalogue
+/// product plus its membership (inclusion + price) in the active range and the
+/// room (spec category) it belongs to.
+nonisolated struct RangeFitting: Identifiable, Sendable, Hashable {
+    let product: SpecProductRow
+    let membership: SpecRangeItemProductRow
+    let categoryId: String
+    let categoryName: String
+
+    var id: String { "\(membership.range_id)|\(product.id)" }
+
+    var inclusion: ProductRangeInclusion {
+        ProductRangeInclusion(rawValue: membership.inclusion_override ?? "included") ?? .included
+    }
+
+    var upgradeCost: Double { membership.upgrade_price_override ?? 0 }
+}
+
+/// A room grouping of fittings & fixtures within a spec range.
+nonisolated struct RangeFittingGroup: Identifiable, Sendable, Hashable {
+    let categoryId: String
+    let categoryName: String
+    let categoryIcon: String
+    let items: [RangeFitting]
+
+    var id: String { categoryId }
+}
+
 // In-memory editing model for a product's per-range membership.
 struct EditableProductRangeMembership: Identifiable, Hashable {
     let rangeId: String          // "volos" | "messina" | "portobello"

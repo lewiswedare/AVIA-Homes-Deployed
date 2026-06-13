@@ -4,7 +4,13 @@ import type {
   ClientPackageResponse,
   HouseLandPackageRow,
   PackageAssignmentRow,
+  ProductRangeInclusion,
   ProfileRow,
+  SpecCategoryRow,
+  SpecItemRow,
+  SpecProductColourRow,
+  SpecProductRow,
+  SpecRangeItemProductRow,
   UserRole,
 } from "./types";
 import { RESPONSE_DECLINED, RESPONSE_PENDING } from "./types";
@@ -213,6 +219,141 @@ export function withClientUnshared(assignment: PackageAssignmentRow, clientId: s
     shared_with_client_ids: (assignment.shared_with_client_ids ?? []).filter((id) => id.toLowerCase() !== uid),
     client_responses: (assignment.client_responses ?? []).filter((r) => r.client_id.toLowerCase() !== uid),
   };
+}
+
+// ---------------------------------------------------------------------------
+// Fittings & Fixtures — derives the catalogue products configured for a spec
+// range, grouped by room (spec category). Mirrors the iOS
+// `CatalogDataManager.fittingsAndFixtures(forRange:)` helper exactly.
+// ---------------------------------------------------------------------------
+
+export interface RangeFitting {
+  product: SpecProductRow;
+  membership: SpecRangeItemProductRow;
+  categoryId: string;
+  categoryName: string;
+  inclusion: ProductRangeInclusion;
+  upgradeCost: number;
+}
+
+export interface RangeFittingGroup {
+  categoryId: string;
+  categoryName: string;
+  items: RangeFitting[];
+}
+
+/** Title-cases a raw category id when no spec_categories row exists for it. */
+function humanizeCategoryId(id: string): string {
+  return id
+    .split(/[_\s-]+/)
+    .filter(Boolean)
+    .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
+    .join(" ");
+}
+
+/**
+ * Groups every product configured for `rangeId` (Included or Upgrade — a missing
+ * inclusion_override is treated as Unavailable, matching iOS) by the room it
+ * belongs to. Empty rooms are omitted; items sort by membership order, then
+ * product order, then name.
+ */
+export function fittingsForRange(params: {
+  rangeId: string;
+  categories: SpecCategoryRow[];
+  items: SpecItemRow[];
+  products: SpecProductRow[];
+  memberships: SpecRangeItemProductRow[];
+}): RangeFittingGroup[] {
+  const range = params.rangeId.toLowerCase();
+
+  const productsByItem = new Map<string, SpecProductRow[]>();
+  for (const product of params.products) {
+    if (product.is_active === false) continue;
+    const list = productsByItem.get(product.spec_item_id) ?? [];
+    list.push(product);
+    productsByItem.set(product.spec_item_id, list);
+  }
+
+  const membershipByKey = new Map<string, SpecRangeItemProductRow>();
+  for (const m of params.memberships) {
+    membershipByKey.set(`${m.range_id}|${m.product_id}`, m);
+  }
+
+  const itemsByCategory = new Map<string, SpecItemRow[]>();
+  for (const item of params.items) {
+    const list = itemsByCategory.get(item.category_id) ?? [];
+    list.push(item);
+    itemsByCategory.set(item.category_id, list);
+  }
+
+  // Category meta + ordering, with a fallback for any category id present in
+  // spec_items but missing from spec_categories (legacy / out-of-sync data).
+  const meta = new Map<string, { name: string; order: number }>();
+  params.categories.forEach((c) => meta.set(c.id, { name: c.name, order: c.sort_order }));
+  let fallbackOrder = 1000;
+  for (const categoryId of itemsByCategory.keys()) {
+    if (!meta.has(categoryId)) meta.set(categoryId, { name: humanizeCategoryId(categoryId), order: fallbackOrder++ });
+  }
+
+  const orderedCategoryIds = Array.from(meta.keys()).sort(
+    (a, b) => (meta.get(a)?.order ?? 0) - (meta.get(b)?.order ?? 0),
+  );
+
+  const groups: RangeFittingGroup[] = [];
+  for (const categoryId of orderedCategoryIds) {
+    const categoryName = meta.get(categoryId)?.name ?? humanizeCategoryId(categoryId);
+    const fittings: RangeFitting[] = [];
+    for (const item of itemsByCategory.get(categoryId) ?? []) {
+      for (const product of productsByItem.get(item.id) ?? []) {
+        const membership = membershipByKey.get(`${range}|${product.id}`);
+        if (!membership) continue;
+        const inclusion = (membership.inclusion_override ?? "unavailable") as ProductRangeInclusion;
+        if (inclusion === "unavailable") continue;
+        fittings.push({
+          product,
+          membership,
+          categoryId,
+          categoryName,
+          inclusion,
+          upgradeCost: membership.upgrade_price_override ?? 0,
+        });
+      }
+    }
+    if (fittings.length === 0) continue;
+    fittings.sort((a, b) => {
+      const sa = a.membership.sort_order ?? a.product.sort_order ?? 0;
+      const sb = b.membership.sort_order ?? b.product.sort_order ?? 0;
+      if (sa !== sb) return sa - sb;
+      return a.product.name.localeCompare(b.product.name);
+    });
+    groups.push({ categoryId, categoryName, items: fittings });
+  }
+  return groups;
+}
+
+/** Best display image for a product — its own photo, else its default/first colour variant's. */
+export function productDisplayImage(
+  product: SpecProductRow,
+  coloursByProduct: Map<string, SpecProductColourRow[]>,
+): string | null {
+  if (product.image_url && product.image_url.length > 0) return product.image_url;
+  const colours = coloursByProduct.get(product.id) ?? [];
+  const def = colours.find((c) => c.is_default === true && (c.image_url ?? "").length > 0);
+  if (def?.image_url) return def.image_url;
+  return colours.find((c) => (c.image_url ?? "").length > 0)?.image_url ?? null;
+}
+
+/** Groups colour rows by product id for quick lookups. */
+export function indexColoursByProduct(
+  colours: SpecProductColourRow[] | undefined,
+): Map<string, SpecProductColourRow[]> {
+  const map = new Map<string, SpecProductColourRow[]>();
+  for (const colour of colours ?? []) {
+    const list = map.get(colour.product_id) ?? [];
+    list.push(colour);
+    map.set(colour.product_id, list);
+  }
+  return map;
 }
 
 /** Records a client's accept/decline response on an assignment. */
