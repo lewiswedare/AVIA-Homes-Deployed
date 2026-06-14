@@ -251,8 +251,12 @@ struct AdminTasksInboxView: View {
                         .font(.neueCaptionMedium)
                         .foregroundStyle(AVIATheme.textPrimary)
                     HStack(spacing: 6) {
-                        Image(systemName: "person.fill")
-                            .font(.neueCaption2)
+                        if let owner = client(for: task.clientId) {
+                            UserAvatarView(user: owner, size: 18, fontSize: 8)
+                        } else {
+                            Image(systemName: "person.fill")
+                                .font(.neueCaption2)
+                        }
                         Text(clientName(for: task.clientId))
                             .font(.neueCaption2)
                     }

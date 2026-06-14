@@ -72,12 +72,7 @@ struct AdminClientPipelineView: View {
         BentoCard(cornerRadius: 10) {
             VStack(alignment: .leading, spacing: 8) {
                 HStack(spacing: 8) {
-                    Text(client.initials.isEmpty ? "?" : client.initials)
-                        .font(.neueCaption2Medium)
-                        .foregroundStyle(AVIATheme.aviaWhite)
-                        .frame(width: 28, height: 28)
-                        .background(AVIATheme.primaryGradient)
-                        .clipShape(Circle())
+                    UserAvatarView(user: client, size: 28, fontSize: 11)
                     VStack(alignment: .leading, spacing: 1) {
                         Text(client.fullName.trimmingCharacters(in: .whitespaces).isEmpty ? client.email : client.fullName)
                             .font(.neueCaption2Medium)

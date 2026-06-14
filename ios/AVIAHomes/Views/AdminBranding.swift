@@ -375,3 +375,42 @@ struct ClientProfileBanner: View {
         photoItem = nil
     }
 }
+
+// MARK: - Client Face Pile
+
+/// An overlapping row of customer profile photos, used wherever a record can
+/// belong to multiple customers (e.g. co-buyers on a build). Keeps the customer
+/// identity visible and personal rather than collapsing it to a count. Falls
+/// back to initials when a photo isn't set.
+struct ClientFacePile: View {
+    let clients: [ClientUser]
+    var size: CGFloat = 34
+    var maxVisible: Int = 4
+    var ringColor: Color = AVIATheme.cardBackground
+
+    private var visible: [ClientUser] {
+        Array(clients.prefix(maxVisible))
+    }
+
+    private var overflow: Int {
+        max(0, clients.count - maxVisible)
+    }
+
+    var body: some View {
+        HStack(spacing: -size * 0.32) {
+            ForEach(visible) { client in
+                UserAvatarView(user: client, size: size)
+                    .overlay { Circle().stroke(ringColor, lineWidth: 2) }
+            }
+            if overflow > 0 {
+                Text("+\(overflow)")
+                    .font(.neueCorpMedium(max(11, size * 0.34)))
+                    .foregroundStyle(AVIATheme.textSecondary)
+                    .frame(width: size, height: size)
+                    .background(AVIATheme.warmAccent)
+                    .clipShape(Circle())
+                    .overlay { Circle().stroke(ringColor, lineWidth: 2) }
+            }
+        }
+    }
+}

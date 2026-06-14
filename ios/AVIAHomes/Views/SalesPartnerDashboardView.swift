@@ -138,12 +138,11 @@ struct PartnerDashboardView: View {
         BentoCard(cornerRadius: 13) {
             VStack(spacing: 0) {
                 HStack(spacing: 14) {
-                    Text(build.client.initials.isEmpty ? "?" : build.client.initials)
-                        .font(.neueCaptionMedium)
-                        .foregroundStyle(AVIATheme.aviaWhite)
-                        .frame(width: 42, height: 42)
-                        .background(AVIATheme.primaryGradient)
-                        .clipShape(Circle())
+                    if build.additionalClients.isEmpty {
+                        UserAvatarView(user: build.client, size: 42)
+                    } else {
+                        ClientFacePile(clients: build.allClients, size: 38)
+                    }
 
                     VStack(alignment: .leading, spacing: 3) {
                         Text(build.clientDisplayName)
@@ -208,12 +207,11 @@ struct PartnerClientDetailView: View {
         BentoCard(cornerRadius: 13) {
             VStack(spacing: 14) {
                 HStack(spacing: 14) {
-                    Text(build.client.initials.isEmpty ? "?" : build.client.initials)
-                        .font(.neueCorpMedium(20))
-                        .foregroundStyle(AVIATheme.aviaWhite)
-                        .frame(width: 52, height: 52)
-                        .background(AVIATheme.primaryGradient)
-                        .clipShape(Circle())
+                    if build.additionalClients.isEmpty {
+                        UserAvatarView(user: build.client, size: 52)
+                    } else {
+                        ClientFacePile(clients: build.allClients, size: 46)
+                    }
 
                     VStack(alignment: .leading, spacing: 3) {
                         Text(build.clientDisplayName)

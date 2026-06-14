@@ -641,7 +641,11 @@ struct AdminWorkspaceView: View {
                         .font(.neueCaptionMedium)
                         .foregroundStyle(AVIATheme.textPrimary)
                     HStack(spacing: 6) {
-                        Image(systemName: "person.fill").font(.neueCaption2)
+                        if let owner = client(for: task.clientId) {
+                            UserAvatarView(user: owner, size: 18, fontSize: 8)
+                        } else {
+                            Image(systemName: "person.fill").font(.neueCaption2)
+                        }
                         Text(clientName(for: task.clientId)).font(.neueCaption2)
                     }
                     .foregroundStyle(AVIATheme.textSecondary)
@@ -683,12 +687,26 @@ struct AdminWorkspaceView: View {
     private func appointmentRowContent(item: ScheduleItem, owner: ClientUser?) -> some View {
         BentoCard(cornerRadius: 11) {
             HStack(spacing: 12) {
-                Image(systemName: item.iconColor)
-                    .font(.neueCorpMedium(14))
-                    .foregroundStyle(AVIATheme.timelessBrown)
-                    .frame(width: 38, height: 38)
-                    .background(AVIATheme.timelessBrown.opacity(0.12))
-                    .clipShape(Circle())
+                ZStack(alignment: .bottomTrailing) {
+                    if let owner {
+                        UserAvatarView(user: owner, size: 38)
+                        Image(systemName: item.iconColor)
+                            .font(.system(size: 9, weight: .semibold))
+                            .foregroundStyle(AVIATheme.aviaWhite)
+                            .frame(width: 18, height: 18)
+                            .background(AVIATheme.timelessBrown)
+                            .clipShape(Circle())
+                            .overlay { Circle().stroke(AVIATheme.cardBackground, lineWidth: 1.5) }
+                            .offset(x: 3, y: 3)
+                    } else {
+                        Image(systemName: item.iconColor)
+                            .font(.neueCorpMedium(14))
+                            .foregroundStyle(AVIATheme.timelessBrown)
+                            .frame(width: 38, height: 38)
+                            .background(AVIATheme.timelessBrown.opacity(0.12))
+                            .clipShape(Circle())
+                    }
+                }
                 VStack(alignment: .leading, spacing: 3) {
                     Text(item.title)
                         .font(.neueCaptionMedium)
@@ -737,15 +755,28 @@ struct AdminWorkspaceView: View {
         }
     }
 
+    private func temperatureColor(_ temp: LeadTemperature) -> Color {
+        switch temp {
+        case .hot: return AVIATheme.warning
+        case .warm: return AVIATheme.timelessBrown
+        case .cold: return AVIATheme.textSecondary
+        }
+    }
+
     private func followUpRowContent(profile: ClientCRMProfile, owner: ClientUser) -> some View {
         BentoCard(cornerRadius: 11) {
             HStack(spacing: 12) {
-                Image(systemName: profile.leadTemperature.icon)
-                    .font(.neueCorpMedium(14))
-                    .foregroundStyle(AVIATheme.heritageBlue)
-                    .frame(width: 38, height: 38)
-                    .background(AVIATheme.heritageBlue.opacity(0.12))
-                    .clipShape(Circle())
+                ZStack(alignment: .bottomTrailing) {
+                    UserAvatarView(user: owner, size: 38)
+                    Image(systemName: profile.leadTemperature.icon)
+                        .font(.system(size: 9, weight: .semibold))
+                        .foregroundStyle(AVIATheme.aviaWhite)
+                        .frame(width: 18, height: 18)
+                        .background(temperatureColor(profile.leadTemperature))
+                        .clipShape(Circle())
+                        .overlay { Circle().stroke(AVIATheme.cardBackground, lineWidth: 1.5) }
+                        .offset(x: 3, y: 3)
+                }
                 VStack(alignment: .leading, spacing: 3) {
                     Text(owner.fullName.trimmingCharacters(in: .whitespaces).isEmpty ? owner.email : owner.fullName)
                         .font(.neueCaptionMedium)

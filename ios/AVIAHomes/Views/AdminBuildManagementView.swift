@@ -175,12 +175,7 @@ struct AdminBuildRow: View {
             VStack(spacing: 0) {
                 HStack(spacing: 14) {
                     ZStack(alignment: .topTrailing) {
-                        Text(build.client.initials.isEmpty ? "?" : build.client.initials)
-                            .font(.neueCaptionMedium)
-                            .foregroundStyle(AVIATheme.aviaWhite)
-                            .frame(width: 42, height: 42)
-                            .background(AVIATheme.primaryGradient)
-                            .clipShape(Circle())
+                        UserAvatarView(user: build.client, size: 42)
 
                         if specReviewStatus.totalCount > 0 {
                             Text("\(specReviewStatus.totalCount)")

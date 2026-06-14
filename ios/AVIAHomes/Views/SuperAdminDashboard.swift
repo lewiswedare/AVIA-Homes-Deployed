@@ -226,7 +226,7 @@ struct SuperAdminStaffDetailView: View {
                         ForEach(assignedBuilds, id: \.id) { build in
                             BentoCard(cornerRadius: 10) {
                                 HStack(spacing: 12) {
-                                    BentoIconCircle(icon: "building.2.fill", color: AVIATheme.timelessBrown)
+                                    UserAvatarView(user: build.client, size: 38)
                                     VStack(alignment: .leading, spacing: 2) {
                                         Text(build.clientDisplayName)
                                             .font(.neueSubheadlineMedium)
@@ -285,7 +285,8 @@ struct SuperAdminBuildListView: View {
                 ForEach(builds, id: \.id) { build in
                     BentoCard(cornerRadius: 11) {
                         VStack(alignment: .leading, spacing: 6) {
-                            HStack {
+                            HStack(spacing: 10) {
+                                UserAvatarView(user: build.client, size: 30, fontSize: 12)
                                 Text(build.clientDisplayName)
                                     .font(.neueSubheadlineMedium)
                                     .foregroundStyle(AVIATheme.textPrimary)
