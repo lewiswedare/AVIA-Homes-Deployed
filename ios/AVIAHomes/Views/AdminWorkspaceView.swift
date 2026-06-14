@@ -123,37 +123,13 @@ struct AdminWorkspaceView: View {
     // MARK: - Header
 
     private var header: some View {
-        VStack(alignment: .leading, spacing: 10) {
-            HStack(spacing: 14) {
-                Text(viewModel.currentUser.initials.isEmpty ? "?" : viewModel.currentUser.initials)
-                    .font(.neueCaptionMedium)
-                    .foregroundStyle(AVIATheme.aviaWhite)
-                    .frame(width: 44, height: 44)
-                    .background(AVIATheme.brownGradient)
-                    .clipShape(Circle())
-                VStack(alignment: .leading, spacing: 2) {
-                    Text(Date.now.formatted(.dateTime.weekday(.wide).day().month(.wide)))
-                        .font(.neueCaption2Medium)
-                        .tracking(0.8)
-                        .foregroundStyle(AVIATheme.textTertiary)
-                    Text(greeting)
-                        .font(.neueCorpMedium(26))
-                        .foregroundStyle(AVIATheme.timelessBrown)
-                }
-                Spacer()
-            }
-        }
-        .padding(20)
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .background(AVIATheme.warmAccent)
-        .clipShape(.rect(cornerRadius: 16))
-    }
-
-    private var greeting: String {
-        let name = viewModel.currentUser.firstName
-        let hour = Calendar.current.component(.hour, from: .now)
-        let part = hour < 12 ? "Good morning" : hour < 18 ? "Good afternoon" : "Good evening"
-        return name.isEmpty ? part : "\(part), \(name)"
+        WorkspaceHeroBanner(
+            user: viewModel.currentUser,
+            dueToday: dueTodayTasks.count,
+            overdue: overdueTasks.count,
+            scheduledToday: todaysAppointments.count,
+            followUps: followUpsDue.count
+        )
     }
 
     // MARK: - Lane selector
@@ -609,12 +585,7 @@ struct AdminWorkspaceView: View {
     private func sendingClientRow(_ client: ClientUser) -> some View {
         BentoCard(cornerRadius: 11) {
             HStack(spacing: 12) {
-                Text(client.initials.isEmpty ? "?" : client.initials)
-                    .font(.neueCaptionMedium)
-                    .foregroundStyle(AVIATheme.aviaWhite)
-                    .frame(width: 40, height: 40)
-                    .background(AVIATheme.primaryGradient)
-                    .clipShape(Circle())
+                UserAvatarView(user: client, size: 40)
                 VStack(alignment: .leading, spacing: 2) {
                     Text(client.fullName.trimmingCharacters(in: .whitespaces).isEmpty ? client.email : client.fullName)
                         .font(.neueSubheadlineMedium)

@@ -199,12 +199,7 @@ struct AdminClientCard: View {
         BentoCard(cornerRadius: 11) {
             VStack(spacing: 0) {
                 HStack(spacing: 12) {
-                    Text(client.initials.isEmpty ? "?" : client.initials)
-                        .font(.neueCaptionMedium)
-                        .foregroundStyle(AVIATheme.aviaWhite)
-                        .frame(width: 42, height: 42)
-                        .background(AVIATheme.primaryGradient)
-                        .clipShape(Circle())
+                    UserAvatarView(user: client, size: 42, fontSize: 15)
 
                     VStack(alignment: .leading, spacing: 3) {
                         Text(client.fullName.trimmingCharacters(in: .whitespaces).isEmpty ? client.email : client.fullName)

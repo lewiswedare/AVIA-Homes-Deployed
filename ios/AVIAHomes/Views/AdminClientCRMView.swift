@@ -58,10 +58,6 @@ struct AdminClientCRMView: View {
         }
     }
 
-    private var clientBuilds: [ClientBuild] {
-        viewModel.allClientBuilds.filter { $0.hasClient(id: client.id) }
-    }
-
     private var filteredActivities: [ClientActivity] {
         activities.filter { selectedFilter.matches($0.kind) }
     }
@@ -117,7 +113,7 @@ struct AdminClientCRMView: View {
     var body: some View {
         ScrollView {
             VStack(spacing: 16) {
-                profileHeader
+                ClientProfileBanner(client: client)
                 lifecycleStageCard
                 statusAndScoreCard
                 tagsCard
@@ -203,64 +199,6 @@ struct AdminClientCRMView: View {
     }
 
     // MARK: - Sections
-
-    private var profileHeader: some View {
-        BentoCard(cornerRadius: 14) {
-            VStack(spacing: 14) {
-                HStack(spacing: 14) {
-                    Text(client.initials.isEmpty ? "?" : client.initials)
-                        .font(.neueCorpMedium(22))
-                        .foregroundStyle(AVIATheme.aviaWhite)
-                        .frame(width: 64, height: 64)
-                        .background(AVIATheme.primaryGradient)
-                        .clipShape(Circle())
-
-                    VStack(alignment: .leading, spacing: 4) {
-                        Text(client.fullName.trimmingCharacters(in: .whitespaces).isEmpty ? client.email : client.fullName)
-                            .font(.neueCorpMedium(20))
-                            .foregroundStyle(AVIATheme.textPrimary)
-                            .lineLimit(2)
-                        Text(client.email)
-                            .font(.neueCaption)
-                            .foregroundStyle(AVIATheme.textSecondary)
-                            .lineLimit(1)
-                        if !client.phone.isEmpty {
-                            Text(client.phone)
-                                .font(.neueCaption)
-                                .foregroundStyle(AVIATheme.textTertiary)
-                        }
-                    }
-                    Spacer()
-                }
-
-                if !clientBuilds.isEmpty {
-                    Rectangle().fill(AVIATheme.surfaceBorder).frame(height: 1)
-                    VStack(alignment: .leading, spacing: 6) {
-                        Text("ACTIVE BUILDS")
-                            .font(.neueCaption2Medium)
-                            .tracking(1.0)
-                            .foregroundStyle(AVIATheme.textTertiary)
-                        ForEach(clientBuilds) { build in
-                            HStack(spacing: 8) {
-                                Circle()
-                                    .fill(build.overallProgress >= 0.7 ? AVIATheme.success : build.overallProgress > 0 ? AVIATheme.warning : AVIATheme.textTertiary)
-                                    .frame(width: 6, height: 6)
-                                Text(build.homeDesign)
-                                    .font(.neueCaptionMedium)
-                                    .foregroundStyle(AVIATheme.textPrimary)
-                                Spacer()
-                                Text("\(Int(build.overallProgress * 100))%")
-                                    .font(.neueCaption)
-                                    .foregroundStyle(AVIATheme.textSecondary)
-                            }
-                        }
-                    }
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                }
-            }
-            .padding(16)
-        }
-    }
 
     // MARK: - Lifecycle Stage (primary CRM feature)
 
