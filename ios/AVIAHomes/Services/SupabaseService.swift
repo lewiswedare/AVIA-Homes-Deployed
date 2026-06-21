@@ -6,6 +6,10 @@ class SupabaseService {
     static let shared = SupabaseService()
 
     let client: SupabaseClient
+    /// The project URL used by every native Supabase surface: Auth, database,
+    /// Storage, Realtime, and Edge Functions. Keeping it here prevents the iOS
+    /// app from drifting onto a different backend host than the rest of the app.
+    let projectURL: URL
     private let configuredFlag: Bool
 
     /// Single source of truth for the Supabase URL. Trimmed of any whitespace/newlines
@@ -51,6 +55,7 @@ class SupabaseService {
             print("[SupabaseService] ERROR: Missing Supabase anon key — using placeholder. Network calls will be skipped via isConfigured.")
         }
 
+        projectURL = resolvedURL
         client = SupabaseClient(
             supabaseURL: resolvedURL,
             supabaseKey: resolvedKey
@@ -66,6 +71,36 @@ class SupabaseService {
 
     var isConfigured: Bool {
         configuredFlag
+    }
+
+    /// Public anon key used for authenticated Edge Function requests. This is
+    /// intentionally exposed only through this native service so URL/key access
+    /// stays aligned with the Supabase client above.
+    var publicAnonKey: String? {
+        guard isConfigured else { return nil }
+        let key = Self.supabaseKey
+        return key.isEmpty ? nil : key
+    }
+
+    /// Current signed-in user's JWT for Edge Functions that enforce RLS/roles.
+    func currentAccessToken() async -> String? {
+        guard isConfigured else { return nil }
+        return try? await client.auth.session.accessToken
+    }
+
+    /// Builds a native Supabase Edge Function URL from the same project URL used
+    /// by Auth/PostgREST/Storage so platform features never point to a stale host.
+    func edgeFunctionURL(_ functionName: String, action: String? = nil) -> URL? {
+        guard isConfigured, !functionName.isEmpty else { return nil }
+        let base = projectURL
+            .appendingPathComponent("functions")
+            .appendingPathComponent("v1")
+            .appendingPathComponent(functionName)
+        guard var components = URLComponents(url: base, resolvingAgainstBaseURL: false) else { return base }
+        if let action, !action.isEmpty {
+            components.queryItems = [URLQueryItem(name: "action", value: action)]
+        }
+        return components.url
     }
 
     func removeAllChannels() async {

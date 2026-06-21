@@ -16,16 +16,6 @@ final class MicrosoftMailService: NSObject {
 
     private var authSession: ASWebAuthenticationSession?
 
-    private var functionBaseURL: String? {
-        let raw = Config.EXPO_PUBLIC_SUPABASE_URL.trimmingCharacters(in: .whitespacesAndNewlines)
-        guard !raw.isEmpty else { return nil }
-        return "\(raw)/functions/v1/microsoft-mail"
-    }
-
-    private var anonKey: String {
-        Config.EXPO_PUBLIC_SUPABASE_ANON_KEY.trimmingCharacters(in: .whitespacesAndNewlines)
-    }
-
     // MARK: - Connect
 
     /// Opens the Microsoft consent flow for the signed-in staff user. The edge
@@ -34,8 +24,7 @@ final class MicrosoftMailService: NSObject {
     /// and then hand the Microsoft URL to ASWebAuthenticationSession.
     @discardableResult
     func connect(staffId: String) async -> Bool {
-        guard let base = functionBaseURL,
-              let requestURL = URL(string: "\(base)?action=start") else { return false }
+        guard let requestURL = SupabaseService.shared.edgeFunctionURL("microsoft-mail", action: "start") else { return false }
 
         var request = URLRequest(url: requestURL)
         request.httpMethod = "POST"
@@ -95,7 +84,7 @@ final class MicrosoftMailService: NSObject {
 
     @discardableResult
     func disconnect(staffId: String) async -> Bool {
-        guard let base = functionBaseURL, let url = URL(string: "\(base)?action=disconnect") else { return false }
+        guard let url = SupabaseService.shared.edgeFunctionURL("microsoft-mail", action: "disconnect") else { return false }
         var request = URLRequest(url: url)
         request.httpMethod = "POST"
         await applyHeaders(&request)
@@ -127,7 +116,7 @@ final class MicrosoftMailService: NSObject {
         documentName: String?,
         documentId: String?
     ) async -> SendResult {
-        guard let base = functionBaseURL, let url = URL(string: "\(base)?action=send") else {
+        guard let url = SupabaseService.shared.edgeFunctionURL("microsoft-mail", action: "send") else {
             return SendResult(success: false, message: "Email service is not configured.", sendId: nil)
         }
         var request = URLRequest(url: url)
@@ -164,12 +153,13 @@ final class MicrosoftMailService: NSObject {
     /// rejects anon-key calls now that it verifies the caller's identity & role.
     private func applyHeaders(_ request: inout URLRequest) async {
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
-        if !anonKey.isEmpty {
+        let supabase = SupabaseService.shared
+        if let anonKey = supabase.publicAnonKey {
             request.setValue(anonKey, forHTTPHeaderField: "apikey")
         }
-        if let accessToken = try? await SupabaseService.shared.client.auth.session.accessToken {
+        if let accessToken = await supabase.currentAccessToken() {
             request.setValue("Bearer \(accessToken)", forHTTPHeaderField: "Authorization")
-        } else if !anonKey.isEmpty {
+        } else if let anonKey = supabase.publicAnonKey {
             request.setValue("Bearer \(anonKey)", forHTTPHeaderField: "Authorization")
         }
     }
